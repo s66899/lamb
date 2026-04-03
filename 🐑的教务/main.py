@@ -11,6 +11,7 @@ from tkinter import ttk, messagebox, filedialog
 import json
 import os
 import csv
+import shutil
 from datetime import datetime, timedelta
 from enum import Enum
 import hashlib
@@ -178,6 +179,8 @@ class DataManager:
     def __init__(self, data_file: str = "教务数据.json"):
         self.data_file = data_file
         self.data = self.load_data()
+        self.last_backup_at = None
+        self.ensure_data_schema()
     
     def load_data(self) -> dict:
         """加载数据文件"""
@@ -197,7 +200,32 @@ class DataManager:
             "courses": [],
             "schedules": [],
             "attendances": [],
+            "operation_logs": [],
+            "users": [
+                {
+                    "username": "admin",
+                    "password_hash": self.hash_password("admin123"),
+                    "role": UserRole.ADMIN.value,
+                    "name": "系统管理员",
+                    "status": "active"
+                },
+                {
+                    "username": "teacher",
+                    "password_hash": self.hash_password("teacher123"),
+                    "role": UserRole.TEACHER.value,
+                    "name": "默认老师",
+                    "status": "active"
+                },
+                {
+                    "username": "student",
+                    "password_hash": self.hash_password("student123"),
+                    "role": UserRole.STUDENT.value,
+                    "name": "默认学员",
+                    "status": "active"
+                }
+            ],
             "settings": {
+                "auto_backup": True,
                 "time_slots": {
                     "星期一": ["16:00-18:00", "18:00-20:00"],
                     "星期二": ["16:00-18:00", "18:00-20:00"],
@@ -211,16 +239,95 @@ class DataManager:
                 "course_levels": ["初级", "中级", "高级", "竞赛级"]
             }
         }
+
+    @staticmethod
+    def hash_password(password: str) -> str:
+        """密码哈希"""
+        return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+    def ensure_data_schema(self):
+        """确保数据结构完整"""
+        modified = False
+        default = self.create_default_data()
+        for key in ["students", "courses", "schedules", "attendances", "operation_logs", "users", "settings"]:
+            if key not in self.data:
+                self.data[key] = default[key]
+                modified = True
+        if "auto_backup" not in self.data["settings"]:
+            self.data["settings"]["auto_backup"] = True
+            modified = True
+        if modified:
+            self.save_data()
     
     def save_data(self):
         """保存数据到文件"""
         with open(self.data_file, 'w', encoding='utf-8') as f:
             json.dump(self.data, f, ensure_ascii=False, indent=2)
+        self.auto_backup_if_needed()
+
+    def authenticate_user(self, username: str, password: str) -> Optional[dict]:
+        """用户认证"""
+        password_hash = self.hash_password(password)
+        for user in self.data.get("users", []):
+            if (
+                user.get("username") == username
+                and user.get("password_hash") == password_hash
+                and user.get("status", "active") == "active"
+            ):
+                return user
+        return None
+
+    def log_operation(self, operation: str, detail: str, operator: str = "system"):
+        """记录操作日志"""
+        log_entry = {
+            "id": generate_id(),
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "operator": operator,
+            "operation": operation,
+            "detail": detail
+        }
+        self.data["operation_logs"].append(log_entry)
+        # 仅保留最近 2000 条日志
+        if len(self.data["operation_logs"]) > 2000:
+            self.data["operation_logs"] = self.data["operation_logs"][-2000:]
+
+    def auto_backup_if_needed(self):
+        """自动备份（默认每 30 分钟最多一次）"""
+        if not self.data.get("settings", {}).get("auto_backup", True):
+            return
+        now = datetime.now()
+        if self.last_backup_at and (now - self.last_backup_at) < timedelta(minutes=30):
+            return
+        self.create_backup()
+        self.last_backup_at = now
+
+    def create_backup(self, manual: bool = False) -> str:
+        """创建备份文件"""
+        backup_dir = "backups"
+        os.makedirs(backup_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        prefix = "手动" if manual else "自动"
+        backup_file = os.path.join(backup_dir, f"教务数据_{prefix}备份_{timestamp}.json")
+        if os.path.exists(self.data_file):
+            shutil.copy2(self.data_file, backup_file)
+        else:
+            with open(backup_file, "w", encoding="utf-8") as f:
+                json.dump(self.data, f, ensure_ascii=False, indent=2)
+        return backup_file
+
+    def restore_from_backup(self, backup_file: str):
+        """从备份文件恢复"""
+        if not os.path.exists(backup_file):
+            raise FileNotFoundError(f"备份文件不存在: {backup_file}")
+        shutil.copy2(backup_file, self.data_file)
+        self.data = self.load_data()
+        self.ensure_data_schema()
     
     # 学员管理方法
     def add_student(self, student: Student):
         """添加学员"""
         self.data["students"].append(student.to_dict())
+        self.log_operation("新增学员", f"学员:{student.name}")
         self.save_data()
     
     def get_students(self, status: str = None) -> List[dict]:
@@ -234,6 +341,7 @@ class DataManager:
         for i, student in enumerate(self.data["students"]):
             if student["id"] == student_id:
                 self.data["students"][i].update(updates)
+                self.log_operation("更新学员", f"学员ID:{student_id}")
                 self.save_data()
                 return True
         return False
@@ -241,12 +349,14 @@ class DataManager:
     def delete_students(self, student_ids: List[str]):
         """删除学员"""
         self.data["students"] = [s for s in self.data["students"] if s["id"] not in student_ids]
+        self.log_operation("删除学员", f"数量:{len(student_ids)}")
         self.save_data()
     
     # 课程管理方法
     def add_course(self, course: Course):
         """添加课程"""
         self.data["courses"].append(course.to_dict())
+        self.log_operation("新增课程", f"课程:{course.name}")
         self.save_data()
     
     def get_courses(self) -> List[dict]:
@@ -257,6 +367,7 @@ class DataManager:
     def add_schedule(self, schedule: Schedule):
         """添加排课"""
         self.data["schedules"].append(schedule.to_dict())
+        self.log_operation("新增排课", f"排课ID:{schedule.id}")
         self.save_data()
     
     def get_schedules(self) -> List[dict]:
@@ -272,6 +383,7 @@ class DataManager:
             if course["id"] == attendance.course_id:
                 course["remaining_hours"] = max(0, course["remaining_hours"] - attendance.hours_used)
                 break
+        self.log_operation("新增考勤", f"学员ID:{attendance.student_id}, 日期:{attendance.date}")
         self.save_data()
     
     def get_attendances(self) -> List[dict]:
@@ -1292,6 +1404,60 @@ class AddCourseDialog(tk.Toplevel):
         self.result = True
         self.destroy()
 
+class LoginDialog(tk.Toplevel):
+    """登录弹窗"""
+
+    def __init__(self, parent, data_manager: DataManager):
+        super().__init__(parent)
+        self.data_manager = data_manager
+        self.result = None
+        self.title("用户登录")
+        self.geometry("360x220")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.grab_set()
+        self.protocol("WM_DELETE_WINDOW", self.on_cancel)
+        self.create_widgets()
+
+    def create_widgets(self):
+        frame = ttk.Frame(self, padding=16)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(frame, text="青羽教务系统登录", font=("Microsoft YaHei", 14, "bold")).pack(pady=(0, 12))
+        ttk.Label(frame, text="用户名").pack(anchor=tk.W)
+        self.username_var = tk.StringVar(value="admin")
+        ttk.Entry(frame, textvariable=self.username_var, width=30).pack(pady=(0, 8))
+
+        ttk.Label(frame, text="密码").pack(anchor=tk.W)
+        self.password_var = tk.StringVar(value="admin123")
+        ttk.Entry(frame, textvariable=self.password_var, width=30, show="*").pack(pady=(0, 10))
+
+        self.tip_label = ttk.Label(
+            frame,
+            text="默认账号：admin/admin123",
+            foreground="#666666"
+        )
+        self.tip_label.pack(anchor=tk.W)
+
+        btns = ttk.Frame(frame)
+        btns.pack(fill=tk.X, pady=(16, 0))
+        ttk.Button(btns, text="取消", command=self.on_cancel).pack(side=tk.RIGHT)
+        ttk.Button(btns, text="登录", command=self.on_login).pack(side=tk.RIGHT, padx=8)
+
+    def on_login(self):
+        username = self.username_var.get().strip()
+        password = self.password_var.get().strip()
+        user = self.data_manager.authenticate_user(username, password)
+        if not user:
+            messagebox.showerror("登录失败", "用户名或密码错误，或账号已禁用。", parent=self)
+            return
+        self.result = user
+        self.destroy()
+
+    def on_cancel(self):
+        self.result = None
+        self.destroy()
+
 # ==================== 主应用 ====================
 
 class QingYuEduSystem:
@@ -1307,25 +1473,54 @@ class QingYuEduSystem:
         
         # 数据管理器
         self.data_manager = DataManager()
+        self.current_user = None
         
-        # 当前用户角色（默认为管理员）
-        self.current_role = UserRole.ADMIN
+        # 默认角色
+        self.current_role = UserRole.STUDENT
+
+        if not self.login():
+            self.root.destroy()
+            return
         
         # 创建主界面
         self.create_main_ui()
+
+    def login(self) -> bool:
+        """登录认证"""
+        dialog = LoginDialog(self.root, self.data_manager)
+        self.root.wait_window(dialog)
+        if not dialog.result:
+            return False
+        self.current_user = dialog.result
+        role_str = self.current_user.get("role", UserRole.STUDENT.value)
+        try:
+            self.current_role = UserRole(role_str)
+        except ValueError:
+            self.current_role = UserRole.STUDENT
+        self.data_manager.log_operation("用户登录", f"角色:{self.current_role.value}", self.current_user.get("username", "unknown"))
+        self.data_manager.save_data()
+        return True
     
     def setup_style(self):
         """设置样式"""
         style = ttk.Style()
         style.theme_use("clam")
         
-        # 配置一些基本样式
+        # 统一色彩与控件风格
+        style.configure(".", font=("Microsoft YaHei", 10))
         style.configure("Title.TLabel", font=("Microsoft YaHei", 16, "bold"))
         style.configure("Header.TLabel", font=("Microsoft YaHei", 12, "bold"))
         style.configure("Normal.TLabel", font=("Microsoft YaHei", 10))
+        style.configure("AppHeader.TFrame", background="#2563eb")
+        style.configure("AppHeader.TLabel", background="#2563eb", foreground="#ffffff", font=("Microsoft YaHei", 12, "bold"))
+        style.configure("Toolbar.TFrame", background="#f8fafc")
+        style.configure("Primary.TButton", padding=(10, 4))
+        style.configure("TButton", padding=(8, 3))
     
     def create_main_ui(self):
         """创建主界面"""
+        self.create_header_bar()
+
         # 顶部菜单栏
         self.create_menu_bar()
         
@@ -1338,6 +1533,27 @@ class QingYuEduSystem:
         
         # 根据当前角色显示界面
         self.show_interface_by_role()
+
+    def create_header_bar(self):
+        """顶部品牌栏"""
+        header = ttk.Frame(self.root, style="AppHeader.TFrame")
+        header.pack(fill=tk.X)
+        ttk.Label(
+            header,
+            text="青羽教务系统 · 校如云风格重构版",
+            style="AppHeader.TLabel"
+        ).pack(side=tk.LEFT, padx=12, pady=8)
+        ttk.Label(
+            header,
+            text=datetime.now().strftime("%Y-%m-%d"),
+            style="AppHeader.TLabel"
+        ).pack(side=tk.RIGHT, padx=12)
+
+    def is_admin_user(self) -> bool:
+        """当前登录账号是否为管理员账号"""
+        if not self.current_user:
+            return False
+        return self.current_user.get("role") == UserRole.ADMIN.value
     
     def create_menu_bar(self):
         """创建菜单栏"""
@@ -1365,19 +1581,34 @@ class QingYuEduSystem:
     
     def create_role_toolbar(self):
         """创建角色切换工具栏"""
-        toolbar = ttk.Frame(self.root)
+        toolbar = ttk.Frame(self.root, style="Toolbar.TFrame")
         toolbar.pack(fill=tk.X, padx=10, pady=5)
         
         ttk.Label(toolbar, text="当前身份:").pack(side=tk.LEFT)
         
-        self.role_var = tk.StringVar(value="管理员")
-        role_combo = ttk.Combobox(toolbar, textvariable=self.role_var, width=15, state="readonly")
-        role_combo["values"] = ["管理员", "老师", "学生", "家长", "教练"]
-        role_combo.pack(side=tk.LEFT, padx=5)
-        role_combo.bind("<<ComboboxSelected>>", self.on_role_changed)
+        role_name_map = {
+            UserRole.ADMIN: "管理员",
+            UserRole.TEACHER: "老师",
+            UserRole.STUDENT: "学生",
+            UserRole.PARENT: "家长",
+            UserRole.COACH: "教练"
+        }
+        self.role_var = tk.StringVar(value=role_name_map.get(self.current_role, "学生"))
+        self.role_combo = ttk.Combobox(toolbar, textvariable=self.role_var, width=15, state="readonly")
+        if self.is_admin_user():
+            self.role_combo["values"] = ["管理员", "老师", "学生", "家长", "教练"]
+        else:
+            self.role_combo["values"] = [role_name_map.get(self.current_role, "学生")]
+        self.role_combo.pack(side=tk.LEFT, padx=5)
+        self.role_combo.bind("<<ComboboxSelected>>", self.on_role_changed)
         
         # 用户信息
-        user_info = ttk.Label(toolbar, text="青羽教务系统 | 羽毛球培训机构管理", font=("Microsoft YaHei", 9))
+        display_name = self.current_user.get("name", "") if self.current_user else ""
+        user_info = ttk.Label(
+            toolbar,
+            text=f"当前用户：{display_name} | 青羽教务系统",
+            font=("Microsoft YaHei", 9)
+        )
         user_info.pack(side=tk.RIGHT)
     
     def on_role_changed(self, event):
@@ -1392,7 +1623,14 @@ class QingYuEduSystem:
         
         new_role = role_map.get(self.role_var.get(), UserRole.ADMIN)
         if new_role != self.current_role:
+            if not self.is_admin_user():
+                messagebox.showwarning("无权限", "仅管理员可以切换角色。")
+                self.role_var.set(self.role_combo["values"][0])
+                return
             self.current_role = new_role
+            operator = self.current_user.get("username", "unknown") if self.current_user else "unknown"
+            self.data_manager.log_operation("切换角色", f"切换为:{new_role.value}", operator)
+            self.data_manager.save_data()
             self.show_interface_by_role()
     
     def show_interface_by_role(self):
@@ -1462,24 +1700,20 @@ class QingYuEduSystem:
             try:
                 with open(filepath, 'w', encoding='utf-8') as f:
                     json.dump(self.data_manager.data, f, ensure_ascii=False, indent=2)
+                operator = self.current_user.get("username", "unknown") if self.current_user else "unknown"
+                self.data_manager.log_operation("导出数据", f"路径:{filepath}", operator)
+                self.data_manager.save_data()
                 messagebox.showinfo("成功", f"数据已导出到: {filepath}")
             except Exception as e:
                 messagebox.showerror("错误", f"导出失败: {str(e)}")
     
     def backup_data(self):
         """备份数据"""
-        import shutil
-        import time
-        
-        backup_dir = "backups"
-        if not os.path.exists(backup_dir):
-            os.makedirs(backup_dir)
-        
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        backup_file = os.path.join(backup_dir, f"教务数据_备份_{timestamp}.json")
-        
         try:
-            shutil.copy2("教务数据.json", backup_file)
+            backup_file = self.data_manager.create_backup(manual=True)
+            operator = self.current_user.get("username", "unknown") if self.current_user else "unknown"
+            self.data_manager.log_operation("手动备份", f"备份文件:{backup_file}", operator)
+            self.data_manager.save_data()
             messagebox.showinfo("成功", f"数据已备份到: {backup_file}")
         except Exception as e:
             messagebox.showerror("错误", f"备份失败: {str(e)}")
@@ -1492,10 +1726,12 @@ class QingYuEduSystem:
         )
         if filepath and messagebox.askyesno("确认", "确定要恢复数据吗？这将覆盖当前数据。"):
             try:
-                shutil.copy2(filepath, "教务数据.json")
-                # 重新加载数据
-                self.data_manager = DataManager()
-                messagebox.showinfo("成功", "数据恢复成功，请重新启动应用")
+                self.data_manager.restore_from_backup(filepath)
+                operator = self.current_user.get("username", "unknown") if self.current_user else "unknown"
+                self.data_manager.log_operation("恢复数据", f"来源:{filepath}", operator)
+                self.data_manager.save_data()
+                self.show_interface_by_role()
+                messagebox.showinfo("成功", "数据恢复成功，界面已刷新。")
             except Exception as e:
                 messagebox.showerror("错误", f"恢复失败: {str(e)}")
     
