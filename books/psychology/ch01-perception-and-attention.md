@@ -417,3 +417,18 @@
 - 30天后复习一遍
 
 把复习计划写在日历上，严格执行。这个方法不能让你记得更快，但能让你忘得更慢。
+
+---
+
+## 十、致谢
+
+感谢所有为本书编写提供帮助的心理学研究者、教师和学生。本书在编写过程中参考了认知心理学、发展心理学以及动机心理学领域的经典研究和教材。
+
+特别感谢在感知理论、注意机制、记忆模型等方面给予指导的专业人士。如有任何问题或需要帮助，请联系作者。
+
+## 十一、参考文献
+
+[1] Robert L. Solso. 认知心理学[M]. 北京大学出版社.
+[2] Daniel Kahneman. Thinking, Fast and Slow[M]. Farrar, Straus and Giroux.
+[3] Michael Eysenck. 认知心理学[M]. 华东师范大学出版社.
+[4] Nelson Cowan. Working Memory Capacities[M]. Psychological Review.
