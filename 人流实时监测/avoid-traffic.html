@@ -150,7 +150,25 @@
 </head>
 <body>
 
-<div id="map"></div>
+<div id="map" style="position:relative"></div>
+<div class="poi-card" id="poiCard">
+  <div class="poi-card-close" onclick="closePoiCard()">✕</div>
+  <img class="poi-card-img" id="poiImg" src="" alt="" />
+  <div class="poi-card-title" id="poiTitle"></div>
+  <div class="poi-card-tags" id="poiTags"></div>
+  <div class="poi-stat-row">
+    <div class="poi-stat"><div class="poi-stat-val" id="poiCrowd" style="color:var(--green)">人少</div><div class="poi-stat-label">人流量</div></div>
+    <div class="poi-stat"><div class="poi-stat-val" id="poiCongest" style="color:var(--green)">畅通</div><div class="poi-stat-label">路况</div></div>
+    <div class="poi-stat"><div class="poi-stat-val" id="poiDist">0km</div><div class="poi-stat-label">距你</div></div>
+  </div>
+  <div class="poi-stat-row" id="poiHoursRow">
+    <div class="poi-stat"><div class="poi-stat-val" id="poiHours">09:00</div><div class="poi-stat-label">最佳前往</div></div>
+    <div class="poi-stat"><div class="poi-stat-val" id="poiTemp">28°C</div><div class="poi-stat-label">水温</div></div>
+    <div class="poi-stat"><div class="poi-stat-val" id="poiScore">4.5</div><div class="poi-stat-label">评分</div></div>
+  </div>
+  <div id="poiDesc" style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5"></div>
+  <a class="poi-nav-btn" id="poiNavBtn" href="#" target="_blank">🗺️ 导航前往</a>
+</div>
 
 <div class="header">
   <h1>🗺️ 避堵出行</h1>
@@ -277,6 +295,7 @@ function initMap() {
 
   mapReady = true;
   fetchData();
+  addPoiMarkers();
 }
 
 function addMarker(pos, text) {
@@ -593,7 +612,101 @@ function toggleRoadDetail(i) {
   el.classList.toggle('show');
 }
 
-// 每30秒自动刷新
+function addPoiMarkers() {
+  if (!mapReady) return;
+  if (window._poiMarkers) { map.remove(window._poiMarkers); }
+  const ovs = [];
+
+  const pois = [
+    // 海滩 🏖️
+    { type: 'beach', icon: '🏖️', name: '银滩', sub: '天下第一滩', pos: [109.14, 21.48], level: 'crowded', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=400&fit=crop', desc: '因滩长平、沙白、水净被誉为天下第一滩，适合游泳和沙滩运动。', hours: '09:00-11:00', temp: '26°C', score: '4.6' },
+    { type: 'beach', icon: '🏝️', name: '侨港海滩', sub: '越南风情街旁', pos: [109.06, 21.45], level: 'crowded', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop', desc: '侨港海滩靠近越南风情街，适合傍晚看日落，游客较多。', hours: '16:00-18:00', temp: '25°C', score: '4.4' },
+    { type: 'beach', icon: '🌅', name: '紫霞湾', sub: '北海东侧', pos: [109.42, 21.55], level: 'quiet', img: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&h=400&fit=crop', desc: '紫霞湾是北海东侧的小众海湾，沙滩干净，游客较少，适合静谧度假。', hours: '07:00-09:00', temp: '24°C', score: '4.7' },
+    { type: 'beach', icon: '🌊', name: '金海湾', sub: '铁山港旁', pos: [109.35, 21.52], level: 'quiet', img: 'https://images.unsplash.com/photo-1468413253725-0d5188671129?w=600&h=400&fit=crop', desc: '金海湾位于铁山港区，水质清澈，游客稀少，适合赶海和垂钓。', hours: '06:00-08:00', temp: '23°C', score: '4.5' },
+    { type: 'beach', icon: '🐚', name: '大墩海', sub: '市区东部', pos: [109.25, 21.50], level: 'moderate', img: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600&h=400&fit=crop', desc: '大墩海位于市区东部，沙滩宽阔，游客适中，是赶海的好去处。', hours: '07:00-09:00', temp: '25°C', score: '4.3' },
+    { type: 'beach', icon: '⛰️', name: '冠头岭', sub: '海蚀地貌', pos: [109.15, 21.43], level: 'quiet', img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&h=400&fit=crop', desc: '冠头岭是海蚀地貌公园，登高望远，风景绝佳，游客较少。', hours: '10:00-12:00', temp: '27°C', score: '4.8' },
+    // 海岛 🏝️
+    { type: 'island', icon: '🏝️', name: '涠洲岛', sub: '中国最大火山岛', pos: [109.12, 21.38], level: 'crowded', img: 'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?w=600&h=400&fit=crop', desc: '涠洲岛是中国最大火山岛，景点有鳄鱼山/五彩滩/天主教堂，需坐船上岛(约1.5h)。', hours: '08:00-10:00', temp: '26°C', score: '4.8' },
+    { type: 'island', icon: '🛶', name: '斜阳岛', sub: '原始小岛', pos: [109.48, 21.42], level: 'quiet', img: 'https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=600&h=400&fit=crop', desc: '斜阳岛是一座原始小岛，面积小，游客稀少，适合探险和海钓。', hours: '06:00-08:00', temp: '24°C', score: '4.6' },
+    // 美食 🍤
+    { type: 'food', icon: '🍤', name: '侨港风情街', sub: '越南美食一条街', pos: [109.06, 21.44], level: 'crowded', img: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&h=400&fit=crop', desc: '侨港风情街是北海最著名的越南美食街，推荐越南卷粉、炒冰、蟹仔粉。', hours: '18:00-21:00', temp: '-', score: '4.5' },
+    { type: 'food', icon: '🦀', name: '电建渔港', sub: '海鲜码头', pos: [109.04, 21.44], level: 'moderate', img: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=600&h=400&fit=crop', desc: '电建渔港是北海最大的渔港码头，下午渔船回港，可买到最新鲜的海鲜。', hours: '16:00-18:00', temp: '-', score: '4.4' },
+    { type: 'food', icon: '🍜', name: '北海老街', sub: '百年老街美食', pos: '109.03,21.46', level: 'moderate', img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', desc: '北海老街始建于1883年，沿街有各类小吃和海鲜排档，极具历史感。', hours: '11:00-13:00', temp: '-', score: '4.3' },
+    { type: 'food', icon: '🦐', name: '金海岸夜市', sub: '海边夜市', pos: [109.17, 21.52], level: 'crowded', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop', desc: '金海岸夜市靠近银滩，夜幕降临后海鲜排档一字排开，是吃宵夜的好去处。', hours: '20:00-23:00', temp: '-', score: '4.2' },
+  ];
+
+  window._pois = pois;
+
+  const sizeMap = { beach: 44, island: 40, food: 36 };
+  const borderColor = { beach: '#dc2626', island: '#2563eb', food: '#ea580c' };
+
+  pois.forEach((poi, i) => {
+    const sz = sizeMap[poi.type];
+    const marker = new AMap.Marker({
+      position: poi.pos,
+      map,
+      content: `<div class="poi-marker ${poi.type}" style="width:${sz}px;height:${sz}px;font-size:${sz * 0.45}px;border-color:${borderColor[poi.type]}" onclick="showPoiDetail(${i})">${poi.icon}</div>`,
+      offset: new AMap.Pixel(-sz/2, -sz/2),
+      zIndex: 12
+    });
+    ovs.push(marker);
+  });
+
+  window._poiMarkers = new AMap.OverlayGroup(ovs);
+  map.add(window._poiMarkers);
+}
+
+function showPoiDetail(i) {
+  const poi = window._pois[i];
+  const lvlColor = { crowded: 'var(--red)', moderate: 'var(--yellow)', quiet: 'var(--green)' };
+  const lvlText = { crowded: '拥挤', moderate: '适中', quiet: '人少' };
+  const lvlCName = { crowded: 'crowded', moderate: 'moderate', quiet: 'quiet' };
+  const c = lvlColor[poi.level];
+  const tagClass = lvlCName[poi.level];
+
+  document.getElementById('poiImg').src = poi.img;
+  document.getElementById('poiImg').style.display = 'block';
+  document.getElementById('poiTitle').textContent = poi.icon + ' ' + poi.name;
+
+  let tagsHtml = `<span class="poi-tag ${tagClass}">${lvlText[poi.level]}</span>`;
+  tagsHtml += `<span class="poi-tag" style="background:#e0f2fe;color:#0369a1">${poi.type === 'beach' ? '🏖️ 海滩' : poi.type === 'island' ? '🏝️ 海岛' : '🍤 美食'}</span>`;
+  if (poi.type === 'beach') tagsHtml += `<span class="poi-tag" style="background:#fef3c7;color:#92400e">水温 ${poi.temp}</span>`;
+  document.getElementById('poiTags').innerHTML = tagsHtml;
+
+  document.getElementById('poiCrowd').textContent = lvlText[poi.level];
+  document.getElementById('poiCrowd').style.color = c;
+  document.getElementById('poiCongest').textContent = poi.level === 'crowded' ? '拥堵' : poi.level === 'moderate' ? '一般' : '畅通';
+  document.getElementById('poiCongest').style.color = c;
+
+  // 计算距离
+  const dist = getDistanceFromPos(poi.pos);
+  document.getElementById('poiDist').textContent = dist;
+
+  document.getElementById('poiHours').textContent = poi.hours;
+  document.getElementById('poiTemp').textContent = poi.temp;
+  document.getElementById('poiScore').textContent = poi.score;
+  document.getElementById('poiDesc').textContent = poi.desc;
+
+  // 导航链接
+  const navUrl = `https://uri.amap.com/navigation?to=${poi.pos[0]},${poi.pos[1]},${poi.name}&mode=driving&callnative=1`;
+  document.getElementById('poiNavBtn').href = navUrl;
+
+  document.getElementById('poiCard').classList.add('show');
+}
+
+function closePoiCard() {
+  document.getElementById('poiCard').classList.remove('show');
+}
+
+function getDistanceFromPos(pos) {
+  if (!currentPos) return '?';
+  const R = 6371;
+  const dLat = (pos[1] - currentPos[1]) * Math.PI / 180;
+  const dLon = (pos[0] - currentPos[0]) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(pos[1]*Math.PI/180)*Math.cos(currentPos[1]*Math.PI/180)*Math.sin(dLon/2)**2;
+  const d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return d < 1 ? Math.round(d * 1000) + 'm' : d.toFixed(1) + 'km';
+}
 setInterval(() => { if (mapReady) fetchData(); }, 30000);
 
 window.onload = initMap;
