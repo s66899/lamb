@@ -79,12 +79,12 @@
       font-size: 15px; font-weight: 700; color: var(--text2); margin-bottom: 12px;
       display: flex; align-items: center; gap: 8px;
     }
-    .congestion-list { display: flex; flex-direction: column; gap: 12px; }
+    .congestion-list { display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; }
     .congestion-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px; background: #f8fafc; border-radius: 12px;
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; background: #f8fafc; border-radius: 10px;
     }
-    .congestion-name { font-size: 14px; font-weight: 600; min-width: 80px; color: var(--text); }
+    .congestion-name { font-size: 13px; font-weight: 600; min-width: 78px; color: var(--text); }
     .congestion-bar { flex: 1; height: 18px; background: #e2e8f0; border-radius: 9px; overflow: hidden; }
     .congestion-fill { height: 100%; border-radius: 9px; transition: width 0.8s ease; }
     .congestion-fill.high { background: var(--red); box-shadow: 0 0 8px rgba(220,38,38,0.5); }
@@ -298,13 +298,54 @@ function fetchData() {
     { name: 'G7211南北高速', segments: [[108.60,21.95],[108.85,21.78],[109.10,21.60],[109.30,21.42],[109.55,21.22]], level: peakEvening ? 'high' : peakMorning ? 'medium' : 'low' }
   ];
 
-  // 市区道路数据
+  // 市区道路 - 北海全区域细致覆盖
   const roads = [
-    { name: '银滩大道', segments: [[109.09,21.48],[109.13,21.50],[109.17,21.52],[109.21,21.54]], level: peak ? 'medium' : 'low' },
-    { name: '北海大道', segments: [[109.07,21.47],[109.12,21.47],[109.17,21.47],[109.22,21.48]], level: peak ? 'high' : 'medium' },
+    // 海城区主干道
+    { name: '北海大道', segments: [[109.07,21.47],[109.12,21.47],[109.17,21.47],[109.22,21.48],[109.27,21.49]], level: peak ? 'high' : 'medium' },
+    { name: '四川路', segments: [[109.06,21.43],[109.11,21.44],[109.16,21.45],[109.21,21.46]], level: 'low' },
+    { name: '广东路', segments: [[109.10,21.44],[109.15,21.45],[109.20,21.46],[109.25,21.47]], level: peak ? 'medium' : 'low' },
+    { name: '湖南路', segments: [[109.08,21.46],[109.13,21.46],[109.18,21.47],[109.23,21.47]], level: peak ? 'medium' : 'low' },
+    { name: '贵州路', segments: [[109.05,21.45],[109.09,21.46],[109.13,21.47]], level: 'low' },
+    { name: '云南路', segments: [[109.04,21.44],[109.08,21.45],[109.12,21.46]], level: 'low' },
+    { name: '海角路', segments: [[109.02,21.46],[109.05,21.46],[109.08,21.46]], level: 'low' },
+    { name: '中山路', segments: [[109.03,21.45],[109.06,21.45],[109.09,21.45]], level: peak ? 'medium' : 'low' },
+    { name: '外沙桥', segments: [[109.01,21.47],[109.03,21.47],[109.05,21.47]], level: 'high' },
+    { name: '滨海路', segments: [[109.06,21.48],[109.10,21.48],[109.14,21.48]], level: peak ? 'medium' : 'low' },
+    { name: '新建一路', segments: [[109.05,21.47],[109.09,21.47],[109.13,21.47]], level: 'low' },
+    { name: '三中路', segments: [[109.06,21.49],[109.10,21.49],[109.14,21.49]], level: peak ? 'medium' : 'low' },
+    // 银海区/侨港
+    { name: '银滩大道', segments: [[109.09,21.48],[109.14,21.50],[109.19,21.52],[109.24,21.54]], level: peak ? 'medium' : 'low' },
     { name: '侨港风情街', segments: [[109.05,21.45],[109.08,21.46],[109.11,21.47]], level: 'high' },
-    { name: '广东路', segments: [[109.10,21.44],[109.14,21.45],[109.18,21.46]], level: peak ? 'medium' : 'low' },
-    { name: '四川路', segments: [[109.06,21.43],[109.10,21.44],[109.14,21.45]], level: 'low' }
+    { name: '电建渔港路', segments: [[109.04,21.44],[109.06,21.44],[109.08,21.44]], level: 'medium' },
+    { name: '金海岸大道', segments: [[109.12,21.49],[109.17,21.51],[109.22,21.53]], level: peak ? 'high' : 'medium' },
+    { name: '新世纪大道', segments: [[109.11,21.48],[109.16,21.49],[109.21,21.50]], level: peak ? 'medium' : 'low' },
+    { name: '上海路', segments: [[109.10,21.47],[109.15,21.48],[109.20,21.49],[109.25,21.50]], level: peak ? 'high' : 'medium' },
+    { name: '南京路', segments: [[109.09,21.46],[109.13,21.47],[109.17,21.48]], level: 'medium' },
+    { name: '杭州路', segments: [[109.08,21.45],[109.12,21.46],[109.16,21.47]], level: 'low' },
+    { name: '天津路', segments: [[109.07,21.44],[109.11,21.45],[109.15,21.46]], level: 'low' },
+    { name: '北京路', segments: [[109.09,21.47],[109.14,21.47],[109.19,21.48]], level: peak ? 'medium' : 'low' },
+    { name: '西藏路', segments: [[109.04,21.43],[109.08,21.44],[109.12,21.45]], level: 'low' },
+    { name: '敦煌路', segments: [[109.03,21.42],[109.07,21.43],[109.11,21.44]], level: 'low' },
+    { name: '禾塘路', segments: [[109.06,21.50],[109.10,21.50],[109.14,21.50]], level: peak ? 'high' : 'medium' },
+    { name: '四川南路', segments: [[109.11,21.50],[109.15,21.51],[109.19,21.52]], level: peak ? 'medium' : 'low' },
+    { name: '广东南路', segments: [[109.15,21.48],[109.19,21.49],[109.23,21.50]], level: peak ? 'high' : 'medium' },
+    // 铁山港区
+    { name: '向海大道', segments: [[109.45,21.55],[109.55,21.50],[109.65,21.45],[109.75,21.38]], level: peak ? 'high' : 'medium' },
+    { name: '营闸路', segments: [[109.48,21.52],[109.52,21.50],[109.56,21.48]], level: 'low' },
+    { name: '金港大道', segments: [[109.50,21.48],[109.55,21.45],[109.60,21.42]], level: peak ? 'medium' : 'low' },
+    { name: '兴港路', segments: [[109.46,21.54],[109.50,21.52],[109.54,21.50]], level: 'low' },
+    { name: '七号路', segments: [[109.47,21.51],[109.51,21.49],[109.55,21.47]], level: 'low' },
+    // 合浦县
+    { name: '廉州大道', segments: [[109.22,21.62],[109.27,21.63],[109.32,21.64]], level: peak ? 'high' : 'medium' },
+    { name: '还珠大道', segments: [[109.20,21.60],[109.24,21.61],[109.28,21.62]], level: 'medium' },
+    { name: '文蔚街', segments: [[109.19,21.59],[109.22,21.59],[109.25,21.59]], level: 'low' },
+    { name: '明珠路', segments: [[109.21,21.61],[109.25,21.61],[109.29,21.61]], level: 'low' },
+    { name: '外环东路', segments: [[109.23,21.63],[109.28,21.64],[109.33,21.65]], level: 'medium' },
+    { name: '爱卫路', segments: [[109.18,21.58],[109.22,21.59],[109.26,21.60]], level: 'low' },
+    { name: '学宫路', segments: [[109.17,21.57],[109.21,21.58],[109.25,21.59]], level: 'low' },
+    { name: '隆安街', segments: [[109.16,21.56],[109.20,21.57],[109.24,21.58]], level: 'low' },
+    { name: '沙窝街', segments: [[109.15,21.55],[109.18,21.56],[109.21,21.57]], level: 'medium' },
+    { name: '北河街', segments: [[109.14,21.54],[109.17,21.55],[109.20,21.56]], level: 'low' },
   ];
 
   window._traffic = { highways, roads };
