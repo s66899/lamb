@@ -32,11 +32,11 @@
       display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
     }
     .status-chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.15); padding: 6px 12px;
-      border-radius: 20px; font-size: 12px; backdrop-filter: blur(4px);
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.15); padding: 8px 14px;
+      border-radius: 20px; font-size: 13px; backdrop-filter: blur(4px);
     }
-    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; }
     .dot.green { background: var(--green); }
     .dot.yellow { background: var(--yellow); }
     .dot.red { background: var(--red); }
@@ -73,9 +73,9 @@
       padding: 12px; background: #f8fafc; border-radius: 12px;
     }
     .congestion-bar {
-      flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;
+      flex: 1; height: 16px; background: #e2e8f0; border-radius: 8px; overflow: hidden;
     }
-    .congestion-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+    .congestion-fill { height: 100%; border-radius: 8px; transition: width 0.5s; }
     .congestion-fill.high { background: var(--red); }
     .congestion-fill.medium { background: var(--yellow); }
     .congestion-fill.low { background: var(--green); }
@@ -96,9 +96,9 @@
     .alert-banner {
       display: none;
       background: linear-gradient(135deg, #dc2626, #b91c1c);
-      color: white; padding: 12px 16px; margin: 0 16px 12px;
-      border-radius: 12px; font-size: 14px; font-weight: 600;
-      align-items: center; gap: 8px;
+      color: white; padding: 16px 18px; margin: 0 16px 12px;
+      border-radius: 14px; font-size: 15px; font-weight: 700;
+      align-items: center; gap: 10px;
     }
     .alert-banner.show { display: flex; }
     
