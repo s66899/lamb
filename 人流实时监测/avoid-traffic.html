@@ -79,21 +79,16 @@
       font-size: 15px; font-weight: 700; color: var(--text2); margin-bottom: 12px;
       display: flex; align-items: center; gap: 8px;
     }
-    .congestion-list { display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; }
-    .congestion-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; background: #f8fafc; border-radius: 10px;
-    }
-    .congestion-name { font-size: 13px; font-weight: 600; min-width: 78px; color: var(--text); }
-    .congestion-bar { flex: 1; height: 18px; background: #e2e8f0; border-radius: 9px; overflow: hidden; }
-    .congestion-fill { height: 100%; border-radius: 9px; transition: width 0.8s ease; }
-    .congestion-fill.high { background: var(--red); box-shadow: 0 0 8px rgba(220,38,38,0.5); }
-    .congestion-fill.medium { background: var(--yellow); box-shadow: 0 0 8px rgba(234,179,8,0.5); }
-    .congestion-fill.low { background: var(--green); box-shadow: 0 0 8px rgba(22,163,74,0.5); }
-    .time-slot {
-      font-size: 11px; color: var(--text2); margin-bottom: 10px; font-weight: 700;
-      padding: 6px 10px; background: #f1f5f9; border-radius: 8px; display: inline-block;
-    }
+    .congestion-list { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; }
+    .congestion-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f2f2f7; border-radius: 12px; cursor: pointer; }
+    .congestion-name { font-size: 14px; font-weight: 600; min-width: 76px; color: #1c1c1e; }
+    .congestion-bar { flex: 1; height: 16px; background: #e5e5ea; border-radius: 8px; overflow: hidden; }
+    .congestion-fill { height: 100%; border-radius: 8px; transition: width 0.8s ease; }
+    .congestion-fill.high { background: #ff3b30; }
+    .congestion-fill.medium { background: #ff9500; }
+    .congestion-fill.low { background: #34c759; }
+    .time-slot { font-size: 12px; color: #8e8e93; margin-bottom: 10px; font-weight: 600; padding: 6px 10px; background: #f2f2f7; border-radius: 8px; display: inline-block; }
+    .time-slot span { color: #ff3b30; font-weight: 700; }
     .time-slot span { color: var(--red); font-weight: 800; }
 
     .route-card { display: flex; flex-direction: column; gap: 10px; }
@@ -124,50 +119,100 @@
     }
     .action-btn:active { background: #f1f5f9; transform: scale(0.97); }
 
-    .beach-list { display: flex; flex-direction: column; gap: 10px; }
-    .beach-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8fafc; border-radius: 12px; }
-    .beach-icon { font-size: 24px; flex-shrink: 0; }
-    .beach-info { flex: 1; }
-    .beach-name { font-size: 14px; font-weight: 700; color: var(--text); }
-    .beach-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
-    .beach-bar { flex: 1; height: 16px; background: #e2e8f0; border-radius: 8px; overflow: hidden; }
-    .beach-fill { height: 100%; border-radius: 8px; transition: width 0.8s; }
-    .beach-fill.crowded { background: var(--red); }
-    .beach-fill.moderate { background: var(--yellow); }
-    .beach-fill.quiet { background: var(--green); }
-    .beach-count { font-size: 13px; font-weight: 800; width: 50px; text-align: right; }
-    .beach-item:active { background: #e2e8f0; }
-    .beach-detail { display: none; padding: 10px 12px; background: #fff3cd; border-radius: 8px; margin-top: 8px; font-size: 12px; line-height: 1.6; }
+    .beach-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
+    .beach-item { display: flex; align-items: center; gap: 12px; padding: 14px; background: #f2f2f7; border-radius: 14px; cursor: pointer; }
+    .beach-icon { font-size: 26px; flex-shrink: 0; }
+    .beach-info { flex: 1; min-width: 0; }
+    .beach-name { font-size: 15px; font-weight: 600; color: #1c1c1e; }
+    .beach-desc { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+    .beach-bar { width: 60px; height: 14px; background: #e5e5ea; border-radius: 7px; overflow: hidden; flex-shrink: 0; }
+    .beach-fill { height: 100%; border-radius: 7px; transition: width 0.8s; }
+    .beach-fill.crowded { background: #ff3b30; }
+    .beach-fill.moderate { background: #ff9500; }
+    .beach-fill.quiet { background: #34c759; }
+    .beach-count { font-size: 13px; font-weight: 600; width: 44px; text-align: right; flex-shrink: 0; }
+    .beach-item:active { background: #e5e5ea; }
+    .beach-detail { display: none; padding: 12px; background: #f2f2f7; border-radius: 12px; margin-top: 8px; }
     .beach-detail.show { display: block; }
-    .beach-detail-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-    .beach-detail-label { color: var(--text2); }
-    .beach-detail-value { font-weight: 700; color: var(--text); }
-    .congestion-item:active { background: #e2e8f0; cursor: pointer; }
-    .road-detail { display: none; padding: 10px 12px; background: #fff3cd; border-radius: 8px; margin-top: 6px; font-size: 12px; }
+    .beach-detail-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .beach-detail-label { color: #8e8e93; font-size: 13px; }
+    .beach-detail-value { font-weight: 600; color: #1c1c1e; font-size: 13px; }
+    .congestion-item:active { background: #e5e5ea; cursor: pointer; }
+    .road-detail { display: none; padding: 12px; background: #f2f2f7; border-radius: 12px; margin-top: 6px; }
     .road-detail.show { display: block; }
-    .road-detail-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+    .road-detail-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+
+    .poi-marker { background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.25); cursor: pointer; width: 46px; height: 46px; font-size: 22px; border: 3px solid; }
+    .poi-marker.beach { border-color: #ff3b30; }
+    .poi-marker.island { border-color: #007aff; }
+    .poi-marker.food { border-color: #ff9500; }
+
+    .poi-card { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-radius: 22px 22px 0 0; padding: 0; z-index: 300; box-shadow: 0 -12px 60px rgba(0,0,0,0.1); max-height: 82vh; overflow: hidden; }
+    .poi-card.show { display: block; }
+    .poi-card-top { padding: 20px 20px 0; position: relative; }
+    .poi-card-close-btn { width: 32px; height: 32px; background: rgba(0,0,0,0.07); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; color: #3c3c43; font-family: sans-serif; }
+    .poi-card-img { width: 100%; height: 200px; object-fit: cover; display: block; border-radius: 16px; margin-top: -36px; position: relative; z-index: 1; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
+    .poi-card-body { padding: 14px 20px 32px; }
+    .poi-card-title { font-size: 26px; font-weight: 800; color: #1c1c1e; letter-spacing: -0.5px; margin: 12px 0 10px; }
+    .poi-card-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .poi-tag { padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .poi-tag.crowded { background: #ff3b301a; color: #ff3b30; }
+    .poi-tag.moderate { background: #ff95001a; color: #ff9500; }
+    .poi-tag.quiet { background: #34c7591a; color: #34c759; }
+    .poi-tag.type-tag { background: #007aff1a; color: #007aff; }
+    .poi-tag.temp-tag { background: #5856d61a; color: #5856d6; }
+    .poi-stat-row { display: flex; gap: 10px; margin-bottom: 14px; }
+    .poi-stat { flex: 1; background: #f2f2f7; border-radius: 14px; padding: 14px 8px; text-align: center; }
+    .poi-stat-val { font-size: 19px; font-weight: 700; color: #1c1c1e; letter-spacing: -0.5px; }
+    .poi-stat-label { font-size: 11px; color: #8e8e93; margin-top: 3px; font-weight: 500; }
+    .poi-desc { font-size: 14px; color: #636366; line-height: 1.6; margin-bottom: 16px; }
+    .poi-nav-btn { display: block; width: calc(100% - 40px); margin: 0 auto 20px; background: #007aff; color: white; padding: 16px; border-radius: 14px; font-size: 17px; font-weight: 600; text-align: center; text-decoration: none; letter-spacing: -0.3px; box-shadow: 0 4px 14px rgba(0,122,255,0.35); }
   </style>
 </head>
 <body>
 
 <div id="map" style="position:relative"></div>
-<div class="poi-card" id="poiCard">
-  <div class="poi-card-close" onclick="closePoiCard()">✕</div>
-  <img class="poi-card-img" id="poiImg" src="" alt="" />
-  <div class="poi-card-title" id="poiTitle"></div>
-  <div class="poi-card-tags" id="poiTags"></div>
-  <div class="poi-stat-row">
-    <div class="poi-stat"><div class="poi-stat-val" id="poiCrowd" style="color:var(--green)">人少</div><div class="poi-stat-label">人流量</div></div>
-    <div class="poi-stat"><div class="poi-stat-val" id="poiCongest" style="color:var(--green)">畅通</div><div class="poi-stat-label">路况</div></div>
-    <div class="poi-stat"><div class="poi-stat-val" id="poiDist">0km</div><div class="poi-stat-label">距你</div></div>
+<div id="poiCard" class="poi-card">
+  <div class="poi-card-top">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <div class="poi-card-close-btn" onclick="closePoiCard()">✕</div>
+    </div>
+    <img class="poi-card-img" id="poiImg" src="" alt="" />
+    <div class="poi-card-body">
+      <div class="poi-card-title" id="poiTitle"></div>
+      <div class="poi-card-tags" id="poiTags"></div>
+      <div class="poi-stat-row">
+        <div class="poi-stat">
+          <div class="poi-stat-val" id="poiCrowd" style="color:#34c759">人少</div>
+          <div class="poi-stat-label">人流量</div>
+        </div>
+        <div class="poi-stat">
+          <div class="poi-stat-val" id="poiCongest" style="color:#34c759">畅通</div>
+          <div class="poi-stat-label">路况</div>
+        </div>
+        <div class="poi-stat">
+          <div class="poi-stat-val" id="poiDist">0km</div>
+          <div class="poi-stat-label">距你</div>
+        </div>
+      </div>
+      <div class="poi-stat-row">
+        <div class="poi-stat">
+          <div class="poi-stat-val" id="poiHours">09:00</div>
+          <div class="poi-stat-label">最佳前往</div>
+        </div>
+        <div class="poi-stat">
+          <div class="poi-stat-val" id="poiTemp">28°C</div>
+          <div class="poi-stat-label">水温</div>
+        </div>
+        <div class="poi-stat">
+          <div class="poi-stat-val" id="poiScore">4.5</div>
+          <div class="poi-stat-label">评分</div>
+        </div>
+      </div>
+      <div class="poi-desc" id="poiDesc"></div>
+      <a class="poi-nav-btn" id="poiNavBtn" href="#" target="_blank">🗺️ 导航前往</a>
+    </div>
   </div>
-  <div class="poi-stat-row" id="poiHoursRow">
-    <div class="poi-stat"><div class="poi-stat-val" id="poiHours">09:00</div><div class="poi-stat-label">最佳前往</div></div>
-    <div class="poi-stat"><div class="poi-stat-val" id="poiTemp">28°C</div><div class="poi-stat-label">水温</div></div>
-    <div class="poi-stat"><div class="poi-stat-val" id="poiScore">4.5</div><div class="poi-stat-label">评分</div></div>
-  </div>
-  <div id="poiDesc" style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5"></div>
-  <a class="poi-nav-btn" id="poiNavBtn" href="#" target="_blank">🗺️ 导航前往</a>
 </div>
 
 <div class="header">
