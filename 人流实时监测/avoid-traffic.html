@@ -136,7 +136,16 @@
     .beach-fill.moderate { background: var(--yellow); }
     .beach-fill.quiet { background: var(--green); }
     .beach-count { font-size: 13px; font-weight: 800; width: 50px; text-align: right; }
-    .crowded-tag { font-size: 10px; background: var(--red); color: white; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+    .beach-item:active { background: #e2e8f0; }
+    .beach-detail { display: none; padding: 10px 12px; background: #fff3cd; border-radius: 8px; margin-top: 8px; font-size: 12px; line-height: 1.6; }
+    .beach-detail.show { display: block; }
+    .beach-detail-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .beach-detail-label { color: var(--text2); }
+    .beach-detail-value { font-weight: 700; color: var(--text); }
+    .congestion-item:active { background: #e2e8f0; cursor: pointer; }
+    .road-detail { display: none; padding: 10px 12px; background: #fff3cd; border-radius: 8px; margin-top: 6px; font-size: 12px; }
+    .road-detail.show { display: block; }
+    .road-detail-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
   </style>
 </head>
 <body>
@@ -374,14 +383,21 @@ function renderUI(peakLabel, highways, roads, beaches, isPeak) {
 
   // 海滩列表
   let bhHtml = '<div class="beach-list">';
-  beaches.forEach(b => {
+  beaches.forEach((b, i) => {
     const [c, l, cls, p] = bLvl[b.level];
     const tag = b.level === 'crowded' ? '<span class="crowded-tag">🔥 人多</span>' : '';
-    bhHtml += `<div class="beach-item">
+    const crowdPct = isPeak ? (b.level === 'crowded' ? '90' : b.level === 'moderate' ? '60' : '25') : (b.level === 'crowded' ? '65' : b.level === 'moderate' ? '35' : '15');
+    bhHtml += `<div class="beach-item" onclick="toggleBeachDetail(${i})">
       <span class="beach-icon">${b.icon}</span>
       <div class="beach-info"><div class="beach-name">${b.name} ${tag}</div><div class="beach-desc">${b.desc}</div></div>
-      <div class="beach-bar"><div class="beach-fill ${cls}" style="width:${p}"></div></div>
+      <div class="beach-bar"><div class="beach-fill ${cls}" style="width:${crowdPct}%"></div></div>
       <span class="beach-count" style="color:${c}">${l}</span>
+    </div>
+    <div class="beach-detail" id="beachDetail${i}">
+      <div class="beach-detail-row"><span class="beach-detail-label">人流密度</span><span class="beach-detail-value" style="color:${c}">${l} · ${crowdPct}%</span></div>
+      <div class="beach-detail-row"><span class="beach-detail-label">拥堵时段</span><span class="beach-detail-value">高峰期 +30%</span></div>
+      <div class="beach-detail-row"><span class="beach-detail-label">高峰预计</span><span class="beach-detail-value" style="color:var(--red)">${b.level === 'crowded' ? '拥挤' : b.level === 'moderate' ? '适中' : '较空'}</span></div>
+      <div class="beach-detail-row"><span class="beach-detail-label">推荐前往</span><span class="beach-detail-value">${b.level === 'quiet' ? '✅ 建议' : b.level === 'moderate' ? '⏰ 斟酌' : '❌ 人多'}</span></div>
     </div>`;
   });
   bhHtml += '</div>';
@@ -404,13 +420,21 @@ function renderUI(peakLabel, highways, roads, beaches, isPeak) {
 
   // 市区道路列表
   let rdHtml = '';
-  roads.forEach(rd => {
+  roads.forEach((rd, i) => {
     const [c, l] = col[rd.level];
-    rdHtml += `<div class="congestion-item">
+    const wPct = rd.level === 'high' ? '85' : rd.level === 'medium' ? '55' : '18';
+    const speed = rd.level === 'high' ? '15-25' : rd.level === 'medium' ? '30-40' : '45-55';
+    const advice = rd.level === 'high' ? '❌ 建议绕行' : rd.level === 'medium' ? '⏰ 谨慎行驶' : '✅ 畅通';
+    rdHtml += `<div class="congestion-item" onclick="toggleRoadDetail(${i})">
       <span style="font-size:16px;width:28px;text-align:center">🚗</span>
       <span class="congestion-name">${rd.name}</span>
-      <div class="congestion-bar"><div class="congestion-fill ${rd.level}" style="width:${pct[rd.level]}"></div></div>
+      <div class="congestion-bar"><div class="congestion-fill ${rd.level}" style="width:${wPct}%"></div></div>
       <span style="font-size:13px;font-weight:800;width:50px;text-align:right;color:${c}">${l}</span>
+    </div>
+    <div class="road-detail" id="roadDetail${i}">
+      <div class="road-detail-row"><span class="beach-detail-label">拥堵等级</span><span class="beach-detail-value" style="color:${c}">${l}</span></div>
+      <div class="road-detail-row"><span class="beach-detail-label">预估车速</span><span class="beach-detail-value">${speed} km/h</span></div>
+      <div class="road-detail-row"><span class="beach-detail-label">出行建议</span><span class="beach-detail-value">${advice}</span></div>
     </div>`;
   });
   document.getElementById('congestionList').innerHTML = rdHtml;
@@ -558,6 +582,15 @@ function searchRoute() {
       });
     });
   }
+}
+
+function toggleBeachDetail(i) {
+  const el = document.getElementById('beachDetail' + i);
+  el.classList.toggle('show');
+}
+function toggleRoadDetail(i) {
+  const el = document.getElementById('roadDetail' + i);
+  el.classList.toggle('show');
 }
 
 // 每30秒自动刷新
