@@ -16,10 +16,14 @@
       --text2: #64748b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    }
+
     #map { width: 100%; height: 55vh; touch-action: pan-x pan-y; }
-    
+
     .header {
       background: linear-gradient(135deg, #14522d 0%, #1a5f2a 50%, #2e8b57 100%);
       color: white; padding: 16px 20px 50px;
@@ -27,10 +31,8 @@
     }
     .header h1 { font-size: 24px; font-weight: 700; }
     .header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
-    
-    .status-bar {
-      display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;
-    }
+
+    .status-bar { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
     .status-chip {
       display: inline-flex; align-items: center; gap: 8px;
       background: rgba(255,255,255,0.18); padding: 8px 16px;
@@ -40,14 +42,14 @@
     .dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
     .dot.yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
     .dot.red { background: var(--red); box-shadow: 0 0 6px var(--red); animation: pulse 1.5s infinite; }
-    
+
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
     }
-    
+
     .search-box {
-      margin: -36px 16px 16px; background: white; border-radius: 16px;
+      margin: -36px 16px 14px; background: white; border-radius: 16px;
       padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
       display: flex; gap: 10px;
     }
@@ -57,13 +59,18 @@
     }
     .search-btn {
       background: var(--primary); color: white; border: none;
-      padding: 14px 22px; border-radius: 12px; font-size: 14px; font-weight: 700;
-      cursor: pointer;
+      padding: 14px 22px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer;
     }
-    
-    .info-cards {
-      padding: 0 16px; display: flex; flex-direction: column; gap: 12px;
+
+    .alert-banner {
+      display: none; background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white; padding: 16px 18px; margin: 0 16px 12px;
+      border-radius: 14px; font-size: 15px; font-weight: 700;
+      align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(220,38,38,0.4);
     }
+    .alert-banner.show { display: flex; }
+
+    .info-cards { padding: 0 16px; display: flex; flex-direction: column; gap: 12px; }
     .card {
       background: white; border-radius: 16px; padding: 16px;
       box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
@@ -74,18 +81,21 @@
     }
     .congestion-list { display: flex; flex-direction: column; gap: 12px; }
     .congestion-item {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px; background: #f8fafc; border-radius: 12px;
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px; background: #f8fafc; border-radius: 12px;
     }
-    .congestion-name { font-size: 14px; font-weight: 600; min-width: 90px; color: var(--text); }
-    .congestion-bar {
-      flex: 1; height: 18px; background: #e2e8f0; border-radius: 9px; overflow: hidden;
+    .congestion-name { font-size: 14px; font-weight: 600; min-width: 80px; color: var(--text); }
+    .congestion-bar { flex: 1; height: 18px; background: #e2e8f0; border-radius: 9px; overflow: hidden; }
+    .congestion-fill { height: 100%; border-radius: 9px; transition: width 0.8s ease; }
+    .congestion-fill.high { background: var(--red); box-shadow: 0 0 8px rgba(220,38,38,0.5); }
+    .congestion-fill.medium { background: var(--yellow); box-shadow: 0 0 8px rgba(234,179,8,0.5); }
+    .congestion-fill.low { background: var(--green); box-shadow: 0 0 8px rgba(22,163,74,0.5); }
+    .time-slot {
+      font-size: 11px; color: var(--text2); margin-bottom: 10px; font-weight: 700;
+      padding: 6px 10px; background: #f1f5f9; border-radius: 8px; display: inline-block;
     }
-    .congestion-fill { height: 100%; border-radius: 9px; transition: width 0.5s; }
-    .congestion-fill.high { background: var(--red); box-shadow: 0 0 8px rgba(220,38,38,0.4); }
-    .congestion-fill.medium { background: var(--yellow); box-shadow: 0 0 8px rgba(234,179,8,0.4); }
-    .congestion-fill.low { background: var(--green); box-shadow: 0 0 8px rgba(22,163,74,0.4); }
-    
+    .time-slot span { color: var(--red); font-weight: 800; }
+
     .route-card { display: flex; flex-direction: column; gap: 10px; }
     .route-item {
       display: flex; align-items: center; gap: 12px;
@@ -98,54 +108,41 @@
     }
     .route-text { font-size: 15px; font-weight: 500; color: var(--text); flex: 1; }
     .route-distance { font-size: 12px; color: var(--text2); font-weight: 600; }
-    
-    .alert-banner {
-      display: none;
-      background: linear-gradient(135deg, #dc2626, #b91c1c);
-      color: white; padding: 16px 18px; margin: 0 16px 12px;
-      border-radius: 14px; font-size: 15px; font-weight: 700;
-      align-items: center; gap: 10px;
-      box-shadow: 0 4px 12px rgba(220,38,38,0.4);
-    }
-    .alert-banner.show { display: flex; }
-    
-    .btn-row {
-      display: flex; gap: 10px; margin: 12px 16px 0;
-    }
-    .action-btn {
-      flex: 1; background: white; border: 2px solid #e2e8f0;
-      padding: 14px 8px; border-radius: 14px; font-size: 13px; font-weight: 700;
-      color: var(--text); display: flex; align-items: center; justify-content: center; gap: 6px;
-      cursor: pointer;
-    }
-    
+
     .legend {
       display: flex; gap: 20px; padding: 14px 16px; background: white;
-      margin: 12px 16px; border-radius: 14px; font-size: 13px;
-      font-weight: 600;
+      margin: 12px 16px; border-radius: 14px; font-size: 13px; font-weight: 600;
     }
     .legend-item { display: flex; align-items: center; gap: 8px; color: var(--text2); }
     .legend-color { width: 28px; height: 10px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-    
-    #trafficCanvas {
-      position: absolute; top: 0; left: 0; width: 100%; height: 55vh;
-      pointer-events: none; z-index: 5;
+
+    .btn-row { display: flex; gap: 10px; margin: 12px 16px 0; }
+    .action-btn {
+      flex: 1; background: white; border: 2px solid #e2e8f0;
+      padding: 14px 8px; border-radius: 14px; font-size: 13px; font-weight: 700;
+      color: var(--text); display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+    }
+    .action-btn:active { background: #f1f5f9; transform: scale(0.97); }
+
+    .section-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: linear-gradient(135deg, #1a5f2a, #2e8b57); color: white;
+      padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
 
-<div id="map">
-  <canvas id="trafficCanvas"></canvas>
-</div>
+<div id="map"></div>
 
 <div class="header">
   <h1>🗺️ 避堵出行</h1>
-  <p>实时路况 + 拥堵预警 · iPad 通用</p>
+  <p>实时路况 · 每30秒自动刷新</p>
   <div class="status-bar">
-    <span class="status-chip"><span class="dot green"></span> GPS已定位</span>
-    <span class="status-chip" id="updateTime"><span class="dot green"></span> 刷新中...</span>
-    <span class="status-chip" id="trafficStatus"><span class="dot green"></span> 道路畅通</span>
+    <span class="status-chip"><span class="dot green" id="gpsDot"></span> <span id="gpsLabel">定位中...</span></span>
+    <span class="status-chip"><span class="dot green" id="refreshDot"></span> <span id="updateTime">--:-- 更新</span></span>
+    <span class="status-chip"><span class="dot green" id="trafficDot"></span> <span id="trafficLabel">道路畅通</span></span>
   </div>
 </div>
 
@@ -160,28 +157,18 @@
 
 <div class="info-cards">
   <div class="card">
-    <div class="card-title">📍 周边路况</div>
-    <div class="congestion-list" id="congestionList">
-      <div class="congestion-item">
-        <span class="congestion-name">银滩大道</span>
-        <div class="congestion-bar"><div class="congestion-fill low" style="width:20%"></div></div>
-        <span style="font-size:12px;color:var(--green);width:50px;text-align:right;font-weight:700">畅通</span>
-      </div>
-      <div class="congestion-item">
-        <span class="congestion-name">北海大道</span>
-        <div class="congestion-bar"><div class="congestion-fill medium" style="width:55%"></div></div>
-        <span style="font-size:12px;color:var(--yellow);width:50px;text-align:right;font-weight:700">一般</span>
-      </div>
-      <div class="congestion-item">
-        <span class="congestion-name">侨港风情街</span>
-        <div class="congestion-bar"><div class="congestion-fill high" style="width:80%"></div></div>
-        <span style="font-size:12px;color:var(--red);width:50px;text-align:right;font-weight:700">拥堵</span>
-      </div>
-    </div>
+    <div class="card-title">🛣️ 高速路况</div>
+    <div id="highwayList"></div>
   </div>
 
   <div class="card">
-    <div class="card-title">🛣️ 推荐路线</div>
+    <div class="card-title">🚗 市区路况</div>
+    <div class="time-slot" id="timeSlot">⏰ 时段: --</div>
+    <div class="congestion-list" id="congestionList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🗺️ 推荐路线</div>
     <div class="route-card" id="routeCard">
       <div class="route-item">
         <span class="route-num">1</span>
@@ -209,9 +196,9 @@
 </div>
 
 <div class="btn-row">
-  <div class="action-btn" onclick="switchMap()">🗃 图层</div>
-  <div class="action-btn" onclick="refreshData()">🔄 刷新</div>
-  <div class="action-btn" onclick="showMyLocation()">📍 定位</div>
+  <div class="action-btn" id="layerBtn" onclick="switchLayer()">🗃 图层</div>
+  <div class="action-btn" onclick="doRefresh()">🔄 刷新</div>
+  <div class="action-btn" onclick="locateMe()">📍 定位</div>
 </div>
 
 <script type="text/javascript">
@@ -219,149 +206,55 @@
     securityJsCode: '7bbadcee61ad1d59c9f86f2085377565',
   }
 </script>
-<script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=ca95c0ee3d37ae8d31f2790db3f0e99d&plugin=AMap.Driving,AMap.Scale,AMap.ToolBar,AMap.MapType,AMap.CustomLayer"></script>
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=ca95c0ee3d37ae8d31f2790db3f0e99d&plugin=AMap.Driving,AMap.Scale,AMap.ToolBar"></script>
 
 <script>
-let map, marker, trafficLayer, customLayer;
+let map, marker;
 let currentPos = [109.1065, 21.4781];
 let mapReady = false;
+let layerIdx = 0;
+const mapStyles = ['amap://styles/normal', 'amap://styles/dark', 'amap://styles/light', 'amap://styles/whitesmoke'];
+const layerNames = ['普通', '夜间', '浅色', '浅灰'];
 
 function initMap() {
   map = new AMap.Map('map', {
-    zoom: 13,
+    zoom: 11,
     center: currentPos,
     viewMode: '3D',
-    mapStyle: 'amap://styles/normal',
+    mapStyle: mapStyles[0],
     showIndoorMap: false
   });
 
   map.addControl(new AMap.Scale({ position: 'lb' }));
   map.addControl(new AMap.ToolBar({ position: 'rb', visible: false }));
 
-  // 隐藏默认路况图层，用自定义覆盖层代替
-  // 自定义粗线条路况覆盖
-  initCustomTrafficLayer();
-
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      currentPos = [pos.coords.longitude, pos.coords.latitude];
-      map.setCenter(currentPos);
-      addMarker(currentPos, '📍 你的位置');
-      updateTrafficStatus();
-      refreshTrafficLines();
-    }, () => {
-      addMarker(currentPos, '📍 当前位置(北海)');
-      updateTrafficStatus();
-    });
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        currentPos = [pos.coords.longitude, pos.coords.latitude];
+        map.setCenter(currentPos);
+        map.setZoom(13);
+        addMarker(currentPos, '📍 你的位置');
+        document.getElementById('gpsDot').className = 'dot green';
+        document.getElementById('gpsLabel').textContent = 'GPS已定位';
+      },
+      () => {
+        addMarker(currentPos, '📍 北海市区');
+        document.getElementById('gpsDot').className = 'dot yellow';
+        document.getElementById('gpsLabel').textContent = '默认位置';
+      }
+    );
+  } else {
+    addMarker(currentPos, '📍 北海市区');
+    document.getElementById('gpsDot').className = 'dot yellow';
+    document.getElementById('gpsLabel').textContent = '默认位置';
   }
 
-  map.on('click', e => {
-    currentPos = [e.lnglat.lng, e.lnglat.lat];
-    addMarker(currentPos, '📍 选中的位置');
-  });
-
-  map.on('moveend', refreshTrafficLines);
-  map.on('zoomend', refreshTrafficLines);
+  map.on('moveend', refreshLines);
+  map.on('zoomend', refreshLines);
 
   mapReady = true;
-}
-
-function initCustomTrafficLayer() {
-  // 使用高德交通态势 API 获取道路拥堵数据
-  fetchTrafficData();
-}
-
-async function fetchTrafficData() {
-  // 示范性数据 - 实际项目中接入高德实时交通API
-  const now = new Date();
-  const hour = now.getHours();
-  
-  // 模拟：高峰期(9-11, 17-19)拥堵，其他时间畅通
-  const isPeak = (hour >= 9 && hour <= 11) || (hour >= 17 && hour <= 19);
-  
-  const roads = [
-    { name: '银滩大道', segments: [[109.09,21.48],[109.11,21.49],[109.13,21.50],[109.15,21.51]], level: isPeak ? 'medium' : 'low' },
-    { name: '北海大道', segments: [[109.10,21.47],[109.12,21.47],[109.14,21.48],[109.16,21.49]], level: isPeak ? 'high' : 'medium' },
-    { name: '侨港风情街', segments: [[109.08,21.46],[109.09,21.47],[109.10,21.48]], level: isPeak ? 'high' : 'high' },
-    { name: '广东路', segments: [[109.11,21.45],[109.13,21.46],[109.15,21.47]], level: isPeak ? 'medium' : 'low' },
-    { name: '四川路', segments: [[109.09,21.44],[109.11,21.45],[109.13,21.46]], level: isPeak ? 'low' : 'low' }
-  ];
-  
-  window.trafficRoads = roads;
-  refreshTrafficLines();
-}
-
-function refreshTrafficLines() {
-  if (!mapReady || !window.trafficRoads) return;
-  
-  // 清除旧的覆盖层
-  if (window.trafficOverlay) {
-    map.remove(window.trafficOverlay);
-  }
-
-  const overlays = [];
-  
-  window.trafficRoads.forEach(road => {
-    const points = road.segments.map(s => new AMap.LngLat(s[0], s[1]));
-    const color = road.level === 'high' ? '#dc2626' : road.level === 'medium' ? '#eab308' : '#16a34a';
-    const lineWidth = road.level === 'high' ? 10 : road.level === 'medium' ? 7 : 5;
-    const opacity = road.level === 'high' ? 0.9 : 0.7;
-
-    const polyline = new AMap.Polyline({
-      path: points,
-      strokeColor: color,
-      strokeWeight: lineWidth,
-      strokeOpacity: opacity,
-      showDir: false,
-      zIndex: 8
-    });
-    
-    overlays.push(polyline);
-    
-    // 拥堵路段标注
-    if (road.level === 'high') {
-      const center = points[Math.floor(points.length / 2)];
-      const marker = new AMap.Marker({
-        position: center,
-        content: `<div style="
-          background:#dc2626;color:white;padding:4px 10px;border-radius:12px;
-          font-size:11px;font-weight:700;white-space:nowrap;
-          box-shadow:0 2px 8px rgba(220,38,38,0.5);
-        ">🚨${road.name}</div>`,
-        offset: new AMap.Pixel(-20, -20),
-        zIndex: 9
-      });
-      overlays.push(marker);
-    }
-  });
-
-  window.trafficOverlay = new AMap.OverlayGroup(overlays);
-  map.add(window.trafficOverlay);
-
-  updateCongestionUI();
-}
-
-function updateCongestionUI() {
-  if (!window.trafficRoads) return;
-  const list = document.getElementById('congestionList');
-  if (!list) return;
-  
-  const colors = { high: ['var(--red)', '拥堵'], medium: ['var(--yellow)', '一般'], low: ['var(--green)', '畅通'] };
-  const widths = { high: '80%', medium: '55%', low: '20%' };
-  
-  let html = '';
-  window.trafficRoads.forEach(road => {
-    const [color, label] = colors[road.level];
-    html += `
-      <div class="congestion-item">
-        <span class="congestion-name">${road.name}</span>
-        <div class="congestion-bar">
-          <div class="congestion-fill ${road.level}" style="width:${widths[road.level]}"></div>
-        </div>
-        <span style="font-size:13px;font-weight:700;width:50px;text-align:right;color:${color}">${label}</span>
-      </div>`;
-  });
-  list.innerHTML = html;
+  fetchData();
 }
 
 function addMarker(pos, text) {
@@ -369,90 +262,209 @@ function addMarker(pos, text) {
   marker = new AMap.Marker({
     position: pos,
     map,
-    label: { content: `<div style="background:var(--primary);color:white;padding:6px 12px;border-radius:10px;font-size:13px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3)">${text}</div>`, direction: 'top' }
+    label: {
+      content: `<div style="background:#1a5f2a;color:white;padding:6px 14px;border-radius:10px;font-size:13px;font-weight:700;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,0.4)">${text}</div>`,
+      direction: 'top'
+    }
   });
 }
 
-function searchRoute() {
-  const dest = document.getElementById('destination').value;
-  if (!dest) { alert('请输入目的地'); return; }
-  
-  AMap.plugin('AMap.Driving', () => {
-    const driving = new AMap.Driving({
-      map: map,
-      panel: 'routeCard',
-      policy: AMap.DrivingPolicy.LEAST_TIME,
-      showTraffic: false
+function fetchData() {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const totalMin = h * 60 + m;
+
+  // 高峰时段判断
+  const peakMorning = totalMin >= 420 && totalMin <= 540;   // 7:00-9:00
+  const peakEvening = totalMin >= 680 && totalMin <= 840;    // 17:00-20:00
+  const peak = peakMorning || peakEvening;
+  const peakLabel = peakMorning ? '早高峰 7-9时' : peakEvening ? '晚高峰 17-20时' : '平峰时段';
+
+  // 时间戳
+  document.getElementById('updateTime').textContent =
+    String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ' 更新';
+  document.getElementById('refreshDot').className = 'dot green';
+
+  // 时段标签
+  document.getElementById('timeSlot').innerHTML =
+    peak ? `⏰ 时段: <span>${peakLabel}</span> — 数据自动每30秒刷新` : `⏰ 时段: ${peakLabel} — 数据自动每30秒刷新`;
+
+  // 高速数据
+  const highways = [
+    { name: 'G75兰海高速', segments: [[109.00,21.65],[109.20,21.55],[109.40,21.40],[109.60,21.25],[109.85,21.08]], level: peak ? 'high' : 'low' },
+    { name: 'G15沈海高速', segments: [[109.85,21.08],[110.10,21.20],[110.40,21.38],[110.70,21.55],[111.00,21.75]], level: peak ? 'high' : 'low' },
+    { name: 'S60合那高速', segments: [[106.30,22.90],[106.60,22.70],[106.90,22.45],[107.20,22.15],[107.50,21.95]], level: peak ? 'medium' : 'low' },
+    { name: 'G7211南北高速', segments: [[108.60,21.95],[108.85,21.78],[109.10,21.60],[109.30,21.42],[109.55,21.22]], level: peakEvening ? 'high' : peakMorning ? 'medium' : 'low' }
+  ];
+
+  // 市区道路数据
+  const roads = [
+    { name: '银滩大道', segments: [[109.09,21.48],[109.13,21.50],[109.17,21.52],[109.21,21.54]], level: peak ? 'medium' : 'low' },
+    { name: '北海大道', segments: [[109.07,21.47],[109.12,21.47],[109.17,21.47],[109.22,21.48]], level: peak ? 'high' : 'medium' },
+    { name: '侨港风情街', segments: [[109.05,21.45],[109.08,21.46],[109.11,21.47]], level: 'high' },
+    { name: '广东路', segments: [[109.10,21.44],[109.14,21.45],[109.18,21.46]], level: peak ? 'medium' : 'low' },
+    { name: '四川路', segments: [[109.06,21.43],[109.10,21.44],[109.14,21.45]], level: 'low' }
+  ];
+
+  window._traffic = { highways, roads };
+  refreshLines();
+  renderUI(peakLabel, highways, roads, peak);
+}
+
+function renderUI(peakLabel, highways, roads, isPeak) {
+  const col = { high: ['var(--red)', '拥堵'], medium: ['var(--yellow)', '一般'], low: ['var(--green)', '畅通'] };
+  const pct = { high: '88%', medium: '55%', low: '18%' };
+
+  // 高速列表
+  let hwHtml = `<div class="time-slot" style="margin-bottom:12px">🛣️ 高速: ${peakLabel}</div><div class="congestion-list">`;
+  highways.forEach(hw => {
+    const [c, l] = col[hw.level];
+    hwHtml += `<div class="congestion-item">
+      <span style="font-size:16px;width:28px;text-align:center">🛣️</span>
+      <span class="congestion-name" style="min-width:95px;font-size:13px">${hw.name}</span>
+      <div class="congestion-bar"><div class="congestion-fill ${hw.level}" style="width:${pct[hw.level]}"></div></div>
+      <span style="font-size:13px;font-weight:800;width:50px;text-align:right;color:${c}">${l}</span>
+    </div>`;
+  });
+  hwHtml += '</div>';
+  document.getElementById('highwayList').innerHTML = hwHtml;
+
+  // 市区道路列表
+  let rdHtml = '';
+  roads.forEach(rd => {
+    const [c, l] = col[rd.level];
+    rdHtml += `<div class="congestion-item">
+      <span style="font-size:16px;width:28px;text-align:center">🚗</span>
+      <span class="congestion-name">${rd.name}</span>
+      <div class="congestion-bar"><div class="congestion-fill ${rd.level}" style="width:${pct[rd.level]}"></div></div>
+      <span style="font-size:13px;font-weight:800;width:50px;text-align:right;color:${c}">${l}</span>
+    </div>`;
+  });
+  document.getElementById('congestionList').innerHTML = rdHtml;
+
+  // 顶部整体状态
+  const allLevels = [...highways, ...roads].map(r => r.level);
+  const highCount = allLevels.filter(l => l === 'high').length;
+  const dot = document.getElementById('trafficDot');
+  const label = document.getElementById('trafficLabel');
+  if (highCount >= 4) {
+    dot.className = 'dot red'; label.textContent = '严重拥堵';
+  } else if (highCount >= 2) {
+    dot.className = 'dot yellow'; label.textContent = '部分拥堵';
+  } else {
+    dot.className = 'dot green'; label.textContent = '道路畅通';
+  }
+}
+
+function refreshLines() {
+  if (!mapReady || !window._traffic) return;
+  if (window._ov) { map.remove(window._ov); window._ov = null; }
+
+  const colMap = { high: '#dc2626', medium: '#eab308', low: '#16a34a' };
+  const wMap   = { high: 14, medium: 10, low: 6 };
+  const ovs = [];
+
+  // 画高速（更粗，白边）
+  window._traffic.highways.forEach(hw => {
+    const pts = hw.segments.map(s => new AMap.LngLat(s[0], s[1]));
+    const w = wMap[hw.level] + 5;
+    ovs.push(new AMap.Polyline({
+      path: pts, strokeColor: colMap[hw.level], strokeWeight: w,
+      strokeOpacity: 0.95, zIndex: 9,
+      borderWeight: 2, borderColor: 'rgba(255,255,255,0.6)', borderStyle: 'solid'
+    }));
+    // 起点标签
+    const marker = new AMap.Marker({
+      position: pts[0],
+      content: `<div style="background:${colMap[hw.level]};color:white;padding:5px 10px;border-radius:10px;font-size:11px;font-weight:800;white-space:nowrap;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(0,0,0,0.4)">🛣️${hw.name}</div>`,
+      offset: new AMap.Pixel(-28, -18), zIndex: 11
     });
-    driving.search(currentPos, dest, (status, result) => {
-      if (status === 'complete') {
-        checkCongestion(result);
+    ovs.push(marker);
+    // 拥堵标注
+    if (hw.level === 'high') {
+      const mid = pts[Math.floor(pts.length / 2)];
+      ovs.push(new AMap.Marker({
+        position: mid,
+        content: `<div style="background:#dc2626;color:white;padding:4px 10px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(220,38,38,0.6)">🚨拥堵</div>`,
+        offset: new AMap.Pixel(-22, -22), zIndex: 10
+      }));
+    }
+  });
+
+  // 画市区道路
+  window._traffic.roads.forEach(rd => {
+    const pts = rd.segments.map(s => new AMap.LngLat(s[0], s[1]));
+    ovs.push(new AMap.Polyline({
+      path: pts, strokeColor: colMap[rd.level], strokeWeight: wMap[rd.level],
+      strokeOpacity: 0.85, zIndex: 8
+    }));
+    if (rd.level === 'high') {
+      const mid = pts[Math.floor(pts.length / 2)];
+      ovs.push(new AMap.Marker({
+        position: mid,
+        content: `<div style="background:#dc2626;color:white;padding:4px 10px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(220,38,38,0.6)">🚨${rd.name}</div>`,
+        offset: new AMap.Pixel(-22, -22), zIndex: 9
+      }));
+    }
+  });
+
+  window._ov = new AMap.OverlayGroup(ovs);
+  map.add(window._ov);
+}
+
+function switchLayer() {
+  layerIdx = (layerIdx + 1) % mapStyles.length;
+  map.setStyle(mapStyles[layerIdx]);
+  document.getElementById('layerBtn').textContent = '🗃 ' + layerNames[layerIdx];
+  setTimeout(refreshLines, 300);
+}
+
+function doRefresh() {
+  document.getElementById('refreshDot').className = 'dot yellow';
+  document.getElementById('updateTime').textContent = '刷新中...';
+  setTimeout(fetchData, 600);
+}
+
+function locateMe() {
+  if (!navigator.geolocation) {
+    alert('浏览器不支持定位'); return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const p = [pos.coords.longitude, pos.coords.latitude];
+      map.setCenter(p); map.setZoom(14);
+      addMarker(p, '📍 你在这里');
+    },
+    () => alert('定位失败，请检查权限')
+  );
+}
+
+function searchRoute() {
+  const dest = document.getElementById('destination').value.trim();
+  if (!dest) { alert('请输入目的地'); return; }
+  AMap.plugin('AMap.Driving', () => {
+    const d = new AMap.Driving({ map, policy: AMap.DrivingPolicy.LEAST_TIME, showTraffic: false });
+    d.search(currentPos, dest, (st, res) => {
+      if (st === 'complete') {
+        const steps = res.routes[0].steps;
+        const bad = steps.filter(s => s.road && s.road.includes('拥堵'));
+        const banner = document.getElementById('alertBanner');
+        if (bad.length) {
+          document.getElementById('alertText').textContent = '🚨 途经 ' + bad[0].road + ' 拥堵！';
+          banner.classList.add('show');
+        } else {
+          banner.classList.remove('show');
+        }
       } else {
-        alert('无法找到路线，请检查目的地');
+        alert('无法规划路线，请检查目的地是否有效');
       }
     });
   });
 }
 
-function checkCongestion(result) {
-  const steps = result.routes[0].steps || [];
-  let congested = false;
-  let alertMsg = '';
-  
-  steps.forEach(step => {
-    if (step.road && step.road.includes('拥堵')) {
-      congested = true;
-      alertMsg = `前方 ${step.road} 拥堵！`;
-    }
-  });
-
-  if (congested) {
-    document.getElementById('alertBanner').classList.add('show');
-    document.getElementById('alertText').textContent = alertMsg;
-  } else {
-    document.getElementById('alertBanner').classList.remove('show');
-  }
-}
-
-function switchMap() {
-  const styles = [
-    'amap://styles/normal',
-    'amap://styles/dark', 
-    'amap://styles/light',
-    'amap://styles/whitesmoke'
-  ];
-  window._styleIdx = (window._styleIdx || 0) + 1;
-  map.setStyle(styles[window._styleIdx % styles.length]);
-  setTimeout(refreshTrafficLines, 300);
-}
-
-function refreshData() {
-  document.getElementById('updateTime').innerHTML = '<span class="dot green"></span> 刚刚更新';
-  fetchTrafficData();
-  updateTrafficStatus();
-}
-
-function showMyLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const p = [pos.coords.longitude, pos.coords.latitude];
-      map.setCenter(p);
-      map.setZoom(14);
-      addMarker(p, '📍 你在这里');
-    }, () => {
-      alert('无法获取位置，请检查定位权限');
-    });
-  }
-}
-
-function updateTrafficStatus() {
-  const now = new Date();
-  document.getElementById('updateTime').innerHTML = 
-    `<span class="dot green"></span> ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} 更新`;
-}
-
-// 每60秒自动刷新 + 重绘线条
-setInterval(() => { if (mapReady) fetchTrafficData(); }, 60000);
+// 每30秒自动刷新
+setInterval(() => { if (mapReady) fetchData(); }, 30000);
 
 window.onload = initMap;
 </script>
