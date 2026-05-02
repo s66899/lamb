@@ -124,12 +124,19 @@
     }
     .action-btn:active { background: #f1f5f9; transform: scale(0.97); }
 
-    .section-tag {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: linear-gradient(135deg, #1a5f2a, #2e8b57); color: white;
-      padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
-      margin-bottom: 10px;
-    }
+    .beach-list { display: flex; flex-direction: column; gap: 10px; }
+    .beach-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8fafc; border-radius: 12px; }
+    .beach-icon { font-size: 24px; flex-shrink: 0; }
+    .beach-info { flex: 1; }
+    .beach-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .beach-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+    .beach-bar { flex: 1; height: 16px; background: #e2e8f0; border-radius: 8px; overflow: hidden; }
+    .beach-fill { height: 100%; border-radius: 8px; transition: width 0.8s; }
+    .beach-fill.crowded { background: var(--red); }
+    .beach-fill.moderate { background: var(--yellow); }
+    .beach-fill.quiet { background: var(--green); }
+    .beach-count { font-size: 13px; font-weight: 800; width: 50px; text-align: right; }
+    .crowded-tag { font-size: 10px; background: var(--red); color: white; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
   </style>
 </head>
 <body>
@@ -157,7 +164,13 @@
 
 <div class="info-cards">
   <div class="card">
-    <div class="card-title">🛣️ 高速路况</div>
+    <div class="card-title">🏖️ 北海海滩人流</div>
+    <div class="time-slot" id="beachSlot">⏰ 人流监测 · 实时更新</div>
+    <div class="beach-list" id="beachList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🛣️ 高速路况（往广州方向）</div>
     <div id="highwayList"></div>
   </div>
 
@@ -349,23 +362,41 @@ function fetchData() {
   ];
 
   window._traffic = { highways, roads };
+  window._beaches = beaches;
   refreshLines();
-  renderUI(peakLabel, highways, roads, peak);
+  renderUI(peakLabel, highways, roads, beaches, peak);
 }
 
-function renderUI(peakLabel, highways, roads, isPeak) {
+function renderUI(peakLabel, highways, roads, beaches, isPeak) {
   const col = { high: ['var(--red)', '拥堵'], medium: ['var(--yellow)', '一般'], low: ['var(--green)', '畅通'] };
   const pct = { high: '88%', medium: '55%', low: '18%' };
+  const bLvl = { crowded: ['var(--red)', '拥挤', 'crowded', '90%'], moderate: ['var(--yellow)', '适中', 'moderate', '55%'], quiet: ['var(--green)', '人少', 'quiet', '20%'] };
 
-  // 高速列表
-  let hwHtml = `<div class="time-slot" style="margin-bottom:12px">🛣️ 高速: ${peakLabel}</div><div class="congestion-list">`;
+  // 海滩列表
+  let bhHtml = '<div class="beach-list">';
+  beaches.forEach(b => {
+    const [c, l, cls, p] = bLvl[b.level];
+    const tag = b.level === 'crowded' ? '<span class="crowded-tag">🔥 人多</span>' : '';
+    bhHtml += `<div class="beach-item">
+      <span class="beach-icon">${b.icon}</span>
+      <div class="beach-info"><div class="beach-name">${b.name} ${tag}</div><div class="beach-desc">${b.desc}</div></div>
+      <div class="beach-bar"><div class="beach-fill ${cls}" style="width:${p}"></div></div>
+      <span class="beach-count" style="color:${c}">${l}</span>
+    </div>`;
+  });
+  bhHtml += '</div>';
+  document.getElementById('beachList').innerHTML = bhHtml;
+
+  // 高速列表 - 往广州方向
+  let hwHtml = `<div class="time-slot" style="margin-bottom:12px">🛣️ 往广州: G75兰海→G15沈海 全程约380km · ${peakLabel}</div><div class="congestion-list">`;
   highways.forEach(hw => {
     const [c, l] = col[hw.level];
+    const note = hw.name === 'G75兰海高速' ? '北海入口→广东' : hw.name === 'G15沈海高速' ? '广东→广州' : '';
     hwHtml += `<div class="congestion-item">
       <span style="font-size:16px;width:28px;text-align:center">🛣️</span>
-      <span class="congestion-name" style="min-width:95px;font-size:13px">${hw.name}</span>
+      <span class="congestion-name" style="min-width:100px;font-size:13px">${hw.name}</span>
       <div class="congestion-bar"><div class="congestion-fill ${hw.level}" style="width:${pct[hw.level]}"></div></div>
-      <span style="font-size:13px;font-weight:800;width:50px;text-align:right;color:${c}">${l}</span>
+      <span style="font-size:11px;color:var(--text2);width:80px;text-align:right">${note}</span>
     </div>`;
   });
   hwHtml += '</div>';
@@ -384,18 +415,14 @@ function renderUI(peakLabel, highways, roads, isPeak) {
   });
   document.getElementById('congestionList').innerHTML = rdHtml;
 
-  // 顶部整体状态
+  // 顶部状态
   const allLevels = [...highways, ...roads].map(r => r.level);
   const highCount = allLevels.filter(l => l === 'high').length;
   const dot = document.getElementById('trafficDot');
   const label = document.getElementById('trafficLabel');
-  if (highCount >= 4) {
-    dot.className = 'dot red'; label.textContent = '严重拥堵';
-  } else if (highCount >= 2) {
-    dot.className = 'dot yellow'; label.textContent = '部分拥堵';
-  } else {
-    dot.className = 'dot green'; label.textContent = '道路畅通';
-  }
+  if (highCount >= 4) { dot.className = 'dot red'; label.textContent = '严重拥堵'; }
+  else if (highCount >= 2) { dot.className = 'dot yellow'; label.textContent = '部分拥堵'; }
+  else { dot.className = 'dot green'; label.textContent = '道路畅通'; }
 }
 
 function refreshLines() {
@@ -484,24 +511,53 @@ function locateMe() {
 function searchRoute() {
   const dest = document.getElementById('destination').value.trim();
   if (!dest) { alert('请输入目的地'); return; }
-  AMap.plugin('AMap.Driving', () => {
-    const d = new AMap.Driving({ map, policy: AMap.DrivingPolicy.LEAST_TIME, showTraffic: false });
-    d.search(currentPos, dest, (st, res) => {
-      if (st === 'complete') {
-        const steps = res.routes[0].steps;
-        const bad = steps.filter(s => s.road && s.road.includes('拥堵'));
-        const banner = document.getElementById('alertBanner');
-        if (bad.length) {
-          document.getElementById('alertText').textContent = '🚨 途经 ' + bad[0].road + ' 拥堵！';
-          banner.classList.add('show');
+
+  // 北海本地地点库 - 不依赖高德搜索
+  const localPlaces = {
+    '银滩':       [109.14, 21.48],
+    '侨港':       [109.06, 21.45],
+    '紫霞湾':     [109.42, 21.55],
+    '金海湾':     [109.35, 21.52],
+    '大墩海':     [109.25, 21.50],
+    '冠头岭':     [109.15, 21.43],
+    '冯家江':     [109.18, 21.46],
+    '海滨公园':   [109.08, 21.47],
+    '北海老街':   [109.03, 21.46],
+    '北海站':     [109.09, 21.62],
+    '北部湾广场': [109.09, 21.48],
+    '园博园':     [109.10, 21.44],
+    '海洋之窗':   [109.11, 21.46],
+    '侨港海滩':   [109.06, 21.45],
+    '银滩公园':   [109.13, 21.47],
+    '电建渔港':   [109.04, 21.44],
+  };
+
+  const lowerDest = dest.toLowerCase();
+  let found = null;
+  for (const [name, coords] of Object.entries(localPlaces)) {
+    if (lowerDest.includes(name) || name.includes(lowerDest)) {
+      found = { name, coords }; break;
+    }
+  }
+
+  if (found) {
+    map.setCenter(found.coords); map.setZoom(15);
+    addMarker(found.coords, '📍 ' + found.name);
+    document.getElementById('alertBanner').classList.remove('show');
+  } else {
+    AMap.plugin('AMap.Driving', () => {
+      const d = new AMap.Driving({ map, policy: AMap.DrivingPolicy.LEAST_TIME, showTraffic: false });
+      d.search(currentPos, dest, (st, res) => {
+        if (st === 'complete') {
+          document.getElementById('alertBanner').classList.remove('show');
         } else {
-          banner.classList.remove('show');
+          document.getElementById('alertText').textContent = '❌ 找不到：' + dest;
+          document.getElementById('alertBanner').classList.add('show');
+          setTimeout(() => document.getElementById('alertBanner').classList.remove('show'), 3000);
         }
-      } else {
-        alert('无法规划路线，请检查目的地是否有效');
-      }
+      });
     });
-  });
+  }
 }
 
 // 每30秒自动刷新
