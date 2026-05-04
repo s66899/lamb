@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🐏的教务</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-size:14px;background:#f5f5f5;padding-bottom:60px}
+.header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:15px;text-align:center}
+.container{padding:10px}
+.card{background:#fff;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.tabs{display:flex;background:#fff;position:fixed;bottom:0;left:0;right:0;box-shadow:0 -1px 3px rgba(0,0,0,0.1)}
+.tab{flex:1;padding:12px;text-align:center;cursor:pointer;border:none;background:#fff;font-size:14px}
+.tab.active{color:#667eea;border-bottom:2px solid #667eea}
+.section{display:none}
+.section.active{display:block}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;margin-bottom:4px;font-size:12px;color:#666}
+.form-group input,.form-group select{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+.btn{padding:10px 16px;background:#667eea;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;width:100%}
+.btn-secondary{background:#999}
+input[type=checkbox]{width:20px;height:20px}
+.student-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #eee}
+.student-name{font-weight:600}
+.student-info{font-size:12px;color:#666}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat-card{background:#fff;border-radius:8px;padding:12px;text-align:center}
+.stat-value{font-size:20px;font-weight:700;color:#667eea}
+.stat-label{font-size:11px;color:#999}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.grid-item{background:#fff;border-radius:8px;padding:12px;text-align:center;cursor:pointer}
+.today-card{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px;border-radius:12px;margin-bottom:12px}
+.today-num{font-size:32px;font-weight:700}
+h3{margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="header">
+<h2>🐏的教务</h2>
+</div>
+<div class="container" id="home">
+<div class="today-card">
+<div style="display:flex;justify-content:space-between">
+<div><div style="opacity:0.8;font-size:12px">今日上课</div><div class="today-num" id="todayCount">0</div></div>
+<div style="text-align:right" id="todayDate"></div>
+</div>
+<div id="todayList" style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.2)"></div>
+</div>
+<div class="stat-grid" id="stats"></div>
+</div>
+<div class="section" id="students">
+<div class="card">
+<input type="text" id="searchInput" placeholder="搜索学员..." oninput="filterStudents()" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:10px">
+<div id="studentsList"></div>
+</div>
+</div>
+<div class="section" id="schedule">
+<div class="card">
+<select id="scheduleDay" onchange="loadSchedule()" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:10px">
+<option>星期一</option><option>星期二</option><option>星期三</option><option>星期四</option><option>星期五</option><option>星期六</option><option>星期日</option>
+</select>
+</div>
+<div id="scheduleList"></div>
+</div>
+<div class="section" id="attendance">
+<div class="card">
+<label>日期</label>
+<input type="date" id="attDate" onchange="loadAtt()">
+<select id="attDay" onchange="loadAtt()" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin:10px 0">
+<option>星期一</option><option>星期二</option><option>星期三</option><option>星期四</option><option>星期五</option><option>星期六</option><option>星期日</option>
+</select>
+<select id="attSlot" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:10px"></select>
+<button class="btn" onclick="loadAtt()">加载学员</button>
+</div>
+<div id="attList"></div>
+</div>
+</div>
+<div class="tabs">
+<button class="tab active" onclick="switchTab('home')">首页</button>
+<button class="tab" onclick="switchTab('students')">学员</button>
+<button class="tab" onclick="switchTab('schedule')">课表</button>
+<button class="tab" onclick="switchTab('attendance')">消课</button>
+</div>
+<script>
+let allStudents = [];
+let currentDay = '星期一';
+function switchTab(tab) {
+document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+document.getElementById(tab).classList.add('active');
+event.target.classList.add('active');
+if(tab === 'home') loadStats();
+if(tab === 'students') loadStudents();
+if(tab === 'schedule') loadSchedule();
+if(tab === 'attendance') loadAttSlots();
+}
+async function loadStats() {
+try {
+const [stats, att, leaves] = await Promise.all([
+fetch('/api/stats').then(r=>r.json()),
+fetch('/api/attendance_today').then(r=>r.json()),
+fetch('/api/leaves').then(r=>r.json())
+]);
+document.getElementById('stats').innerHTML = '<div class="stat-card"><div class="stat-value">'+stats.total_students+'</div><div class="stat-label">总学员</div></div><div class="stat-card"><div class="stat-value">'+stats.active_students+'</div><div class="stat-label">在读</div></div><div class="stat-card"><div class="stat-value">'+stats.remaining_hours+'</div><div class="stat-label">剩余课</div></div>';
+document.getElementById('todayCount').textContent = att.total;
+document.getElementById('todayDate').textContent = att.date || '';
+document.getElementById('todayList').innerHTML = att.attendees?.length ? att.attendees.map(a=>'<div>'+a.name+'</div>').join('') : '<div style="opacity:0.7">暂无</div>';
+} catch(e) {console.error(e);}
+}
+async function loadStudents() {
+const list = await fetch('/api/students').then(r=>r.json());
+allStudents = list;
+renderStudents(list);
+}
+function renderStudents(list) {
+document.getElementById('studentsList').innerHTML = list.length ? list.map(s=>'<div class="student-item"><div><div class="student-name">'+s.name+'</div><div class="student-info">'+(s.phone||'')+' | '+(s.coach||'')+' | '+s.remaining_hours+'节</div></div></div>').join('') : '<div style="color:#999;padding:20px;text-align:center">暂无学员</div>';
+}
+function filterStudents() {
+const kw = document.getElementById('searchInput').value.toLowerCase();
+renderStudents(allStudents.filter(s => s.name.toLowerCase().includes(kw) || (s.phone||'').includes(kw)));
+}
+async function loadSchedule() {
+const day = document.getElementById('scheduleDay').value;
+const [settings, schedules, students] = await Promise.all([
+fetch('/api/settings').then(r=>r.json()),
+fetch('/api/schedules?day='+day).then(r=>r.json()),
+fetch('/api/students').then(r=>r.json())
+]);
+const slots = settings.time_slots[day] || [];
+const maxPer = settings.max_students_per_coach || 6;
+const studentMap = {};
+students.forEach(s => studentMap[s.id] = s);
+const coachList = settings.coaches || [];
+if(!coachList.includes('孙教练')) coachList.push('孙教练');
+let html = '<div class="grid-2">';
+slots.forEach(slot => {
+const ss = schedules.filter(s => s.time_slot === slot);
+const count = ss.length;
+let color = count >= maxPer*2 ? '#ff4d4f' : count >= maxPer ? '#faad14' : '#52c41a';
+html += '<div class="grid-item" onclick="showSlotDetail(\''+slot+'\')"><div style="font-weight:600">'+slot+'</div><div style="font-size:24px;font-weight:700;color:'+color+'">'+count+'</div><div style="font-size:11px;color:#666">/'+(maxPer*2)+'</div></div>';
+});
+html += '</div><div id="slotDetail"></div>';
+document.getElementById('scheduleList').innerHTML = html;
+}
+function showSlotDetail(slot) {
+const day = document.getElementById('scheduleDay').value;
+fetch('/api/schedules?day='+day).then(r=>r.json()).then(schedules => {
+const ss = schedules.filter(s => s.time_slot === slot);
+if(!ss.length) {document.getElementById('slotDetail').innerHTML = '<div class="card">暂无学员</div>';return;}
+fetch('/api/students').then(r=>r.json()).then(students => {
+const studentMap = {};
+students.forEach(s => studentMap[s.id] = s);
+document.getElementById('slotDetail').innerHTML = '<div class="card"><h3>'+slot+' - 学员列表</h3>'+ss.map(s=>'<div class="student-item"><div>'+(studentMap[s.student_id]?.name||'未知')+'</div><button class="btn btn-secondary" style="width:auto;padding:4px 10px;font-size:12px" onclick="delSchedule(\''+s.id+'\')">删除</button></div>').join('')+'</div>';
+});
+});
+});
+}
+async function delSchedule(id) {
+if(!confirm('确定删除？')) return;
+await fetch('/api/schedules/'+id,{method:'DELETE'});
+loadSchedule();
+}
+async function loadAttSlots() {
+const day = document.getElementById('attDay').value;
+const settings = await fetch('/api/settings').then(r=>r.json());
+document.getElementById('attSlot').innerHTML = (settings.time_slots[day]||[]).map(s=>'<option>'+s+'</option>').join('');
+}
+function loadAtt() {
+const day = document.getElementById('attDay').value;
+const slot = document.getElementById('attSlot').value;
+const date = document.getElementById('attDate').value;
+fetch('/api/schedules?day='+day).then(r=>r.json()).then(ss => {
+const list = ss.filter(s => s.time_slot === slot);
+if(!list.length) {document.getElementById('attList').innerHTML = '<div class="card">该时段暂无学员</div>';return;}
+fetch('/api/students').then(r=>r.json()).then(students => {
+const studentMap = {};
+students.forEach(s => studentMap[s.id] = s);
+document.getElementById('attList').innerHTML = list.map(s=>'<div class="student-item"><div><div class="student-name">'+(studentMap[s.student_id]?.name||'未知')+'</div><div class="student-info">'+(studentMap[s.student_id]?.remaining_hours||0)+'节</div></div><button class="btn" style="width:auto;padding:8px 16px" onclick="doAttend(\''+s.student_id+'\',\''+(studentMap[s.student_id]?.name||'')+'\')">消课</button></div>').join('');
+});
+});
+});
+}
+async function doAttend(studentId, studentName) {
+const date = document.getElementById('attDate').value;
+const day = document.getElementById('attDay').value;
+const slot = document.getElementById('attSlot').value;
+if(!confirm('确认消课：'+studentName+'?')) return;
+const student = allStudents.find(s => s.id === studentId);
+await fetch('/api/attendance',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({student_id:studentId,student_name:studentName,date:date,week_day:day,time_slot:slot,coach:student?.coach||'',status:'present',hours_used:1})
+});
+alert('消课成功！');
+loadAtt();
+}
+document.getElementById('attDate').value = new Date().toISOString().slice(0,10);
+loadStats();
+</script>
+</body>
+</html>

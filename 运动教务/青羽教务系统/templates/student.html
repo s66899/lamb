@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐏的教务 - 课时查询</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #4facfe;
+            --primary-dark: #00f2fe;
+            --success: #52c41a;
+            --warning: #faad14;
+            --danger: #ff4d4f;
+            --bg: #f5f5f5;
+            --card: #fff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e8e8e8;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; padding: 20px; text-align: center; }
+        .header h1 { font-size: 20px; font-weight: 600; }
+        .header p { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+        
+        .container { flex: 1; padding: 16px; max-width: 500px; margin: 0 auto; width: 100%; }
+        
+        .search-box { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .search-box h2 { font-size: 14px; color: var(--text-light); margin-bottom: 12px; }
+        .search-input { width: 100%; padding: 14px 16px; border: 2px solid var(--border); border-radius: 10px; font-size: 16px; transition: border-color 0.2s; }
+        .search-input:focus { outline: none; border-color: var(--primary); }
+        
+        .result-card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .result-card .name { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+        
+        .hours-box { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .hours-item { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-radius: 10px; padding: 16px; text-align: center; }
+        .hours-item.remaining { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+        .hours-item .value { font-size: 28px; font-weight: 700; }
+        .hours-item .label { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .info-item { background: #f5f8ff; border-radius: 8px; padding: 12px; text-align: center; }
+        .info-item .label { font-size: 11px; color: var(--text-light); }
+        .info-item .value { font-size: 14px; font-weight: 600; margin-top: 4px; }
+        
+        .schedule-card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .schedule-card h3 { font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .schedule-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .schedule-item:last-child { border-bottom: none; }
+        .schedule-item .day { font-weight: 600; font-size: 14px; }
+        .schedule-item .slot { color: var(--text-light); font-size: 13px; }
+        
+        .empty { text-align: center; padding: 40px 20px; color: var(--text-light); }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; }
+        
+        .tip { text-align: center; padding: 16px; font-size: 12px; color: var(--text-light); background: #f5f5f5; border-radius: 8px; }
+        
+        .footer { text-align: center; padding: 16px; font-size: 12px; color: var(--text-light); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🐏的教务</h1>
+        <p>课时查询系统</p>
+    </div>
+    
+    <div class="container">
+        <div class="search-box">
+            <h2>请输入您的姓名</h2>
+            <input type="text" id="searchInput" class="search-input" placeholder="请输入姓名搜索..." oninput="searchStudent(this.value)" autocomplete="off">
+        </div>
+        
+        <div id="resultArea"></div>
+        
+        <div class="tip">
+            💡 如查询结果与实际不符，请联系教练确认排课
+        </div>
+    </div>
+    
+    <div class="footer">
+        © 2026 🐏的教务
+    </div>
+    
+    <script>
+        let searchTimer = null;
+        
+        function searchStudent(name) {
+            clearTimeout(searchTimer);
+            if (!name || name.trim().length === 0) {
+                document.getElementById('resultArea').innerHTML = '';
+                return;
+            }
+            searchTimer = setTimeout(() => doSearch(name.trim()), 300);
+        }
+        
+        async function doSearch(name) {
+            const res = await fetch(`/api/students?search=${encodeURIComponent(name)}`);
+            const students = await res.json();
+            
+            if (students.length === 0) {
+                document.getElementById('resultArea').innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">🔍</div>
+                        <div>未找到 "${name}" 的学员信息</div>
+                        <div style="font-size:12px;margin-top:8px">请确认姓名输入正确</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 显示第一个匹配结果
+            const student = students[0];
+            
+            // 获取排课信息
+            const schedulesRes = await fetch('/api/schedules');
+            const schedules = await schedulesRes.json();
+            const studentSchedules = schedules.filter(sc => sc.student_id === student.id);
+            
+            // 按星期排序
+            const dayOrder = ['星期一','星期二','星期三','星期四','星期五','星期六','星期日'];
+            studentSchedules.sort((a, b) => {
+                const dayA = dayOrder.indexOf(a.week_day);
+                const dayB = dayOrder.indexOf(b.week_day);
+                if (dayA !== dayB) return dayA - dayB;
+                return (a.time_slot || '').localeCompare(b.time_slot || '');
+            });
+            
+            const remainingHours = student.remaining_hours || 0;
+            let hoursColor = '#4facfe';
+            if (remainingHours < 5) hoursColor = '#ff4d4f';
+            else if (remainingHours < 10) hoursColor = '#faad14';
+            
+            let html = `
+                <div class="result-card">
+                    <div class="name">${student.name}</div>
+                    <div class="hours-box">
+                        <div class="hours-item remaining">
+                            <div class="value" style="color:${hoursColor}">${remainingHours}</div>
+                            <div class="label">剩余课时</div>
+                        </div>
+                        <div class="hours-item">
+                            <div class="value">${student.purchased_hours || 0}</div>
+                            <div class="label">购买课时</div>
+                        </div>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="label">教练</div>
+                            <div class="value">${student.coach || '-'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">等级</div>
+                            <div class="value">${student.level || '-'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (studentSchedules.length > 0) {
+                html += `
+                    <div class="schedule-card">
+                        <h3>📅 本周课表</h3>
+                        ${studentSchedules.map(sc => `
+                            <div class="schedule-item">
+                                <div>
+                                    <div class="day">${sc.week_day}</div>
+                                    <div class="slot">${sc.time_slot}</div>
+                                </div>
+                                <div style="color:#667eea;font-size:12px;">${sc.coach || ''}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="schedule-card">
+                        <h3>📅 本周课表</h3>
+                        <div class="empty" style="padding:20px">
+                            <div style="font-size:13px">暂无排课</div>
+                            <div style="font-size:12px;color:#999;margin-top:4px">请联系教练安排课程</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('resultArea').innerHTML = html;
+        }
+    </script>
+</body>
+</html>

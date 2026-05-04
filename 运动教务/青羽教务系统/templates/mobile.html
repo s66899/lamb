@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🐏的教务</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:15px;background:#F2F2F7;padding-bottom:90px;color:#1C1C1E;line-height:1.5}
+
+/* iOS 顶部导航 - 毛玻璃 */
+.header{background:rgba(255,255,255,0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);color:#1C1C1E;padding:16px;font-size:17px;font-weight:600;text-align:center;position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(0,0,0,0.05);letter-spacing:-0.3px}
+.container{padding:16px}
+
+/* iOS 卡片 - 大圆角 柔和阴影 */
+.card{background:#FFFFFF;border-radius:20px;padding:16px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04);transition:transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94),box-shadow 0.25s cubic-bezier(0.25,0.46,0.45,0.94)}
+.card:active{transform:scale(0.98)}
+
+/* iOS 底部 Tab - 毛玻璃 */
+.tabs{display:flex;background:rgba(255,255,255,0.82);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);position:fixed;bottom:0;left:0;right:0;z-index:100;border-top:1px solid rgba(0,0,0,0.06);padding-bottom:env(safe-area-inset-bottom)}
+.tab{flex:1;padding:10px 0 8px;text-align:center;font-size:10px;cursor:pointer;border:none;background:transparent;color:#8E8E93;font-weight:500;transition:color 0.2s;position:relative}
+.tab.active{color:#007AFF;font-weight:600}
+.tab.active::after{content:'';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:#007AFF;border-radius:50%}
+.page{display:none;min-height:calc(100vh - 60px);animation:fadeIn 0.35s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* iOS 按钮 */
+.btn{padding:12px 16px;border:none;border-radius:12px;font-size:15px;cursor:pointer;background:#007AFF;color:#fff;width:100%;font-weight:500;transition:all 0.2s cubic-bezier(0.25,0.46,0.45,0.94);box-shadow:0 1px 2px rgba(0,122,255,0.2)}
+.btn:hover{background:#0051D5}
+.btn:active{transform:scale(0.96);box-shadow:none}
+.btn-sm{padding:8px 14px;font-size:13px;width:auto;border-radius:10px}
+.btn-success{background:#34C759;box-shadow:0 1px 2px rgba(52,199,89,0.2)}
+.btn-success:hover{background:#248A3D}
+.btn-warning{background:#FF9500;box-shadow:0 1px 2px rgba(255,149,0,0.2)}
+.btn-warning:hover{background:#C47000}
+.btn-danger{background:#FF3B30;box-shadow:0 1px 2px rgba(255,59,48,0.2)}
+.btn-danger:hover{background:#C41C14}
+.btn-outline{background:#fff;color:#007AFF;border:1px solid #007AFF;box-shadow:none}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+.grid-item{background:#fff;border-radius:20px;padding:18px;text-align:center;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04);transition:all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)}
+.grid-item:active{transform:scale(0.95)}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat-card{background:#fff;border-radius:20px;padding:16px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04);cursor:pointer;transition:all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)}
+.stat-card:active{transform:scale(0.96)}
+.stat-value{font-size:24px;font-weight:700;color:#007AFF;letter-spacing:-0.5px}
+.stat-label{font-size:11px;color:#8E8E93;margin-top:4px;font-weight:500}
+
+/* 今日卡片 - 活力渐变 */
+.today-card{background:linear-gradient(135deg,#5E5CE6,#BF5AF2);color:#fff;border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 8px 24px rgba(94,92,230,0.35);position:relative;overflow:hidden}
+.today-card::before{content:'';position:absolute;top:-50%;right:-20%;width:200px;height:200px;background:rgba(255,255,255,0.08);border-radius:50%}
+.today-num{font-size:48px;font-weight:700;line-height:1;letter-spacing:-1px}
+.today-date{font-size:13px;opacity:0.85;margin-top:6px;font-weight:400}
+.attend-item{display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:14px;cursor:pointer;transition:all 0.2s;border-radius:12px;margin-bottom:4px}
+.attend-item:last-child{border-bottom:none;margin-bottom:0}
+.attend-item:active{background:rgba(255,255,255,0.12)}
+.attend-avatar{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0;backdrop-filter:blur(4px)}
+.attend-info{flex:1;min-width:0}
+.attend-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.attend-meta{font-size:12px;opacity:0.82;margin-top:2px}
+
+/* iOS 标签 */
+.tag{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;color:#fff;font-weight:500}
+.tag-blue{background:#007AFF}.tag-green{background:#34C759}.tag-yellow{background:#FF9500}
+.tag-red{background:#FF3B30}.tag-gray{background:#8E8E93}.tag-cyan{background:#5AC8FA}
+
+.input-search{width:100%;padding:12px 16px;border:none;background:#E5E5EA;border-radius:12px;font-size:15px;transition:all 0.2s}
+.input-search:focus{outline:none;background:#DCDCE0;box-shadow:0 0 0 3px rgba(0,122,255,0.15)}
+.info-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #F2F2F7;font-size:15px;align-items:center}
+.info-row:last-child{border-bottom:none}
+.info-label{color:#8E8E93;font-size:14px}.info-value{font-weight:500;text-align:right;max-width:60%;color:#1C1C1E}
+.info-value.green{color:#34C759;font-size:17px;font-weight:700}
+
+/* iOS 风格弹窗 */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.modal.show{display:flex;animation:modalFadeIn 0.25s ease}
+@keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+.modal-content{background:#fff;border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -4px 20px rgba(0,0,0,0.1);animation:modalSlideUp 0.35s cubic-bezier(0.25,0.46,0.45,0.94)}
+@keyframes modalSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #F2F2F7}
+.modal-header h3{font-size:17px;font-weight:700;color:#1C1C1E}
+.modal-close{font-size:24px;color:#C7C7CC;cursor:pointer;padding:4px;line-height:1;transition:color 0.2s}
+.modal-close:hover{color:#8E8E93}
+.modal-footer{margin-top:16px;padding-top:14px;border-top:1px solid #F2F2F7;display:flex;gap:10px}
+.modal-footer .btn{flex:1}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;margin-bottom:6px;font-size:13px;color:#8E8E93;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 14px;border:1px solid #E5E5EA;border-radius:12px;font-size:15px;background:#fff;appearance:none;-webkit-appearance:none;transition:all 0.2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#007AFF;box-shadow:0 0 0 3px rgba(0,122,255,0.12)}
+.form-hint{font-size:12px;color:#8E8E93;margin-top:4px}
+.empty{text-align:center;padding:40px 20px;color:#C7C7CC;font-size:15px}
+.empty-icon{font-size:48px;margin-bottom:10px}
+.section-title{font-size:13px;font-weight:600;color:#8E8E93;margin-bottom:12px;padding-left:4px;text-transform:uppercase;letter-spacing:0.5px}
+
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.quick-action{background:#fff;border-radius:20px;padding:16px 8px;text-align:center;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04);transition:all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)}
+.quick-action:active{transform:scale(0.95)}
+.quick-action .icon{font-size:26px;margin-bottom:6px}
+.quick-action .label{font-size:11px;color:#8E8E93;font-weight:500}
+.detail-stat{background:#F2F2F7;border-radius:16px;padding:16px;margin-bottom:10px;text-align:center}
+.detail-stat .val{font-size:30px;font-weight:700;color:#007AFF;letter-spacing:-0.5px}
+.detail-stat .lbl{font-size:12px;color:#8E8E93;margin-top:4px}
+.coach-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:11px;color:#fff;font-weight:500}
+
+.course-option{padding:14px;border:1.5px solid #E5E5EA;border-radius:16px;margin-bottom:12px;cursor:pointer;transition:all 0.2s;position:relative}
+.course-option:active,.course-option.selected{border-color:#007AFF;background:#F2F2F7}
+.course-option.selected{border-width:2px}
+.course-option .course-name{font-weight:600;font-size:15px;color:#1C1C1E;margin-bottom:4px}
+.course-option .course-desc{font-size:13px;color:#8E8E93}
+.course-option .course-price{font-size:14px;color:#34C759;font-weight:600;margin-top:4px}
+.course-option .check-icon{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:#007AFF;color:#fff;display:none;align-items:center;justify-content:center;font-size:12px}
+.course-option.selected .check-icon{display:flex}
+
+.search-result{padding:14px;border-bottom:1px solid #F2F2F7;cursor:pointer;transition:background 0.2s}
+.search-result:active{background:#F2F2F7}
+.search-result .name{font-weight:600;font-size:15px}
+.search-result .meta{font-size:13px;color:#8E8E93;margin-top:2px}
+.progress-bar{height:6px;background:#E5E5EA;border-radius:3px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.5s cubic-bezier(0.25,0.46,0.45,0.94)}
+.list-item{padding:14px 0;border-bottom:1px solid #F2F2F7;transition:background 0.15s}
+.list-item:last-child{border-bottom:none}
+.list-item:active{background:#F2F2F7}
+
+/* 统计页面 */
+.stats-tabs{display:flex;background:#E5E5EA;border-radius:14px;margin-bottom:16px;overflow:hidden;padding:4px}
+.stats-tab{flex:1;padding:10px;text-align:center;font-size:13px;cursor:pointer;border:none;background:transparent;color:#8E8E93;font-weight:500;transition:all 0.25s;border-radius:10px}
+.stats-tab.active{background:#fff;color:#007AFF;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+
+.grid-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.grid-table th{padding:12px 8px;background:#F2F2F7;font-weight:600;color:#8E8E93;font-size:12px;text-align:center;border-bottom:1px solid #E5E5EA;white-space:nowrap}
+.grid-table td{padding:11px 8px;text-align:center;border-bottom:1px solid #F2F2F7;font-size:13px;transition:background 0.15s}
+.grid-table tr:last-child td{border-bottom:none}
+.grid-table tr:active td{background:#F2F2F7}
+.grid-table .date-col{color:#8E8E93;font-size:12px;text-align:left!important;padding-left:12px}
+.grid-table .coach-wang{color:#FF3B30;font-weight:700}
+.grid-table .coach-chen{color:#007AFF;font-weight:700}
+.grid-table .coach-sun{color:#FF9500;font-weight:700}
+.grid-table .total-col{color:#007AFF;font-weight:700;font-size:14px}
+.grid-table .highlight{background:#FFF9E6}
+
+/* 月份折叠 */
+.month-group{margin-bottom:16px}
+.month-header{background:linear-gradient(135deg,#5E5CE6,#BF5AF2);color:#fff;border-radius:20px;padding:16px 18px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 12px rgba(94,92,230,0.3);transition:transform 0.2s}
+.month-header:active{transform:scale(0.98)}
+.month-title{font-size:17px;font-weight:700}
+.month-summary{display:flex;gap:12px;margin-top:4px;font-size:12px;opacity:0.9}
+.month-arrow{font-size:14px;transition:transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94)}
+.month-arrow.up{transform:rotate(180deg)}
+.month-body{background:#fff;border-radius:0 0 20px 20px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.04)}
+.month-body-inner{padding:12px;overflow-x:auto}
+
+/* 列表项内部撤销按钮 */
+.undo-btn{background:#E5E5EA;color:#8E8E93;border:none;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;transition:all 0.2s}
+.undo-btn:active{background:#DCDCE0;transform:scale(0.95)}
+</style>
+</head>
+<body>
+
+<div class="header">🐏的教务</div>
+
+<!-- ========== 首页 ========== -->
+<div class="page active" id="page-home">
+<div class="container">
+  <!-- 今日消课 -->
+  <div class="today-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="opacity:0.8;font-size:12px">今日消课</div>
+        <div class="today-num" id="todayCount">0</div>
+      </div>
+      <div style="text-align:right">
+        <div id="todayDate" style="font-size:12px;opacity:0.8"></div>
+      </div>
+    </div>
+    <div id="todayList"></div>
+  </div>
+
+  <!-- 今日请假/旷课 -->
+  <div class="card" id="todayLeaveCard">
+    <div class="section-title">今日请假 / 旷课</div>
+    <div id="todayLeaveList"></div>
+  </div>
+
+  <!-- 课程预览 -->
+  <div class="card" id="homeSchedulePreview">
+    <div class="section-title" onclick="toggleSchedulePreview()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+      <span>课程预览</span>
+      <span id="schedulePreviewArrow" style="font-size:12px;transition:transform 0.2s">▶</span>
+    </div>
+    <div id="homeSchedulePreviewContent" style="display:none"></div>
+  </div>
+
+  <!-- 近期请假记录（可折叠，默认收起） -->
+  <div class="card" id="recentLeaveCard">
+    <div class="section-title" onclick="toggleRecentLeave()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+      <span>近期请假记录</span>
+      <span id="recentLeaveArrow" style="font-size:12px;transition:transform 0.2s">▶</span>
+    </div>
+    <div id="recentLeaveList" style="display:none"></div>
+  </div>
+
+  <!-- 快捷功能 -->
+  <div class="quick-actions">
+    <div class="quick-action" onclick="showAddStudent()"><div class="icon">+</div><div class="label">添加学员</div></div>
+    <div class="quick-action" onclick="showTempEnrollment()"><div class="icon">插</div><div class="label">插班生</div></div>
+    <div class="quick-action" onclick="switchTabById('page-schedule')"><div class="icon">📅</div><div class="label">课表</div></div>
+    <div class="quick-action" onclick="switchTabById('page-attendance')"><div class="icon">✅</div><div class="label">消课</div></div>
+  </div>
+
+  <!-- 统计 -->
+  <div class="stat-grid" id="stats"></div>
+
+  <!-- 本周课表（可折叠，默认收起） -->
+  <div class="card" id="homeSimpleSchedule">
+    <div class="section-title" onclick="toggleHomeSimpleSchedule()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+      <span>本周课表</span>
+      <span id="homeSimpleScheduleArrow" style="font-size:12px;transition:transform 0.2s">▶</span>
+    </div>
+    <div id="homeSimpleScheduleContent" style="display:none"></div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 学员列表 ========== -->
+<div class="page" id="page-students">
+<div class="container">
+  <div class="card"><input type="text" class="input-search" placeholder="搜索姓名或电话..." id="searchInput" oninput="filterStudents()"></div>
+  <div style="font-size:12px;color:#888;padding:4px 8px">共 <span id="studentCount">0</span> 人</div>
+</div>
+<div id="studentsList"></div>
+</div>
+
+<!-- ========== 课表 ========== -->
+<div class="page" id="page-schedule">
+<div class="container">
+  <div class="card">
+    <select id="scheduleDay" onchange="loadSchedule()" style="width:100%;padding:14px;font-size:16px;border:1px solid #e0e0e0;border-radius:10px;background:#fff">
+    <option value="星期一">星期一</option><option value="星期二">星期二</option><option value="星期三">星期三</option><option value="星期四">星期四</option><option value="星期五">星期五</option><option value="星期六">星期六</option><option value="星期日">星期日</option>
+    </select>
+  </div>
+  <div class="card" style="background:#faad14;color:#fff;text-align:center;padding:14px;font-size:16px;font-weight:600;border-radius:14px;cursor:pointer" onclick="showMoveSchedule()">调课</div>
+  <div id="scheduleList"></div>
+</div>
+</div>
+
+<!-- ========== 消课点名 ========== -->
+<div class="page" id="page-attendance">
+<div class="container">
+  <div class="card">
+    <div style="display:flex;gap:10px">
+      <div style="flex:1">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">日期</label>
+        <input type="date" id="attDate" style="width:100%;padding:12px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff">
+      </div>
+      <div style="flex:1">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">星期</label>
+        <select id="attDay" onchange="loadAttSlots()" style="width:100%;padding:12px;font-size:14px;border:1px solid #e0e0e0;border-radius:10px;background:#fff">
+        <option value="星期一">星期一</option><option value="星期二">星期二</option><option value="星期三">星期三</option><option value="星期四">星期四</option><option value="星期五">星期五</option><option value="星期六">星期六</option><option value="星期日">星期日</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">时间段</label>
+      <select id="attSlot" onchange="loadAttStudents()" style="width:100%;padding:12px;font-size:14px;border:1px solid #e0e0e0;border-radius:10px;background:#fff"></select>
+    </div>
+  </div>
+  <div id="attList"></div>
+  <div style="display:flex;gap:8px;margin-top:12px;margin-bottom:12px">
+    <button class="btn btn-success btn-sm" onclick="batchAttend()" style="flex:1">批量消课</button>
+    <button class="btn btn-warning btn-sm" onclick="showBatchLeave()" style="flex:1">批量请假</button>
+    <button class="btn btn-danger btn-sm" onclick="showBatchAbsence()" style="flex:1">批量旷课</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== 统计 ========== -->
+<div class="page" id="page-statistics">
+<div class="container">
+  <!-- 汇总卡片 -->
+  <div class="card" id="statsSummaryCard">
+    <div class="section-title">综合数据</div>
+    <div id="statsSummaryContent"></div>
+  </div>
+
+  <!-- 子Tab -->
+  <div class="stats-tabs">
+    <button class="stats-tab active" onclick="switchStatsView('daily')">每日明细</button>
+    <button class="stats-tab" onclick="switchStatsView('monthly')">月度统计</button>
+    <button class="stats-tab" onclick="switchStatsView('consume')">存销比</button>
+    <button class="stats-tab" onclick="switchStatsView('recent')">近期消课</button>
+  </div>
+
+  <!-- 每日明细网格 -->
+  <div id="statsDailyView"></div>
+
+  <!-- 月度统计视图 -->
+  <div id="statsMonthlyView" style="display:none"></div>
+
+  <!-- 存销比视图 -->
+  <div id="statsConsumeView" style="display:none"></div>
+
+  <!-- 近期消课视图 -->
+  <div id="statsRecentView" style="display:none"></div>
+
+  <!-- 请假记录 -->
+  <div class="card" id="statsLeaveCard">
+    <div class="section-title">请假记录</div>
+    <div id="statsLeaveList"></div>
+  </div>
+</div>
+</div>
+
+<!-- 底部导航 -->
+<div class="tabs">
+  <button class="tab active" data-page="page-home" onclick="switchTab(this)">首页</button>
+  <button class="tab" data-page="page-students" onclick="switchTab(this)">学员</button>
+  <button class="tab" data-page="page-schedule" onclick="switchTab(this)">课表</button>
+  <button class="tab" data-page="page-attendance" onclick="switchTab(this)">消课</button>
+  <button class="tab" data-page="page-statistics" onclick="switchTab(this)">📊统计</button>
+</div>
+
+<!-- ========== 弹窗 ========== -->
+
+<!-- 添加学员 -->
+<div class="modal" id="modalAddStudent">
+<div class="modal-content">
+  <div class="modal-header"><h3>添加新学员</h3><span class="modal-close" onclick="closeModal('modalAddStudent')">&times;</span></div>
+  <div class="form-group"><label>姓名 <span style="color:#ff4d4f">*</span></label><input id="newName" placeholder="请输入学员姓名"></div>
+  <div class="form-group"><label>联系电话</label><input id="newPhone" placeholder="请输入手机号码" type="tel"></div>
+  <div class="form-group"><label>授课教练</label><select id="newCoach"></select></div>
+  <div class="form-group"><label>学员等级</label>
+    <select id="newLevel">
+      <option>青羽1级</option><option>青羽2级</option><option>青羽3级</option>
+      <option>青羽4级</option><option>青羽5级</option><option>青羽6级</option>
+      <option>青羽7级</option><option>青羽8级</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>选择课程包</label>
+    <div id="coursePackageOptions">
+      <div class="course-option" onclick="selectPkg(this,'常规50节',50,3999,'pkg_50')"><div class="check-icon">✓</div><div class="course-name">常规课 · 50节</div><div class="course-desc">50节课包</div><div class="course-price">3999元</div></div>
+      <div class="course-option" onclick="selectPkg(this,'常规30节',30,2699,'pkg_30')"><div class="check-icon">✓</div><div class="course-name">常规课 · 30节</div><div class="course-desc">30节课包</div><div class="course-price">2699元</div></div>
+      <div class="course-option" onclick="selectPkg(this,'常规15节',15,1499,'pkg_15')"><div class="check-icon">✓</div><div class="course-name">常规课 · 15节</div><div class="course-desc">15节课包</div><div class="course-price">1499元</div></div>
+      <div class="course-option" onclick="selectPkg(this,'月卡7节',7,569,'monthly')"><div class="check-icon">✓</div><div class="course-name">月卡 · 7节</div><div class="course-desc">月卡7节课</div><div class="course-price">569元</div></div>
+      <div class="course-option" onclick="selectPkgVip(this,'1v1私教')"><div class="check-icon">✓</div><div class="course-name">1V1 私教课</div><div class="course-desc">1对1教学 · 220元/节</div><div class="course-price">下选节数</div></div>
+      <div class="course-option" onclick="selectPkgVip(this,'1v2小班')"><div class="check-icon">✓</div><div class="course-name">1V2 小班课</div><div class="course-desc">1对2教学 · 120元/节</div><div class="course-price">下选节数</div></div>
+    </div>
+    <div id="vipHoursPanel" style="display:none;margin-top:10px">
+      <label style="font-size:13px;color:#555;font-weight:500;display:block;margin-bottom:6px" id="vipHoursLabel">选择节数</label>
+      <input type="number" id="newVipHours" min="5" max="15" value="10" style="text-align:center;font-size:20px;padding:12px">
+      <div class="form-hint">1V1/1V2 可选 5~15 节</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modalAddStudent')" style="flex:1">取消</button>
+    <button class="btn" onclick="saveNewStudent()" style="flex:1">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- 编辑学员弹窗 -->
+<div class="modal" id="modalEditStudent" style="z-index:300">
+<div class="modal-content">
+<div class="modal-header"><h3>编辑学员信息</h3><span onclick="closeModal('modalEditStudent')" style="font-size:24px;cursor:pointer">&times;</span></div>
+<input type="hidden" id="editStudentId">
+<div class="form-group"><label>姓名 *</label><input id="editStudentName" placeholder="请输入姓名"></div>
+<div class="form-group"><label>电话</label><input id="editStudentPhone" placeholder="请输入电话"></div>
+<div class="form-group"><label>教练</label><select id="editStudentCoach"></select></div>
+<div class="form-group"><label>等级</label><select id="editStudentLevel"><option>初级</option><option>中级</option><option>高级</option><option>竞赛级</option></select></div>
+<div class="form-group"><label>状态</label>
+<select id="editStudentStatus">
+<option value="active">在读</option>
+<option value="inactive">已结</option>
+<option value="potential">潜在</option>
+</select>
+</div>
+
+<div class="form-group"><label>剩余课时</label><input type="number" id="editStudentHours" min="0"></div>
+<div class="form-group"><label>赠送课时</label><input type="number" id="editStudentBonusHours" min="0"></div>
+
+<!-- 课程包管理 -->
+<div class="form-group" id="editEnrollmentSection" style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-weight:600;color:#333">📦 课程包信息</div>
+  </div>
+  <div id="editEnrollmentList" style="max-height:240px;overflow-y:auto;background:#fafafa;border-radius:4px;padding:8px;font-size:13px">
+    <div style="text-align:center;color:#999;padding:12px">正在加载课程包信息...</div>
+  </div>
+</div>
+
+<!-- 上课时间段管理 -->
+<div class="form-group" id="editScheduleSection" style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-weight:600;color:#333">⏰ 上课时间段</div>
+    <button type="button" class="btn btn-sm" onclick="showAddScheduleRow()" style="background:#1890ff;color:#fff;padding:4px 12px;font-size:12px">新增排课</button>
+  </div>
+  <div id="editScheduleList" style="max-height:240px;overflow-y:auto;background:#fafafa;border-radius:4px;padding:8px;font-size:13px">
+    <!-- 排课列表将动态加载 -->
+    <div style="text-align:center;color:#999;padding:12px">正在加载排课信息...</div>
+  </div>
+</div>
+
+<div class="form-group">
+<button class="btn btn-block" onclick="saveEditStudent()" style="background:#52c41a">保存修改</button>
+<button class="btn btn-block" onclick="closeModal('modalEditStudent')" style="background:#f5f5f5;color:#333;margin-top:8px">取消</button>
+</div>
+</div>
+</div>
+
+<!-- 插班生 -->
+<div class="modal" id="modalTemp">
+<div class="modal-content">
+  <div class="modal-header"><h3>插班生消课</h3><span class="modal-close" onclick="closeModal('modalTemp')">&times;</span></div>
+  <div class="form-group">
+    <label>搜索选择学员</label>
+    <input type="text" class="input-search" placeholder="输入姓名搜索..." id="tempSearchInput" oninput="filterTempStudents()" style="margin-bottom:8px">
+    <select id="tempStudent" size="5" style="width:100%;padding:8px 12px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;appearance:none;-webkit-appearance:none"></select>
+  </div>
+  <div class="form-group"><label>授课教练</label><select id="tempCoach"></select></div>
+  <div class="form-group"><label>上课日期</label>
+    <input type="date" id="tempDate" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff">
+  </div>
+  <div class="form-group"><label>上课时间段</label><select id="tempSlot" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"></select></div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modalTemp')" style="flex:1">取消</button>
+    <button class="btn btn-success" onclick="doTempEnrollment()" style="flex:1">确认消课</button>
+  </div>
+</div>
+</div>
+
+<!-- 排课 -->
+<div class="modal" id="modalAddSchedule">
+<div class="modal-content">
+  <div class="modal-header"><h3>添加排课</h3><span class="modal-close" onclick="closeModal('modalAddSchedule')">&times;</span></div>
+  <div class="form-group"><label>星期</label><select id="addDay" onchange="loadAddSlots()" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"><option value="星期一">星期一</option><option value="星期二">星期二</option><option value="星期三">星期三</option><option value="星期四">星期四</option><option value="星期五">星期五</option><option value="星期六">星期六</option><option value="星期日">星期日</option></select></div>
+  <div class="form-group"><label>时间段</label><select id="addSlot" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"></select></div>
+  <div class="form-group"><label>教练</label><select id="addCoach" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"></select></div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modalAddSchedule')" style="flex:1">取消</button>
+    <button class="btn" onclick="saveSchedule()" style="flex:1">确认</button>
+  </div>
+</div>
+</div>
+
+<!-- 调课 -->
+<div class="modal" id="modalMoveSchedule">
+<div class="modal-content">
+  <div class="modal-header"><h3>调整排课</h3><span class="modal-close" onclick="closeModal('modalMoveSchedule')">&times;</span></div>
+  <div class="form-group"><label>选择现有排课</label><select id="moveFromSchedule" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"></select></div>
+  <div class="form-group"><label>新课程日期</label><select id="moveNewDay" onchange="loadMoveNewSlots()" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"><option value="星期一">星期一</option><option value="星期二">星期二</option><option value="星期三">星期三</option><option value="星期四">星期四</option><option value="星期五">星期五</option><option value="星期六">星期六</option><option value="星期日">星期日</option></select></div>
+  <div class="form-group"><label>新课程时间</label><select id="moveNewSlot" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"></select></div>
+  <div class="form-group"><label>新教练</label><select id="moveNewCoach" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"><option>王教练</option><option>陈教练</option><option>孙教练</option></select></div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modalMoveSchedule')" style="flex:1">取消</button>
+    <button class="btn" onclick="confirmMoveSchedule()" style="flex:1">确认调整</button>
+  </div>
+</div>
+</div>
+
+<!-- 时段详情弹窗 -->
+<div class="modal" id="modalSlotDetail">
+<div class="modal-content">
+  <div class="modal-header"><h3 id="modalSlotTitle">时段详情</h3><span class="modal-close" onclick="closeModal('modalSlotDetail')">&times;</span></div>
+  <div id="modalSlotContent"></div>
+</div>
+</div>
+
+<!-- 消课详情 -->
+<div class="modal" id="modalTodayDetail">
+<div class="modal-content">
+  <div class="modal-header"><h3>消课详情</h3><span class="modal-close" onclick="closeModal('modalTodayDetail')">&times;</span></div>
+  <div id="modalTodayContent"></div>
+</div>
+</div>
+
+<!-- 请假原因 -->
+<div class="modal" id="modalLeaveReason">
+<div class="modal-content">
+  <div class="modal-header"><h3>请假原因</h3><span class="modal-close" onclick="closeModal('modalLeaveReason')">&times;</span></div>
+  <div id="modalLeaveContent" style="font-size:15px;line-height:1.8;color:#555;padding:8px 0"></div>
+</div>
+</div>
+
+<!-- 学员详情 -->
+<div class="modal" id="modalStudentDetail">
+<div class="modal-content">
+  <div class="modal-header"><h3 id="modalStudentName">学员详情</h3><span class="modal-close" onclick="closeModal('modalStudentDetail')">&times;</span></div>
+  <div id="modalStudentContent"></div>
+</div>
+</div>
+
+<!-- 学员出勤明细 -->
+<div class="modal" id="modalStudentAttDetail">
+<div class="modal-content">
+  <div class="modal-header"><h3 id="modalAttStuName">出勤明细</h3><span class="modal-close" onclick="closeModal('modalStudentAttDetail')">&times;</span></div>
+  <div id="modalStudentAttContent"></div>
+</div>
+</div>
+
+<!-- 出勤率详情弹窗 -->
+<div class="modal" id="modalAttendanceRate">
+<div class="modal-content">
+  <div class="modal-header"><h3>月出勤率详情</h3><span class="modal-close" onclick="closeModal('modalAttendanceRate')">&times;</span></div>
+  <div id="modalAttendanceRateContent"></div>
+</div>
+</div>
+
+<!-- 上课明细学员弹窗 -->
+<div class="modal" id="modalDailyStudents">
+<div class="modal-content">
+  <div class="modal-header"><h3 id="modalDailyStudentsTitle">上课学员</h3><span class="modal-close" onclick="closeModal('modalDailyStudents')">&times;</span></div>
+  <div id="modalDailyStudentsContent"></div>
+</div>
+</div>
+
+<script src="/static/js/common.js"></script>
+<script src="/static/js/mobile.js"></script>
+</body>
+</html>
