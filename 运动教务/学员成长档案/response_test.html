@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学员成长档案 - 教练端</title>
+  <style>
+    :root {
+      --primary: #1a5f2a;
+      --primary-light: #2e8b57;
+      --primary-lighter: #3cb371;
+      --accent: #0ea5e9;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --radius: 12px;
+      --radius-lg: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container { max-width: 1280px; margin: 0 auto; padding: 24px; }
+
+    header {
+      background: linear-gradient(135deg, #14522d 0%, #1a5f2a 40%, #2e8b57 100%);
+      color: white;
+      padding: 28px 32px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    header .subtitle { opacity: 0.85; font-size: 13px; margin-top: 4px; font-weight: 400; }
+
+    .header-left { z-index: 1; }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      z-index: 1;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+      width: 260px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      font-size: 14px;
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+    }
+    .search-box input::placeholder { color: rgba(255,255,255,0.6); }
+    .search-box input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.4);
+    }
+    .search-box .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .search-box .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-size: 12px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .search-box .search-clear.show { display: flex; }
+
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(4px);
+      white-space: nowrap;
+    }
+    .sync-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .sync-saved .sync-dot { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+    .sync-unsaved .sync-dot { background: #fbbf24; animation: pulse 1.5s infinite; }
+    .sync-saving .sync-dot { background: #60a5fa; animation: pulse 0.8s infinite; }
+    .sync-error .sync-dot { background: #f87171; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .btn-add {
+      background: white;
+      color: var(--primary);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+    }
+    .btn-add:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+
+    .student-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .student-card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary-light);
+    }
+    .student-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary-lighter);
+    }
+    .student-card.hidden { display: none; }
+    .student-card.animate-in {
+      animation: cardIn 0.4s ease forwards;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    @keyframes cardIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .student-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+
+    .avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-lighter) 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 24px; font-weight: 600; flex-shrink: 0;
+      overflow: hidden; border: 3px solid #e8f5e9;
+      box-shadow: var(--shadow-sm);
+    }
+    .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+    .student-info h3 { font-size: 17px; margin-bottom: 3px; color: var(--text); }
+    .student-info .meta { font-size: 12px; color: var(--text-secondary); }
+    .student-info .bmi-tag {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 20px; margin-top: 5px; font-weight: 500;
+    }
+    .bmi-normal { background: #dcfce7; color: #166534; }
+    .bmi-under { background: #fef9c3; color: #854d0e; }
+    .bmi-over { background: #fee2e2; color: #991b1b; }
+
+    .student-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .stat-item { text-align: center; padding: 10px 6px; background: #f8fafc; border-radius: 10px; transition: background 0.2s; }
+    .stat-item:hover { background: #f1f5f9; }
+    .stat-item .label { font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; }
+    .stat-item .value { font-size: 15px; font-weight: 700; color: var(--primary); }
+
+    .delete-btn {
+      position: absolute; top: 12px; right: 12px;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--danger); color: white; border: none;
+      cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .student-card:hover .delete-btn { opacity: 1; }
+    .delete-btn:hover { background: #dc2626; }
+
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15,23,42,0.55); z-index: 1000;
+      overflow-y: auto; padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active { display: flex; justify-content: center; align-items: flex-start; }
+
+    .modal {
+      background: var(--card); border-radius: 20px;
+      width: 100%; max-width: 980px;
+      margin: 36px 0; overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      animation: modalIn 0.3s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.97) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #14522d 0%, #1a5f2a 40%, #2e8b57 100%);
+      color: white; padding: 28px 30px; position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 18px; right: 18px;
+      background: rgba(255,255,255,0.15); border: none; color: white;
+      width: 36px; height: 36px; border-radius: 50%;
+      cursor: pointer; font-size: 20px; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.3); }
+
+    .modal-profile { display: flex; align-items: center; gap: 18px; }
+    .modal-avatar-wrapper { position: relative; width: 80px; height: 80px; }
+    .modal-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; font-weight: 600;
+      border: 3px solid rgba(255,255,255,0.25); overflow: hidden;
+    }
+    .modal-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+    .avatar-edit-btn {
+      position: absolute; bottom: -2px; right: -2px;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: white; border: 2px solid var(--primary);
+      color: var(--primary); font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; box-shadow: var(--shadow-sm);
+    }
+    .avatar-edit-btn:hover { background: var(--primary); color: white; }
+
+    .modal-profile-info h2 {
+      font-size: 22px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .modal-profile-info .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 12px; backdrop-filter: blur(4px); }
+
+    .modal-header-actions {
+      position: absolute; top: 18px; right: 66px;
+      display: flex; gap: 8px;
+    }
+    .header-action-btn {
+      background: rgba(255,255,255,0.12); border: none; color: white;
+      padding: 8px 16px; border-radius: 8px; cursor: pointer;
+      font-size: 13px; transition: all 0.2s; backdrop-filter: blur(4px);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .header-action-btn:hover { background: rgba(255,255,255,0.25); }
+    .header-action-btn.danger:hover { background: var(--danger); }
+
+    .modal-body { padding: 28px; }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .info-card {
+      background: #f8fafc; padding: 14px 10px;
+      border-radius: var(--radius); text-align: center;
+      transition: all 0.2s; border: 1px solid transparent;
+    }
+    .info-card:hover { background: #f0fdf4; border-color: #bbf7d0; }
+    .info-card .label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .info-card .value { font-size: 16px; font-weight: 700; color: var(--text); }
+    .info-card .edit-icon {
+      display: none; cursor: pointer; color: var(--primary);
+      font-size: 11px; margin-left: 4px;
+    }
+    .info-card:hover .edit-icon { display: inline; }
+    .info-card input {
+      width: 70px; padding: 4px; border: 1px solid var(--border);
+      border-radius: 6px; font-size: 14px; text-align: center;
+    }
+    .info-card input:focus { outline: none; border-color: var(--primary); }
+
+    .section { margin-bottom: 24px; }
+    .section-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary);
+    }
+    .section-title {
+      font-size: 15px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title .icon { font-size: 20px; }
+
+    .btn-small {
+      background: var(--primary); color: white; border: none;
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-small:hover { background: #14522d; transform: translateY(-1px); }
+    .btn-small.outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+    .btn-small.outline:hover { background: var(--primary); color: white; }
+    .btn-small.danger { background: var(--danger); }
+    .btn-small.danger:hover { background: #dc2626; }
+    .btn-small.warning { background: var(--warning); color: #fff; }
+    .btn-small.warning:hover { background: #d97706; }
+
+    .progress-bar {
+      background: #e2e8f0; border-radius: 8px; height: 10px;
+      overflow: hidden; margin-bottom: 6px;
+    }
+    .progress-fill {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-lighter) 100%);
+      height: 100%; border-radius: 8px; transition: width 0.5s ease;
+    }
+    .progress-item { margin-bottom: 16px; padding: 14px; background: #f8fafc; border-radius: var(--radius); border: 1px solid var(--border); transition: all 0.2s; }
+    .progress-item:hover { border-color: #bbf7d0; background: #f0fdf4; }
+    .progress-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
+    .progress-label { color: var(--text); font-weight: 600; }
+    .progress-value { font-weight: 700; color: var(--primary); }
+    .progress-standard { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
+    .progress-actions { margin-top: 10px; display: flex; gap: 8px; }
+    .progress-actions button {
+      font-size: 11px; padding: 5px 12px; border-radius: 6px;
+      border: 1px solid var(--border); background: white; cursor: pointer;
+      color: var(--text-secondary); transition: all 0.2s;
+    }
+    .progress-actions button:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    .progress-actions button.delete:hover { background: var(--danger); border-color: var(--danger); }
+
+    .level-badge {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 20px; margin-left: 6px; font-weight: 600;
+    }
+    .level-beginner { background: #dbeafe; color: #1d4ed8; }
+    .level-elementary { background: #dcfce7; color: #15803d; }
+    .level-intermediate { background: #fef3c7; color: #b45309; }
+    .level-advanced { background: #fce7f3; color: #be185d; }
+    .level-expert { background: #f3e8ff; color: #7c3aed; }
+    .level-master { background: linear-gradient(90deg, #fbbf24, #f59e0b); color: #451a03; }
+
+    .record-list { display: flex; flex-direction: column; gap: 10px; }
+    .record-item {
+      background: #f8fafc; padding: 14px 16px;
+      border-radius: var(--radius); border-left: 4px solid var(--primary-light);
+      position: relative; transition: all 0.2s; border: 1px solid var(--border); border-left-width: 4px;
+    }
+    .record-item:hover { background: #f0fdf4; border-color: #bbf7d0; border-left-color: var(--primary-light); }
+    .record-item.warning { border-left-color: var(--warning); background: #fffbeb; }
+    .record-item.warning:hover { background: #fef3c7; }
+    .record-item.success { border-left-color: var(--success); background: #f0fdf4; }
+    .record-item.success:hover { background: #dcfce7; }
+    .record-item.danger { border-left-color: var(--danger); background: #fef2f2; }
+    .record-item.danger:hover { background: #fee2e2; }
+    .record-item.info { border-left-color: var(--accent); background: #f0f9ff; }
+    .record-item.info:hover { background: #e0f2fe; }
+    .record-date { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
+    .record-content { font-size: 14px; color: var(--text); }
+    .record-meta { font-size: 12px; color: #475569; margin-top: 6px; }
+    .record-meta span { margin-right: 12px; }
+    .record-delete {
+      position: absolute; top: 10px; right: 10px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--danger); color: white; border: none;
+      cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .record-item:hover .record-delete { opacity: 1; }
+
+    .score-display {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 38px; height: 38px; border-radius: 50%;
+      font-weight: 700; font-size: 14px; margin-right: 8px;
+    }
+    .score-high { background: #dcfce7; color: #166534; }
+    .score-mid { background: #fef9c3; color: #854d0e; }
+    .score-low { background: #fee2e2; color: #991b1b; }
+
+    .stars { color: #fbbf24; font-size: 14px; letter-spacing: 1px; }
+
+    .media-tabs {
+      display: flex; gap: 4px; background: #f1f5f9;
+      padding: 4px; border-radius: 10px; margin-bottom: 16px;
+    }
+    .media-tab {
+      flex: 1; padding: 10px 16px; border: none; background: transparent;
+      border-radius: 8px; font-size: 13px; font-weight: 600;
+      color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+    }
+    .media-tab.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    .media-item { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; background: #e2e8f0; cursor: pointer; transition: all 0.2s; }
+    .media-item:hover { transform: scale(1.02); box-shadow: var(--shadow); }
+    .media-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+    .media-item:hover img { transform: scale(1.08); }
+    .media-item video { width: 100%; height: 100%; object-fit: cover; }
+    .media-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .media-item:hover .media-overlay { opacity: 1; }
+    .media-overlay span { color: white; font-size: 28px; }
+    .media-delete {
+      position: absolute; top: 6px; right: 6px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(239,68,68,0.9); color: white;
+      border: none; cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s; z-index: 2;
+    }
+    .media-item:hover .media-delete { opacity: 1; }
+    .media-date {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 6px 8px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.65));
+      color: white; font-size: 11px;
+    }
+    .add-media-btn {
+      aspect-ratio: 1; border-radius: var(--radius); border: 2px dashed #cbd5e1;
+      background: #f8fafc; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; cursor: pointer;
+      transition: all 0.2s; color: #94a3b8;
+    }
+    .add-media-btn:hover { border-color: var(--primary); background: #f0fdf4; color: var(--primary); }
+    .add-media-btn .icon { font-size: 28px; margin-bottom: 4px; }
+    .add-media-btn span { font-size: 12px; font-weight: 500; }
+    .empty-media { text-align: center; padding: 40px; color: var(--text-secondary); }
+    .empty-media .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+
+    .plan-list { display: flex; flex-direction: column; gap: 10px; }
+    .plan-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: #f8fafc; padding: 14px 16px;
+      border-radius: var(--radius); position: relative;
+      border: 1px solid var(--border); transition: all 0.2s;
+    }
+    .plan-item:hover { border-color: #bbf7d0; background: #f0fdf4; }
+    .plan-checkbox {
+      width: 22px; height: 22px; border: 2px solid var(--primary);
+      border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .plan-checkbox.checked { background: var(--primary); color: white; }
+    .plan-checkbox.checked::after { content: '✓'; font-size: 13px; font-weight: 700; }
+    .plan-content { flex: 1; }
+    .plan-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; color: var(--text); }
+    .plan-desc { font-size: 12px; color: var(--text-secondary); }
+    .plan-status {
+      font-size: 11px; padding: 3px 10px; border-radius: 20px;
+      background: #e2e8f0; color: #475569; font-weight: 500;
+    }
+    .plan-status.active { background: #dcfce7; color: #166534; }
+    .plan-delete {
+      position: absolute; top: 10px; right: 10px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--danger); color: white; border: none;
+      cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .plan-item:hover .plan-delete { opacity: 1; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 14px; transition: all 0.2s;
+      background: white; color: var(--text);
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,95,42,0.08);
+    }
+    .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .form-row.three { grid-template-columns: repeat(3, 1fr); }
+    .form-hint { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+    .btn-save {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white; border: none; padding: 14px 32px;
+      border-radius: 10px; font-size: 15px; font-weight: 600;
+      cursor: pointer; width: 100%;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(26,95,42,0.3);
+    }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,95,42,0.4); }
+    .btn-save:active { transform: translateY(0); }
+
+    .tab-nav {
+      display: flex; gap: 3px; background: #f1f5f9;
+      padding: 4px; border-radius: 10px; margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      flex: 1; min-width: 85px; padding: 10px 12px; border: none;
+      background: transparent; border-radius: 8px;
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .tab-btn.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+    .empty-state .icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state p { font-size: 15px; margin-bottom: 16px; font-weight: 500; }
+
+    .media-modal {
+      background: var(--card); border-radius: var(--radius-lg);
+      width: 100%; max-width: 520px; overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      animation: modalIn 0.3s ease;
+    }
+    .media-modal .modal-header { padding: 20px 24px; }
+    .media-modal .modal-body { padding: 24px; }
+
+    .file-input-wrapper { position: relative; margin-bottom: 14px; }
+    .file-input-wrapper input[type="file"] {
+      position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer;
+    }
+    .file-input-label {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 36px 20px; border: 2px dashed #cbd5e1; border-radius: var(--radius);
+      background: #f8fafc; transition: all 0.2s; cursor: pointer;
+    }
+    .file-input-label:hover { border-color: var(--primary); background: #f0fdf4; }
+    .file-input-label .icon { font-size: 32px; margin-bottom: 6px; color: #94a3b8; }
+    .file-input-label span { color: #475569; font-size: 14px; font-weight: 500; }
+    .file-input-label small { color: #94a3b8; font-size: 12px; margin-top: 4px; }
+
+    .preview-container { margin-top: 14px; display: none; }
+    .preview-container.show { display: block; }
+    .preview-container img, .preview-container video {
+      width: 100%; border-radius: 8px; max-height: 200px;
+      object-fit: contain; background: #0f172a;
+    }
+
+    .lightbox {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(2,6,23,0.95); z-index: 2000;
+      align-items: center; justify-content: center;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img, .lightbox video { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 8px; }
+    .lightbox-close {
+      position: absolute; top: 20px; right: 20px;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); border: none;
+      color: white; font-size: 24px; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.25); }
+    .lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 50px; height: 50px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); border: none;
+      color: white; font-size: 24px; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-nav:hover { background: rgba(255,255,255,0.25); }
+    .lightbox-prev { left: 20px; }
+    .lightbox-next { right: 20px; }
+
+    .inline-edit-input {
+      background: #fff; border: 1px solid var(--primary);
+      border-radius: 6px; padding: 4px 8px;
+      font-size: 14px; width: 70px; text-align: center;
+      box-shadow: 0 0 0 3px rgba(26,95,42,0.08);
+    }
+    .name-edit-input {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 8px; padding: 5px 14px;
+      font-size: 22px; color: white; width: 200px;
+      backdrop-filter: blur(4px);
+    }
+    .name-edit-input:focus { outline: none; border-color: white; background: rgba(255,255,255,0.25); }
+
+    .confirm-dialog {
+      background: var(--card); border-radius: var(--radius-lg);
+      width: 100%; max-width: 420px; overflow: hidden; text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      animation: modalIn 0.3s ease;
+    }
+    .confirm-dialog .modal-body { padding: 32px; }
+    .confirm-dialog h3 { margin-bottom: 10px; font-size: 18px; color: var(--text); }
+    .confirm-dialog p { color: var(--text-secondary); margin-bottom: 24px; font-size: 14px; }
+    .confirm-dialog .btn-row { display: flex; gap: 12px; }
+    .confirm-dialog .btn-row button { flex: 1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+    .confirm-dialog .btn-cancel { background: #f1f5f9; color: #475569; }
+    .confirm-dialog .btn-cancel:hover { background: #e2e8f0; }
+    .confirm-dialog .btn-confirm { background: var(--danger); color: white; }
+    .confirm-dialog .btn-confirm:hover { background: #dc2626; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th, .data-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    .data-table th { background: #f8fafc; font-weight: 600; color: #475569; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .data-table tr:hover { background: #f8fafc; }
+    .data-table .actions { text-align: right; }
+    .data-table .actions button {
+      background: none; border: none; color: var(--danger); cursor: pointer;
+      font-size: 18px; opacity: 0.5; transition: opacity 0.2s; padding: 2px 6px;
+    }
+    .data-table .actions button:hover { opacity: 1; }
+
+    .status-badge {
+      display: inline-block; font-size: 11px; padding: 3px 10px;
+      border-radius: 20px; font-weight: 600;
+    }
+    .status-present { background: #dcfce7; color: #166534; }
+    .status-absent { background: #fee2e2; color: #991b1b; }
+    .status-late { background: #fef9c3; color: #854d0e; }
+    .status-leave { background: #dbeafe; color: #1d4ed8; }
+    .status-active { background: #dcfce7; color: #166534; }
+    .status-recovered { background: #dcfce7; color: #166534; }
+    .status-ongoing { background: #fef9c3; color: #854d0e; }
+
+    .assessment-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+    .assessment-card {
+      background: #f8fafc; border-radius: var(--radius); padding: 18px;
+      border-left: 4px solid var(--primary); border: 1px solid var(--border); border-left-width: 4px;
+      transition: all 0.2s;
+    }
+    .assessment-card:hover { box-shadow: var(--shadow); border-color: #bbf7d0; border-left-color: var(--primary); }
+    .assessment-card .assess-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .assessment-card .assess-title { font-weight: 700; font-size: 15px; color: var(--text); }
+    .assessment-card .assess-date { font-size: 12px; color: var(--text-secondary); }
+    .assessment-card .assess-score { font-size: 30px; font-weight: 800; color: var(--primary); }
+    .assessment-card .assess-rank { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .assessment-card .assess-items { margin-top: 10px; }
+    .assessment-card .assess-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; border-top: 1px solid var(--border); font-size: 13px;
+    }
+
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stats-summary .summary-card {
+      background: var(--card); border-radius: var(--radius); padding: 18px 14px;
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .stats-summary .summary-card:hover { box-shadow: var(--shadow); border-color: #bbf7d0; }
+    .stats-summary .summary-card .num {
+      font-size: 28px; font-weight: 800; color: var(--primary);
+    }
+    .stats-summary .summary-card .label {
+      font-size: 12px; color: var(--text-secondary); margin-top: 4px; font-weight: 500;
+    }
+
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--card);
+      color: var(--text);
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      pointer-events: auto;
+      border: 1px solid var(--border);
+      min-width: 220px;
+    }
+    .toast.hide { animation: toastOut 0.25s ease forwards; }
+    .toast-success { border-left: 4px solid var(--success); }
+    .toast-error { border-left: 4px solid var(--danger); }
+    .toast-warning { border-left: 4px solid var(--warning); }
+    .toast-info { border-left: 4px solid var(--accent); }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(30px); } }
+
+    .offline-banner {
+      display: none;
+      background: #fef3c7;
+      color: #92400e;
+      padding: 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      border-bottom: 1px solid #fde68a;
+    }
+    .offline-banner.show { display: block; }
+
+    @media (max-width: 768px) {
+      .info-grid { grid-template-columns: repeat(3, 1fr); }
+      .student-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .form-row.three { grid-template-columns: 1fr; }
+      .media-grid { grid-template-columns: repeat(3, 1fr); }
+      .stats-summary { grid-template-columns: repeat(2, 1fr); }
+      .tab-btn { min-width: 70px; font-size: 11px; padding: 8px 6px; }
+      header { flex-direction: column; align-items: flex-start; }
+      .header-right { width: 100%; }
+      .search-box { width: 100%; }
+      .sync-status { margin-left: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-banner" id="offlineBanner">⚠️ 网络连接已断开，部分功能可能无法正常使用</div>
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <h1>🏃 学员成长档案</h1>
+        <p class="subtitle">全方位记录学员训练历程 · 见证每一次进步</p>
+      </div>
+      <div class="header-right">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="搜索学员姓名..." oninput="handleSearch(this.value)">
+          <button class="search-clear" id="searchClear" onclick="clearSearch()">×</button>
+        </div>
+        <div class="sync-status sync-saved" id="syncStatus">
+          <span class="sync-dot"></span>
+          <span id="syncText">已同步</span>
+        </div>
+        <button class="btn-add" onclick="openAddModal()">+ 添加学员</button>
+      </div>
+    </header>
+
+    <div class="student-grid" id="studentGrid"></div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="modal-overlay" id="addModal">
+    <div class="modal">
+      <div class="modal-header">
+        <button class="modal-close" onclick="closeAddModal()">×</button>
+        <h2>添加新学员</h2>
+      </div>
+      <div class="modal-body">
+        <form id="addStudentForm" onsubmit="handleAddStudent(event)">
+          <div class="form-row">
+            <div class="form-group"><label>姓名</label><input type="text" name="name" required placeholder="请输入学员姓名"></div>
+            <div class="form-group"><label>年龄</label><input type="number" name="age" required placeholder="请输入年龄"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>身高 (cm)</label><input type="number" name="height" required placeholder="请输入身高"></div>
+            <div class="form-group"><label>体重 (kg)</label><input type="number" name="weight" required placeholder="请输入体重" step="0.1"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>入学日期</label><input type="date" name="joinDate" required></div>
+            <div class="form-group"><label>项目/专项</label><input type="text" name="sport" placeholder="例如：田径 / 篮球 / 游泳"></div>
+          </div>
+          <div class="form-group">
+            <label>头像</label>
+            <div class="file-input-wrapper">
+              <input type="file" name="avatar" accept="image/*" onchange="previewAvatar(this, 'addAvatarPreview')">
+              <div class="file-input-label" id="addAvatarPreview">
+                <span class="icon">📷</span><span>点击上传头像</span><small>支持 JPG、PNG 格式</small>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn-save">保存学员信息</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal">
+      <div class="modal-header">
+        <button class="modal-close" onclick="closeDetailModal()">×</button>
+        <div class="modal-header-actions">
+          <button class="header-action-btn" onclick="saveStudentInfo()">💾 保存</button>
+          <button class="header-action-btn danger" onclick="confirmDeleteStudent()">🗑️ 删除</button>
+        </div>
+        <div class="modal-profile">
+          <div class="modal-avatar-wrapper">
+            <div class="modal-avatar" id="detailAvatar"></div>
+            <button class="avatar-edit-btn" onclick="triggerAvatarEdit()">✎</button>
+            <input type="file" id="avatarInput" style="display:none" accept="image/*" onchange="handleAvatarChange(this)">
+          </div>
+          <div class="modal-profile-info">
+            <h2 id="detailNameContainer">
+              <span id="detailName"></span>
+              <button class="avatar-edit-btn" style="position:static;width:28px;height:28px;font-size:12px;border-radius:6px;" onclick="toggleNameEdit()">✎</button>
+            </h2>
+            <div class="tags" id="detailTags"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="info-grid">
+          <div class="info-card"><div class="label">年龄</div><div class="value" id="detailAge"></div></div>
+          <div class="info-card"><div class="label">身高</div><div class="value" id="detailHeight"></div></div>
+          <div class="info-card"><div class="label">体重</div><div class="value" id="detailWeight"></div></div>
+          <div class="info-card"><div class="label">BMI</div><div class="value" id="detailBmi"></div></div>
+          <div class="info-card"><div class="label">入学日期</div><div class="value" id="detailJoinDate"></div></div>
+        </div>
+        <div class="stats-summary" id="statsSummary"></div>
+        <div class="tab-nav">
+          <button class="tab-btn active" onclick="switchTab('progress')">📊 技能掌握</button>
+          <button class="tab-btn" onclick="switchTab('attendance')">📅 上课记录</button>
+          <button class="tab-btn" onclick="switchTab('training')">🏋️ 训练记录</button>
+          <button class="tab-btn" onclick="switchTab('records')">📝 成长记录</button>
+          <button class="tab-btn" onclick="switchTab('corrections')">⚠️ 待纠正</button>
+          <button class="tab-btn" onclick="switchTab('assessment')">📋 考核成绩</button>
+          <button class="tab-btn" onclick="switchTab('injury')">🩹 伤病记录</button>
+          <button class="tab-btn" onclick="switchTab('media')">🖼️ 影像资料</button>
+          <button class="tab-btn" onclick="switchTab('plan')">🎯 成长计划</button>
+        </div>
+        <div class="tab-content active" id="tab-progress">
+          <div class="section-header"><div class="section-title"><span class="icon">📊</span> 技能掌握度</div><button class="btn-small" onclick="openProgressModal()">+ 添加技能</button></div>
+          <div id="progressList"></div>
+          <div style="margin-top:16px;padding:12px;background:#f0fdf4;border-radius:8px;font-size:12px;color:#475569;border:1px solid #bbf7d0;"><strong>📋 评判标准说明：</strong><br>🟦 初学(0-20%) · 🟩 入门(21-40%) · 🟨 进阶(41-60%) · 🟪 熟练(61-80%) · 🟥 精通(81-95%) · ⭐ 大师(96-100%)</div>
+        </div>
+        <div class="tab-content" id="tab-attendance">
+          <div class="section-header"><div class="section-title"><span class="icon">📅</span> 上课记录</div><button class="btn-small" onclick="openAttendanceModal()">+ 添加上课</button></div>
+          <div id="attendanceList"></div>
+        </div>
+        <div class="tab-content" id="tab-training">
+          <div class="section-header"><div class="section-title"><span class="icon">🏋️</span> 训练记录</div><button class="btn-small" onclick="openTrainingModal()">+ 添加训练</button></div>
+          <div id="trainingList"></div>
+        </div>
+        <div class="tab-content" id="tab-records">
+          <div class="section-header"><div class="section-title"><span class="icon">📝</span> 成长记录</div><button class="btn-small" onclick="openRecordModal()">+ 添加记录</button></div>
+          <div class="record-list" id="recordsList"></div>
+        </div>
+        <div class="tab-content" id="tab-corrections">
+          <div class="section-header"><div class="section-title"><span class="icon">⚠️</span> 待纠正问题</div><button class="btn-small" onclick="openCorrectionModal()">+ 添加问题</button></div>
+          <div class="record-list" id="correctionsList"></div>
+        </div>
+        <div class="tab-content" id="tab-assessment">
+          <div class="section-header"><div class="section-title"><span class="icon">📋</span> 考核成绩</div><button class="btn-small" onclick="openAssessmentModal()">+ 添加考核</button></div>
+          <div id="assessmentList"></div>
+        </div>
+        <div class="tab-content" id="tab-injury">
+          <div class="section-header"><div class="section-title"><span class="icon">🩹</span> 伤病记录</div><button class="btn-small" onclick="openInjuryModal()">+ 添加记录</button></div>
+          <div id="injuryList"></div>
+        </div>
+        <div class="tab-content" id="tab-media">
+          <div class="media-tabs">
+            <button class="media-tab active" onclick="switchMediaTab('photos')">📷 照片 (<span id="photosCount">0</span>)</button>
+            <button class="media-tab" onclick="switchMediaTab('videos')">🎬 视频 (<span id="videosCount">0</span>)</button>
+          </div>
+          <div id="mediaContent"></div>
+        </div>
+        <div class="tab-content" id="tab-plan">
+          <div class="section-header"><div class="section-title"><span class="icon">🎯</span> 成长计划</div><button class="btn-small" onclick="openPlanModal()">+ 添加计划</button></div>
+          <div class="plan-list" id="planList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="progressModal">
+    <div class="media-modal">
+      <div class="modal-header"><button class="modal-close" onclick="closeProgressModal()">×</button><h2 id="progressModalTitle">添加技能掌握度</h2></div>
+      <div class="modal-body">
+        <form id="progressForm" onsubmit="handleAddProgress(event)">
+          <input type="hidden" name="progressIndex" value="">
+          <div class="form-group"><label>技能名称</label><input type="text" name="subject" required placeholder="例如：正手高远球"></div>
+          <div class="form-group"><label>掌握程度 (%)</label><input type="number" name="percent" required min="0" max="100" placeholder="0-100"><div class="form-hint">0=初学 | 20=入门 | 40=进阶 | 60=熟练 | 80=精通 | 95=大师</div></div>
+          <div class="form-group"><label>评判标准</label><textarea name="standard" rows="3" placeholder="描述该技能需要达到什么标准..."></textarea></div>
+          <button type="submit" class="btn-save">保存</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="attendanceModal">
+    <div class="media-modal">
+      <div class="modal-header"><button class="modal-close" onclick="closeAttendanceModal()">×</button><h2>添加上课记录</h2></div>
+      <div class="modal-body">
+        <form onsubmit="handleAddAttendance(event)">
+          <div class="form-row">
+            <div class="form-group"><label>上课日期</label><input type="date" name="date" required></div>
+            <div class="form-group"><label>出勤状态</label><select name="status"><option value="present">✅ 正常出勤</option><option value="late">⏰ 迟到</option><option value="leave">📝 请假</option><option value="absent">❌ 缺勤</option></select></div>
+          </div>
+          <div class="form-group"><label>课程类型</label><input type="text" name="course" placeholder="例如：基础训练课 / 技术提升课" required></div>
+          <div class="form-group"><label>课堂表现 (1-5星)</label><select name="performance"><option value="5">⭐⭐⭐⭐⭐ 优秀</option><option value="4">⭐⭐⭐⭐ 良好</option><option value="3">⭐⭐⭐ 一般</option><option value="2">⭐⭐ 较差</option><option value="1">⭐ 需努力</option></select></div>
+          <div class="form-group"><label>备注</label><textarea name="note" rows="2" placeholder="课堂上的具体表现..."></textarea></div>
+          <button type="submit" class="btn-save">保存记录</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="trainingModal">
+    <div class="media-modal">
+      <div class="modal-header"><button class="modal-close" onclick="closeTrainingModal()">×</button><h2>添加训练记录</h2></div>
+      <div class="modal-body">
+        <form onsubmit="handleAddTraining(event)">
+          <div class="form-row">
+            <div class="form-group"><label>训练日期</label><input type="date" name="date" required></div>
+            <div class="form-group"><label>训练时长 (分钟)</label><input type="number" name="duration" required placeholder="例如：90"></div>
+          </div>
+          <div class="form-group"><label>训练项目</label><input type="text" name="items" required placeholder="多个项目用逗号分隔，例如：热身跑,步伐练习,多球训练"></div>
+          <div class="form-row">
+            <div class="form-group"><label>训练强度</label><select name="intensity"><option value="低">低强度</option><option value="中等" selected>中等强度</option><option value="高">高强度</option><option value="极限">极限强度</option></select></div>
+            <div class="form-group"><label>训练表现</label><select name="performance"><option value="优秀">优秀</option><option value="良好" selected>良好</option><option value="一般">一般</option><option value="较差">较差</option></select></div>
+          </div>
+          <div class="form-group"><label>训练备注</label><textarea name="note" rows="2" placeholder="训练中的亮点或不足..."></textarea></div>
+          <button type="submit" class="btn-save">保存训练</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="recordModal">
+    <div class="media-modal">
+      <div class="modal-header"><button class="modal-close" onclick="closeRecordModal()">×</button><h2>添加成长记录</h2></div>
+      <div class="modal-body">
+        <form onsubmit="handleAddRecord(event)">
+          <div class="form-group"><label>记录日期</label><input type="date" name="date" required></div>
+          <div class="form-group"><label>记录类型</label><select name="type"><option value="normal">一般记录</option><option value="success">进步/突破</option><option value="warning">需要改进</option><option value="danger">严重问题</option></select></div>
+          <div class="form-group"><label>记录内容</label><textarea name="content" rows="4" required placeholder="描述本次记录的内容..."></textarea></div>
+          <button type="submit" class="btn-save">保存记录</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="correctionModal">
+    <div class="media-modal">
+      <div class="modal-header"><button class="modal-close" onclick="closeCorrectionModal()">×</button><h2>添加待纠正问题</h2></div>
+      <div class="modal-body">
+        <form onsubmit="handleAddCorrection(event)">
+          <div class="form-group"><label>发现问题日期</label><input type="date" name="date" required></div>
+          <div class="form-group"><label>严重程度</label><select name="severity"><option value="minor">轻微 - 日常纠正</option><option value="moderate" selected>中等 - 需要专项练习</option><option value="major">严重 - 影响比赛/训练</option></select></div>
+          <div class="form-group"><label>问题描述</label><textarea name="content" rows="4" required placeholder="描述需要纠正的问题..."></textarea></div>
+          <div class="form-group"><label>改进建议</label><textarea name="suggestion" rows="2" placeholder="建议如何改进..."></textarea></div>
+          <button type="submit" class="btn-save">保存问题</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="assessmentModal">
+    <div class="media-modal">
+      <div class="modal-header"><button class="modal-close" onclick="closeAssessmentModal()">×</button><h2>添加考核成绩</h2></div>
+      <div class="modal-body">
+        <form id="assessmentForm" onsubmit="handleAddAssessment(event)">
+          <div class="form-row">
+            <div class="form-group"><label>考核日期</label><input type="date" name="date" required></div>
+            <div class="form-group"><label>考核名称</label><input type="text" name="name" required placeholder="例如：月度技术考核"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>总分</label><input type="number" name="score" required placeholder="例如：85"></div>
+            <div class="form-group"><label>排名（选填）</label><input type="text" name="rank" placeholder="例如：2/15"></div>
+          </div>
+          <div id="assessmentItems">
+            <div class="form-row">
+              <div class="form-group"><label>考核项目1</label><input type="text" name="itemName1" placeholder="项目名称" required></div>
+              <div class="form-group"><label>分数</label><input type="number" name="itemScore1" placeholder="分数" required></div>
+            </div>
+          </div>
+          <button type="button" class="btn-small outline" onclick="addAssessmentItem()" style="margin-bottom:14px;width:100%;">+ 增加考核项目</button>
+          <div class="form-group"><label>考核总结</label><textarea name="summary" rows="2" placeholder="整体表现总结..."></textarea></div>
+          <button type="submit" class="btn-save">保存考核</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="injuryModal">
+    <div class="media-modal">
+      <div class="modal-header"><button class="modal-close" onclick="closeInjuryModal()">×</button><h2>添加伤病记录</h2></div>
+      <div class="modal-body">
+        <form onsubmit="handleAddInjury(event)">
+          <div class="form-row">
+            <div class="form-group"><label>发生日期</label><input type="date" name="date" required></div>
+            <div class="form-group"><label>伤病类型</label><input type="text" name="type" required placeholder="例如：肌肉拉伤 / 脚踝扭伤"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>受伤部位</label><input type="text" name="part" required placeholder="例如：右肩 / 左膝"></div>
+            <div class="form-group"><label>当前状态</label><select name="status"><option value="ongoing">🟡 恢复中</option><option value="recovered">🟢 已恢复</option><option value="chronic">🔴 慢性/反复</option></select></div>
+          </div>
+          <div class="form-group"><label>备注</label><textarea name="note" rows="3" placeholder="受伤原因、处理措施、医生建议..."></textarea></div>
+          <button type="submit" class="btn-save">保存记录</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="photoModal">
+    <div class="media-modal">
+      <div class="modal-header"><button class="modal-close" onclick="closePhotoModal()">×</button><h2>添加照片</h2></div>
+      <div class="modal-body">
+        <form onsubmit="handleAddPhoto(event)">
+          <div class="form-group"><label>选择照片</label><div class="file-input-wrapper"><input type="file" name="photo" accept="image/*" required onchange="previewMedia(this, 'photoPreview')"><div class="file-input-label" id="photoPreview"><span class="icon">🖼️</span><span>点击选择图片</span><small>支持 JPG、PNG 格式</small></div></div></div>
+          <div class="form-group"><label>照片日期</label><input type="date" name="date" required></div>
+          <div class="form-group"><label>照片描述（选填）</label><input type="text" name="desc" placeholder="例如：课堂练习"></div>
+          <div class="preview-container" id="photoPreviewContainer"></div>
+          <button type="submit" class="btn-save">保存照片</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="videoModal">
+    <div class="media-modal">
+      <div class="modal-header"><button class="modal-close" onclick="closeVideoModal()">×</button><h2>添加训练视频</h2></div>
+      <div class="modal-body">
+        <form onsubmit="handleAddVideo(event)">
+          <div class="form-group"><label>选择视频</label><div class="file-input-wrapper"><input type="file" name="video" accept="video/*" required onchange="previewMedia(this, 'videoPreview')"><div class="file-input-label" id="videoPreview"><span class="icon">🎬</span><span>点击选择视频</span><small>支持 MP4、WebM 格式</small></div></div></div>
+          <div class="form-group"><label>视频日期</label><input type="date" name="date" required></div>
+          <div class="form-group"><label>视频描述（选填）</label><input type="text" name="desc" placeholder="例如：基础步伐练习"></div>
+          <div class="preview-container" id="videoPreviewContainer"></div>
+          <button type="submit" class="btn-save">保存视频</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="planModal">
+    <div class="media-modal">
+      <div class="modal-header"><button class="modal-close" onclick="closePlanModal()">×</button><h2>添加成长计划</h2></div>
+      <div class="modal-body">
+        <form onsubmit="handleAddPlan(event)">
+          <div class="form-group"><label>计划标题</label><input type="text" name="title" required placeholder="例如：加强重心控制训练"></div>
+          <div class="form-group"><label>计划描述</label><textarea name="desc" rows="3" required placeholder="描述具体要做什么..."></textarea></div>
+          <div class="form-group"><label>状态</label><select name="status"><option value="active">进行中</option><option value="pending">待开始</option></select></div>
+          <button type="submit" class="btn-save">保存计划</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmModal">
+    <div class="confirm-dialog">
+      <div class="modal-body">
+        <h3>确认删除学员？</h3>
+        <p>删除后所有数据将无法恢复，包括成长记录、视频、照片等。</p>
+        <div class="btn-row"><button class="btn-cancel" onclick="closeConfirmModal()">取消</button><button class="btn-confirm" onclick="deleteStudent()">确认删除</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+    <button class="lightbox-nav lightbox-prev" onclick="lightboxPrev()">‹</button>
+    <button class="lightbox-nav lightbox-next" onclick="lightboxNext()">›</button>
+    <img id="lightboxImg" style="display:none">
+    <video id="lightboxVideo" controls style="display:none"></video>
+  </div>
+
+  <script>
+    const API_URL = '/api/students';
+    let students = [];
+    let currentStudent = null;
+    let currentMediaTab = 'photos';
+    let lightboxItems = [];
+    let lightboxIndex = 0;
+    let isNameEditing = false;
+    let assessmentItemCount = 1;
+    let hasUnsavedChanges = false;
+    let saveTimeout = null;
+    let isOnline = true;
+
+    async function saveToServer() {
+      if (!hasUnsavedChanges) return;
+      updateSyncStatus('saving');
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(students)
+        });
+        if (res.ok) {
+          hasUnsavedChanges = false;
+          updateSyncStatus('saved');
+        } else {
+          updateSyncStatus('error');
+          showToast('保存失败，服务器返回错误', 'error');
+        }
+      } catch(e) {
+        updateSyncStatus('error');
+        showToast('保存失败，请检查网络连接', 'error');
+        isOnline = false;
+        document.getElementById('offlineBanner').classList.add('show');
+      }
+    }
+
+    function markUnsaved() {
+      hasUnsavedChanges = true;
+      updateSyncStatus('unsaved');
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        if (hasUnsavedChanges) saveToServer();
+      }, 800);
+    }
+
+    async function loadFromServer() {
+      try {
+        const res = await fetch(API_URL, { cache: 'no-cache' });
+        if (res.ok) {
+          const data = await res.json();
+          isOnline = true;
+          document.getElementById('offlineBanner').classList.remove('show');
+          return data;
+        }
+      } catch(e) {
+        isOnline = false;
+        document.getElementById('offlineBanner').classList.add('show');
+        showToast('无法连接到服务器，使用本地数据', 'warning');
+      }
+      return null;
+    }
+
+    function updateSyncStatus(state) {
+      const el = document.getElementById('syncStatus');
+      const text = document.getElementById('syncText');
+      el.className = 'sync-status sync-' + state;
+      const map = { saved: '已同步', unsaved: '待保存', saving: '保存中...', error: '同步失败' };
+      text.textContent = map[state] || state;
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast toast-' + type;
+      const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+      toast.innerHTML = `<span>${icons[type] || ''}</span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    function getDefaultData() {
+      return [
+        {
+          id: 1, name: '张小明', age: 8, height: 135, weight: 30, avatar: '',
+          joinDate: '2026-01-15', sport: '羽毛球',
+          progress: [
+            { subject: '握拍与准备姿势', percent: 95, standard: '握拍放松，拍面垂直，准备姿势重心在前脚掌' },
+            { subject: '正手高远球', percent: 72, standard: '击球点在右肩前上方，发力流畅，落点到底线附近' },
+            { subject: '反手过渡球', percent: 45, standard: '转体充分，肘部上抬，能稳定回到中场' },
+            { subject: '步伐移动', percent: 60, standard: '并步、交叉步熟练，回中速度快' },
+            { subject: '网前搓球', percent: 30, standard: '拍面控制精准，球贴网而过，旋转充分' }
+          ],
+          attendance: [
+            { date: '2026-04-24', course: '基础技术课', status: 'present', performance: 5, note: '步法进步明显' },
+            { date: '2026-04-22', course: '多球训练课', status: 'present', performance: 4, note: '正手高远球稳定性提升' },
+            { date: '2026-04-20', course: '体能训练课', status: 'present', performance: 3, note: '体能后半段有所下降' },
+            { date: '2026-04-17', course: '基础技术课', status: 'late', performance: 4, note: '迟到10分钟，但课堂状态不错' }
+          ],
+          training: [
+            { date: '2026-04-24', items: ['热身跑','握拍练习','多球高远球','步伐训练','拉伸'], duration: 90, intensity: '中等', performance: '良好', note: '高远球成功率约70%' },
+            { date: '2026-04-22', items: ['跳绳','网前搓球练习','对抗练习','耐力跑'], duration: 120, intensity: '高', performance: '优秀', note: '对抗中敢打敢拼' }
+          ],
+          records: [
+            { date: '2026-04-22', type: 'success', content: '第一次完整完成全场步伐训练，速度明显提升' },
+            { date: '2026-04-15', type: 'normal', content: '本周重点练习了反手过渡，整体表现良好' },
+            { date: '2026-04-08', type: 'warning', content: '体能训练后半段注意力不集中，需要加强耐力' }
+          ],
+          corrections: [
+            { date: '2026-04-20', severity: 'moderate', content: '击球时手臂发力过多，腰部转体不够', suggestion: '加强核心力量训练，练习转体挥拍' },
+            { date: '2026-04-14', severity: 'minor', content: '反手拍面角度控制不稳定', suggestion: '增加反手挑球专项练习' }
+          ],
+          assessments: [
+            { date: '2026-04-15', name: '月度技术考核', score: 78, rank: '3/12', items: [{name:'正手高远球',score:82},{name:'反手过渡',score:65},{name:'步伐',score:78},{name:'网前',score:55}], summary: '正手技术较扎实，反手和网前需要加强' }
+          ],
+          injuries: [],
+          photos: [
+            { url: 'https://picsum.photos/400/300?random=1', date: '2026-04-20', desc: '课堂练习' },
+            { url: 'https://picsum.photos/400/300?random=2', date: '2026-04-15', desc: '训练留念' }
+          ],
+          videos: [
+            { url: '', date: '2026-04-18', desc: '正手高远球练习' }
+          ],
+          plan: [
+            { title: '反手过渡球专项', desc: '每天20分钟反手多球练习', status: 'active', done: false },
+            { title: '核心力量提升', desc: '平板支撑30秒×3组，仰卧起坐20个', status: 'active', done: true },
+            { title: '网前搓球训练', desc: '争取两周内网前技术达到50%', status: 'pending', done: false }
+          ]
+        },
+        {
+          id: 2, name: '李婷婷', age: 10, height: 142, weight: 35, avatar: '',
+          joinDate: '2025-11-20', sport: '羽毛球',
+          progress: [
+            { subject: '正手吊球', percent: 88, standard: '击球动作隐蔽，落点在前场发球线内' },
+            { subject: '杀球技术', percent: 70, standard: '起跳充分，击球点高，球速快角度刁' },
+            { subject: '双打轮转', percent: 55, standard: '与搭档配合默契，轮转时机准确' },
+            { subject: '防守反击', percent: 65, standard: '接杀球稳定，能组织有效反击' }
+          ],
+          attendance: [
+            { date: '2026-04-25', course: '技术提升课', status: 'present', performance: 5, note: '全场表现最佳' },
+            { date: '2026-04-23', course: '对抗训练课', status: 'present', performance: 4, note: '双打配合有进步' }
+          ],
+          training: [
+            { date: '2026-04-25', items: ['热身','杀球练习','防守练习','双打配合'], duration: 120, intensity: '高', performance: '优秀', note: '杀球速度有明显提升' }
+          ],
+          records: [
+            { date: '2026-04-23', type: 'success', content: '队内对抗赛中获得第二名，杀球得分率最高' },
+            { date: '2026-04-16', type: 'warning', content: '双打轮转时与搭档沟通不足，出现抢球现象' }
+          ],
+          corrections: [
+            { date: '2026-04-20', severity: 'moderate', content: '杀球时身体后仰过多，影响下一拍连贯', suggestion: '练习杀球后快速回中，加强连贯意识' }
+          ],
+          assessments: [
+            { date: '2026-04-10', name: '季度综合考核', score: 82, rank: '2/15', items: [{name:'进攻技术',score:88},{name:'防守技术',score:78},{name:'战术意识',score:72},{name:'体能',score:85}], summary: '进攻能力突出，战术意识有待提高' }
+          ],
+          injuries: [
+            { date: '2026-03-15', type: '肌肉拉伤', part: '右肩', status: 'recovered', note: '训练过度导致，休息两周后恢复，已降低训练强度' }
+          ],
+          photos: [
+            { url: 'https://picsum.photos/400/300?random=3', date: '2026-04-22', desc: '对抗赛' }
+          ],
+          videos: [],
+          plan: [
+            { title: '双打战术配合', desc: '每周至少一次双打专项训练', status: 'active', done: false },
+            { title: '防守反击训练', desc: '加强接杀挡网练习，提升反击质量', status: 'active', done: true },
+            { title: '参加市级比赛', desc: '备战6月市青少年羽毛球赛', status: 'pending', done: false }
+          ]
+        }
+      ];
+    }
+
+    async function init() {
+      const serverData = await loadFromServer();
+      if (serverData && Array.isArray(serverData) && serverData.length > 0) {
+        students = serverData;
+        showToast('数据已同步', 'success');
+      } else {
+        students = getDefaultData();
+      }
+      renderStudents();
+    }
+
+    function handleSearch(query) {
+      const val = query.trim().toLowerCase();
+      document.getElementById('searchClear').classList.toggle('show', val.length > 0);
+      const cards = document.querySelectorAll('.student-card');
+      let visible = 0;
+      cards.forEach((card, i) => {
+        const s = students[i];
+        if (!s) return;
+        const match = s.name.toLowerCase().includes(val) || (s.sport && s.sport.toLowerCase().includes(val));
+        card.classList.toggle('hidden', !match);
+        if (match) visible++;
+      });
+      const grid = document.getElementById('studentGrid');
+      let emptyMsg = grid.querySelector('.search-empty');
+      if (visible === 0 && val.length > 0) {
+        if (!emptyMsg) {
+          emptyMsg = document.createElement('div');
+          emptyMsg.className = 'empty-state search-empty';
+          emptyMsg.innerHTML = '<div class="icon">🔍</div><p>未找到匹配的学员</p>';
+          grid.appendChild(emptyMsg);
+        }
+        emptyMsg.style.display = 'block';
+      } else if (emptyMsg) {
+        emptyMsg.style.display = 'none';
+      }
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('searchInput');
+      input.value = '';
+      handleSearch('');
+    }
+
+    function calcBMI(h, w) {
+      const bmi = (w / ((h/100) ** 2)).toFixed(1);
+      let status = 'normal';
+      if (bmi < 18.5) status = 'under';
+      else if (bmi >= 24) status = 'over';
+      return { value: bmi, status };
+    }
+    function getDays(dateStr) {
+      if (!dateStr) return 0;
+      const join = new Date(dateStr);
+      const now = new Date();
+      return Math.max(0, Math.floor((now - join) / (1000 * 60 * 60 * 24)));
+    }
+    function formatDate(d) {
+      if (!d) return '';
+      const date = new Date(d);
+      return `${date.getFullYear()}.${(date.getMonth()+1).toString().padStart(2,'0')}.${date.getDate().toString().padStart(2,'0')}`;
+    }
+    function getLevelBadge(pct) {
+      if (pct <= 20) return '<span class="level-badge level-beginner">初学</span>';
+      if (pct <= 40) return '<span class="level-badge level-elementary">入门</span>';
+      if (pct <= 60) return '<span class="level-badge level-intermediate">进阶</span>';
+      if (pct <= 80) return '<span class="level-badge level-advanced">熟练</span>';
+      if (pct <= 95) return '<span class="level-badge level-expert">精通</span>';
+      return '<span class="level-badge level-master">大师</span>';
+    }
+    function getLevelText(pct) {
+      if (pct <= 20) return '初学';
+      if (pct <= 40) return '入门';
+      if (pct <= 60) return '进阶';
+      if (pct <= 80) return '熟练';
+      if (pct <= 95) return '精通';
+      return '大师';
+    }
+    function getStarHTML(n) {
+      return '⭐'.repeat(parseInt(n)) + '☆'.repeat(5 - parseInt(n));
+    }
+    function getStatusBadge(status) {
+      const map = {
+        present: '<span class="status-badge status-present">正常出勤</span>',
+        late: '<span class="status-badge status-late">迟到</span>',
+        leave: '<span class="status-badge status-leave">请假</span>',
+        absent: '<span class="status-badge status-absent">缺勤</span>',
+        ongoing: '<span class="status-badge status-ongoing">恢复中</span>',
+        recovered: '<span class="status-badge status-recovered">已恢复</span>',
+        chronic: '<span class="status-badge status-absent">慢性</span>'
+      };
+      return map[status] || status;
+    }
+
+    function renderStudents() {
+      const grid = document.getElementById('studentGrid');
+      const emptyMsg = grid.querySelector('.search-empty');
+      if (emptyMsg) emptyMsg.remove();
+
+      if (students.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📂</div>
+            <p>暂无学员信息</p>
+            <button class="btn-add" onclick="openAddModal()" style="margin-top:12px;">添加第一个学员</button>
+          </div>`;
+        return;
+      }
+      grid.innerHTML = students.map((s, i) => {
+        const bmi = calcBMI(s.height, s.weight);
+        const bmiClass = bmi.status === 'normal' ? 'bmi-normal' : bmi.status === 'under' ? 'bmi-under' : 'bmi-over';
+        const bmiText = bmi.status === 'normal' ? 'BMI正常' : bmi.status === 'under' ? 'BMI偏低' : 'BMI偏高';
+        return `
+        <div class="student-card animate-in" style="animation-delay:${i * 0.05}s" onclick="openDetail(${s.id})">
+          <button class="delete-btn" onclick="event.stopPropagation(); openConfirmModal(${s.id})">×</button>
+          <div class="student-header">
+            <div class="avatar">
+              ${s.avatar ? `<img src="${s.avatar}" alt="${s.name}">` : s.name.charAt(0)}
+            </div>
+            <div class="student-info">
+              <h3>${s.name}</h3>
+              <div class="meta">${s.sport || '综合训练'} · 入学 ${getDays(s.joinDate)} 天</div>
+              <div class="bmi-tag ${bmiClass}">${bmiText} ${bmi.value}</div>
+            </div>
+          </div>
+          <div class="student-stats">
+            <div class="stat-item"><div class="label">身高</div><div class="value">${s.height} cm</div></div>
+            <div class="stat-item"><div class="label">体重</div><div class="value">${s.weight} kg</div></div>
+            <div class="stat-item"><div class="label">技能</div><div class="value">${s.progress.length}项</div></div>
+          </div>
+        </div>`;
+      }).join('');
+
+      const searchVal = document.getElementById('searchInput').value.trim();
+      if (searchVal) handleSearch(searchVal);
+    }
+
+    function openAddModal() {
+      document.getElementById('addModal').classList.add('active');
+      document.getElementById('addStudentForm').reset();
+      document.querySelector('#addModal input[name="joinDate"]').value = new Date().toISOString().split('T')[0];
+      document.getElementById('addAvatarPreview').innerHTML = `
+        <span class="icon">📷</span><span>点击上传头像</span><small>支持 JPG、PNG 格式</small>`;
+    }
+    function closeAddModal() { document.getElementById('addModal').classList.remove('active'); }
+
+    function previewAvatar(input, previewId) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById(previewId).innerHTML = `<img src="${e.target.result}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">`;
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function handleAddStudent(e) {
+      e.preventDefault();
+      const form = e.target;
+      const fd = new FormData(form);
+      const avatarInput = form.querySelector('input[name="avatar"]');
+      const newStudent = {
+        id: Date.now(),
+        name: fd.get('name'),
+        age: parseInt(fd.get('age')),
+        height: parseInt(fd.get('height')),
+        weight: parseFloat(fd.get('weight')),
+        avatar: '',
+        joinDate: fd.get('joinDate'),
+        sport: fd.get('sport') || '',
+        progress: [],
+        attendance: [],
+        training: [],
+        records: [],
+        corrections: [],
+        assessments: [],
+        injuries: [],
+        photos: [],
+        videos: [],
+        plan: []
+      };
+      const finalize = () => {
+        students.push(newStudent);
+        renderStudents();
+        markUnsaved();
+        showToast(`学员 ${newStudent.name} 已添加`, 'success');
+        closeAddModal();
+      };
+      if (avatarInput.files && avatarInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) { newStudent.avatar = e.target.result; finalize(); };
+        reader.readAsDataURL(avatarInput.files[0]);
+      } else { finalize(); }
+    }
+
+    function openDetail(id) {
+      currentStudent = students.find(s => s.id === id);
+      if (!currentStudent) return;
+      const s = currentStudent;
+      isNameEditing = false;
+
+      document.getElementById('detailAvatar').innerHTML = s.avatar
+        ? `<img src="${s.avatar}" alt="${s.name}">`
+        : s.name.charAt(0);
+      document.getElementById('detailName').textContent = s.name;
+      document.getElementById('detailTags').innerHTML = `
+        <span class="tag">${s.sport || '综合训练'}</span>
+        <span class="tag">入学 ${getDays(s.joinDate)} 天</span>`;
+
+      const bmi = calcBMI(s.height, s.weight);
+      document.getElementById('detailAge').innerHTML = `${s.age} 岁 <span class="edit-icon" onclick="editInfo('age')">✎</span>`;
+      document.getElementById('detailHeight').innerHTML = `${s.height} cm <span class="edit-icon" onclick="editInfo('height')">✎</span>`;
+      document.getElementById('detailWeight').innerHTML = `${s.weight} kg <span class="edit-icon" onclick="editInfo('weight')">✎</span>`;
+      document.getElementById('detailBmi').innerHTML = `${bmi.value} <span class="edit-icon" onclick="editInfo('weight')">✎</span>`;
+      document.getElementById('detailJoinDate').innerHTML = `${formatDate(s.joinDate)} <span class="edit-icon" onclick="editJoinDate()">✎</span>`;
+
+      const attendanceCount = s.attendance.filter(a => a.status === 'present').length;
+      const trainingCount = s.training.length;
+      const assessmentCount = s.assessments.length;
+      const planDone = s.plan.filter(p => p.done).length;
+      const planTotal = s.plan.length;
+      document.getElementById('statsSummary').innerHTML = `
+        <div class="summary-card"><div class="num">${attendanceCount}</div><div class="label">上课次数</div></div>
+        <div class="summary-card"><div class="num">${trainingCount}</div><div class="label">训练记录</div></div>
+        <div class="summary-card"><div class="num">${assessmentCount}</div><div class="label">考核次数</div></div>
+        <div class="summary-card"><div class="num">${planTotal > 0 ? Math.round(planDone/planTotal*100) : 0}%</div><div class="label">计划完成率</div></div>
+      `;
+
+      document.getElementById('progressList').innerHTML = s.progress.length > 0 ? s.progress.map((p, i) => `
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">${p.subject} ${getLevelBadge(p.percent)}</span>
+            <span class="progress-value">${p.percent}% · ${getLevelText(p.percent)}</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: ${p.percent}%"></div></div>
+          ${p.standard ? `<div class="progress-standard">📋 标准：${p.standard}</div>` : ''}
+          <div class="progress-actions">
+            <button onclick="editProgress(${i})">✎ 编辑</button>
+            <button class="delete" onclick="deleteProgress(${i})">🗑 删除</button>
+          </div>
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">📊</div><p>暂无技能掌握度数据，点击右上角添加</p></div>';
+
+      document.getElementById('attendanceList').innerHTML = s.attendance.length > 0 ? `
+        <table class="data-table">
+          <thead><tr><th>日期</th><th>课程</th><th>状态</th><th>表现</th><th>备注</th><th class="actions"></th></tr></thead>
+          <tbody>${s.attendance.map((a, i) => `
+            <tr>
+              <td>${a.date}</td>
+              <td>${a.course}</td>
+              <td>${getStatusBadge(a.status)}</td>
+              <td><span class="stars">${getStarHTML(a.performance)}</span></td>
+              <td style="color:#64748b;font-size:12px;">${a.note || '-'}</td>
+              <td class="actions"><button onclick="deleteAttendance(${i})">×</button></td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      ` : '<div class="empty-media"><div class="icon">📅</div><p>暂无上课记录</p></div>';
+
+      document.getElementById('trainingList').innerHTML = s.training.length > 0 ? s.training.map((t, i) => `
+        <div class="record-item info">
+          <button class="record-delete" onclick="deleteTraining(${i})">×</button>
+          <div class="record-date">${t.date} · ${t.duration}分钟 · 强度：${t.intensity}</div>
+          <div class="record-content"><strong>训练项目：</strong>${Array.isArray(t.items) ? t.items.join('、') : t.items}</div>
+          <div class="record-meta">
+            <span>表现：<strong>${t.performance}</strong></span>
+            ${t.note ? `<span>备注：${t.note}</span>` : ''}
+          </div>
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">🏋️</div><p>暂无训练记录</p></div>';
+
+      document.getElementById('recordsList').innerHTML = s.records.length > 0 ? s.records.map((r, i) => `
+        <div class="record-item ${r.type}">
+          <button class="record-delete" onclick="deleteRecord(${i})">×</button>
+          <div class="record-date">${r.date}</div>
+          <div class="record-content">${r.content}</div>
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">📝</div><p>暂无成长记录</p></div>';
+
+      document.getElementById('correctionsList').innerHTML = s.corrections.length > 0 ? s.corrections.map((c, i) => `
+        <div class="record-item warning">
+          <button class="record-delete" onclick="deleteCorrection(${i})">×</button>
+          <div class="record-date">${c.date} · ${c.severity === 'minor' ? '轻微' : c.severity === 'moderate' ? '中等' : '严重'}</div>
+          <div class="record-content"><strong>问题：</strong>${c.content}</div>
+          ${c.suggestion ? `<div class="record-meta" style="color:var(--primary);">💡 建议：${c.suggestion}</div>` : ''}
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">✅</div><p>暂无待纠正问题</p></div>';
+
+      document.getElementById('assessmentList').innerHTML = s.assessments.length > 0 ? `
+        <div class="assessment-grid">${s.assessments.map((a, i) => `
+          <div class="assessment-card">
+            <div class="assess-header">
+              <div>
+                <div class="assess-title">${a.name}</div>
+                <div class="assess-date">${a.date}</div>
+              </div>
+              <button class="record-delete" style="position:static;opacity:0.6;" onclick="deleteAssessment(${i})">×</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+              <span class="assess-score">${a.score}</span>
+              ${a.rank ? `<span style="font-size:13px;color:#64748b;">排名 ${a.rank}</span>` : ''}
+            </div>
+            ${a.summary ? `<div style="font-size:12px;color:#475569;margin-bottom:8px;">${a.summary}</div>` : ''}
+            <div class="assess-items">
+              ${a.items.map(item => `
+                <div class="assess-item">
+                  <span>${item.name}</span>
+                  <span style="font-weight:700;color:${item.score >= 80 ? 'var(--primary)' : item.score >= 60 ? 'var(--warning)' : 'var(--danger)'}">${item.score}分</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}</div>
+      ` : '<div class="empty-media"><div class="icon">📋</div><p>暂无考核成绩</p></div>';
+
+      document.getElementById('injuryList').innerHTML = s.injuries.length > 0 ? s.injuries.map((inj, i) => `
+        <div class="record-item ${inj.status === 'recovered' ? 'success' : inj.status === 'ongoing' ? 'warning' : 'danger'}">
+          <button class="record-delete" onclick="deleteInjury(${i})">×</button>
+          <div class="record-date">${inj.date} · ${inj.type}</div>
+          <div class="record-content"><strong>部位：</strong>${inj.part} · ${getStatusBadge(inj.status)}</div>
+          ${inj.note ? `<div class="record-meta">${inj.note}</div>` : ''}
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">🩹</div><p>暂无伤病记录，保持健康！</p></div>';
+
+      document.getElementById('photosCount').textContent = s.photos.length;
+      document.getElementById('videosCount').textContent = s.videos.length;
+      renderMedia();
+
+      document.getElementById('planList').innerHTML = s.plan.length > 0 ? s.plan.map((p, i) => `
+        <div class="plan-item">
+          <div class="plan-checkbox ${p.done ? 'checked' : ''}" onclick="togglePlan(${i})"></div>
+          <div class="plan-content">
+            <div class="plan-title">${p.title}</div>
+            <div class="plan-desc">${p.desc}</div>
+          </div>
+          <span class="plan-status ${p.status}">${p.status === 'active' ? '进行中' : '待开始'}</span>
+          <button class="plan-delete" onclick="deletePlan(${i})">×</button>
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">🎯</div><p>暂无成长计划</p></div>';
+
+      switchTab('progress');
+      document.getElementById('detailModal').classList.add('active');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.remove('active');
+      currentStudent = null;
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      const btn = document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`);
+      if (btn) btn.classList.add('active');
+      document.getElementById(`tab-${tab}`).classList.add('active');
+    }
+
+    function switchMediaTab(tab) {
+      currentMediaTab = tab;
+      document.querySelectorAll('.media-tab').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.media-tab[onclick="switchMediaTab('${tab}')"]`).classList.add('active');
+      renderMedia();
+    }
+
+    function editInfo(field) {
+      const element = document.getElementById('detail' + field.charAt(0).toUpperCase() + field.slice(1));
+      const currentValue = field === 'age' ? currentStudent.age :
+                          field === 'height' ? currentStudent.height :
+                          currentStudent.weight;
+      element.innerHTML = `<input type="number" class="inline-edit-input" value="${currentValue}" id="edit${field}" onblur="saveInfo('${field}')" onkeypress="if(event.key==='Enter'){event.target.blur();}">`;
+      document.getElementById('edit' + field).focus();
+    }
+
+    function saveInfo(field) {
+      const input = document.getElementById('edit' + field);
+      if (!input) return;
+      const value = field === 'age' ? parseInt(input.value) :
+                   field === 'height' ? parseInt(input.value) :
+                   parseFloat(input.value);
+      if (field === 'age') currentStudent.age = value;
+      else if (field === 'height') currentStudent.height = value;
+      else currentStudent.weight = value;
+      markUnsaved();
+      openDetail(currentStudent.id);
+      renderStudents();
+      showToast('信息已更新', 'success');
+    }
+
+    function editJoinDate() {
+      const element = document.getElementById('detailJoinDate');
+      element.innerHTML = `<input type="date" class="inline-edit-input" style="width:130px;" value="${currentStudent.joinDate}" id="editJoinDate" onblur="saveJoinDate()" onkeypress="if(event.key==='Enter'){event.target.blur();}">`;
+      document.getElementById('editJoinDate').focus();
+    }
+
+    function saveJoinDate() {
+      const input = document.getElementById('editJoinDate');
+      if (!input) return;
+      currentStudent.joinDate = input.value;
+      markUnsaved();
+      openDetail(currentStudent.id);
+      renderStudents();
+      showToast('入学日期已更新', 'success');
+    }
+
+    function toggleNameEdit() {
+      const nameSpan = document.getElementById('detailName');
+      if (isNameEditing) { saveName(); }
+      else {
+        nameSpan.innerHTML = `<input type="text" class="name-edit-input" value="${currentStudent.name}" id="editName" onkeypress="if(event.key==='Enter')saveName()">`;
+        document.getElementById('editName').focus();
+        document.getElementById('editName').select();
+        isNameEditing = true;
+      }
+    }
+    function saveName() {
+      const input = document.getElementById('editName');
+      if (!input) return;
+      const newName = input.value.trim();
+      if (newName) currentStudent.name = newName;
+      isNameEditing = false;
+      markUnsaved();
+      openDetail(currentStudent.id);
+      renderStudents();
+      showToast('姓名已更新', 'success');
+    }
+    function saveStudentInfo() {
+      markUnsaved();
+      renderStudents();
+      closeDetailModal();
+      showToast('学员信息已保存', 'success');
+    }
+
+    let studentToDelete = null;
+    function openConfirmModal(id) { studentToDelete = id; document.getElementById('confirmModal').classList.add('active'); }
+    function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('active'); studentToDelete = null; }
+    function confirmDeleteStudent() { if (currentStudent) { studentToDelete = currentStudent.id; document.getElementById('confirmModal').classList.add('active'); } }
+    function deleteStudent() {
+      if (studentToDelete) {
+        const s = students.find(s => s.id === studentToDelete);
+        students = students.filter(s => s.id !== studentToDelete);
+        renderStudents();
+        closeConfirmModal();
+        closeDetailModal();
+        markUnsaved();
+        showToast(s ? `学员 ${s.name} 已删除` : '学员已删除', 'success');
+        studentToDelete = null;
+      }
+    }
+
+    function openProgressModal() {
+      document.getElementById('progressModalTitle').textContent = '添加技能掌握度';
+      document.getElementById('progressForm').reset();
+      document.querySelector('input[name="progressIndex"]').value = '';
+      document.getElementById('progressModal').classList.add('active');
+    }
+    function closeProgressModal() { document.getElementById('progressModal').classList.remove('active'); }
+
+    function handleAddProgress(e) {
+      e.preventDefault();
+      const form = e.target;
+      const fd = new FormData(form);
+      const idx = fd.get('progressIndex');
+      const item = {
+        subject: fd.get('subject'),
+        percent: parseInt(fd.get('percent')),
+        standard: fd.get('standard') || ''
+      };
+      if (idx !== '') {
+        currentStudent.progress[parseInt(idx)] = item;
+        showToast('技能已更新', 'success');
+      } else {
+        currentStudent.progress.push(item);
+        showToast('技能已添加', 'success');
+      }
+      closeProgressModal();
+      openDetail(currentStudent.id);
+      renderStudents();
+      markUnsaved();
+    }
+
+    function editProgress(index) {
+      const p = currentStudent.progress[index];
+      document.getElementById('progressModalTitle').textContent = '编辑技能掌握度';
+      document.querySelector('input[name="progressIndex"]').value = index;
+      document.querySelector('input[name="subject"]').value = p.subject;
+      document.querySelector('input[name="percent"]').value = p.percent;
+      document.querySelector('textarea[name="standard"]').value = p.standard || '';
+      document.getElementById('progressModal').classList.add('active');
+    }
+
+    function deleteProgress(index) {
+      currentStudent.progress.splice(index, 1);
+      openDetail(currentStudent.id);
+      renderStudents();
+      markUnsaved();
+      showToast('技能已删除', 'success');
+    }
+
+    function openAttendanceModal() {
+      document.getElementById('attendanceModal').classList.add('active');
+      document.querySelector('#attendanceModal input[name="date"]').value = new Date().toISOString().split('T')[0];
+    }
+    function closeAttendanceModal() { document.getElementById('attendanceModal').classList.remove('active'); }
+    function handleAddAttendance(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      currentStudent.attendance.unshift({
+        date: fd.get('date'),
+        course: fd.get('course'),
+        status: fd.get('status'),
+        performance: parseInt(fd.get('performance')),
+        note: fd.get('note') || ''
+      });
+      closeAttendanceModal();
+      e.target.reset();
+      openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('上课记录已添加', 'success');
+    }
+    function deleteAttendance(index) {
+      currentStudent.attendance.splice(index, 1);
+      openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('记录已删除', 'success');
+    }
+
+    function openTrainingModal() {
+      document.getElementById('trainingModal').classList.add('active');
+      document.querySelector('#trainingModal input[name="date"]').value = new Date().toISOString().split('T')[0];
+    }
+    function closeTrainingModal() { document.getElementById('trainingModal').classList.remove('active'); }
+    function handleAddTraining(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const itemsStr = fd.get('items');
+      currentStudent.training.unshift({
+        date: fd.get('date'),
+        items: itemsStr.split(/[,，]/).map(s => s.trim()).filter(Boolean),
+        duration: parseInt(fd.get('duration')),
+        intensity: fd.get('intensity'),
+        performance: fd.get('performance'),
+        note: fd.get('note') || ''
+      });
+      closeTrainingModal();
+      e.target.reset();
+      openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('训练记录已添加', 'success');
+    }
+    function deleteTraining(index) {
+      currentStudent.training.splice(index, 1);
+      openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('训练记录已删除', 'success');
+    }
+
+    function openRecordModal() { document.getElementById('recordModal').classList.add('active'); }
+    function closeRecordModal() { document.getElementById('recordModal').classList.remove('active'); }
+    function handleAddRecord(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      currentStudent.records.unshift({ date: fd.get('date'), type: fd.get('type'), content: fd.get('content') });
+      closeRecordModal(); e.target.reset(); openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('成长记录已添加', 'success');
+    }
+    function deleteRecord(index) {
+      currentStudent.records.splice(index, 1);
+      openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('记录已删除', 'success');
+    }
+
+    function openCorrectionModal() { document.getElementById('correctionModal').classList.add('active'); }
+    function closeCorrectionModal() { document.getElementById('correctionModal').classList.remove('active'); }
+    function handleAddCorrection(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      currentStudent.corrections.unshift({ date: fd.get('date'), severity: fd.get('severity'), content: fd.get('content'), suggestion: fd.get('suggestion') || '' });
+      closeCorrectionModal(); e.target.reset(); openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('待纠正问题已添加', 'success');
+    }
+    function deleteCorrection(index) {
+      currentStudent.corrections.splice(index, 1);
+      openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('问题已删除', 'success');
+    }
+
+    function openAssessmentModal() {
+      document.getElementById('assessmentModal').classList.add('active');
+      document.querySelector('#assessmentModal input[name="date"]').value = new Date().toISOString().split('T')[0];
+      assessmentItemCount = 1;
+      document.getElementById('assessmentItems').innerHTML = `
+        <div class="form-row">
+          <div class="form-group"><label>考核项目1</label><input type="text" name="itemName1" placeholder="项目名称" required></div>
+          <div class="form-group"><label>分数</label><input type="number" name="itemScore1" placeholder="分数" required></div>
+        </div>`;
+    }
+    function closeAssessmentModal() { document.getElementById('assessmentModal').classList.remove('active'); }
+    function addAssessmentItem() {
+      assessmentItemCount++;
+      const div = document.createElement('div');
+      div.className = 'form-row';
+      div.innerHTML = `
+        <div class="form-group"><label>考核项目${assessmentItemCount}</label><input type="text" name="itemName${assessmentItemCount}" placeholder="项目名称" required></div>
+        <div class="form-group"><label>分数</label><input type="number" name="itemScore${assessmentItemCount}" placeholder="分数" required></div>
+      `;
+      document.getElementById('assessmentItems').appendChild(div);
+    }
+    function handleAddAssessment(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const items = [];
+      for (let i = 1; i <= assessmentItemCount; i++) {
+        const name = fd.get(`itemName${i}`);
+        const score = fd.get(`itemScore${i}`);
+        if (name && score) items.push({ name, score: parseInt(score) });
+      }
+      currentStudent.assessments.unshift({
+        date: fd.get('date'), name: fd.get('name'), score: parseInt(fd.get('score')),
+        rank: fd.get('rank') || '', items, summary: fd.get('summary') || ''
+      });
+      closeAssessmentModal(); e.target.reset(); openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('考核成绩已添加', 'success');
+    }
+    function deleteAssessment(index) {
+      currentStudent.assessments.splice(index, 1);
+      openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('考核已删除', 'success');
+    }
+
+    function openInjuryModal() { document.getElementById('injuryModal').classList.add('active'); }
+    function closeInjuryModal() { document.getElementById('injuryModal').classList.remove('active'); }
+    function handleAddInjury(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      currentStudent.injuries.unshift({ date: fd.get('date'), type: fd.get('type'), part: fd.get('part'), status: fd.get('status'), note: fd.get('note') || '' });
+      closeInjuryModal(); e.target.reset(); openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('伤病记录已添加', 'success');
+    }
+    function deleteInjury(index) {
+      currentStudent.injuries.splice(index, 1);
+      openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('记录已删除', 'success');
+    }
+
+    function renderMedia() {
+      if (!currentStudent) return;
+      const s = currentStudent;
+      if (currentMediaTab === 'photos') {
+        document.getElementById('mediaContent').innerHTML = `
+          <div class="media-grid">
+            ${s.photos.length > 0 ? s.photos.map((p, i) => `
+              <div class="media-item" onclick="openLightbox(${i}, 'photo')">
+                <img src="${p.url}" alt="${p.desc || ''}">
+                <div class="media-overlay"><span>🔍</span></div>
+                <button class="media-delete" onclick="event.stopPropagation(); deleteMedia(${i}, 'photo')">×</button>
+                <div class="media-date">${p.date} ${p.desc ? '· ' + p.desc : ''}</div>
+              </div>
+            `).join('') : ''}
+            <div class="add-media-btn" onclick="openPhotoModal()"><span class="icon">+</span><span>添加照片</span></div>
+          </div>`;
+      } else {
+        document.getElementById('mediaContent').innerHTML = `
+          <div class="media-grid">
+            ${s.videos.length > 0 ? s.videos.map((v, i) => `
+              <div class="media-item" onclick="openLightbox(${i}, 'video')">
+                <div style="width:100%;height:100%;background:#1e293b;display:flex;align-items:center;justify-content:center;color:white;font-size:36px;">▶</div>
+                <div class="media-overlay"><span>🔍</span></div>
+                <button class="media-delete" onclick="event.stopPropagation(); deleteMedia(${i}, 'video')">×</button>
+                <div class="media-date">${v.date} ${v.desc ? '· ' + v.desc : ''}</div>
+              </div>
+            `).join('') : ''}
+            <div class="add-media-btn" onclick="openVideoModal()"><span class="icon">+</span><span>添加视频</span></div>
+          </div>`;
+      }
+    }
+
+    function openPhotoModal() {
+      document.getElementById('photoModal').classList.add('active');
+      document.getElementById('photoPreview').innerHTML = '<span class="icon">🖼️</span><span>点击选择图片</span><small>支持 JPG、PNG 格式</small>';
+      document.getElementById('photoPreviewContainer').classList.remove('show');
+    }
+    function closePhotoModal() { document.getElementById('photoModal').classList.remove('active'); }
+    function handleAddPhoto(e) {
+      e.preventDefault();
+      const form = e.target;
+      const fd = new FormData(form);
+      const fileInput = form.querySelector('input[name="photo"]');
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          currentStudent.photos.unshift({ url: ev.target.result, date: fd.get('date'), desc: fd.get('desc') || '' });
+          closePhotoModal();
+          document.getElementById('photosCount').textContent = currentStudent.photos.length;
+          renderMedia();
+          markUnsaved();
+          showToast('照片已添加', 'success');
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      }
+    }
+
+    function openVideoModal() {
+      document.getElementById('videoModal').classList.add('active');
+      document.getElementById('videoPreview').innerHTML = '<span class="icon">🎬</span><span>点击选择视频</span><small>支持 MP4、WebM 格式</small>';
+      document.getElementById('videoPreviewContainer').classList.remove('show');
+    }
+    function closeVideoModal() { document.getElementById('videoModal').classList.remove('active'); }
+    function handleAddVideo(e) {
+      e.preventDefault();
+      const form = e.target;
+      const fd = new FormData(form);
+      const fileInput = form.querySelector('input[name="video"]');
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          currentStudent.videos.unshift({ url: ev.target.result, date: fd.get('date'), desc: fd.get('desc') || '' });
+          closeVideoModal();
+          document.getElementById('videosCount').textContent = currentStudent.videos.length;
+          renderMedia();
+          markUnsaved();
+          showToast('视频已添加', 'success');
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      }
+    }
+
+    function previewMedia(input, previewId) {
+      if (input.files && input.files[0]) {
+        const type = input.name;
+        const container = document.getElementById(type + 'PreviewContainer');
+        if (type === 'photo') {
+          const reader = new FileReader();
+          reader.onload = function(e) { container.innerHTML = `<img src="${e.target.result}">`; container.classList.add('show'); };
+          reader.readAsDataURL(input.files[0]);
+          document.getElementById(previewId).innerHTML = `<span class="icon">✓</span><span>已选择: ${input.files[0].name}</span>`;
+        } else if (type === 'video') {
+          const url = URL.createObjectURL(input.files[0]);
+          container.innerHTML = `<video src="${url}" controls></video>`; container.classList.add('show');
+          document.getElementById(previewId).innerHTML = `<span class="icon">✓</span><span>已选择: ${input.files[0].name}</span>`;
+        }
+      }
+    }
+
+    function deleteMedia(index, type) {
+      if (!currentStudent) return;
+      if (type === 'photo') {
+        currentStudent.photos.splice(index, 1);
+        document.getElementById('photosCount').textContent = currentStudent.photos.length;
+      } else {
+        currentStudent.videos.splice(index, 1);
+        document.getElementById('videosCount').textContent = currentStudent.videos.length;
+      }
+      renderMedia();
+      markUnsaved();
+      showToast('已删除', 'success');
+    }
+
+    function openLightbox(index, type) {
+      lightboxIndex = index;
+      lightboxItems = type === 'photo' ? currentStudent.photos : currentStudent.videos;
+      const item = lightboxItems[index];
+      const lightbox = document.getElementById('lightbox');
+      const img = document.getElementById('lightboxImg');
+      const video = document.getElementById('lightboxVideo');
+      if (type === 'photo') { img.src = item.url; img.style.display = 'block'; video.style.display = 'none'; }
+      else { video.src = item.url; video.style.display = 'block'; img.style.display = 'none'; }
+      lightbox.classList.add('active');
+    }
+    function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); document.getElementById('lightboxVideo').pause(); }
+    function lightboxPrev() { if (lightboxIndex > 0) { lightboxIndex--; openLightbox(lightboxIndex, currentMediaTab === 'photos' ? 'photo' : 'video'); } }
+    function lightboxNext() { if (lightboxIndex < lightboxItems.length - 1) { lightboxIndex++; openLightbox(lightboxIndex, currentMediaTab === 'photos' ? 'photo' : 'video'); } }
+
+    function openPlanModal() { document.getElementById('planModal').classList.add('active'); }
+    function closePlanModal() { document.getElementById('planModal').classList.remove('active'); }
+    function handleAddPlan(e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      currentStudent.plan.push({ title: fd.get('title'), desc: fd.get('desc'), status: fd.get('status'), done: false });
+      closePlanModal(); e.target.reset(); openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('成长计划已添加', 'success');
+    }
+    function togglePlan(index) {
+      if (!currentStudent) return;
+      currentStudent.plan[index].done = !currentStudent.plan[index].done;
+      openDetail(currentStudent.id);
+      markUnsaved();
+    }
+    function deletePlan(index) {
+      if (!currentStudent) return;
+      currentStudent.plan.splice(index, 1);
+      openDetail(currentStudent.id);
+      markUnsaved();
+      showToast('计划已删除', 'success');
+    }
+
+    function triggerAvatarEdit() { document.getElementById('avatarInput').click(); }
+    function handleAvatarChange(input) {
+      if (input.files && input.files[0] && currentStudent) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          currentStudent.avatar = e.target.result;
+          document.getElementById('detailAvatar').innerHTML = `<img src="${e.target.result}" alt="${currentStudent.name}">`;
+          renderStudents();
+          markUnsaved();
+          showToast('头像已更新', 'success');
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+      if (hasUnsavedChanges) {
+        try {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', API_URL, false);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.send(JSON.stringify(students));
+        } catch(err) {}
+      }
+    });
+
+    window.addEventListener('online', () => {
+      isOnline = true;
+      document.getElementById('offlineBanner').classList.remove('show');
+      showToast('网络已恢复', 'success');
+      saveToServer();
+    });
+    window.addEventListener('offline', () => {
+      isOnline = false;
+      document.getElementById('offlineBanner').classList.add('show');
+      showToast('网络已断开', 'warning');
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+        closeLightbox();
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
