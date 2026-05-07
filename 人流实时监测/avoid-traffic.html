@@ -1,594 +1,439 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>北海避堵出行</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f2f2f7; color: #1c1c1e;
-      height: 100vh; overflow-y: auto; overscroll-behavior: contain;
-    }
-    #map { width: 100%; height: 50vh; touch-action: pan-x pan-y; }
-
-    .header {
-      background: linear-gradient(135deg, #14522d 0%, #1a5f2a 50%, #2e8b57 100%);
-      color: white; padding: 14px 18px 44px;
-      border-radius: 0 0 22px 22px;
-    }
-    .header h1 { font-size: 22px; font-weight: 700; }
-    .header p { font-size: 13px; opacity: 0.85; margin-top: 3px; }
-    .status-bar { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-    .status-chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.18); padding: 6px 14px;
-      border-radius: 20px; font-size: 12px; font-weight: 600; backdrop-filter: blur(4px);
-    }
-    .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-    .dot.green { background: #34c759; box-shadow: 0 0 6px #34c759; }
-    .dot.yellow { background: #ff9500; box-shadow: 0 0 6px #ff9500; }
-    .dot.red { background: #ff3b30; box-shadow: 0 0 6px #ff3b30; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-    .search-box {
-      margin: -34px 14px 12px; background: white; border-radius: 14px;
-      padding: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-      display: flex; gap: 8px;
-    }
-    .search-box input {
-      flex: 1; border: none; background: #f2f2f7; padding: 12px 14px;
-      border-radius: 10px; font-size: 14px; outline: none; color: #1c1c1e;
-    }
-    .search-btn {
-      background: #1a5f2a; color: white; border: none;
-      padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
-    }
-
-    .card { background: white; border-radius: 16px; margin: 0 14px 12px; overflow: hidden; }
-    .card-header {
-      display: flex; align-items: center; gap: 8px;
-      padding: 14px 16px; cursor: pointer; user-select: none;
-    }
-    .card-header:active { background: #f2f2f7; }
-    .card-title { font-size: 14px; font-weight: 700; color: #8e8e93; flex: 1; }
-    .card-arrow { font-size: 14px; color: #c7c7cc; transition: transform 0.25s; }
-    .card.open .card-arrow { transform: rotate(180deg); }
-    .card-body { display: none; padding: 0 16px 16px; }
-    .card.open .card-body { display: block; }
-
-    .beach-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
-    .beach-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f2f2f7; border-radius: 12px; cursor: pointer; font-size: 14px; }
-    .beach-item:active { background: #e5e5ea; }
-    .beach-icon { font-size: 22px; flex-shrink: 0; }
-    .beach-info { flex: 1; min-width: 0; }
-    .beach-name { font-weight: 600; color: #1c1c1e; }
-    .beach-sub { font-size: 11px; color: #8e8e93; }
-    .beach-bar { width: 56px; height: 14px; background: #e5e5ea; border-radius: 7px; overflow: hidden; flex-shrink: 0; }
-    .beach-fill { height: 100%; border-radius: 7px; }
-    .beach-fill.crowded { background: #ff3b30; }
-    .beach-fill.moderate { background: #ff9500; }
-    .beach-fill.quiet { background: #34c759; }
-    .beach-pct { font-size: 12px; font-weight: 600; width: 40px; text-align: right; flex-shrink: 0; }
-
-    .beach-detail { display: none; padding: 10px 12px; background: #f2f2f7; border-radius: 10px; margin-top: 6px; font-size: 12px; }
-    .beach-detail.show { display: block; }
-    .beach-detail-row { display: flex; justify-content: space-between; margin-bottom: 4px; color: #8e8e93; }
-    .beach-detail-row span:last-child { color: #1c1c1e; font-weight: 600; }
-
-    .road-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
-    .road-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f2f2f7; border-radius: 12px; cursor: pointer; }
-    .road-item:active { background: #e5e5ea; }
-    .road-name { font-size: 14px; font-weight: 600; min-width: 72px; color: #1c1c1e; }
-    .road-bar { flex: 1; height: 14px; background: #e5e5ea; border-radius: 7px; overflow: hidden; }
-    .road-fill { height: 100%; border-radius: 7px; transition: width 0.8s; }
-    .road-fill.high { background: #ff3b30; }
-    .road-fill.medium { background: #ff9500; }
-    .road-fill.low { background: #34c759; }
-    .road-status { font-size: 12px; font-weight: 600; width: 40px; text-align: right; }
-    .road-detail { display: none; padding: 10px 12px; background: #f2f2f7; border-radius: 10px; margin-top: 6px; font-size: 12px; }
-    .road-detail.show { display: block; }
-    .road-detail-row { display: flex; justify-content: space-between; margin-bottom: 4px; color: #8e8e93; }
-    .road-detail-row span:last-child { color: #1c1c1e; font-weight: 600; }
-
-    .highway-list { display: flex; flex-direction: column; gap: 8px; }
-    .highway-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f2f2f7; border-radius: 12px; }
-    .highway-icon { font-size: 20px; flex-shrink: 0; }
-    .highway-info { flex: 1; }
-    .highway-name { font-size: 14px; font-weight: 600; color: #1c1c1e; }
-    .highway-dir { font-size: 11px; color: #8e8e93; }
-    .highway-bar { flex: 1; height: 14px; background: #e5e5ea; border-radius: 7px; overflow: hidden; }
-    .highway-fill { height: 100%; border-radius: 7px; transition: width 0.8s; }
-    .highway-fill.high { background: #ff3b30; }
-    .highway-fill.medium { background: #ff9500; }
-    .highway-fill.low { background: #34c759; }
-    .highway-status { font-size: 12px; font-weight: 600; width: 44px; text-align: right; }
-
-    .btn-row { display: flex; gap: 10px; margin: 10px 14px 20px; }
-    .action-btn {
-      flex: 1; background: white; border: none;
-      padding: 14px 8px; border-radius: 14px; font-size: 13px; font-weight: 700;
-      color: #1c1c1e; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .action-btn:active { background: #f2f2f7; transform: scale(0.97); }
-
-    /* POI markers */
-    .poi-marker {
-      background: white; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.25); cursor: pointer;
-      width: 44px; height: 44px; font-size: 20px; border: 3px solid;
-    }
-    .poi-marker.beach { border-color: #ff3b30; }
-    .poi-marker.island { border-color: #007aff; }
-    .poi-marker.food { border-color: #ff9500; }
-
-    /* POI card */
-    .poi-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 500; }
-    .poi-overlay.show { display: block; }
-    .poi-overlay-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); }
-    .poi-card {
-      display: none; position: fixed; bottom: 0; left: 0; right: 0;
-      background: rgba(255,255,255,0.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border-radius: 22px 22px 0 0; z-index: 501; max-height: 82vh; overflow: hidden;
-      box-shadow: 0 -12px 60px rgba(0,0,0,0.12);
-    }
-    .poi-card.show { display: block; }
-    .poi-card-top { padding: 18px 18px 0; }
-    .poi-card-close { width: 30px; height: 30px; background: rgba(0,0,0,0.07); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; color: #3c3c43; margin-bottom: 10px; }
-    .poi-card-img { width: 100%; height: 190px; object-fit: cover; border-radius: 16px; margin-top: -30px; position: relative; z-index: 1; box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
-    .poi-card-body { padding: 12px 18px 32px; }
-    .poi-card-title { font-size: 24px; font-weight: 800; color: #1c1c1e; letter-spacing: -0.5px; margin: 10px 0 8px; }
-    .poi-card-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 12px; }
-    .poi-tag { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .poi-tag.crowded { background: #ff3b301a; color: #ff3b30; }
-    .poi-tag.moderate { background: #ff95001a; color: #ff9500; }
-    .poi-tag.quiet { background: #34c7591a; color: #34c759; }
-    .poi-tag.type-beach { background: #ff3b301a; color: #ff3b30; }
-    .poi-tag.type-island { background: #007aff1a; color: #007aff; }
-    .poi-tag.type-food { background: #ff95001a; color: #ff9500; }
-    .poi-stat-row { display: flex; gap: 8px; margin-bottom: 10px; }
-    .poi-stat { flex: 1; background: #f2f2f7; border-radius: 12px; padding: 12px 6px; text-align: center; }
-    .poi-stat-val { font-size: 18px; font-weight: 700; color: #1c1c1e; letter-spacing: -0.3px; }
-    .poi-stat-lbl { font-size: 10px; color: #8e8e93; margin-top: 2px; font-weight: 500; }
-    .poi-desc { font-size: 13px; color: #636366; line-height: 1.6; margin-bottom: 14px; }
-    .poi-nav-btn { display: block; width: calc(100% - 36px); margin: 0 auto; background: #007aff; color: white; padding: 15px; border-radius: 14px; font-size: 16px; font-weight: 600; text-align: center; text-decoration: none; letter-spacing: -0.3px; box-shadow: 0 4px 14px rgba(0,122,255,0.3); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>北海避堵助手</title>
+    <script src="https://webapi.amap.com/maps?v=2.0&key=ca95c0ee3d37ae8d31f2790db3f0e99d&securityJsCode=7bbadcee61ad1d59c9f86f2085377565&plugin=AMap.ToolBar,AMap.Scale,AMap.MapType,AMap.PlaceSearch,AMap.Geolocation"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f2f2f7; overflow: hidden; height: 100vh; width: 100vw; }
+        #container { width: 100%; height: 100%; position: relative; }
+        .header { position: absolute; top: 0; left: 0; right: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 16px 20px; z-index: 1000; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .header-title { font-size: 22px; font-weight: 700; color: #000; margin-bottom: 12px; }
+        .search-container { position: relative; }
+        .search-box { width: 100%; height: 44px; background: #e5e5ea; border: none; border-radius: 12px; padding: 0 44px 0 16px; font-size: 17px; color: #000; outline: none; }
+        .search-box::placeholder { color: #8e8e93; }
+        .search-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; background: #007aff; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; }
+        .search-results { position: absolute; top: calc(100% + 8px); left: 0; right: 0; max-height: 400px; overflow-y: auto; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: none; z-index: 1001; }
+        .search-results.active { display: block; }
+        .search-result-item { padding: 14px 18px; border-bottom: 1px solid #f2f2f7; cursor: pointer; transition: background 0.2s; }
+        .search-result-item:hover { background: #f2f2f7; }
+        .result-name { font-size: 17px; font-weight: 600; color: #000; margin-bottom: 4px; }
+        .result-address { font-size: 14px; color: #8e8e93; }
+        .side-panel { position: absolute; top: 110px; left: 16px; width: 320px; max-height: calc(100% - 200px); background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); border-radius: 22px; padding: 16px; z-index: 100; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .panel-section { margin-bottom: 16px; }
+        .panel-title { font-size: 15px; font-weight: 700; color: #000; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .panel-title-icon { width: 8px; height: 8px; border-radius: 50%; }
+        .panel-title-icon.beach { background: #ff3b30; }
+        .panel-title-icon.island { background: #007aff; }
+        .panel-title-icon.food { background: #ff9500; }
+        .panel-title-icon.road { background: #34c759; }
+        .panel-title-icon.highway { background: #af52de; }
+        .beach-list { display: flex; flex-direction: column; gap: 8px; }
+        .beach-item { background: #f2f2f7; border-radius: 14px; padding: 12px 14px; cursor: pointer; transition: all 0.2s; border-left: 4px solid #ff3b30; }
+        .beach-item:hover { background: #e5e5ea; }
+        .beach-item.expanded { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .beach-header { display: flex; justify-content: space-between; align-items: center; }
+        .beach-name { font-size: 16px; font-weight: 600; color: #000; }
+        .beach-status { font-size: 13px; padding: 4px 10px; border-radius: 12px; font-weight: 500; }
+        .status-crowded { background: #ff3b30; color: white; }
+        .status-moderate { background: #ff9500; color: white; }
+        .status-quiet { background: #34c759; color: white; }
+        .beach-details { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e5ea; }
+        .beach-item.expanded .beach-details { display: block; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .detail-label { color: #8e8e93; }
+        .detail-value { color: #000; font-weight: 500; }
+        .road-list { display: flex; flex-direction: column; gap: 6px; }
+        .road-item { background: #f2f2f7; border-radius: 12px; padding: 10px 12px; cursor: pointer; transition: all 0.2s; font-size: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .road-item:hover { background: #e5e5ea; }
+        .road-item.expanded { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .road-name { font-weight: 500; color: #000; }
+        .road-status { font-size: 12px; padding: 3px 8px; border-radius: 10px; }
+        .district-group { margin-bottom: 12px; }
+        .district-title { font-size: 14px; font-weight: 600; color: #007aff; margin-bottom: 8px; padding-left: 4px; }
+        .highway-item { border-left: 3px solid #af52de; }
+        .cityroad-item { border-left: 3px solid #34c759; }
+        .bottom-bar { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 100; background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); padding: 12px 20px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .bottom-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 16px; background: transparent; border: none; border-radius: 14px; cursor: pointer; transition: all 0.2s; }
+        .bottom-btn:hover { background: #f2f2f7; }
+        .bottom-btn-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .bottom-btn-icon.layer { background: #007aff; color: white; }
+        .bottom-btn-icon.refresh { background: #34c759; color: white; }
+        .bottom-btn-icon.location { background: #ff9500; color: white; }
+        .bottom-btn-text { font-size: 12px; color: #000; font-weight: 500; }
+        .layer-menu { position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: none; z-index: 101; min-width: 150px; }
+        .layer-menu.active { display: block; }
+        .layer-option { padding: 12px 20px; border-radius: 12px; cursor: pointer; font-size: 15px; transition: background 0.2s; }
+        .layer-option:hover { background: #f2f2f7; }
+        .layer-option.active { background: #007aff; color: white; }
+        .info-card { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.98); backdrop-filter: blur(30px); border-radius: 24px 24px 0 0; padding: 20px; z-index: 2000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 -4px 30px rgba(0,0,0,0.1); max-height: 70vh; overflow-y: auto; }
+        .info-card.active { transform: translateY(0); }
+        .card-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; background: #f2f2f7; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; color: #8e8e93; display: flex; align-items: center; justify-content: center; }
+        .card-image { width: 100%; height: 200px; object-fit: cover; border-radius: 16px; margin-top: -36px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .card-title { font-size: 26px; font-weight: 700; color: #000; margin-bottom: 12px; }
+        .card-tags { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .card-tag { font-size: 13px; padding: 6px 14px; border-radius: 14px; font-weight: 600; }
+        .card-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+        .stat-item { background: #f2f2f7; border-radius: 14px; padding: 14px; text-align: center; }
+        .stat-value { font-size: 20px; font-weight: 700; color: #007aff; margin-bottom: 4px; }
+        .stat-label { font-size: 12px; color: #8e8e93; }
+        .card-desc { font-size: 15px; color: #636366; line-height: 1.6; margin-bottom: 16px; }
+        .nav-btn { width: 100%; height: 52px; background: #007aff; border: none; border-radius: 16px; color: white; font-size: 17px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .nav-btn:hover { background: #0051d5; }
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1999; display: none; }
+        .overlay.active { display: block; }
+        .custom-marker { width: 36px; height: 36px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; font-size: 18px; }
+        .marker-beach { border: 3px solid #ff3b30; }
+        .marker-island { border: 3px solid #007aff; }
+        .marker-food { border: 3px solid #ff9500; }
+        .update-time { position: absolute; top: 80px; right: 16px; background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; z-index: 100; }
+        .road-details { width: 100%; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e5ea; display: none; }
+    </style>
 </head>
 <body>
-
-<div id="map"></div>
-
-<div class="header">
-  <h1>🗺️ 北海避堵出行</h1>
-  <p>实时路况 · 人流监测 · 智慧出行</p>
-  <div class="status-bar">
-    <div class="status-chip"><div class="dot green" id="trafficDot"></div><span id="trafficLabel">路况正常</span></div>
-    <div class="status-chip">🌡️ <span id="aqiVal">42</span> AQI 优</div>
-    <div class="status-chip">🕐 <span id="timeSlot">高峰时段</span></div>
-  </div>
-</div>
-
-<div class="search-box">
-  <input type="text" id="searchInput" placeholder="搜索目的地：银滩/侨港/涠洲岛..." />
-  <button class="search-btn" onclick="doSearch()">规划</button>
-</div>
-
-<!-- 海滩人流 -->
-<div class="card" id="beachCard">
-  <div class="card-header" onclick="toggleCard('beachCard')">
-    <span class="card-title">🏖️ 北海海滩人流</span>
-    <span class="card-arrow">▼</span>
-  </div>
-  <div class="card-body">
-    <div class="beach-list" id="beachList"></div>
-  </div>
-</div>
-
-<!-- 高速路况 -->
-<div class="card" id="highwayCard">
-  <div class="card-header" onclick="toggleCard('highwayCard')">
-    <span class="card-title">🛣️ 高速路况 <span id="highwayDir" style="font-weight:400;font-size:12px;color:#c7c7cc">往广州方向</span></span>
-    <span class="card-arrow">▼</span>
-  </div>
-  <div class="card-body">
-    <div class="highway-list" id="highwayList"></div>
-  </div>
-</div>
-
-<!-- 市区路况 -->
-<div class="card" id="roadCard">
-  <div class="card-header" onclick="toggleCard('roadCard')">
-    <span class="card-title">🚗 市区路况</span>
-    <span class="card-arrow">▼</span>
-  </div>
-  <div class="card-body">
-    <div class="road-list" id="roadList"></div>
-  </div>
-</div>
-
-<div class="btn-row">
-  <button class="action-btn" onclick="switchMap()">🗃️ 图层</button>
-  <button class="action-btn" onclick="refreshData()">🔄 刷新</button>
-  <button class="action-btn" onclick="locateMe()">📍 定位</button>
-</div>
-
-<!-- POI 详情卡片 -->
-<div class="poi-overlay" id="poiOverlay" onclick="closePoiCard(event)">
-  <div class="poi-overlay-bg"></div>
-  <div class="poi-card" id="poiCard">
-    <div class="poi-card-top">
-      <div class="poi-card-close" onclick="closePoiCard(event)">✕</div>
-      <img class="poi-card-img" id="poiImg" src="" alt="" />
-      <div class="poi-card-body">
-        <div class="poi-card-title" id="poiTitle"></div>
-        <div class="poi-card-tags" id="poiTags"></div>
-        <div class="poi-stat-row">
-          <div class="poi-stat">
-            <div class="poi-stat-val" id="poiCrowd">—</div>
-            <div class="poi-stat-lbl">人流量</div>
-          </div>
-          <div class="poi-stat">
-            <div class="poi-stat-val" id="poiCongest">—</div>
-            <div class="poi-stat-lbl">路况</div>
-          </div>
-          <div class="poi-stat">
-            <div class="poi-stat-val" id="poiDist">—</div>
-            <div class="poi-stat-lbl">距你</div>
-          </div>
+    <div id="container">
+        <div class="header">
+            <div class="header-title">北海避堵助手</div>
+            <div class="search-container">
+                <input type="text" class="search-box" id="searchInput" placeholder="搜索地点、景点、道路...">
+                <button class="search-btn" onclick="performSearch()">搜</button>
+                <div class="search-results" id="searchResults"></div>
+            </div>
         </div>
-        <div class="poi-stat-row">
-          <div class="poi-stat">
-            <div class="poi-stat-val" id="poiHours">—</div>
-            <div class="poi-stat-lbl">最佳前往</div>
-          </div>
-          <div class="poi-stat">
-            <div class="poi-stat-val" id="poiTemp">—</div>
-            <div class="poi-stat-lbl">水温</div>
-          </div>
-          <div class="poi-stat">
-            <div class="poi-stat-val" id="poiScore">—</div>
-            <div class="poi-stat-lbl">评分</div>
-          </div>
+        <div class="update-time" id="updateTime">更新于: --:--</div>
+        <div class="side-panel">
+            <div class="panel-section">
+                <div class="panel-title"><span class="panel-title-icon beach"></span>热门海滩</div>
+                <div class="beach-list" id="beachList"></div>
+            </div>
+            <div class="panel-section">
+                <div class="panel-title"><span class="panel-title-icon highway"></span>高速公路</div>
+                <div class="road-list" id="highwayList"></div>
+            </div>
+            <div class="panel-section">
+                <div class="panel-title"><span class="panel-title-icon road"></span>城市道路</div>
+                <div id="cityRoadList"></div>
+            </div>
         </div>
-        <div class="poi-desc" id="poiDesc"></div>
-        <a class="poi-nav-btn" id="poiNavBtn" href="#" target="_blank">🗺️ 导航前往</a>
-      </div>
+        <div class="layer-menu" id="layerMenu">
+            <div class="layer-option active" onclick="switchMapStyle('normal')">标准地图</div>
+            <div class="layer-option" onclick="switchMapStyle('satellite')">卫星地图</div>
+            <div class="layer-option" onclick="switchMapStyle('traffic')">交通地图</div>
+            <div class="layer-option" onclick="switchMapStyle('night')">夜间模式</div>
+        </div>
+        <div class="bottom-bar">
+            <button class="bottom-btn" onclick="toggleLayerMenu()">
+                <div class="bottom-btn-icon layer">☰</div>
+                <span class="bottom-btn-text">图层</span>
+            </button>
+            <button class="bottom-btn" onclick="refreshData()">
+                <div class="bottom-btn-icon refresh">↻</div>
+                <span class="bottom-btn-text">刷新</span>
+            </button>
+            <button class="bottom-btn" onclick="locateMe()">
+                <div class="bottom-btn-icon location">⌖</div>
+                <span class="bottom-btn-text">定位</span>
+            </button>
+        </div>
     </div>
-  </div>
-</div>
-
-<script src="https://webapi.amap.com/maps?v=2.0&key=ca95c0ee3d37ae8d31f2790db3f0e99d&callback=initMap"></script>
+    <div class="overlay" id="overlay" onclick="closeCard()"></div>
+    <div class="info-card" id="infoCard">
+        <button class="card-close" onclick="closeCard()">×</button>
+        <img class="card-image" id="cardImage" src="" alt="">
+        <div class="card-title" id="cardTitle"></div>
+        <div class="card-tags" id="cardTags"></div>
+        <div class="card-stats" id="cardStats"></div>
+        <div class="card-desc" id="cardDesc"></div>
+        <button class="nav-btn" onclick="startNavigation()">开始导航</button>
+    </div>
 <script>
-window._securityJsCode = '7bbadcee61ad1d59c9f86f2085377565';
-function jsCode() { window._AMapSecurityConfig = { securityJsCode: window._securityJsCode }; }
-var securityJsCode = '7bbadcee61ad1d59c9f86f2085377565';
-
-var map, mapReady = false;
-var currentPos = null;
-var mapStyles = ['amap://styles/normal', 'amap://styles/dark', 'amap://styles/light', 'amap://styles/whitesmoke'];
-var mapStyleIdx = 0;
-
-// ─── POI数据 ───
-var pois = [
-  { type: 'beach', icon: '🏖️', name: '银滩', sub: '天下第一滩', pos: [109.14, 21.48], level: 'crowded', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=400&fit=crop', desc: '因滩长平、沙白、水净被誉为天下第一滩，适合游泳和沙滩运动。', hours: '09:00-11:00', temp: '26°C', score: '4.6' },
-  { type: 'beach', icon: '🏖️', name: '侨港海滩', sub: '越南风情街旁', pos: [109.06, 21.45], level: 'crowded', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop', desc: '侨港海滩靠近越南风情街，适合傍晚看日落，游客较多。', hours: '16:00-18:00', temp: '25°C', score: '4.4' },
-  { type: 'beach', icon: '🌅', name: '紫霞湾', sub: '北海东侧小众海湾', pos: [109.42, 21.55], level: 'quiet', img: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&h=400&fit=crop', desc: '紫霞湾是北海东侧的小众海湾，沙滩干净，游客较少，适合静谧度假。', hours: '07:00-09:00', temp: '24°C', score: '4.7' },
-  { type: 'beach', icon: '🌊', name: '金海湾', sub: '铁山港旁', pos: [109.35, 21.52], level: 'quiet', img: 'https://images.unsplash.com/photo-1468413253725-0d5188671129?w=600&h=400&fit=crop', desc: '金海湾位于铁山港区，水质清澈，游客稀少，适合赶海和垂钓。', hours: '06:00-08:00', temp: '23°C', score: '4.5' },
-  { type: 'beach', icon: '🐚', name: '大墩海', sub: '市区东部', pos: [109.25, 21.50], level: 'moderate', img: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600&h=400&fit=crop', desc: '大墩海位于市区东部，沙滩宽阔，游客适中，是赶海的好去处。', hours: '07:00-09:00', temp: '25°C', score: '4.3' },
-  { type: 'beach', icon: '⛰️', name: '冠头岭', sub: '海蚀地貌', pos: [109.15, 21.43], level: 'quiet', img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&h=400&fit=crop', desc: '冠头岭是海蚀地貌公园，登高望远，风景绝佳，游客较少。', hours: '10:00-12:00', temp: '27°C', score: '4.8' },
-  { type: 'beach', icon: '🏖️', name: '冯家江', sub: '红树林旁', pos: [109.18, 21.45], level: 'moderate', img: 'https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=600&h=400&fit=crop', desc: '冯家江入海口，靠近红树林保护区，傍晚赶海人较多。', hours: '16:00-18:00', temp: '25°C', score: '4.2' },
-  { type: 'beach', icon: '🏖️', name: '海滨公园', sub: '市中心海边', pos: [109.05, 21.47], level: 'crowded', img: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&h=400&fit=crop', desc: '海滨公园位于市中心，海滩开阔，早晚锻炼人群多。', hours: '07:00-09:00', temp: '26°C', score: '4.1' },
-  { type: 'island', icon: '🏝️', name: '涠洲岛', sub: '中国最大火山岛', pos: [109.12, 21.38], level: 'crowded', img: 'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?w=600&h=400&fit=crop', desc: '涠洲岛是中国最大火山岛，景点有鳄鱼山/五彩滩/天主教堂，需坐船上岛(约1.5h)。', hours: '08:00-10:00', temp: '26°C', score: '4.8' },
-  { type: 'island', icon: '🛶', name: '斜阳岛', sub: '原始小岛', pos: [109.48, 21.42], level: 'quiet', img: 'https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=600&h=400&fit=crop', desc: '斜阳岛是一座原始小岛，面积小，游客稀少，适合探险和海钓。', hours: '06:00-08:00', temp: '24°C', score: '4.6' },
-  { type: 'food', icon: '🍤', name: '侨港风情街', sub: '越南美食一条街', pos: [109.06, 21.44], level: 'crowded', img: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&h=400&fit=crop', desc: '侨港风情街是北海最著名的越南美食街，推荐越南卷粉、炒冰、蟹仔粉。', hours: '18:00-21:00', temp: '-', score: '4.5' },
-  { type: 'food', icon: '🦀', name: '电建渔港', sub: '海鲜码头', pos: [109.04, 21.44], level: 'moderate', img: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=600&h=400&fit=crop', desc: '电建渔港是北海最大的渔港码头，下午渔船回港，可买到最新鲜的海鲜。', hours: '16:00-18:00', temp: '-', score: '4.4' },
-  { type: 'food', icon: '🍜', name: '北海老街', sub: '百年老街美食', pos: [109.03, 21.46], level: 'moderate', img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', desc: '北海老街始建于1883年，沿街有各类小吃和海鲜排档，极具历史感。', hours: '11:00-13:00', temp: '-', score: '4.3' },
-  { type: 'food', icon: '🦐', name: '金海岸夜市', sub: '海边夜市', pos: [109.17, 21.52], level: 'crowded', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop', desc: '金海岸夜市靠近银滩，夜幕降临后海鲜排档一字排开，是吃宵夜的好去处。', hours: '20:00-23:00', temp: '-', score: '4.2' },
+const beaches = [
+    { name: "银滩", location: [109.1452, 21.4561], status: "crowded", crowd: "拥挤", road: "拥堵", distance: "5.2km", time: "25min", temp: "28°C", score: "9.2", desc: "北海最著名的海滩，沙白水清，是游客必去的景点。节假日人流量大，建议错峰出行。", image: "https://picsum.photos/400/200?random=1", icon: "🏖️" },
+    { name: "侨港海滩", location: [109.1325, 21.4289], status: "moderate", crowd: "适中", road: "缓行", distance: "3.8km", time: "15min", temp: "28°C", score: "8.8", desc: "位于侨港镇，海滩干净，周边有丰富的美食。相对银滩人少，适合休闲度假。", image: "https://picsum.photos/400/200?random=2", icon: "🏖️" },
+    { name: "金海湾", location: [109.1789, 21.4856], status: "quiet", crowd: "稀少", road: "畅通", distance: "12km", time: "35min", temp: "27°C", score: "8.5", desc: "红树林景区，生态优美，适合观鸟和摄影。人流量小，适合喜欢安静的游客。", image: "https://picsum.photos/400/200?random=3", icon: "🌿" },
+    { name: "大墩海", location: [109.1156, 21.3956], status: "quiet", crowd: "稀少", road: "畅通", distance: "8.5km", time: "22min", temp: "27°C", score: "8.0", desc: "原始海滩，人迹罕至，适合赶海和垂钓。路况良好，适合自驾。", image: "https://picsum.photos/400/200?random=4", icon: "🎣" },
+    { name: "紫霞湾", location: [109.0892, 21.3756], status: "quiet", crowd: "稀少", road: "畅通", distance: "15km", time: "40min", temp: "26°C", score: "7.8", desc: "冠头岭下的小众海滩，景色优美，适合摄影。距离市区较远，游客较少。", image: "https://picsum.photos/400/200?random=5", icon: "📸" },
+    { name: "冯家江", location: [109.1625, 21.4723], status: "moderate", crowd: "适中", road: "缓行", distance: "6.8km", time: "18min", temp: "28°C", score: "8.2", desc: "河流入海口，湿地生态景观。适合观鸟和休闲散步。", image: "https://picsum.photos/400/200?random=6", icon: "🦢" },
+    { name: "冠头岭", location: [109.0789, 21.3689], status: "moderate", crowd: "适中", road: "缓行", distance: "18km", time: "45min", temp: "25°C", score: "8.6", desc: "北海最高点，可俯瞰全城和海景。适合登山和摄影。", image: "https://picsum.photos/400/200?random=7", icon: "⛰️" },
+    { name: "海滨公园", location: [109.1289, 21.4656], status: "crowded", crowd: "拥挤", road: "拥堵", distance: "2.1km", time: "10min", temp: "28°C", score: "8.0", desc: "市区内的海滨公园，交通便利，是市民休闲的好去处。", image: "https://picsum.photos/400/200?random=8", icon: "🌳" }
 ];
 
-// ─── 海滩数据 ───
-var beaches = [
-  { name: '银滩', icon: '🏖️', level: 'crowded', pct: 90, peak: '10:00-14:00', forecast: '拥堵', recommend: '早9点前或晚5点后' },
-  { name: '侨港海滩', icon: '🏖️', level: 'crowded', pct: 82, peak: '15:00-18:00', forecast: '拥堵', recommend: '傍晚5点后' },
-  { name: '海滨公园', icon: '🏖️', level: 'crowded', pct: 78, peak: '07:00-09:00', forecast: '拥堵', recommend: '上午10点后' },
-  { name: '大墩海', icon: '🐚', level: 'moderate', pct: 55, peak: '08:00-11:00', forecast: '一般', recommend: '早7点赶海' },
-  { name: '冯家江', icon: '🌊', level: 'moderate', pct: 50, peak: '16:00-18:00', forecast: '一般', recommend: '傍晚4-5点' },
-  { name: '金海湾', icon: '🌊', level: 'quiet', pct: 25, peak: '07:00-09:00', forecast: '畅通', recommend: '早6点赶海' },
-  { name: '冠头岭', icon: '⛰️', level: 'quiet', pct: 20, peak: '10:00-13:00', forecast: '畅通', recommend: '上午10点登高' },
-  { name: '紫霞湾', icon: '🌅', level: 'quiet', pct: 18, peak: '16:00-18:00', forecast: '畅通', recommend: '早7点看日出' },
+const islands = [
+    { name: "涠洲岛", location: [109.1065, 21.0236], status: "crowded", crowd: "拥挤", road: "拥堵", distance: "45km", time: "90min", temp: "29°C", score: "9.5", desc: "中国最大的火山岛，风景绝美。需乘船前往，节假日船票紧张，建议提前预订。", image: "https://picsum.photos/400/200?random=9", icon: "🌋" },
+    { name: "斜阳岛", location: [109.1567, 20.9236], status: "quiet", crowd: "稀少", road: "畅通", distance: "65km", time: "120min", temp: "28°C", score: "9.0", desc: "原始生态岛屿，人烟稀少，是潜水爱好者的天堂。需包船前往。", image: "https://picsum.photos/400/200?random=10", icon: "🤿" }
 ];
 
-// ─── 高速数据 ───
-var highways = [
-  { name: 'G75兰海高速', icon: '🛣️', level: 'high', pct: 75, dir: '往广州方向 380km' },
-  { name: 'G15沈海高速', icon: '🛣️', level: 'medium', pct: 52, dir: '往广州方向 360km' },
-  { name: 'G7211南北高速', icon: '🛣️', level: 'medium', pct: 45, dir: '往钦州方向 120km' },
-  { name: 'S60合那高速', icon: '🛣️', level: 'low', pct: 20, dir: '往崇左方向 180km' },
+const foods = [
+    { name: "侨港风情街", location: [109.1312, 21.4256], status: "crowded", crowd: "拥挤", road: "拥堵", distance: "4.2km", time: "18min", temp: "-", score: "9.0", desc: "汇聚越南归侨美食，有卷粉、春卷、糖水等特色小吃。夜市热闹非凡。", image: "https://picsum.photos/400/200?random=11", icon: "🍜" },
+    { name: "电建渔港", location: [109.1356, 21.4323], status: "moderate", crowd: "适中", road: "缓行", distance: "4.5km", time: "20min", temp: "-", score: "8.5", desc: "新鲜海鲜直供，可购买后加工。价格亲民，品种丰富。", image: "https://picsum.photos/400/200?random=12", icon: "🦐" },
+    { name: "北海老街", location: [109.1189, 21.4789], status: "crowded", crowd: "拥挤", road: "拥堵", distance: "1.5km", time: "8min", temp: "-", score: "8.8", desc: "百年历史老街，骑楼建筑风格独特。有各类特产和海鲜餐厅。", image: "https://picsum.photos/400/200?random=13", icon: "🏛️" },
+    { name: "金海岸夜市", location: [109.1523, 21.4456], status: "moderate", crowd: "适中", road: "缓行", distance: "3.2km", time: "12min", temp: "-", score: "8.2", desc: "大型夜市，小吃、烧烤、海鲜一应俱全。本地人常去。", image: "https://picsum.photos/400/200?random=14", icon: "🍢" }
 ];
 
-// ─── 市区道路数据 ───
-var roads = [
-  { name: '北海大道', level: 'high', zone: '海城区' },
-  { name: '四川路', level: 'high', zone: '海城区' },
-  { name: '广东路', level: 'high', zone: '海城区' },
-  { name: '贵州路', level: 'medium', zone: '海城区' },
-  { name: '云南路', level: 'medium', zone: '海城区' },
-  { name: '北部湾广场', level: 'high', zone: '海城区' },
-  { name: '解放路', level: 'medium', zone: '海城区' },
-  { name: '和平路', level: 'low', zone: '海城区' },
-  { name: '文明路', level: 'low', zone: '海城区' },
-  { name: '长青路', level: 'medium', zone: '海城区' },
-  { name: '银滩大道', level: 'high', zone: '银海区' },
-  { name: '金海岸大道', level: 'medium', zone: '银海区' },
-  { name: '新世纪大道', level: 'medium', zone: '银海区' },
-  { name: '广东南路', level: 'high', zone: '银海区' },
-  { name: '银滩中路', level: 'high', zone: '银海区' },
-  { name: '银滩公园', level: 'crowded', zone: '银海区' },
-  { name: '侨港海滩路', level: 'crowded', zone: '银海区' },
-  { name: '金海湾大道', level: 'low', zone: '银海区' },
-  { name: '铁山港大道', level: 'medium', zone: '铁山港区' },
-  { name: '营闸路', level: 'low', zone: '铁山港区' },
-  { name: '港口区', level: 'medium', zone: '铁山港区' },
-  { name: 'L道', level: 'low', zone: '铁山港区' },
-  { name: '七号路', level: 'low', zone: '铁山港区' },
-  { name: '合浦大道', level: 'medium', zone: '合浦县' },
-  { name: '廉州大道', level: 'high', zone: '合浦县' },
-  { name: '延安路', level: 'medium', zone: '合浦县' },
-  { name: '还珠大道', level: 'medium', zone: '合浦县' },
-  { name: '迎宾大道', level: 'high', zone: '合浦县' },
-  { name: '高速路口', level: 'high', zone: '合浦县' },
-  { name: '北海工业园区', level: 'medium', zone: '海城区' },
-  { name: '竹林港', level: 'low', zone: '银海区' },
-  { name: '冯家江桥', level: 'medium', zone: '银海区' },
-  { name: '冠头岭山路', level: 'low', zone: '银海区' },
-  { name: '海景大道', level: 'low', zone: '银海区' },
-  { name: '外沙码头', level: 'medium', zone: '海城区' },
-  { name: '地角路', level: 'low', zone: '海城区' },
-  { name: '侨港转盘', level: 'high', zone: '银海区' },
-  { name: '银海区转盘', level: 'medium', zone: '银海区' },
-  { name: '园博园大道', level: 'low', zone: '银海区' },
-  { name: '海洋大道', level: 'medium', zone: '银海区' },
-  { name: '南珠大道', level: 'high', zone: '海城区' },
-  { name: '西南大道', level: 'medium', zone: '海城区' },
+const highways = [
+    { name: "G75兰海高速", status: "congested", level: "拥堵", speed: "25km/h", desc: "入城方向车流量大，预计拥堵持续2小时", roads: ["山口段", "合浦段", "北海段"] },
+    { name: "G15沈海高速", status: "slow", level: "缓行", speed: "45km/h", desc: "部分路段施工，请减速慢行", roads: ["山口段", "白沙段"] },
+    { name: "G7211南北高速", status: "smooth", level: "畅通", speed: "100km/h", desc: "路况良好，可正常通行", roads: ["全程畅通"] },
+    { name: "S60合那高速", status: "smooth", level: "畅通", speed: "110km/h", desc: "车流量较少，路况极佳", roads: ["全程畅通"] }
 ];
 
-var levelText = { high: '拥堵', medium: '一般', low: '畅通', crowded: '拥挤', quiet: '人少' };
-var levelColor = { high: '#ff3b30', medium: '#ff9500', low: '#34c759', crowded: '#ff3b30', quiet: '#34c759' };
+const cityRoads = {
+    "海城区": ["北部湾路", "北海大道", "四川路", "广东路", "北京路", "解放路", "茶亭路", "海景大道", "重庆路", "贵州路", "云南路", "西藏路"],
+    "银海区": ["银滩大道", "上海路", "滨江路", "金海岸大道", "新世纪大道", "广东南路", "江苏路", "浙江路", "杭州路", "南京路", "武汉路", "长沙路"],
+    "铁山港区": ["铁山港大道", "七号路", "兴港路", "临海大道", "石化大道", "新竹路", "兴业路", "工业大道", "港口路", "北海电厂路", "石头埠路", "扬帆大道"],
+    "合浦县": ["廉州大道", "还珠大道", "延安路", "定海路", "解放路", "东山路"]
+};
+
+const localLibrary = [
+    { name: "银滩", type: "beach", location: [109.1452, 21.4561] },
+    { name: "侨港海滩", type: "beach", location: [109.1325, 21.4289] },
+    { name: "涠洲岛", type: "island", location: [109.1065, 21.0236] },
+    { name: "斜阳岛", type: "island", location: [109.1567, 20.9236] },
+    { name: "金海湾红树林", type: "park", location: [109.1789, 21.4856] },
+    { name: "冠头岭", type: "mountain", location: [109.0789, 21.3689] },
+    { name: "北海老街", type: "historic", location: [109.1189, 21.4789] },
+    { name: "侨港风情街", type: "food", location: [109.1312, 21.4256] },
+    { name: "海底世界", type: "attraction", location: [109.1256, 21.4756] },
+    { name: "海洋之窗", type: "attraction", location: [109.1389, 21.4389] },
+    { name: "园博园", type: "park", location: [109.1689, 21.4556] },
+    { name: "中山公园", type: "park", location: [109.1223, 21.4823] },
+    { name: "长青公园", type: "park", location: [109.1156, 21.4789] },
+    { name: "北部湾广场", type: "plaza", location: [109.1189, 21.4756] },
+    { name: "万达广场", type: "mall", location: [109.1423, 21.4456] },
+    { name: "宁春城", type: "mall", location: [109.1289, 21.4656] }
+];
+
+let map = null, markers = [], currentPoi = null, autoRefreshInterval = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initMap();
+    renderBeachList();
+    renderHighwayList();
+    renderCityRoadList();
+    updateTime();
+    startAutoRefresh();
+    document.getElementById('searchInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') performSearch(); });
+    document.getElementById('searchInput').addEventListener('input', function(e) { if (e.target.value.length > 0) performLocalSearch(e.target.value); else document.getElementById('searchResults').classList.remove('active'); });
+    document.addEventListener('click', function(e) { if (!e.target.closest('.search-container')) document.getElementById('searchResults').classList.remove('active'); });
+});
 
 function initMap() {
-  AMap.securityJsCode = '7bbadcee61ad1d59c9f86f2085377565';
-  map = new AMap.Map('map', {
-    center: [109.1065, 21.4781],
-    zoom: 13,
-    touchZoom: true,
-    dragEnable: true,
-    zoomEnable: true,
-    touchZoom: true,
-  });
-  map.on('complete', function() {
-    mapReady = true;
-    addPoiMarkers();
-    renderAll();
-  });
+    map = new AMap.Map('container', { center: [109.1065, 21.4781], zoom: 13, viewMode: '2D', mapStyle: 'amap://styles/normal' });
+    map.addControl(new AMap.Scale());
+    map.addControl(new AMap.ToolBar({ position: 'RB', offset: [20, 100] }));
+    addMarkers();
 }
 
-// ─── POI标注 ───
-function addPoiMarkers() {
-  if (!mapReady) return;
-  pois.forEach(function(poi, i) {
-    var sz = poi.type === 'beach' ? 44 : 40;
-    var border = poi.type === 'beach' ? '#ff3b30' : poi.type === 'island' ? '#007aff' : '#ff9500';
-    var marker = new AMap.Marker({
-      position: poi.pos,
-      map: map,
-      content: '<div class="poi-marker ' + poi.type + '" style="width:' + sz + 'px;height:' + sz + 'px;font-size:' + (sz * 0.45) + 'px;border-color:' + border + '" onclick="openPoiCard(' + i + ')">' + poi.icon + '</div>',
-      offset: new AMap.Pixel(-sz/2, -sz/2),
-      zIndex: 12
+function addMarkers() {
+    clearMarkers();
+    beaches.forEach(beach => markers.push(createMarker(beach.location, beach.name, 'beach', beach.icon, beach)));
+    islands.forEach(island => markers.push(createMarker(island.location, island.name, 'island', island.icon, island)));
+    foods.forEach(food => markers.push(createMarker(food.location, food.name, 'food', food.icon, food)));
+}
+
+function createMarker(position, title, type, icon, data) {
+    const div = document.createElement('div');
+    div.className = 'custom-marker marker-' + type;
+    div.innerHTML = icon;
+    div.style.cssText = 'width:36px;height:36px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;font-size:18px;border:3px solid ' + (type === 'beach' ? '#ff3b30' : type === 'island' ? '#007aff' : '#ff9500');
+    const marker = new AMap.Marker({ position: position, title: title, content: div, offset: new AMap.Pixel(-18, -18) });
+    marker.on('click', function() { showInfoCard(data); });
+    map.add(marker);
+    return marker;
+}
+
+function clearMarkers() { markers.forEach(marker => map.remove(marker)); markers = []; }
+
+function renderBeachList() {
+    const container = document.getElementById('beachList');
+    container.innerHTML = beaches.map((beach, index) => '<div class="beach-item" onclick="toggleBeachDetail(' + index + ', this)"><div class="beach-header"><span class="beach-name">' + beach.name + '</span><span class="beach-status status-' + beach.status + '">' + beach.crowd + '</span></div><div class="beach-details"><div class="detail-row"><span class="detail-label">路况</span><span class="detail-value">' + beach.road + '</span></div><div class="detail-row"><span class="detail-label">距离</span><span class="detail-value">' + beach.distance + '</span></div><div class="detail-row"><span class="detail-label">预计时间</span><span class="detail-value">' + beach.time + '</span></div><div class="detail-row"><span class="detail-label">评分</span><span class="detail-value">' + beach.score + '分</span></div></div></div>').join('');
+}
+
+function toggleBeachDetail(index, element) {
+    const isExpanded = element.classList.contains('expanded');
+    document.querySelectorAll('.beach-item').forEach(item => item.classList.remove('expanded'));
+    if (!isExpanded) { element.classList.add('expanded'); map.setCenter(beaches[index].location); map.setZoom(15); }
+}
+
+function renderHighwayList() {
+    const container = document.getElementById('highwayList');
+    container.innerHTML = highways.map((hw, index) => '<div class="road-item highway-item" onclick="toggleRoadDetail(' + index + ', this, \'highway\')"><span class="road-name">' + hw.name + '</span><span class="road-status status-' + (hw.status === 'congested' ? 'crowded' : hw.status === 'slow' ? 'moderate' : 'quiet') + '">' + hw.level + '</span><div class="road-details"><div class="detail-row"><span class="detail-label">平均车速</span><span class="detail-value">' + hw.speed + '</span></div><div class="detail-row"><span class="detail-label">路况信息</span><span class="detail-value">' + hw.desc + '</span></div><div style="margin-top:8px;font-size:12px;color:#8e8e93">涉及路段: ' + hw.roads.join('、') + '</div></div></div>').join('');
+}
+
+function renderCityRoadList() {
+    const container = document.getElementById('cityRoadList');
+    let html = '';
+    for (const [district, roads] of Object.entries(cityRoads)) {
+        html += '<div class="district-group"><div class="district-title">' + district + ' (' + roads.length + '条)</div><div class="road-list">' + roads.map((road, idx) => { const status = Math.random() > 0.6 ? 'congested' : Math.random() > 0.3 ? 'slow' : 'smooth'; const statusText = status === 'congested' ? '拥堵' : status === 'slow' ? '缓行' : '畅通'; return '<div class="road-item cityroad-item" onclick="toggleRoadDetail(\'' + district + '_' + idx + '\', this, \'city\')"><span class="road-name">' + road + '</span><span class="road-status status-' + (status === 'congested' ? 'crowded' : status === 'slow' ? 'moderate' : 'quiet') + '">' + statusText + '</span><div class="road-details"><div class="detail-row"><span class="detail-label">拥堵指数</span><span class="detail-value">' + (Math.random() * 10).toFixed(1) + '</span></div><div class="detail-row"><span class="detail-label">平均车速</span><span class="detail-value">' + Math.floor(Math.random() * 40 + 20) + 'km/h</span></div><div class="detail-row"><span class="detail-label">预计延误</span><span class="detail-value">' + Math.floor(Math.random() * 15) + '分钟</span></div></div></div>'; }).join('') + '</div></div>';
+    }
+    container.innerHTML = html;
+}
+
+function toggleRoadDetail(index, element, type) {
+    const details = element.querySelector('.road-details');
+    const isExpanded = details.style.display === 'block';
+    if (type === 'highway') { document.querySelectorAll('#highwayList .road-item').forEach(item => { item.querySelector('.road-details').style.display = 'none'; item.classList.remove('expanded'); }); }
+    else { document.querySelectorAll('#cityRoadList .road-item').forEach(item => { item.querySelector('.road-details').style.display = 'none'; item.classList.remove('expanded'); }); }
+    if (!isExpanded) { details.style.display = 'block'; element.classList.add('expanded'); }
+}
+
+function showInfoCard(data) {
+    currentPoi = data;
+    document.getElementById('cardImage').src = data.image;
+    document.getElementById('cardTitle').textContent = data.name;
+    const tagColors = { crowded: '#ff3b30', moderate: '#ff9500', quiet: '#34c759' };
+    const tagTexts = { crowded: '🔴 拥挤', moderate: '🟡 适中', quiet: '🟢 稀疏' };
+    document.getElementById('cardTags').innerHTML = '<span class="card-tag" style="background:' + tagColors[data.status] + '20;color:' + tagColors[data.status] + '">' + tagTexts[data.status] + '</span><span class="card-tag" style="background:#007aff20;color:#007aff">⭐ ' + data.score + '分</span><span class="card-tag" style="background:#5856d620;color:#5856d6">🌡️ ' + data.temp + '</span>';
+    document.getElementById('cardStats').innerHTML = '<div class="stat-item"><div class="stat-value">' + data.crowd + '</div><div class="stat-label">人流</div></div><div class="stat-item"><div class="stat-value">' + data.road + '</div><div class="stat-label">路况</div></div><div class="stat-item"><div class="stat-value">' + data.distance + '</div><div class="stat-label">距离</div></div><div class="stat-item"><div class="stat-value">' + data.time + '</div><div class="stat-label">时间</div></div><div class="stat-item"><div class="stat-value">' + data.temp + '</div><div class="stat-label">温度</div></div><div class="stat-item"><div class="stat-value">' + data.score + '</div><div class="stat-label">评分</div></div>';
+    document.getElementById('cardDesc').textContent = data.desc;
+    document.getElementById('overlay').classList.add('active');
+    document.getElementById('infoCard').classList.add('active');
+    if (data.location) { map.setCenter(data.location); map.setZoom(16); }
+}
+
+function closeCard() { document.getElementById('overlay').classList.remove('active'); document.getElementById('infoCard').classList.remove('active'); }
+
+function startNavigation() { if (currentPoi && currentPoi.location) { window.open('https://uri.amap.com/navigation?to=' + currentPoi.location[0] + ',' + currentPoi.location[1] + ',' + encodeURIComponent(currentPoi.name) + '&mode=car&policy=1', '_blank'); } }
+
+function performLocalSearch(keyword) { const results = localLibrary.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase())); displaySearchResults(results, keyword); }
+function performSearch() { const keyword = document.getElementById('searchInput').value.trim(); if (!keyword) return; const localResults = localLibrary.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase())); if (localResults.length > 0) displaySearchResults(localResults, keyword); else performAMapSearch(keyword); }
+function performAMapSearch(keyword) { const placeSearch = new AMap.PlaceSearch({ city: '北海', pageSize: 10 }); placeSearch.search(keyword, function(status, result) { if (status === 'complete' && result.info === 'OK') { const pois = result.poiList.pois.map(poi => ({ name: poi.name, type: 'search', location: [poi.location.lng, poi.location.lat], address: poi.address })); displaySearchResults(pois, keyword, true); } else { document.getElementById('searchResults').innerHTML = '<div class="search-result-item"><div class="result-name">未找到相关地点</div></div>'; document.getElementById('searchResults').classList.add('active'); } }); }
+function displaySearchResults(results, keyword, isAMap) { const container = document.getElementById('searchResults'); if (results.length === 0) container.innerHTML = '<div class="search-result-item"><div class="result-name">未找到相关地点</div></div>'; else container.innerHTML = results.map(item => '<div class="search-result-item" onclick="selectSearchResult(\'' + item.name + '\', [' + item.location + '])"><div class="result-name">' + item.name + '</div>' + (item.address ? '<div class="result-address">' + item.address + '</div>' : '') + '</div>').join(''); container.classList.add('active'); }
+function selectSearchResult(name, location) { document.getElementById('searchInput').value = name; document.getElementById('searchResults').classList.remove('active'); map.setCenter(location); map.setZoom(16); const marker = new AMap.Marker({ position: location, title: name }); map.add(marker); setTimeout(() => map.remove(marker), 5000); }
+function toggleLayerMenu() { document.getElementById('layerMenu').classList.toggle('active'); }
+function switchMapStyle(style) { const styles = { normal: 'amap://styles/normal', satellite: 'amap://styles/satellite', traffic: 'amap://styles/whitesmoke', night: 'amap://styles/dark' }; map.setMapStyle(styles[style] || styles.normal); document.querySelectorAll('.layer-option').forEach(opt => opt.classList.remove('active')); event.target.classList.add('active'); document.getElementById('layerMenu').classList.remove('active'); }
+function locateMe() {
+  map.plugin('AMap.Geolocation', function() {
+    var geo = new AMap.Geolocation({
+      enableHighAccuracy: true,
+      timeout: 10000,
+      buttonOffset: new AMap.Pixel(10, 20),
+      zoomToAccuracy: true,
+      showCircle: true,
+      showMarker: true
+    });
+    geo.getCurrentPosition(function(status, result) {
+      if (status === 'complete') {
+        currentPos = [result.position.lng, result.position.lat];
+        map.setCenter(currentPos);
+        map.setZoom(15);
+        updatePoiDistances();
+        document.getElementById('locateFeedback').textContent = '✅ 已定位';
+        setTimeout(function() { document.getElementById('locateFeedback').textContent = ''; }, 2000);
+      } else {
+        alert('定位失败，请检查位置权限');
+      }
     });
   });
 }
 
-// ─── POI卡片 ───
-function openPoiCard(i) {
-  var poi = pois[i];
-  var lvlMap = { crowded: ['#ff3b30', '拥挤'], moderate: ['#ff9500', '适中'], quiet: ['#34c759', '人少'] };
-  var lc = lvlMap[poi.level];
-  var typeLabel = poi.type === 'beach' ? '海滩' : poi.type === 'island' ? '海岛' : '美食';
-
-  document.getElementById('poiImg').src = poi.img;
-  document.getElementById('poiTitle').textContent = poi.icon + ' ' + poi.name;
-
-  var tagsHtml = '<span class="poi-tag ' + poi.level + '">' + lc[1] + '</span>';
-  tagsHtml += '<span class="poi-tag type-' + poi.type + '">' + typeLabel + '</span>';
-  if (poi.temp !== '-') tagsHtml += '<span class="poi-tag" style="background:#5856d61a;color:#5856d6">水温 ' + poi.temp + '</span>';
-  document.getElementById('poiTags').innerHTML = tagsHtml;
-
-  document.getElementById('poiCrowd').textContent = lc[1];
-  document.getElementById('poiCrowd').style.color = lc[0];
-  var congText = poi.level === 'crowded' ? '拥堵' : poi.level === 'moderate' ? '一般' : '畅通';
-  document.getElementById('poiCongest').textContent = congText;
-  document.getElementById('poiCongest').style.color = lc[0];
-  document.getElementById('poiDist').textContent = getDistance(poi.pos);
-  document.getElementById('poiHours').textContent = poi.hours;
-  document.getElementById('poiTemp').textContent = poi.temp;
-  document.getElementById('poiScore').textContent = poi.score;
-  document.getElementById('poiDesc').textContent = poi.desc;
-
-  var navUrl = 'https://uri.amap.com/navigation?to=' + poi.pos[0] + ',' + poi.pos[1] + ',' + poi.name + '&mode=driving&callnative=1';
-  document.getElementById('poiNavBtn').href = navUrl;
-
-  document.getElementById('poiOverlay').classList.add('show');
-  document.getElementById('poiCard').classList.add('show');
+function updatePoiDistances() {
+  if (!currentPos) return;
+  var allPois = beaches.concat(islands).concat(foods);
+  allPois.forEach(function(poi) {
+    poi.distKm = getDist(poi.location);
+    poi.distStr = formatDist(poi.distKm);
+  });
+  renderBeachList();
 }
 
-function closePoiCard(e) {
-  if (e && e.target !== document.getElementById('poiOverlay') && !document.getElementById('poiOverlay').contains(e.target)) return;
-  document.getElementById('poiOverlay').classList.remove('show');
-  document.getElementById('poiCard').classList.remove('show');
-}
-
-function getDistance(pos) {
-  if (!currentPos) return '—';
+function getDist(pos) {
   var R = 6371;
   var dLat = (pos[1] - currentPos[1]) * Math.PI / 180;
   var dLon = (pos[0] - currentPos[0]) * Math.PI / 180;
   var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(pos[1]*Math.PI/180)*Math.cos(currentPos[1]*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-  var d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return d < 1 ? Math.round(d * 1000) + 'm' : d.toFixed(1) + 'km';
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// ─── 渲染全部 ───
-function renderAll() {
-  renderBeaches();
-  renderHighways();
-  renderRoads();
-  updateTimeSlot();
+function formatDist(d) {
+  if (d < 1) return Math.round(d * 1000) + 'm';
+  return d.toFixed(1) + 'km';
 }
 
-function renderBeaches() {
-  var html = '';
-  beaches.forEach(function(b, i) {
-    var lc = levelColor[b.level];
-    var lt = levelText[b.level];
-    html += '<div class="beach-item" onclick="toggleBeachDetail(' + i + ')">';
-    html += '<span class="beach-icon">' + b.icon + '</span>';
-    html += '<div class="beach-info"><div class="beach-name">' + b.name + '</div><div class="beach-sub">' + lt + '</div></div>';
-    html += '<div class="beach-bar"><div class="beach-fill ' + b.level + '" style="width:' + b.pct + '%"></div></div>';
-    html += '<span class="beach-pct" style="color:' + lc + '">' + b.pct + '%</span>';
-    html += '</div>';
-    html += '<div class="beach-detail" id="beachDetail' + i + '">';
-    html += '<div class="beach-detail-row"><span>人流密度</span><span style="color:' + lc + '">' + lt + ' ' + b.pct + '%</span></div>';
-    html += '<div class="beach-detail-row"><span>拥堵时段</span><span>' + b.peak + '</span></div>';
-    html += '<div class="beach-detail-row"><span>高峰预计</span><span>' + b.forecast + '</span></div>';
-    html += '<div class="beach-detail-row"><span>推荐前往</span><span>' + b.recommend + '</span></div>';
-    html += '</div>';
-  });
-  document.getElementById('beachList').innerHTML = html;
-}
+function startNavigation() {
+  if (!currentPoi || !currentPoi.location) return;
+  var dest = currentPoi.location;
+  var name = currentPoi.name;
 
-function renderHighways() {
-  var html = '';
-  highways.forEach(function(h) {
-    var lc = levelColor[h.level];
-    html += '<div class="highway-item">';
-    html += '<span class="highway-icon">' + h.icon + '</span>';
-    html += '<div class="highway-info"><div class="highway-name">' + h.name + '</div><div class="highway-dir">' + h.dir + '</div></div>';
-    html += '<div class="highway-bar"><div class="highway-fill ' + h.level + '" style="width:' + h.pct + '%"></div></div>';
-    html += '<span class="highway-status" style="color:' + lc + '">' + levelText[h.level] + '</span>';
-    html += '</div>';
-  });
-  document.getElementById('highwayList').innerHTML = html;
-}
-
-function renderRoads() {
-  var html = '';
-  roads.forEach(function(r, i) {
-    var lc = levelColor[r.level] || '#34c759';
-    var lt = levelText[r.level] || '畅通';
-    var w = r.level === 'high' || r.level === 'crowded' ? 80 : r.level === 'medium' ? 50 : 20;
-    html += '<div class="road-item" onclick="toggleRoadDetail(' + i + ')">';
-    html += '<span class="road-name">' + r.name + '</span>';
-    html += '<div class="road-bar"><div class="road-fill ' + r.level + '" style="width:' + w + '%"></div></div>';
-    html += '<span class="road-status" style="color:' + lc + '">' + lt + '</span>';
-    html += '</div>';
-    var speed = r.level === 'high' ? '15-25' : r.level === 'medium' ? '30-40' : '45-55';
-    var advice = r.level === 'high' ? '❌ 建议绕行' : r.level === 'medium' ? '⏰ 谨慎行驶' : '✅ 畅通';
-    html += '<div class="road-detail" id="roadDetail' + i + '">';
-    html += '<div class="road-detail-row"><span>拥堵等级</span><span style="color:' + lc + '">' + lt + '</span></div>';
-    html += '<div class="road-detail-row"><span>预估车速</span><span>' + speed + ' km/h</span></div>';
-    html += '<div class="road-detail-row"><span>出行建议</span><span>' + advice + '</span></div>';
-    html += '</div>';
-  });
-  document.getElementById('roadList').innerHTML = html;
-}
-
-// ─── 展开/收起 ───
-function toggleCard(id) {
-  var el = document.getElementById(id);
-  el.classList.toggle('open');
-}
-
-function toggleBeachDetail(i) {
-  var el = document.getElementById('beachDetail' + i);
-  if (el) el.classList.toggle('show');
-}
-
-function toggleRoadDetail(i) {
-  var el = document.getElementById('roadDetail' + i);
-  if (el) el.classList.toggle('show');
-}
-
-// ─── 搜索 ───
-var localPois = {
-  '银滩': [109.14, 21.48], '侨港': [109.06, 21.45], '涠洲岛': [109.12, 21.38],
-  '紫霞湾': [109.42, 21.55], '金海湾': [109.35, 21.52], '大墩海': [109.25, 21.50],
-  '冠头岭': [109.15, 21.43], '斜阳岛': [109.48, 21.42], '侨港风情街': [109.06, 21.44],
-  '电建渔港': [109.04, 21.44], '北海老街': [109.03, 21.46], '金海岸夜市': [109.17, 21.52],
-  '冯家江': [109.18, 21.45], '海滨公园': [109.05, 21.47], '北海站': [109.09, 21.48],
-  '园博园': [109.10, 21.44],
-};
-
-function doSearch() {
-  var q = document.getElementById('searchInput').value.trim();
-  if (!q) return;
-  if (localPois[q] || localPois[q.replace(/海滩|公园|大道|路/g, '')]) {
-    var key = Object.keys(localPois).find(function(k) { return k.includes(q) || q.includes(k); });
-    if (key) {
-      map.setCenter(localPois[key]);
-      map.setZoom(15);
-      return;
-    }
-  }
-  // 高德搜索
-  AMap.plugin('AMap.ToolBar', function() {
-    map.setCity('北海');
-  });
-  var c = new AMap.ConvertFrom({
-    address: q + ',北海', city: '北海'
-  });
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(function(pos) {
-      currentPos = [pos.coords.longitude, pos.coords.latitude];
-    });
-  }
-  alert('正在规划：' + q + '\n本地库未找到，调高德搜索...');
-}
-
-// ─── 定位 ───
-function locateMe() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(pos) {
-      currentPos = [pos.coords.longitude, pos.coords.latitude];
-      map.setCenter(currentPos);
-      map.setZoom(15);
+      var from = [pos.coords.longitude, pos.coords.latitude];
+      showInlineRoute(from, dest, name);
     }, function() {
-      alert('定位失败，请检查权限');
+      showInlineRoute(null, dest, name);
+    });
+  } else {
+    showInlineRoute(null, dest, name);
+  }
+}
+
+function showInlineRoute(from, to, name) {
+  var routePanel = document.getElementById('routePanel');
+  var overlay = document.getElementById('overlay');
+
+  if (!routePanel) {
+    var panel = document.createElement('div');
+    panel.id = 'routePanel';
+    panel.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:white;z-index:3000;overflow-y:auto;display:none';
+    document.body.appendChild(panel);
+    routePanel = panel;
+  }
+
+  routePanel.style.display = 'block';
+  routePanel.innerHTML = '<div style="padding:20px;height:100%;display:flex;flex-direction:column">' +
+    '<div style="display:flex;align-items:center;margin-bottom:20px">' +
+    '<button onclick="closeRoutePanel()" style="width:36px;height:36px;background:#f2f2f7;border:none;border-radius:50%;font-size:18px;margin-right:12px">←</button>' +
+    '<span style="font-size:20px;font-weight:700">🗺️ 导航中</span></div>' +
+    '<div id="routeMap" style="width:100%;height:45%;border-radius:16px;overflow:hidden;margin-bottom:16px"></div>' +
+    '<div style="background:#f2f2f7;border-radius:16px;padding:16px;margin-bottom:12px">' +
+    '<div style="font-size:16px;font-weight:600;margin-bottom:8px">目的地</div>' +
+    '<div style="font-size:22px;font-weight:700;color:#007aff">' + name + '</div>' +
+    '</div>' +
+    '<div style="background:#f2f2f7;border-radius:16px;padding:16px;margin-bottom:12px" id="routeInfo">' +
+    '<div style="font-size:14px;color:#8e8e93;margin-bottom:4px">路线规划中...</div>' +
+    '</div>' +
+    '<div style="margin-top:auto">' +
+    '<a href="https://uri.amap.com/navigation?to=' + to[0] + ',' + to[1] + ',' + encodeURIComponent(name) + '&mode=driving&callnative=1" ' +
+    'style="display:block;background:#007aff;color:white;text-align:center;padding:16px;border-radius:16px;font-size:17px;font-weight:600;text-decoration:none">' +
+    '在高德地图打开</a>' +
+    '</div></div>';
+
+  overlay.classList.add('active');
+
+  var routeMap = new AMap.Map('routeMap', { center: to, zoom: 14 });
+
+  if (from) {
+    AMap.plugin('AMap.Driving', function() {
+      var driving = new AMap.Driving({
+        map: routeMap,
+        panel: 'routeInfo',
+        policy: 'driving.score.first',
+      });
+      driving.search(from, to, function(status, result) {
+        if (status === 'complete' && result.info === 'OK') {
+          var steps = result.routes[0].steps;
+          var dist = (result.routes[0].distance / 1000).toFixed(1);
+          var time = Math.round(result.routes[0].time / 60);
+          document.getElementById('routeInfo').innerHTML = '<div style="font-size:13px;color:#8e8e93;margin-bottom:6px">距离 ' + dist + ' km · 约 ' + time + ' 分钟</div>' +
+            '<div style="font-size:15px;font-weight:600;color:#1c1c1e">' + steps[0].instruction + '</div>';
+        }
+      });
     });
   }
 }
 
-// ─── 切换地图样式 ───
-function switchMap() {
-  mapStyleIdx = (mapStyleIdx + 1) % mapStyles.length;
-  map.setStyle(mapStyles[mapStyleIdx]);
+function closeRoutePanel() {
+  var panel = document.getElementById('routePanel');
+  if (panel) { panel.style.display = 'none'; }
+  document.getElementById('overlay').classList.remove('active');
 }
-
-// ─── 刷新 ───
-function refreshData() {
-  renderAll();
-}
-
-// ─── 时间段 ───
-function updateTimeSlot() {
-  var h = new Date().getHours();
-  var slot = h >= 7 && h <= 9 ? '早高峰' : h >= 17 && h <= 19 ? '晚高峰' : '平峰时段';
-  document.getElementById('timeSlot').textContent = slot;
-}
-
-// ─── 每30秒刷新 ───
-setInterval(refreshData, 30000);
+function refreshData() { updateTime(); beaches.forEach(beach => { const statuses = ['crowded', 'moderate', 'quiet']; beach.status = statuses[Math.floor(Math.random() * statuses.length)]; beach.crowd = beach.status === 'crowded' ? '拥挤' : beach.status === 'moderate' ? '适中' : '稀少'; beach.road = beach.status === 'crowded' ? '拥堵' : beach.status === 'moderate' ? '缓行' : '畅通'; }); renderBeachList(); renderCityRoadList(); const btn = document.querySelector('.bottom-btn-icon.refresh'); btn.style.transform = 'rotate(360deg)'; btn.style.transition = 'transform 0.5s'; setTimeout(() => btn.style.transform = 'rotate(0deg)', 500); }
+function updateTime() { const now = new Date(); const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }); document.getElementById('updateTime').textContent = '更新于: ' + timeStr; }
+function startAutoRefresh() { if (autoRefreshInterval) clearInterval(autoRefreshInterval); autoRefreshInterval = setInterval(refreshData, 30000); }
+window.onclick = function(event) { if (!event.target.matches('.bottom-btn') && !event.target.closest('.bottom-btn') && !event.target.closest('.layer-menu')) { document.getElementById('layerMenu').classList.remove('active'); } };
+window.onbeforeunload = function() { if (autoRefreshInterval) clearInterval(autoRefreshInterval); };
 </script>
 </body>
 </html>
