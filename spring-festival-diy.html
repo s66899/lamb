@@ -569,21 +569,27 @@ function doAddrSearch(keyword) {
     container.innerHTML = '<div class="addr-sug"><div class="addr-sug-name" style="color:#ff9500">搜索中...</div></div>';
     container.classList.add('active');
     
-    // 使用 Nominatim（OpenStreetMap）免费搜索API
-    var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(keyword) + '&limit=8&addressdetails=1';
+    // 使用 Nominatim（OpenStreetMap）免费搜索API，通过CORS代理
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(keyword) + '&limit=8&addressdetails=1&accept-language=zh';
     
-    fetch(url)
-        .then(function(response) { return response.json(); })
+    // 使用 CORS proxy 来避免浏览器跨域限制
+    fetch('https://corsproxy.io/?' + encodeURIComponent(url), {
+        headers: { 'User-Agent': 'SpringFestivalDIY/1.0' }
+    })
+        .then(function(response) { 
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            return response.json(); 
+        })
         .then(function(data) {
             console.log('搜索结果:', data);
             if (data && data.length > 0) {
                 container.innerHTML = data.map(function(p) {
-                    var name = p.display_name || '';
+                    var shortName = p.display_name ? p.display_name.split(',')[0] : '';
+                    var fullAddr = p.display_name || '';
                     var lng = p.lon || '';
                     var lat = p.lat || '';
-                    var shortAddr = p.display_name ? p.display_name.split(',').slice(0, 2).join(',') : '';
-                    return '<div class="addr-sug" onclick="selAddrSug(\'' + name.replace(/'/g, "\\'") + '\',' + lng + ',' + lat + ',' + (shortAddr ? '\'' + shortAddr.replace(/'/g, "\\'") + '\'' : 'null') + ')">' +
-                        '<div class="addr-sug-name">' + (p.display_name ? p.display_name.split(',')[0] : name) + '</div>' +
+                    return '<div class="addr-sug" onclick="selAddrSug(\'' + shortName.replace(/'/g, "\\'") + '\',' + lng + ',' + lat + ',' + (fullAddr ? '\'' + fullAddr.replace(/'/g, "\\'") + '\'' : 'null') + ')">' +
+                        '<div class="addr-sug-name">' + shortName + '</div>' +
                         '<div class="addr-sug-addr">' + (p.display_name ? p.display_name.split(',').slice(0, 3).join(',') : '') + '</div></div>';
                 }).join('');
                 container.classList.add('active');
@@ -594,16 +600,15 @@ function doAddrSearch(keyword) {
         })
         .catch(function(err) {
             console.error('搜索失败:', err);
-            container.innerHTML = '<div class="addr-sug"><div class="addr-sug-name" style="color:rgba(255,255,255,0.5)">搜索失败</div></div>';
+            container.innerHTML = '<div class="addr-sug"><div class="addr-sug-name" style="color:rgba(255,255,255,0.5)">搜索失败:' + err.message + '</div></div>';
             container.classList.add('active');
         });
 }
 
 function selAddrSug(name, lng, lat, address) {
-    document.getElementById('inpAddr').value = name;
+    document.getElementById('inpAddr').value = name;  // 显示短名称
     document.getElementById('selLng').value = lng;
     document.getElementById('selLat').value = lat;
-    if (address && address !== 'null') document.getElementById('inpAddr').value = address;
     document.getElementById('addrSugs').classList.remove('active');
 }
 
