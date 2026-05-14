@@ -570,7 +570,7 @@ function doAddrSearch(keyword) {
     var container = document.getElementById('addrSugs');
     AMap.plugin('AMap.PlaceSearch', function() {
         var placeSearch = new AMap.PlaceSearch({
-            city: '全国',
+            city: '',
             pageSize: 8
         });
         placeSearch.search(keyword, function(status, result) {
