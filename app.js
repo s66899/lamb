@@ -1,475 +1,752 @@
-// ════════════════════════════════════════════════════════════
-//  📚 知识书架 - 交互学习应用
-// ════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+//  📚 知识书架 · 交互学习应用
+// ═══════════════════════════════════════════════════════════════════
 
-const GITHUB_REPO = 's66899/lamb';
-const GITHUB_BRANCH = 'book';
-const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}`;
-
-// ───── State ───────────────────────────────────────────────
+const RAW = 'https://raw.githubusercontent.com/s66899/lamb/book';
 let MANIFEST = null;
-let currentView = 'dashboard';
-let currentBookId = null;
-let currentChapterIdx = -1;
-let currentChapters = [];
-let fontBase = 15;
-let studyQuestions = [];
-let studyIdx = 0;
+let currentView = 'dashboard', currentBookId = null, currentChapterIdx = -1;
+let fontBase = 15, sidebarOpen = true, focusMode = false;
+let tocBtnState = true, quizItems = [];
+let studyQuestions = [], studyIdx = 0;
 
-// ───── DOM shortcuts ───────────────────────────────────────
 const $ = id => document.getElementById(id);
-const $$ = sel => document.querySelectorAll(sel);
-const views = { dashboard: $('viewDashboard'), book: $('viewBook'), reader: $('viewReader') };
+const $$ = s => document.querySelectorAll(s);
 
-// Progress helpers
-const PROGRESS_KEY = 'bookshelf_progress';
-function getProgress() {
-  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); }
-  catch { return {}; }
-}
-function saveProgress(p) { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); }
-function markRead(bookId, file) {
-  const p = getProgress();
-  if (!p[bookId]) p[bookId] = [];
-  if (!p[bookId].includes(file)) { p[bookId].push(file); saveProgress(p); }
-  updateAllProgress();
-}
-function unmarkRead(bookId, file) {
-  const p = getProgress();
-  if (p[bookId]) { p[bookId] = p[bookId].filter(f => f !== file); saveProgress(p); }
-  updateAllProgress();
-}
-function isRead(bookId, file) {
-  const p = getProgress();
-  return p[bookId] && p[bookId].includes(file);
-}
-function chapterProgress(bookId) {
-  const book = MANIFEST.books.find(b => b.id === bookId);
-  if (!book) return 0;
-  const p = getProgress();
-  const done = (p[bookId] || []).filter(f => book.chapters.some(c => c.file === f)).length;
-  return book.chapters.length ? done / book.chapters.length : 0;
-}
-function totalProgress() {
-  const total = MANIFEST.books.reduce((s, b) => s + b.chapterCount, 0);
-  let done = 0;
-  const p = getProgress();
-  for (const b of MANIFEST.books) done += (p[b.id] || []).filter(f => b.chapters.some(c => c.file === f)).length;
-  return total ? done / total : 0;
-}
-function updateAllProgress() {
-  // Dashboard hero
-  const tp = totalProgress();
-  document.querySelector('.hero-progress-bar') && (document.querySelector('.hero-progress-bar').style.width = (tp * 100) + '%');
-  $('progressBadge').textContent = '📊 ' + Math.round(tp * 100) + '%';
-  // Book cards
-  document.querySelectorAll('.book-card').forEach(el => {
-    const bid = el.dataset.bookId;
-    const p = chapterProgress(bid);
-    const bar = el.querySelector('.card-progress-bar');
-    if (bar) bar.style.width = (p * 100) + '%';
-  });
-  // Chapter list
-  if (currentBookId) renderChapterList(currentBookId);
-}
+// ───── Splash & Init ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  const bar = $('splashBar');
+  // Show loading progress
+  bar.style.width = '30%';
+  await sleep(200);
+  
+  MANIFEST = MANIFEST_DATA;
+  bar.style.width = '70%';
+  await sleep(150);
 
-// ───── Init ─────────────────────────────────────────────────
-async function init() {
-  const res = await fetch('manifest.json');
-  MANIFEST = await res.json();
-  MANIFEST.books.forEach(b => {
-    b.chapterCount = b.chapters.length;
-    b.totalWords = b.chapters.reduce((s, c) => s + (c.words || 0), 0);
-  });
-  const totalCh = MANIFEST.books.reduce((s, b) => s + b.chapterCount, 0);
-  const totalW = MANIFEST.books.reduce((s, b) => s + b.totalWords, 0);
-  $('totalChapters').textContent = totalCh;
-  $('totalWords').textContent = (totalW / 10000).toFixed(1) + '万';
-  renderDashboard();
-  updateAllProgress();
-
-  // Theme from localStorage
-  const saved = localStorage.getItem('bookshelf_theme');
-  if (saved) document.documentElement.setAttribute('data-theme', saved);
-
-  // Font size from localStorage
-  const savedFont = localStorage.getItem('bookshelf_font');
+  // Restore theme
+  const theme = localStorage.getItem('bk_theme');
+  if (theme) document.documentElement.setAttribute('data-theme', theme);
+  const savedFont = localStorage.getItem('bk_font');
   if (savedFont) { fontBase = parseInt(savedFont); document.documentElement.style.setProperty('--font-base', fontBase + 'px'); }
-
+  
+  bar.style.width = '100%';
+  await sleep(300);
+  
+  $('splash').style.display = 'none';
+  $('app').style.display = 'block';
+  
+  // Init app
+  const totalCh = MANIFEST.books.reduce((s, b) => s + b.chapters.length, 0);
+  const totalW = MANIFEST.books.reduce((s, b) => s + b.totalWords, 0);
+  $('heroSub').textContent = `${MANIFEST.books.length} 本书 · ${totalCh} 章 · ${(totalW / 10000).toFixed(1)} 万字`;
+  
+  renderDashboard();
+  updateProgress();
+  
   // Keyboard
   document.addEventListener('keydown', e => {
-    if (e.key === '/' && !e.ctrlKey && !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
-      e.preventDefault(); openSearch();
+    if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+    switch(e.key) {
+      case '/': e.preventDefault(); openSearch(); break;
+      case 'Escape': closeAll(); break;
+      case 'ArrowLeft': if (currentView==='reader') prevChapter(); break;
+      case 'ArrowRight': if (currentView==='reader') nextChapter(); break;
+      case 'b': case 'B': if (currentView==='reader') toggleReadMark(); break;
+      case 't': case 'T': if (currentView==='reader') toggleTocFn(); break;
+      case 'f': case 'F': if (currentView==='reader') toggleFocus(); break;
+      case '?': showShortcuts(); break;
     }
-    if (e.key === 'Escape') { closeSearch(); closeStudyMode(); }
-    if (e.key === 'ArrowLeft' && currentView === 'reader') prevChapter();
-    if (e.key === 'ArrowRight' && currentView === 'reader') nextChapter();
-    if (e.key === 'b' && currentView === 'reader' && !e.ctrlKey && e.target.tagName !== 'INPUT') toggleReadProgress();
   });
+
+  // Scroll to top button
+  $('content').addEventListener('scroll', () => {
+    $('fab').classList.toggle('show', $('content').scrollTop > 300);
+  });
+
+  // Sidebar toggle for mobile
+  if (window.innerWidth <= 768) toggleSidebar(false);
+});
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const closeAll = () => { closeSearch(); closeStats(); closeStudyMode(); closeShortcuts(); closeQuizOverlay(); };
+
+// ───── Progress ───────────────────────────────────────────
+const PK = 'bk_prog';
+function getP() { try { return JSON.parse(localStorage.getItem(PK)||'{}'); } catch { return {}; } }
+function setP(p) { localStorage.setItem(PK, JSON.stringify(p)); }
+
+function markRead(bid, f) {
+  const p = getP();
+  if (!p[bid]) p[bid] = [];
+  if (!p[bid].includes(f)) { p[bid].push(f); setP(p); }
+  updateProgress();
+}
+function unmarkRead(bid, f) {
+  const p = getP();
+  if (p[bid]) { p[bid] = p[bid].filter(x => x !== f); setP(p); }
+  updateProgress();
+}
+function isRead(bid, f) {
+  const p = getP(); return p[bid] && p[bid].includes(f);
+}
+function chProgress(bid) {
+  const book = MANIFEST.books.find(b => b.id === bid);
+  if (!book || !book.chapters.length) return 0;
+  const p = getP();
+  const done = (p[bid]||[]).filter(f => book.chapters.some(c => c.file === f)).length;
+  return done / book.chapters.length;
+}
+function totalP() {
+  const total = MANIFEST.books.reduce((s, b) => s + b.chapters.length, 0);
+  let done = 0;
+  const p = getP();
+  for (const b of MANIFEST.books) done += (p[b.id]||[]).filter(f => b.chapters.some(c => c.file === f)).length;
+  return total ? done / total : 0;
 }
 
-// ───── View switching ──────────────────────────────────────
-function showView(name) {
-  Object.keys(views).forEach(k => views[k].style.display = k === name ? 'block' : 'none');
-  currentView = name;
-  // Sidebar
-  if (name === 'dashboard') {
-    $('bookListSection').style.display = 'block';
-    $('chapterListSection').style.display = 'none';
+function updateProgress() {
+  const tp = totalP();
+  const bar = $('heroBar');
+  if (bar) bar.style.width = (tp * 100) + '%';
+  const badge = $('progressBadge');
+  if (badge) badge.textContent = Math.round(tp * 100) + '%';
+  
+  // Streak
+  const streak = getStreak();
+  const ss = $('heroStreak');
+  if (ss) ss.textContent = streak > 0 ? `🔥 连续阅读 ${streak} 天` : '开始阅读，保持连续！';
+  
+  // Books
+  $$('.bc-fill').forEach(el => {
+    const bid = el.closest('.book-card')?.dataset?.bid;
+    if (bid) el.style.width = (chProgress(bid)*100) + '%';
+  });
+  $$('.bp').forEach(el => {
+    const bid = el.closest('.b-item')?.dataset?.bid;
+    if (bid) el.style.width = (chProgress(bid)*100) + '%';
+  });
+  
+  if (currentBookId) renderChapters(currentBookId);
+}
+
+// ───── Streak ─────────────────────────────────────────────
+function getStreak() {
+  const s = getP()._streak || {};
+  const today = new Date().toISOString().slice(0,10);
+  return s[today] ? s._count || 0 : 0;
+}
+function markStreak() {
+  const p = getP();
+  if (!p._streak) p._streak = {};
+  const today = new Date().toISOString().slice(0,10);
+  if (!p._streak[today]) {
+    p._streak[today] = true;
+    p._count = (p._count || 0) + 1;
+    setP(p);
   }
-  $('content').scrollTo({ top: 0, behavior: 'smooth' });
+}
+function getStreakDays() {
+  const p = getP();
+  const s = p._streak || {};
+  const days = [];
+  const today = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    const isToday = i === 0;
+    days.push({ key, done: !!s[key], today: isToday });
+  }
+  return days;
 }
 
-// ───── Dashboard ────────────────────────────────────────────
-function renderDashboard() {
-  const grid = $('bookGrid');
-  grid.innerHTML = MANIFEST.books.map(b => {
-    const p = chapterProgress(b.id);
-    const pct = Math.round(p * 100);
-    return `<div class="book-card fade-in" data-book-id="${b.id}" onclick="goToBook('${b.id}')">
-      <div class="card-accent" style="background:${b.color}"></div>
-      <div class="card-top">
-        <span class="card-emoji">${b.emoji}</span>
-        <span class="card-title">${b.title}</span>
-      </div>
-      <div class="card-desc">${b.desc}</div>
-      <div class="card-stats">
-        <span>📖 ${b.chapterCount} 章</span>
-        <span>📝 ${(b.totalWords / 10000).toFixed(1)} 万字</span>
-        <span>✅ ${pct}%</span>
-      </div>
-      <div class="card-progress"><div class="card-progress-bar" style="width:${pct}%;background:${b.color}"></div></div>
+// ───── View Switch ────────────────────────────────────────
+function showView(v) {
+  ['dashboard','book','reader'].forEach(k => {
+    $(`view${k.charAt(0).toUpperCase()+k.slice(1)}`).style.display = k === v ? 'block' : 'none';
+  });
+  currentView = v;
+  $('content').scrollTo({top:0, behavior:'smooth'});
+  
+  // Sidebar
+  if (v === 'dashboard') {
+    $('chSection').style.display = 'none';
+  }
+}
+
+// ───── Sidebar ────────────────────────────────────────────
+function toggleSidebar(show) {
+  if (show === undefined) show = !sidebarOpen;
+  $('sidebar').classList.toggle('closed', !show);
+  sidebarOpen = show;
+}
+
+function renderBookList() {
+  const list = $('bookList');
+  list.innerHTML = MANIFEST.books.map(b => {
+    const p = chProgress(b.id);
+    return `<div class="b-item ${currentBookId===b.id?'active':''}" data-bid="${b.id}" onclick="goToBook('${b.id}')">
+      <span class="be">${b.emoji}</span>
+      <span class="bt">${b.title}</span>
+      <span class="bc">${b.chapters.length}</span>
+      <span class="bp" style="width:${Math.round(p*100)}%"></span>
     </div>`;
   }).join('');
 }
 
-// ───── Book view ────────────────────────────────────────────
-function goToBook(bookId) {
-  currentBookId = bookId;
-  showView('book');
-  const book = MANIFEST.books.find(b => b.id === bookId);
-  const ch = $('chapterGrid');
-  const p = chapterProgress(bookId);
-  $('bookHeader').innerHTML = `
-    <span class="back-link" onclick="goHome()">← 返回书架</span>
-    <h1>${book.emoji} ${book.title}</h1>
-    <div class="book-meta">${book.chapterCount} 章 · ${(book.totalWords / 10000).toFixed(1)} 万字 · 已读 ${Math.round(p * 100)}%</div>
-  `;
-  ch.innerHTML = book.chapters.map((c, i) =>
-    `<div class="chapter-card fade-in" onclick="openChapter(${i})">
-      <div class="ch-num">第 ${String(i + 1).padStart(2, '0')} 章</div>
-      <div class="ch-name">${c.title}</div>
-      <div class="ch-sections">${c.sections ? c.sections.slice(0, 3).map(s => s.title).join(' · ') : ''}</div>
-      <div class="ch-bottom">
-        <span class="ch-words">${(c.words / 100).toFixed(0)} 百字 · ${c.sections ? c.sections.length : 0} 节</span>
-        <span class="ch-done">${isRead(bookId, c.file) ? '✅ 已读' : '📖 未读'}</span>
-      </div>
+function renderChapters(bid) {
+  const book = MANIFEST.books.find(b => b.id === bid);
+  if (!book) return;
+  const list = $('chapterList');
+  $('chSectionTitle').textContent = `📂 ${book.emoji} ${book.title}`;
+  list.innerHTML = book.chapters.map((c, i) =>
+    `<div class="c-item ${currentChapterIdx===i?'active':''}" onclick="openChapter(${i})">
+      <span class="cn">${String(i+1).padStart(2,'0')}</span>
+      <span class="ct">${c.title}</span>
+      <span>${isRead(bid,c.file)?'✅':''}</span>
     </div>`
   ).join('');
-
-  // Sidebar chapters
-  $('bookListSection').style.display = 'block';
-  $('chapterListSection').style.display = 'block';
-  renderBookList();
-  renderChapterList(bookId);
-  updateAllProgress();
+  $('chSection').style.display = 'block';
 }
 
-// ───── Reader ───────────────────────────────────────────────
+// ───── Dashboard ──────────────────────────────────────────
+function renderDashboard() {
+  const grid = $('bookGrid');
+  grid.innerHTML = MANIFEST.books.map(b => {
+    const p = chProgress(b.id);
+    return `<div class="book-card fade-in" data-bid="${b.id}" onclick="goToBook('${b.id}')">
+      <div class="bc-accent" style="background:${b.color}"></div>
+      <div class="bc-head">
+        <span class="bc-emoji">${b.emoji}</span>
+        <span class="bc-title">${b.title}</span>
+      </div>
+      <div class="bc-desc">${b.desc}</div>
+      <div class="bc-meta">
+        <span>📖 ${b.chapters.length} 章</span>
+        <span>📝 ${(b.totalWords/10000).toFixed(1)} 万字</span>
+        <span>✅ ${Math.round(p*100)}%</span>
+      </div>
+      <div class="bc-bar"><div class="bc-fill" style="width:${Math.round(p*100)}%;background:${b.color}"></div></div>
+    </div>`;
+  }).join('');
+  renderBookList();
+  updateProgress();
+}
+
+// ───── Book View ──────────────────────────────────────────
+function goToBook(bid) {
+  currentBookId = bid;
+  showView('book');
+  const book = MANIFEST.books.find(b => b.id === bid);
+  const p = chProgress(bid);
+  const readCount = Math.round(p * book.chapters.length);
+  const totalH2 = book.chapters.reduce((s, c) => s + (c.h2s?.length || 0), 0);
+  
+  $('bookHeader').innerHTML = `
+    <span class="back" onclick="goHome()">← 返回书架</span>
+    <h1>${book.emoji} ${book.title}</h1>
+    <div class="vm">${book.desc}</div>
+  `;
+  $('bookStats').innerHTML = `
+    <div class="bs-item"><span class="bs-num">${book.chapters.length}</span><span class="bs-label">📖 章节</span></div>
+    <div class="bs-item"><span class="bs-num">${(book.totalWords/10000).toFixed(1)}</span><span class="bs-label">📝 万字</span></div>
+    <div class="bs-item"><span class="bs-num">${totalH2}</span><span class="bs-label">📑 小节</span></div>
+    <div class="bs-item"><span class="bs-num">${readCount}</span><span class="bs-label">✅ 已读/${book.chapters.length}</span></div>
+    <div class="bs-item"><span class="bs-num">${Math.round(p*100)}%</span><span class="bs-label">📊 进度</span></div>
+  `;
+  
+  const grid = $('chapterGrid');
+  grid.innerHTML = book.chapters.map((c, i) => {
+    const h2s = (c.h2s || []).map(h => h.title).join(' · ');
+    return `<div class="chapter-card fade-in" onclick="openChapter(${i})">
+      <div class="cc-num">第 ${String(i+1).padStart(2,'0')} 章</div>
+      <div class="cc-title">${c.title} ${isRead(bid,c.file)?'✅':''}</div>
+      <div class="cc-h2">${h2s || '—'}</div>
+      <div class="cc-foot">
+        <span>${(c.words/100).toFixed(0)} 百字 · ${c.h2s?.length||0} 节</span>
+        <span>${isRead(bid,c.file)?'已读':'未读'}</span>
+      </div>
+    </div>`;
+  }).join('');
+  
+  renderBookList();
+  renderChapters(bid);
+  if (window.innerWidth <= 768) toggleSidebar(false);
+}
+
+function goHome() {
+  currentBookId = null; currentChapterIdx = -1;
+  showView('dashboard');
+  renderDashboard();
+  $('chSection').style.display = 'none';
+}
+
+// ───── Reader ─────────────────────────────────────────────
 function openChapter(idx) {
   currentChapterIdx = idx;
   showView('reader');
-  const book = MANIFEST.books.find(b => b.id === currentBookId);
-  currentChapters = book.chapters;
   renderChapter();
 }
 
 async function renderChapter() {
   const book = MANIFEST.books.find(b => b.id === currentBookId);
-  const ch = currentChapters[currentChapterIdx];
-  if (!ch) return;
-  $('readerTitle').textContent = `第${String(currentChapterIdx + 1).padStart(2, '0')}章 · ${ch.title}`;
-  $('chapterPos').textContent = `${currentChapterIdx + 1} / ${currentChapters.length}`;
-
-  // Footer nav
-  $('chapterNavFooter').innerHTML = `
-    <button onclick="prevChapter()" ${currentChapterIdx <= 0 ? 'disabled style="opacity:.4"' : ''}>← 上一章</button>
-    <button onclick="nextChapter()" ${currentChapterIdx >= currentChapters.length - 1 ? 'disabled style="opacity:.4"' : ''}>下一章 →</button>
+  if (!book || !book.chapters[currentChapterIdx]) return;
+  const ch = book.chapters[currentChapterIdx];
+  
+  // Update toolbar
+  $('readerTitle').textContent = `ch${String(currentChapterIdx+1).padStart(2,'0')} · ${ch.title}`;
+  $('chapterPos').textContent = `${currentChapterIdx+1}/${book.chapters.length}`;
+  $('readMarkBtn').textContent = isRead(currentBookId,ch.file) ? '✅ 已读' : '📌 标记';
+  
+  // Prev/Next
+  $('readerNav').innerHTML = `
+    <button class="tb-btn" onclick="prevChapter()" ${currentChapterIdx<=0?'disabled':''}>← 上一章</button>
+    <button class="tb-btn" onclick="openFullQuiz()">❓ 本章测验</button>
+    <button class="tb-btn" onclick="nextChapter()" ${currentChapterIdx>=book.chapters.length-1?'disabled':''}>下一章 →</button>
   `;
-
-  const url = `${RAW_BASE}/books/${currentBookId}/${ch.file}`;
+  
+  // Build TOC
+  buildToc(ch);
+  
+  // Load content
+  $('article').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">⏳ 加载中…</div>';
   try {
+    const url = `${RAW}/books/${currentBookId}/${ch.file}`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) throw new Error('HTTP '+res.status);
     const md = await res.text();
-    $('article').innerHTML = marked.parse(md, { breaks: true, gfm: true });
-    // Make headings collapsible
+    $('article').innerHTML = marked.parse(md, {breaks:true,gfm:true});
     makeCollapsible();
-    // Render TOC
-    renderToc();
-  } catch (err) {
-    $('article').innerHTML = `<div class="error"><h3>❌ 加载失败</h3><p>${err.message}</p></div>`;
+    makeHighlightable();
+    setupQuiz(ch);
+    markStreak();
+  } catch(e) {
+    $('article').innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">❌ 加载失败: ${e.message}</div>`;
   }
-
-  $('content').scrollTo({ top: 0, behavior: 'smooth' });
-  updateAllProgress();
+  
+  $('content').scrollTo({top:0, behavior:'smooth'});
+  updateProgress();
+  if (window.innerWidth <= 768) toggleSidebar(false);
 }
 
-function makeCollapsible() {
-  $$('article h2, article h3').forEach(el => {
-    el.addEventListener('click', () => {
-      el.classList.toggle('collapsed');
-      localStorage.setItem('bookshelf_collapsed_' + el.textContent.trim(), el.classList.contains('collapsed'));
-    });
-    // Restore state
-    const saved = localStorage.getItem('bookshelf_collapsed_' + el.textContent.trim());
-    if (saved === 'true') el.classList.add('collapsed');
-  });
+function buildToc(ch) {
+  const list = $('tocList');
+  const h2s = ch.h2s || [];
+  list.innerHTML = h2s.length ? h2s.map((h, i) => 
+    `<div class="toc-item toc-h2" onclick="scrollToToc(${i})">${h.title}</div>`
+  ).join('') : '<div style="font-size:11px;color:var(--text3)">无子标题</div>';
+  tocBtnState = true;
+  $('readerToc').style.display = 'block';
 }
 
-function renderToc() {
-  const toc = $('readerToc');
-  const headings = $$('article h2, article h3');
-  if (!headings.length) { toc.style.display = 'none'; return; }
-  toc.style.display = 'block';
-  toc.innerHTML = '<div class="toc-title">📑 本节目录</div>' +
-    Array.from(headings).map((h, i) => {
-      const level = h.tagName.toLowerCase() === 'h2' ? 'h2' : 'h3';
-      const text = h.textContent.trim();
-      return `<div class="toc-item toc-${level}" onclick="scrollToHeading(${i})">${text}</div>`;
-    }).join('');
+function scrollToToc(idx) {
+  const headings = $$('article h2');
+  if (headings[idx]) headings[idx].scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-function scrollToHeading(idx) {
-  const headings = $$('article h2, article h3');
-  if (headings[idx]) headings[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+function toggleTocFn() {
+  tocBtnState = !tocBtnState;
+  $('readerToc').style.display = tocBtnState ? 'block' : 'none';
 }
 
-function toggleToc() {
-  const toc = $('readerToc');
-  toc.style.display = toc.style.display === 'none' ? 'block' : 'none';
+function toggleFocus() {
+  focusMode = !focusMode;
+  document.body.classList.toggle('focus-mode', focusMode);
 }
 
-function prevChapter() { if (currentChapterIdx > 0) openChapter(currentChapterIdx - 1); }
-function nextChapter() { if (currentChapterIdx < currentChapters.length - 1) openChapter(currentChapterIdx + 1); }
+// ─── Type scale ───────────────────────────────────────
+function increaseFont() { if (fontBase<22) { fontBase++; applyFont(); } }
+function decreaseFont() { if (fontBase>12) { fontBase--; applyFont(); } }
+function applyFont() { document.documentElement.style.setProperty('--font-base',fontBase+'px'); localStorage.setItem('bk_font',fontBase); }
 
-function toggleReadProgress() {
-  const book = MANIFEST.books.find(b => b.id === currentBookId);
-  const ch = currentChapters[currentChapterIdx];
-  if (!book || !ch) return;
-  if (isRead(currentBookId, ch.file)) unmarkRead(currentBookId, ch.file);
-  else markRead(currentBookId, ch.file);
-}
-
-// ───── Font size ────────────────────────────────────────────
-function increaseFont() { if (fontBase < 22) { fontBase += 1; applyFont(); } }
-function decreaseFont() { if (fontBase > 12) { fontBase -= 1; applyFont(); } }
-function applyFont() {
-  document.documentElement.style.setProperty('--font-base', fontBase + 'px');
-  localStorage.setItem('bookshelf_font', fontBase);
-}
-
-// ───── Theme ────────────────────────────────────────────────
+// ─── Theme ────────────────────────────────────────────
 function toggleTheme() {
   const cur = document.documentElement.getAttribute('data-theme');
   const next = cur === 'light' ? '' : 'light';
   document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('bookshelf_theme', next);
+  localStorage.setItem('bk_theme', next);
 }
 
-// ───── Search ───────────────────────────────────────────────
-let searchDebounce = null;
-function onSearchInput(val) { clearTimeout(searchDebounce); searchDebounce = setTimeout(() => { if (val.trim()) openSearch(val.trim()); }, 300); }
-
-function openSearch(query) {
-  $('searchOverlay').style.display = 'flex';
-  if (query) { $('searchPanelInput').value = query; doSearch(query); }
-  else setTimeout(() => $('searchPanelInput').focus(), 100);
+// ─── Read Mark ────────────────────────────────────────
+function toggleReadMark() {
+  const ch = getCurChapter();
+  if (!ch) return;
+  if (isRead(currentBookId,ch.file)) unmarkRead(currentBookId,ch.file);
+  else markRead(currentBookId,ch.file);
+  $('readMarkBtn').textContent = isRead(currentBookId,ch.file) ? '✅ 已读' : '📌 标记';
 }
 
-function closeSearch() { $('searchOverlay').style.display = 'none'; $('searchResults').innerHTML = ''; }
+function getCurChapter() {
+  if (!currentBookId || currentChapterIdx < 0) return null;
+  const book = MANIFEST.books.find(b => b.id === currentBookId);
+  return book?.chapters[currentChapterIdx] || null;
+}
 
-async function doSearch(query) {
-  if (!query.trim()) { $('searchResults').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3)">输入关键词搜索全部书籍</div>'; return; }
-  $('searchResults').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3)">搜索中…</div>';
+function prevChapter() { if (currentChapterIdx>0) openChapter(currentChapterIdx-1); }
+function nextChapter() {
+  const book = MANIFEST.books.find(b => b.id === currentBookId);
+  if (book && currentChapterIdx < book.chapters.length-1) openChapter(currentChapterIdx+1);
+}
 
-  const results = [];
-  const q = query.toLowerCase();
+// ─── Collapsible ──────────────────────────────────────
+function makeCollapsible() {
+  $$('article h2, article h3').forEach(el => {
+    el.addEventListener('click', () => el.classList.toggle('collapsed'));
+  });
+}
 
-  for (const book of MANIFEST.books) {
-    for (const ch of book.chapters) {
-      try {
-        const url = `${RAW_BASE}/books/${book.id}/${ch.file}`;
-        const res = await fetch(url);
-        if (!res.ok) continue;
-        const md = await res.text();
-        const lines = md.split('\n');
-        let found = false;
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-          if (line.toLowerCase().includes(q)) {
-            const preview = line.length > 120 ? line.substring(0, 120) + '…' : line;
-            const highlighted = preview.replace(new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<em>$1</em>');
-            results.push({
-              book: book, chapter: ch, line: i + 1,
-              preview: highlighted.replace(/^#{1,4}\s+/, ''),
-              file: ch.file
-            });
-            found = true;
-            if (results.length >= 50) break;
-          }
-        }
-      } catch {}
-      if (results.length >= 50) break;
+// ─── Highlight ────────────────────────────────────────
+function makeHighlightable() {
+  $$('article p').forEach(el => {
+    el.addEventListener('click', e => {
+      el.classList.toggle('highlighted');
+      // Remove highlight tag
+      const tag = el.querySelector('.hl-tag');
+      if (tag) tag.remove();
+    });
+  });
+}
+
+// ─── Quiz (sidebar) ────────────────────────────────────
+function setupQuiz(ch) {
+  quizItems = [];
+  const h2s = ch.h2s || [];
+  if (!h2s.length) { $('quizContent').innerHTML = '<div style="font-size:11px;color:var(--text3)">暂无测验</div>'; return; }
+  
+  // Simple quiz: pick a random section and ask about it
+  const n = Math.min(3, h2s.length);
+  const picked = [...h2s].sort(()=>Math.random()-.5).slice(0, n);
+  
+  quizItems = picked.map(h => ({
+    q: `「${h.title}」这部分主要讲什么？`,
+    a: h.title,
+    options: shuffle([h.title, ...getRandomH2s(ch, h, 3)])
+  }));
+  
+  renderQuizSidebar();
+}
+
+function getRandomH2s(ch, exclude, count) {
+  const others = (ch.h2s || []).filter(h => h.title !== exclude.title);
+  const shuffled = [...others].sort(()=>Math.random()-.5);
+  return shuffled.slice(0, count).map(h => h.title);
+}
+
+function shuffle(arr) { return [...arr].sort(()=>Math.random()-.5); }
+
+function renderQuizSidebar() {
+  $('quizContent').innerHTML = quizItems.map((item, qi) => `
+    <div class="quiz-card" id="qc-${qi}">
+      <div class="qc-q">${item.q}</div>
+      ${item.options.map((o, oi) => `
+        <button class="qc-btn" onclick="checkQuiz(${qi},${oi})" id="qcb-${qi}-${oi}">${String.fromCharCode(65+oi)}. ${o}</button>
+      `).join('')}
+      <div class="qc-result" id="qcr-${qi}"></div>
+    </div>
+  `).join('');
+  $('quizSidebar').style.display = 'block';
+}
+
+function checkQuiz(qi, oi) {
+  const item = quizItems[qi];
+  const correct = item.options[oi] === item.a || item.options.indexOf(item.a) === oi;
+  // Check which index is the correct answer
+  const correctIdx = item.options.indexOf(item.a);
+  
+  // Disable all buttons
+  for (let i = 0; i < item.options.length; i++) {
+    const btn = $(`qcb-${qi}-${i}`);
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add(i === correctIdx ? 'correct' : i === oi && !correct ? 'wrong' : '');
     }
-    if (results.length >= 50) break;
   }
-
-  if (!results.length) {
-    $('searchResults').innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3)">未找到匹配内容 😅</div>';
-    return;
-  }
-
-  $('searchResults').innerHTML = results.map(r =>
-    `<div class="search-result" onclick="goSearchResult('${r.book.id}','${r.file}')">
-      <div class="sr-title">${r.book.emoji} ${r.book.title} · ${r.chapter.title}</div>
-      <div class="sr-path">第 ${r.line} 行</div>
-      <div class="sr-preview">${r.preview}</div>
-    </div>`
-  ).join('');
+  
+  const r = $(`qcr-${qi}`);
+  if (r) r.textContent = correct ? '✅ 正确！' : `❌ 答案是 ${item.a}`;
 }
 
-function goSearchResult(bookId, file) {
-  closeSearch();
-  goToBook(bookId);
-  const book = MANIFEST.books.find(b => b.id === bookId);
-  const idx = book.chapters.findIndex(c => c.file === file);
-  if (idx >= 0) setTimeout(() => openChapter(idx), 300);
+// ─── Full Quiz ──────────────────────────────────────────
+function openFullQuiz() {
+  if (!currentBookId) return;
+  const book = MANIFEST.books.find(b => b.id === currentBookId);
+  const ch = book?.chapters[currentChapterIdx];
+  if (!ch) return;
+  
+  const h2s = ch.h2s || [];
+  if (!h2s.length) { alert('本章暂无小节内容可生成测验'); return; }
+  
+  // Generate 5 questions
+  const picked = [...h2s].sort(()=>Math.random()-.5).slice(0,5);
+  const fq = picked.map(h => ({
+    q: `「${h.title}」是关于什么的？`,
+    a: h.title,
+    opts: shuffle([h.title, ...getRandomH2s(ch, h, 3)])
+  }));
+  
+  renderFullQuiz(fq);
+  $('quizOverlay').style.display = 'flex';
 }
 
-// ───── Study mode ──────────────────────────────────────────
+function renderFullQuiz(questions) {
+  let html = '<div class="quiz-full">';
+  questions.forEach((q, qi) => {
+    html += `<div class="qf-card" id="qf-${qi}" style="margin-bottom:20px">
+      <div class="qf-q">${qi+1}. ${q.q}</div>
+      <div class="qf-opts">
+        ${q.opts.map((o, oi) => `
+          <button class="qf-btn" onclick="checkFullQuiz(${qi},${oi})" id="qfb-${qi}-${oi}">${String.fromCharCode(65+oi)}. ${o}</button>
+        `).join('')}
+      </div>
+      <div class="qf-result" id="qfr-${qi}"></div>
+    </div>`;
+  });
+  html += `<div style="margin-top:8px"><button class="tb-btn" onclick="closeQuizOverlay()">关闭测验</button></div></div>`;
+  
+  // Store answer key
+  window._fullQuiz = questions;
+  $('quizFullContent').innerHTML = html;
+}
+
+function checkFullQuiz(qi, oi) {
+  const q = window._fullQuiz?.[qi];
+  if (!q) return;
+  const correctIdx = q.opts.indexOf(q.a);
+  const correct = oi === correctIdx;
+  
+  for (let i = 0; i < q.opts.length; i++) {
+    const btn = $(`qfb-${qi}-${i}`);
+    if (btn) { btn.disabled = true; btn.classList.add(i === correctIdx ? 'correct' : i === oi ? 'wrong' : ''); }
+  }
+  const r = $(`qfr-${qi}`);
+  if (r) { r.textContent = correct ? '✅ 正确！' : `❌ 答案是 ${q.a}`; r.className = 'qf-result ' + (correct ? 'correct' : 'wrong'); }
+}
+
+function closeQuizOverlay() { $('quizOverlay').style.display = 'none'; }
+
+// ─── Study Mode ────────────────────────────────────────
 function toggleStudyMode() {
   if ($('studyOverlay').style.display === 'flex') { closeStudyMode(); return; }
-  generateStudyQuestions();
+  generateStudy();
   $('studyOverlay').style.display = 'flex';
-  showStudyCard();
+  showStudy();
 }
 
-function closeStudyMode(e) { $('studyOverlay').style.display = 'none'; }
+function closeStudyMode() { $('studyOverlay').style.display = 'none'; }
 
-async function generateStudyQuestions() {
+function generateStudy() {
   studyQuestions = [];
-  const allRead = getProgress();
   const candidates = [];
   for (const book of MANIFEST.books) {
-    const readFiles = allRead[book.id] || [];
     for (const ch of book.chapters) {
-      if (readFiles.includes(ch.file) && ch.sections && ch.sections.length > 0) {
-        for (const sec of ch.sections.slice(0, 3)) {
-          candidates.push({ book, ch, section: sec.title, type: 'section' });
-        }
+      if ((ch.h2s||[]).length > 0) {
+        ch.h2s.forEach(h => candidates.push({ book, ch, section: h }));
       }
     }
   }
-  // Fallback: use first chapters
-  if (!candidates.length) {
-    for (const book of MANIFEST.books.slice(0, 3)) {
-      for (const ch of book.chapters.slice(0, 3)) {
-        candidates.push({ book, ch, section: ch.title, type: 'chapter' });
-      }
-    }
-  }
-  // Shuffle and take up to 20
-  candidates.sort(() => Math.random() - 0.5);
+  candidates.sort(()=>Math.random()-.5);
   studyQuestions = candidates.slice(0, 20);
   studyIdx = 0;
 }
 
-function showStudyCard() {
+function showStudy() {
   if (!studyQuestions.length || studyIdx >= studyQuestions.length) {
-    // Fetch content for study
     $('studyBody').innerHTML = `
-      <div style="padding:40px;text-align:center;color:var(--text2)">
-        <div style="font-size:48px;margin-bottom:16px;">🎉</div>
-        <div style="font-size:18px;font-weight:600;margin-bottom:8px;">太棒了！</div>
-        <div>题库已用完，<a href="#" style="color:var(--accent);" onclick="generateStudyQuestions();showStudyCard();return false">点此重新生成</a></div>
+      <div style="text-align:center;padding:40px">
+        <div style="font-size:48px;margin-bottom:12px">🎉</div>
+        <div style="font-size:18px;font-weight:600;margin-bottom:8px">全部复习完毕！</div>
+        <button class="study-reveal" onclick="generateStudy();showStudy()">🔄 重新生成</button>
       </div>
     `;
-    $('studyFooter').innerHTML = '';
     return;
   }
   const q = studyQuestions[studyIdx];
   $('studyBody').innerHTML = `
-    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">${q.book.emoji} ${q.book.title} · ${q.ch.title}</div>
-    <div class="study-question" id="studyQuestion">📝 回顾一下「<strong>${q.section}</strong>」的内容</div>
-    <button class="study-reveal" onclick="studyReveal()">👁 查看要点</button>
-    <div class="study-answer" id="studyAnswer" style="display:none">加载中…</div>
+    <div class="study-section">${q.book.emoji} ${q.book.title} · ${q.ch.title}</div>
+    <div class="study-question">📝 回忆一下「<strong>${q.section.title}</strong>」这部分的内容</div>
+    <button class="study-reveal" onclick="studyReveal()">👁 查看提示</button>
+    <div class="study-answer" id="studyAnswer">加载中…</div>
+    <div style="margin-top:14px">
+      <button class="tb-btn" onclick="studyMarked()">✅ 记住了</button>
+      <button class="tb-btn" onclick="studyAgain()">🔄 再看一遍</button>
+    </div>
   `;
-  $('studyFooter').innerHTML = `
-    <span style="font-size:12px;color:var(--text3)">${studyIdx + 1} / ${studyQuestions.length}</span>
-    <button class="toolbar-btn" onclick="studyNext()">下一张 →</button>
-  `;
-  // Pre-fetch answer
-  const url = `${RAW_BASE}/books/${q.book.id}/${q.ch.file}`;
-  fetch(url).then(r => r.text()).then(md => {
-    const lines = md.split('\n');
-    let found = [], capture = false;
-    for (const line of lines) {
-      if (line.includes(q.section) && line.startsWith('#')) { capture = true; continue; }
-      if (capture) {
-        if (line.startsWith('## ') || line.startsWith('# ')) break;
-        if (line.trim()) found.push(line.replace(/^#+\s*/, ''));
-      }
-    }
-    const answerEl = $('studyAnswer');
-    if (answerEl) {
-      const text = found.slice(0, 8).join('<br>');
-      answerEl.innerHTML = text ? marked.parse(text) : '<em>（本节内容可直接打开阅读）</em>';
-    }
-  }).catch(() => { const a = $('studyAnswer'); if (a) a.innerHTML = '<em>加载失败</em>'; });
 }
 
-function studyReveal() { const a = $('studyAnswer'); if (a) a.style.display = 'block'; }
-function studyNext() { studyIdx++; showStudyCard(); }
+function studyReveal() {
+  const a = $('studyAnswer');
+  if (a) { a.style.display = 'block'; a.textContent = '💡 打开对应章节阅读详细内容，回忆要点。'; }
+}
 
-// ───── Sidebar ──────────────────────────────────────────────
-function renderBookList() {
-  const list = $('bookList');
-  list.innerHTML = MANIFEST.books.map(b => {
-    const p = chapterProgress(b.id);
-    return `<div class="book-item ${currentBookId === b.id ? 'active' : ''}" onclick="goToBook('${b.id}')">
-      <span class="emoji">${b.emoji}</span>
-      <span class="title">${b.title}</span>
-      <span class="count">${b.chapterCount}章</span>
-      <span class="progress-mini" style="width:${Math.round(p * 100)}%"></span>
+function studyMarked() { studyIdx++; showStudy(); }
+function studyAgain() { showStudy(); }
+
+// ─── Random Chapter ────────────────────────────────────
+function randomChapter() {
+  const books = MANIFEST.books;
+  const book = books[Math.floor(Math.random() * books.length)];
+  const ch = book.chapters[Math.floor(Math.random() * book.chapters.length)];
+  const idx = book.chapters.indexOf(ch);
+  goToBook(book.id);
+  setTimeout(() => openChapter(idx), 300);
+}
+
+// ─── Search ────────────────────────────────────────────
+function openSearch() {
+  $('searchOverlay').style.display = 'flex';
+  const inp = $('searchInput');
+  setTimeout(() => inp.focus(), 100);
+  $('searchResults').innerHTML = '<div class="search-hint">按 Enter 搜索全部内容</div>';
+}
+function closeSearch() { $('searchOverlay').style.display = 'none'; $('searchResults').innerHTML = ''; }
+
+const MAX_RESULTS = 30;
+async function doSearch(query) {
+  query = query.trim();
+  if (!query) { $('searchResults').innerHTML = '<div class="search-hint">输入关键词后按 Enter 搜索</div>'; return; }
+  
+  $('searchResults').innerHTML = '<div class="search-hint">⏳ 搜索中…</div>';
+  const ql = query.toLowerCase();
+  const results = [];
+  
+  for (const book of MANIFEST.books) {
+    for (const ch of book.chapters) {
+      if (results.length >= MAX_RESULTS) break;
+      // Search by title/section match
+      if (ch.title.toLowerCase().includes(ql) || ch.file.toLowerCase().includes(ql)) {
+        results.push({book,ch,preview:'📑 章节标题匹配',line:0});
+        continue;
+      }
+      if (ch.h2s) {
+        for (const h of ch.h2s) {
+          if (results.length >= MAX_RESULTS) break;
+          if (h.title.toLowerCase().includes(ql)) {
+            results.push({book,ch,preview:`📌 小节「${h.title}」`,line:0});
+          }
+        }
+      }
+    }
+    if (results.length >= MAX_RESULTS) break;
+  }
+  
+  // If not enough, fetch content
+  if (results.length < MAX_RESULTS) {
+    for (const book of MANIFEST.books) {
+      for (const ch of book.chapters) {
+        if (results.length >= MAX_RESULTS) break;
+        if (results.some(r => r.ch === ch)) continue;
+        try {
+          const res = await fetch(`${RAW}/books/${book.id}/${ch.file}`);
+          if (!res.ok) continue;
+          const md = await res.text();
+          const lines = md.split('\n');
+          for (let i = 0; i < lines.length && results.length < MAX_RESULTS; i++) {
+            if (lines[i].toLowerCase().includes(ql) && !lines[i].startsWith('#')) {
+              const p = lines[i].length > 100 ? lines[i].slice(0,100)+'…' : lines[i];
+              results.push({book,ch,preview:p,line:i+1,raw:lines[i]});
+              break;
+            }
+          }
+        } catch {}
+      }
+    }
+  }
+  
+  if (!results.length) {
+    $('searchResults').innerHTML = '<div class="search-hint">😅 未找到匹配内容</div>';
+    return;
+  }
+  
+  $('searchResults').innerHTML = results.map(r => {
+    const highlighted = r.preview.replace(new RegExp('('+query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<em>$1</em>');
+    return `<div class="sr-item" onclick="goSearchResult('${r.book.id}','${r.ch.file}')">
+      <div class="sr-b">${r.book.emoji} ${r.book.title} · ${r.ch.title}</div>
+      <div class="sr-p">${highlighted}</div>
+      ${r.line ? '<div class="sr-m">第 '+r.line+' 行</div>' : ''}
     </div>`;
   }).join('');
 }
 
-function renderChapterList(bookId) {
-  const book = MANIFEST.books.find(b => b.id === bookId);
-  if (!book) return;
-  const list = $('chapterList');
-  $('chapterListTitle').textContent = `📂 ${book.emoji} ${book.title}`;
-  list.innerHTML = book.chapters.map((ch, i) =>
-    `<div class="chapter-item ${currentChapterIdx === i ? 'active' : ''}" onclick="openChapter(${i})">
-      <span class="num">${String(i + 1).padStart(2, '0')}</span>
-      <span class="ch-title">${ch.title}</span>
-      <span class="ch-check">${isRead(bookId, ch.file) ? '✅' : ''}</span>
-    </div>`
-  ).join('');
+function goSearchResult(bid, file) {
+  closeSearch();
+  goToBook(bid);
+  const book = MANIFEST.books.find(b => b.id === bid);
+  const idx = book?.chapters.findIndex(c => c.file === file);
+  if (idx >= 0) setTimeout(() => openChapter(idx), 300);
 }
 
-// ───── Navigation ───────────────────────────────────────────
-function goHome() {
-  currentBookId = null;
-  currentChapterIdx = -1;
-  showView('dashboard');
-  renderDashboard();
-  $('bookListSection').style.display = 'block';
-  $('chapterListSection').style.display = 'none';
-  updateAllProgress();
+// ─── Stats ─────────────────────────────────────────────
+function openStats() {
+  const tp = totalP();
+  const totalCh = MANIFEST.books.reduce((s,b) => s+b.chapters.length, 0);
+  const p = getP();
+  let totalRead = 0;
+  for (const b of MANIFEST.books) totalRead += (p[b.id]||[]).filter(f => b.chapters.some(c=>c.file===f)).length;
+  
+  const streakDays = getStreakDays();
+  const streakCount = p._count || 0;
+  
+  $('statsContent').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="sc-num">${totalRead}</div><div class="sc-label">📖 已读章节</div></div>
+      <div class="stat-card"><div class="sc-num">${totalCh - totalRead}</div><div class="sc-label">📚 待读章节</div></div>
+      <div class="stat-card"><div class="sc-num">${MANIFEST.books.length}</div><div class="sc-label">📚 书籍总数</div></div>
+      <div class="stat-card"><div class="sc-num">${Math.round(tp*100)}%</div><div class="sc-label">📊 总进度</div></div>
+    </div>
+    <div class="stats-streak">
+      <div style="font-size:14px;font-weight:600;margin-top:16px;">🔥 阅读连续 ${streakCount} 天</div>
+      <div class="ss-days">
+        ${streakDays.map(d => `
+          <div class="ss-day ${d.done?'done':''} ${d.today?'today':''}">${new Date(d.key).getDate()}</div>
+        `).join('')}
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+        ${streakDays.map(d => ['日','一','二','三','四','五','六'][new Date(d.key).getDay()]).join(' ')}
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      ${MANIFEST.books.map(b => {
+        const bp = chProgress(b.id);
+        return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0;font-size:12px;">
+          <span>${b.emoji}</span>
+          <span style="flex:1">${b.title}</span>
+          <div style="width:100px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;">
+            <div style="height:100%;width:${Math.round(bp*100)}%;background:${b.color};border-radius:2px;"></div>
+          </div>
+          <span style="color:var(--text3)">${Math.round(bp*100)}%</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+  $('statsOverlay').style.display = 'flex';
 }
+function closeStats() { $('statsOverlay').style.display = 'none'; }
 
-// ───── Boot ─────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', init);
+// ─── Shortcuts ─────────────────────────────────────────
+function showShortcuts() {
+  $('shortcutsContent').innerHTML = `
+    <div class="sc-grid">
+      <div class="sc-item"><span>搜索</span><kbd>/</kbd></div>
+      <div class="sc-item"><span>关闭弹窗</span><kbd>Esc</kbd></div>
+      <div class="sc-item"><span>上一章</span><kbd>←</kbd></div>
+      <div class="sc-item"><span>下一章</span><kbd>→</kbd></div>
+      <div class="sc-item"><span>标记已读</span><kbd>B</kbd></div>
+      <div class="sc-item"><span>目录切换</span><kbd>T</kbd></div>
+      <div class="sc-item"><span>专注模式</span><kbd>F</kbd></div>
+      <div class="sc-item"><span>快捷键</span><kbd>?</kbd></div>
+      <div class="sc-item"><span>随机章节</span><kbd>🎲 按钮</kbd></div>
+      <div class="sc-item"><span>学习模式</span><kbd>🎯 按钮</kbd></div>
+    </div>
+  `;
+  $('shortcutsOverlay').style.display = 'flex';
+}
+function closeShortcuts() { $('shortcutsOverlay').style.display = 'none'; }
+
+// ─── Scroll to Top ─────────────────────────────────────
+function scrollToTop() { $('content').scrollTo({top:0, behavior:'smooth'}); }
+
+// ─── Toggle quiz sidebar ───────────────────────────────
+function toggleQuizPanel() {
+  const qs = $('quizSidebar');
+  qs.style.display = qs.style.display === 'none' ? 'block' : 'none';
+}
