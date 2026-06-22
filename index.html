@@ -3,41 +3,120 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📚 书架</title>
+<title>📚 知识书架 - 交互学习</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="app">
+
+  <!-- Header -->
   <header>
     <div class="header-left">
-      <h1>📚 书架</h1>
+      <span class="logo" onclick="goHome()">📚 知识书架</span>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="搜索全书内容…" oninput="onSearchInput(this.value)">
+      </div>
     </div>
     <div class="header-right">
-      <span class="repo-badge">github.com/s66899/lamb</span>
+      <button class="icon-btn" onclick="toggleStudyMode()" title="学习模式">🎯</button>
+      <button class="icon-btn" onclick="toggleTheme()" title="切换主题">🌓</button>
+      <span class="badge" id="progressBadge">📊 0%</span>
     </div>
   </header>
 
+  <!-- Main layout -->
   <div class="layout">
-    <nav class="sidebar" id="sidebar">
-      <div class="book-list" id="bookList"></div>
-      <div class="chapter-list" id="chapterList">
-        <div class="placeholder">← 选择一本书</div>
-      </div>
-    </nav>
 
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section" id="bookListSection">
+        <div class="section-title">📖 全部书册</div>
+        <div id="bookList"></div>
+      </div>
+      <div class="sidebar-section" id="chapterListSection" style="display:none">
+        <div class="section-title" id="chapterListTitle">📂 章节目录</div>
+        <div id="chapterList"></div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
     <main class="content" id="content">
-      <div class="welcome" id="welcome">
-        <div class="welcome-icon">📖</div>
-        <h2>选择一本书开始阅读</h2>
-        <p class="welcome-sub">左侧书册 → 选择章节 → 在线阅读</p>
-      </div>
-      <div class="chapter-content" id="chapterContent" style="display:none">
-        <div class="content-header" id="contentHeader"></div>
-        <article id="article"></article>
-      </div>
-    </main>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="app.js"></script>
+      <!-- Dashboard -->
+      <div id="viewDashboard">
+        <div class="dashboard-hero">
+          <h1>📚 知识书架</h1>
+          <p class="hero-sub">五本专业知识全书 · <span id="totalChapters"></span> 章 · <span id="totalWords"></span> 字</p>
+          <div class="hero-progress" id="heroProgress"></div>
+        </div>
+        <div class="book-grid" id="bookGrid"></div>
+      </div>
+
+      <!-- Book view -->
+      <div id="viewBook" style="display:none">
+        <div class="book-header" id="bookHeader"></div>
+        <div class="chapter-grid" id="chapterGrid"></div>
+      </div>
+
+      <!-- Reader view -->
+      <div id="viewReader" style="display:none">
+        <div class="reader-toolbar">
+          <button class="toolbar-btn" onclick="goToBook(currentBookId)" title="返回目录">← 目录</button>
+          <span class="reader-title" id="readerTitle"></span>
+          <div class="reader-controls">
+            <button class="toolbar-btn" onclick="prevChapter()" title="上一章">◀</button>
+            <span id="chapterPos"></span>
+            <button class="toolbar-btn" onclick="nextChapter()" title="下一章">▶</button>
+            <span class="sep"></span>
+            <button class="toolbar-btn" onclick="toggleReadProgress()" title="标记已读">📌</button>
+            <button class="toolbar-btn" onclick="toggleToc()" title="目录导航">📑</button>
+            <button class="toolbar-btn" onclick="decreaseFont()" title="缩小">A-</button>
+            <button class="toolbar-btn" onclick="increaseFont()" title="放大">A+</button>
+          </div>
+        </div>
+        <div class="reader-layout">
+          <div class="reader-toc" id="readerToc" style="display:none"></div>
+          <div class="reader-content" id="readerContent">
+            <article id="article"></article>
+            <div class="chapter-nav-footer" id="chapterNavFooter"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Study overlay -->
+      <div id="studyOverlay" class="overlay" style="display:none" onclick="closeStudyMode(event)">
+        <div class="study-card" onclick="event.stopPropagation()">
+          <div class="study-header">
+            <span>🎯 学习模式</span>
+            <button class="icon-btn" onclick="closeStudyMode()">✕</button>
+          </div>
+          <div class="study-body" id="studyBody">
+            <div class="study-question" id="studyQuestion"></div>
+            <button class="study-reveal" onclick="studyReveal()">👁 查看答案</button>
+            <div class="study-answer" id="studyAnswer" style="display:none"></div>
+          </div>
+          <div class="study-footer">
+            <button class="toolbar-btn" onclick="studyNext()">下一张 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search overlay -->
+      <div id="searchOverlay" class="overlay" style="display:none" onclick="if(event.target===this)closeSearch()">
+        <div class="search-panel" onclick="event.stopPropagation()">
+          <div class="search-panel-header">
+            <input type="text" id="searchPanelInput" placeholder="输入关键词搜索…" autofocus oninput="doSearch(this.value)">
+            <button class="icon-btn" onclick="closeSearch()">✕</button>
+          </div>
+          <div class="search-results" id="searchResults"></div>
+        </div>
+      </div>
+
+    </main>
+  </div> <!-- /layout -->
+</div> <!-- /app -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
