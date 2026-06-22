@@ -4,6 +4,88 @@
 
 const RAW = 'https://raw.githubusercontent.com/s66899/lamb/book';
 let MANIFEST = null;
+
+// ═══════ Inline Markdown Parser (no deps) ═══════
+const mdParse = (txt) => {
+  if (!txt) return '';
+  let s = txt
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/__(.+?)__/g,'<strong>$1</strong>')
+    .replace(/_(.+?)_/g,'<em>$1</em>')
+    .replace(/~~(.+?)~~/g,'<del>$1</del>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>');
+  // inline code again after html
+  s = s.replace(/`([^`]+)`/g,'<code>$1</code>');
+  
+  // Images
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,(_,alt,src)=>'<img src="'+src.replace(/&amp;/g,'&')+'" alt="'+alt+'">');
+  // Links
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,(_,t,u)=>'<a href="'+u.replace(/&amp;/g,'&')+'" target="_blank">'+t+'</a>');
+  
+  // Tables
+  let lines = s.split('\n');
+  let result = [];
+  let inTable = false, inCodeBlock = false;
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    
+    // Code block
+    if (line.startsWith('```')) {
+      if (inCodeBlock) { result.push('</code></pre>'); inCodeBlock = false; }
+      else { result.push('<pre><code>'); inCodeBlock = true; }
+      continue;
+    }
+    if (inCodeBlock) { result.push(line + '\n'); continue; }
+    
+    // Horizontal rule
+    if (/^[-*_]{3,}\s*$/.test(line)) { result.push('<hr>'); continue; }
+    // Headings
+    const hm = line.match(/^(#{1,4})\s+(.+)/);
+    if (hm) { 
+      result.push('<h'+hm[1].length+'>'+hm[2]+'</h'+hm[1].length+'>'); 
+      continue; 
+    }
+    // Blockquote
+    if (line.startsWith('> ')) {
+      result.push('<blockquote><p>'+line.slice(2)+'</p></blockquote>');
+      continue;
+    }
+    // Unordered list
+    if (/^[-*+]\s+/.test(line)) {
+      result.push('<li>'+line.replace(/^[-*+]\s+/,'')+'</li>');
+      continue;
+    }
+    // Ordered list
+    if (/^\d+\.\s+/.test(line)) {
+      result.push('<li>'+line.replace(/^\d+\.\s+/,'')+'</li>');
+      continue;
+    }
+    // Table row
+    if (/^\|/.test(line)) {
+      if (!inTable) { inTable = true; result.push('<table>'); }
+      if (/^\|[\s:-]+\|[\s:-]+/.test(line)) continue; // separator
+      const cells = line.split('|').filter((c,i,a)=>i>0||i<a.length-1).map(c=>c.trim());
+      const tag = i === 0 || !lines[i-1].includes('---') ? 'th' : 'td';
+      result.push('<tr>'+cells.map(c=>'<'+tag+'>'+c+'</'+tag+'>').join('')+'</tr>');
+      continue;
+    } else if (inTable && line.trim() === '') { result.push('</table>'); inTable = false; }
+    
+    // Empty line
+    if (line.trim() === '') { result.push(''); continue; }
+    // Regular paragraph
+    result.push('<p>'+line+'</p>');
+  }
+  if (inTable) result.push('</table>');
+  if (inCodeBlock) result.push('</code></pre>');
+  
+  // Wrap consecutive <li> into <ul>
+  let out = result.join('\n');
+  out = out.replace(/((?:<li>.*<\/li>\n?)+)/g,'<ul>$1</ul>');
+  return out;
+};
 let currentView = 'dashboard', currentBookId = null, currentChapterIdx = -1;
 let fontBase = 15, sidebarOpen = true, focusMode = false;
 let tocBtnState = true, quizItems = [];
@@ -315,7 +397,7 @@ async function renderChapter() {
     const res = await fetch(url);
     if (!res.ok) throw new Error('HTTP '+res.status);
     const md = await res.text();
-    $('article').innerHTML = marked.parse(md, {breaks:true,gfm:true});
+    $('article').innerHTML = mdParse(md);
     makeCollapsible();
     makeHighlightable();
     setupQuiz(ch);
