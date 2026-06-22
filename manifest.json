@@ -1,0 +1,232 @@
+{
+  "books": [
+    {
+      "id": "badminton",
+      "title": "羽毛球",
+      "emoji": "🏸",
+      "color": "#2e7d30",
+      "chapters": [
+        {
+          "file": "ch01-grip-and-ready-stance.md",
+          "title": "Grip And Ready Stance"
+        },
+        {
+          "file": "ch02-forehand-clear.md",
+          "title": "Forehand Clear"
+        },
+        {
+          "file": "ch03-backhand-technique.md",
+          "title": "Backhand Technique"
+        },
+        {
+          "file": "ch04-net-shots.md",
+          "title": "Net Shots"
+        },
+        {
+          "file": "ch05-psychological-framework.md",
+          "title": "Psychological Framework"
+        },
+        {
+          "file": "ch06-forehand-smash.md",
+          "title": "Forehand Smash"
+        },
+        {
+          "file": "ch07-flat-drive.md",
+          "title": "Flat Drive"
+        },
+        {
+          "file": "ch08-comprehensive-training.md",
+          "title": "Comprehensive Training"
+        },
+        {
+          "file": "ch09-competition-psychology.md",
+          "title": "Competition Psychology"
+        },
+        {
+          "file": "ch10-competition-psychology.md",
+          "title": "Competition Psychology"
+        },
+        {
+          "file": "ch11-tactics-advanced.md",
+          "title": "Tactics Advanced"
+        },
+        {
+          "file": "ch12-physical-training.md",
+          "title": "Physical Training"
+        }
+      ]
+    },
+    {
+      "id": "engineering-mechanics",
+      "title": "工程力学",
+      "emoji": "⚙️",
+      "color": "#e65100",
+      "chapters": [
+        {
+          "file": "ch01-force-analysis-and-statics.md",
+          "title": "Force Analysis And Statics"
+        },
+        {
+          "file": "ch02-axial-loading.md",
+          "title": "Axial Loading"
+        },
+        {
+          "file": "ch03-axial-loading.md",
+          "title": "Axial Loading"
+        },
+        {
+          "file": "ch04-bending-internal-forces.md",
+          "title": "Bending Internal Forces"
+        },
+        {
+          "file": "ch05-psychological-framework.md",
+          "title": "Psychological Framework"
+        },
+        {
+          "file": "ch06-combined-deformation.md",
+          "title": "Combined Deformation"
+        },
+        {
+          "file": "ch07-column-stability.md",
+          "title": "Column Stability"
+        },
+        {
+          "file": "ch08-energy-methods.md",
+          "title": "Energy Methods"
+        },
+        {
+          "file": "ch09-dynamics.md",
+          "title": "Dynamics"
+        },
+        {
+          "file": "ch10-dynamics.md",
+          "title": "Dynamics"
+        },
+        {
+          "file": "ch11-vibration-analysis.md",
+          "title": "Vibration Analysis"
+        }
+      ]
+    },
+    {
+      "id": "finance",
+      "title": "金融",
+      "emoji": "📈",
+      "color": "#1565c0",
+      "chapters": [
+        {
+          "file": "ch01-financial-market-basics.md",
+          "title": "Financial Market Basics"
+        },
+        {
+          "file": "ch02-financial-statement-analysis.md",
+          "title": "Financial Statement Analysis"
+        },
+        {
+          "file": "ch03-time-value-of-money.md",
+          "title": "Time Value Of Money"
+        },
+        {
+          "file": "ch04-risk-and-return.md",
+          "title": "Risk And Return"
+        },
+        {
+          "file": "ch05-psychological-framework.md",
+          "title": "Psychological Framework"
+        },
+        {
+          "file": "ch06-bond-pricing.md",
+          "title": "Bond Pricing"
+        },
+        {
+          "file": "ch07-asset-allocation.md",
+          "title": "Asset Allocation"
+        },
+        {
+          "file": "ch08-behavioral-finance.md",
+          "title": "Behavioral Finance"
+        },
+        {
+          "file": "ch09-investment-psychology.md",
+          "title": "Investment Psychology"
+        },
+        {
+          "file": "ch10-practical-trading.md",
+          "title": "Practical Trading"
+        },
+        {
+          "file": "ch11-financial-market.md",
+          "title": "Financial Market"
+        },
+        {
+          "file": "ch12-derivatives-and-risk.md",
+          "title": "Derivatives And Risk"
+        }
+      ]
+    },
+    {
+      "id": "nsca-cpt",
+      "title": "NSCA-CPT",
+      "emoji": "💪",
+      "color": "#c62828",
+      "chapters": [
+        {
+          "file": "ch01-introduction.md",
+          "title": "Introduction"
+        }
+      ]
+    },
+    {
+      "id": "psychology",
+      "title": "心理学",
+      "emoji": "🧠",
+      "color": "#6a1b9a",
+      "chapters": [
+        {
+          "file": "ch01-perception-and-attention.md",
+          "title": "Perception And Attention"
+        },
+        {
+          "file": "ch02-memory.md",
+          "title": "Memory"
+        },
+        {
+          "file": "ch03-memory.md",
+          "title": "Memory"
+        },
+        {
+          "file": "ch04-motivation-and-needs.md",
+          "title": "Motivation And Needs"
+        },
+        {
+          "file": "ch05-emotion-and-affect.md",
+          "title": "Emotion And Affect"
+        },
+        {
+          "file": "ch06-personality.md",
+          "title": "Personality"
+        },
+        {
+          "file": "ch07-social-influence.md",
+          "title": "Social Influence"
+        },
+        {
+          "file": "ch08-cognitive-bias.md",
+          "title": "Cognitive Bias"
+        },
+        {
+          "file": "ch09-developmental-psychology.md",
+          "title": "Developmental Psychology"
+        },
+        {
+          "file": "ch10-mental-disorders.md",
+          "title": "Mental Disorders"
+        },
+        {
+          "file": "ch11-psychotherapy.md",
+          "title": "Psychotherapy"
+        }
+      ]
+    }
+  ]
+}
