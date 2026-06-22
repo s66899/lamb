@@ -376,22 +376,22 @@ async function renderChapter() {
   const ch = book.chapters[currentChapterIdx];
   
   // Update toolbar
-  $('readerTitle').textContent = `ch${String(currentChapterIdx+1).padStart(2,'0')} · ${ch.title}`;
+  $('readerTitle').textContent = `${String(currentChapterIdx+1).padStart(2,'0')}/${book.chapters.length} · ${ch.title}`;
   $('chapterPos').textContent = `${currentChapterIdx+1}/${book.chapters.length}`;
-  $('readMarkBtn').textContent = isRead(currentBookId,ch.file) ? '✅ 已读' : '📌 标记';
+  $('readMarkBtn').textContent = isRead(currentBookId,ch.file) ? '✅' : '📌';
   
   // Prev/Next
   $('readerNav').innerHTML = `
-    <button class="tb-btn" onclick="prevChapter()" ${currentChapterIdx<=0?'disabled':''}>← 上一章</button>
-    <button class="tb-btn" onclick="openFullQuiz()">❓ 本章测验</button>
-    <button class="tb-btn" onclick="nextChapter()" ${currentChapterIdx>=book.chapters.length-1?'disabled':''}>下一章 →</button>
+    <button class="tb-btn" onclick="prevChapter()" ${currentChapterIdx<=0?'disabled':''}>◀ 上章</button>
+    <button class="tb-btn" onclick="openFullQuiz()">🧪 测验</button>
+    <button class="tb-btn" onclick="nextChapter()" ${currentChapterIdx>=book.chapters.length-1?'disabled':''}>下章 ▶</button>
   `;
   
   // Build TOC
   buildToc(ch);
   
   // Load content — try local relative path first, then GitHub raw
-  $('article').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">⏳ 加载中…</div>';
+  $('article').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">⏳ 读入中…</div>';
   let md = null;
   let loadErr = null;
   
@@ -480,7 +480,7 @@ function toggleReadMark() {
   if (!ch) return;
   if (isRead(currentBookId,ch.file)) unmarkRead(currentBookId,ch.file);
   else markRead(currentBookId,ch.file);
-  $('readMarkBtn').textContent = isRead(currentBookId,ch.file) ? '✅ 已读' : '📌 标记';
+  $('readMarkBtn').textContent = isRead(currentBookId,ch.file) ? '✅' : '📌';
 }
 
 function getCurChapter() {
@@ -518,7 +518,7 @@ function makeHighlightable() {
 function setupQuiz(ch) {
   quizItems = [];
   const h2s = ch.h2s || [];
-  if (!h2s.length) { $('quizContent').innerHTML = '<div style="font-size:11px;color:var(--text3)">暂无测验</div>'; return; }
+  if (!h2s.length) { $('quizContent').innerHTML = '<div style="font-size:11px;color:var(--text3);text-align:center;padding:16px">🤷 无小节</div>'; return; }
   
   // Simple quiz: pick a random section and ask about it
   const n = Math.min(3, h2s.length);
@@ -660,9 +660,10 @@ function showStudy() {
   if (!studyQuestions.length || studyIdx >= studyQuestions.length) {
     $('studyBody').innerHTML = `
       <div style="text-align:center;padding:40px">
-        <div style="font-size:48px;margin-bottom:12px">🎉</div>
-        <div style="font-size:18px;font-weight:600;margin-bottom:8px">全部复习完毕！</div>
-        <button class="study-reveal" onclick="generateStudy();showStudy()">🔄 重新生成</button>
+        <div style="font-size:64px;margin-bottom:12px">🎉🏆🎉</div>
+        <div style="font-size:18px;font-weight:600;margin-bottom:4px">🎯 全记住了！</div>
+        <div style="color:var(--text2);font-size:13px;margin-bottom:16px">🧠 继续加油</div>
+        <button class="study-reveal" onclick="generateStudy();showStudy()">🔄 再练</button>
       </div>
     `;
     return;
@@ -670,19 +671,19 @@ function showStudy() {
   const q = studyQuestions[studyIdx];
   $('studyBody').innerHTML = `
     <div class="study-section">${q.book.emoji} ${q.book.title} · ${q.ch.title}</div>
-    <div class="study-question">📝 回忆一下「<strong>${q.section.title}</strong>」这部分的内容</div>
-    <button class="study-reveal" onclick="studyReveal()">👁 查看提示</button>
-    <div class="study-answer" id="studyAnswer">加载中…</div>
-    <div style="margin-top:14px">
-      <button class="tb-btn" onclick="studyMarked()">✅ 记住了</button>
-      <button class="tb-btn" onclick="studyAgain()">🔄 再看一遍</button>
+    <div class="study-question">🤔 说说「<strong>${q.section.title}</strong>」讲了啥？</div>
+    <button class="study-reveal" onclick="studyReveal()">💡 提示</button>
+    <div class="study-answer" id="studyAnswer">⏳ 加载…</div>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
+      <button class="tb-btn" onclick="studyMarked()">✅ 会了</button>
+      <button class="tb-btn" onclick="studyAgain()">🔄 再看</button>
     </div>
   `;
 }
 
 function studyReveal() {
   const a = $('studyAnswer');
-  if (a) { a.style.display = 'block'; a.textContent = '💡 打开对应章节阅读详细内容，回忆要点。'; }
+  if (a) { a.style.display = 'block'; a.textContent = '📖 翻书复习 ✨'; }
 }
 
 function studyMarked() { studyIdx++; showStudy(); }
@@ -703,16 +704,16 @@ function openSearch() {
   $('searchOverlay').style.display = 'flex';
   const inp = $('searchInput');
   setTimeout(() => inp.focus(), 100);
-  $('searchResults').innerHTML = '<div class="search-hint">按 Enter 搜索全部内容</div>';
+  $('searchResults').innerHTML = '<div class="search-hint">⌨️ 输词 · ⏎ 搜全书</div>';
 }
 function closeSearch() { $('searchOverlay').style.display = 'none'; $('searchResults').innerHTML = ''; }
 
 const MAX_RESULTS = 30;
 async function doSearch(query) {
   query = query.trim();
-  if (!query) { $('searchResults').innerHTML = '<div class="search-hint">输入关键词后按 Enter 搜索</div>'; return; }
+  if (!query) { $('searchResults').innerHTML = '<div class="search-hint">⌨️ 输词 · ⏎ 搜全书</div>'; return; }
   
-  $('searchResults').innerHTML = '<div class="search-hint">⏳ 搜索中…</div>';
+  $('searchResults').innerHTML = '<div class="search-hint">⏳ 搜…</div>';
   const ql = query.toLowerCase();
   const results = [];
   
@@ -800,10 +801,10 @@ function openStats() {
   
   $('statsContent').innerHTML = `
     <div class="stats-grid">
-      <div class="stat-card"><div class="sc-num">${totalRead}</div><div class="sc-label">📖 已读章节</div></div>
-      <div class="stat-card"><div class="sc-num">${totalCh - totalRead}</div><div class="sc-label">📚 待读章节</div></div>
-      <div class="stat-card"><div class="sc-num">${MANIFEST.books.length}</div><div class="sc-label">📚 书籍总数</div></div>
-      <div class="stat-card"><div class="sc-num">${Math.round(tp*100)}%</div><div class="sc-label">📊 总进度</div></div>
+      <div class="stat-card"><div class="sc-num">${totalRead}</div><div class="sc-label">✅ 已读</div></div>
+      <div class="stat-card"><div class="sc-num">${totalCh - totalRead}</div><div class="sc-label">📖 剩</div></div>
+      <div class="stat-card"><div class="sc-num">${MANIFEST.books.length}</div><div class="sc-label">📚 书</div></div>
+      <div class="stat-card"><div class="sc-num">${Math.round(tp*100)}%</div><div class="sc-label">📊 进度</div></div>
     </div>
     <div class="stats-streak">
       <div style="font-size:14px;font-weight:600;margin-top:16px;">🔥 阅读连续 ${streakCount} 天</div>
