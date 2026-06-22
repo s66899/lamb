@@ -390,20 +390,45 @@ async function renderChapter() {
   // Build TOC
   buildToc(ch);
   
-  // Load content
+  // Load content — try local relative path first, then GitHub raw
   $('article').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">⏳ 加载中…</div>';
+  let md = null;
+  let loadErr = null;
+  
+  // Try 1: local relative path (works when opened locally with file:// or same-origin)
+  const localUrl = `books/${currentBookId}/${ch.file}`;
   try {
-    const url = `${RAW}/books/${currentBookId}/${ch.file}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP '+res.status);
-    const md = await res.text();
+    const r1 = await fetch(localUrl);
+    if (r1.ok) md = await r1.text();
+  } catch(e) { loadErr = e; }
+  
+  // Try 2: GitHub raw CDN (works when deployed on GitHub Pages)
+  if (!md) {
+    try {
+      const url = `${RAW}/books/${currentBookId}/${ch.file}`;
+      const r2 = await fetch(url);
+      if (r2.ok) md = await r2.text();
+      else throw new Error('HTTP '+r2.status);
+    } catch(e2) {
+      loadErr = e2;
+    }
+  }
+  
+  if (md) {
     $('article').innerHTML = mdParse(md);
     makeCollapsible();
     makeHighlightable();
     setupQuiz(ch);
     markStreak();
-  } catch(e) {
-    $('article').innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">❌ 加载失败: ${e.message}</div>`;
+  } else {
+    const msg = loadErr ? loadErr.message : '未知错误';
+    $('article').innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">
+      ❌ 加载失败<br><span style="font-size:13px;color:var(--text3)">${msg}</span>
+      <div style="margin-top:16px;font-size:13px;color:var(--text2)">
+        提示：克隆仓库到本地，或者部署到 GitHub Pages 后访问<br>
+        也可以直接打开 books/${currentBookId}/${ch.file} 查看原始文件
+      </div>
+    </div>`;
   }
   
   $('content').scrollTo({top:0, behavior:'smooth'});
@@ -718,9 +743,14 @@ async function doSearch(query) {
         if (results.length >= MAX_RESULTS) break;
         if (results.some(r => r.ch === ch)) continue;
         try {
-          const res = await fetch(`${RAW}/books/${book.id}/${ch.file}`);
-          if (!res.ok) continue;
-          const md = await res.text();
+          let md = null;
+          // local first, then remote
+          try { const lr = await fetch('books/'+book.id+'/'+ch.file); if(lr.ok) md = await lr.text(); } catch{}
+          if (!md) {
+            const rr = await fetch(`${RAW}/books/${book.id}/${ch.file}`);
+            if (rr.ok) md = await rr.text();
+          }
+          if (!md) continue;
           const lines = md.split('\n');
           for (let i = 0; i < lines.length && results.length < MAX_RESULTS; i++) {
             if (lines[i].toLowerCase().includes(ql) && !lines[i].startsWith('#')) {
