@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 650" style="background:#0a0d14">
+  <defs>
+    <style>
+      text { font-family: 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { font-size:22px; font-weight:bold; fill:#ffd700; }
+      .zone { font-size:10px; fill:#e2e8f0; text-anchor:middle; }
+      .zname { font-size:9px; fill:#8892a8; text-anchor:middle; }
+      .line { stroke:#2a3347; stroke-width:1; fill:none; }
+      .hl { stroke:#4a9eff; stroke-width:1.5; fill:none; }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="250" y="30" text-anchor="middle" class="title">👤 面相十二宫示意图</text>
+  
+  <!-- Face outline -->
+  <ellipse cx="250" cy="320" rx="160" ry="250" fill="#11141e" stroke="#2a3347" stroke-width="2"/>
+  
+  <!-- Hairline -->
+  <path d="M90,140 Q250,90 410,140" class="line" stroke-width="3" stroke="#1a1d28"/>
+  
+  <!-- 1. 命宫 (印堂) -->
+  <rect x="215" y="195" width="70" height="30" rx="4" fill="rgba(255,215,0,0.15)" stroke="#ffd700" stroke-width="1.5"/>
+  <text x="250" y="210" class="zone" fill="#ffd700">命宫</text>
+  <text x="250" y="222" class="zname">· 运寿 ·</text>
+  
+  <!-- 2. 官禄宫 -->
+  <rect x="200" y="120" width="100" height="45" rx="4" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1"/>
+  <text x="250" y="138" class="zone" fill="#4a9eff">🜁 官禄宫</text>
+  <text x="250" y="152" class="zname">· 事业 · 贵气 ·</text>
+  
+  <!-- 3. 财帛宫 (鼻) -->
+  <path d="M235,230 L235,300 Q250,330 265,300 L265,230" fill="rgba(61,214,140,0.12)" stroke="#3dd68c" stroke-width="1.5"/>
+  <text x="250" y="260" class="zone" fill="#3dd68c">财帛宫</text>
+  <text x="250" y="278" class="zname">· 财运 ·</text>
+  
+  <!-- 4. 田宅宫 (眼睑) -->
+  <rect x="120" y="195" width="60" height="20" rx="3" fill="rgba(240,96,96,0.12)" stroke="#f06060" stroke-width="1"/>
+  <text x="150" y="209" class="zone" fill="#f06060" font-size="9px">田宅</text>
+  <rect x="320" y="195" width="60" height="20" rx="3" fill="rgba(240,96,96,0.12)" stroke="#f06060" stroke-width="1"/>
+  <text x="350" y="209" class="zone" fill="#f06060" font-size="9px">田宅</text>
+  
+  <!-- 5. 夫妻宫 (鱼尾) -->
+  <rect x="75" y="215" width="35" height="22" rx="3" fill="rgba(168,85,247,0.12)" stroke="#a855f7" stroke-width="1"/>
+  <text x="92" y="229" class="zone" fill="#a855f7" font-size="8px">夫妻</text>
+  <rect x="390" y="215" width="35" height="22" rx="3" fill="rgba(168,85,247,0.12)" stroke="#a855f7" stroke-width="1"/>
+  <text x="408" y="229" class="zone" fill="#a855f7" font-size="8px">夫妻</text>
+  
+  <!-- 6. 兄弟宫 (眉) -->
+  <path d="M100,185 Q175,170 240,185" class="hl"/>
+  <path d="M260,185 Q325,170 400,185" class="hl"/>
+  <text x="125" y="182" class="zone" fill="#f59e0b" font-size="8px">兄弟</text>
+  <text x="375" y="182" class="zone" fill="#f59e0b" font-size="8px">兄弟</text>
+  
+  <!-- 7. 子女宫 (卧蚕) -->
+  <rect x="140" y="225" width="65" height="18" rx="3" fill="rgba(240,192,80,0.12)" stroke="#f0c050" stroke-width="1"/>
+  <text x="172" y="237" class="zone" fill="#f0c050" font-size="8px">子女</text>
+  <rect x="295" y="225" width="65" height="18" rx="3" fill="rgba(240,192,80,0.12)" stroke="#f0c050" stroke-width="1"/>
+  <text x="328" y="237" class="zone" fill="#f0c050" font-size="8px">子女</text>
+  
+  <!-- 8. 疾厄宫 (山根) -->
+  <rect x="230" y="230" width="40" height="15" rx="3" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="1"/>
+  <text x="250" y="240" class="zone" fill="#f59e0b" font-size="7px">疾厄</text>
+  
+  <!-- 9. 迁移宫 (额角) -->
+  <rect x="96" y="140" width="35" height="35" rx="3" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1"/>
+  <text x="113" y="155" class="zone" fill="#4a9eff" font-size="8px">迁移</text>
+  <rect x="369" y="140" width="35" height="35" rx="3" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1"/>
+  <text x="387" y="155" class="zone" fill="#4a9eff" font-size="8px">迁移</text>
+  
+  <!-- 10. 奴仆宫 (两腮) -->
+  <rect x="80" y="380" width="45" height="35" rx="3" fill="rgba(168,85,247,0.12)" stroke="#a855f7" stroke-width="1"/>
+  <text x="102" y="398" class="zone" fill="#a855f7" font-size="8px">奴仆</text>
+  <rect x="375" y="380" width="45" height="35" rx="3" fill="rgba(168,85,247,0.12)" stroke="#a855f7" stroke-width="1"/>
+  <text x="398" y="398" class="zone" fill="#a855f7" font-size="8px">奴仆</text>
+  
+  <!-- 11. 福德宫 (额上) -->
+  <rect x="170" y="105" width="160" height="18" rx="3" fill="rgba(255,215,0,0.10)" stroke="#ffd700" stroke-width="1"/>
+  <text x="250" y="117" class="zone" fill="#ffd700" font-size="8px">福德宫</text>
+  
+  <!-- 12. 父母宫 (日月角) -->
+  <rect x="120" y="108" width="35" height="15" rx="3" fill="rgba(240,192,80,0.12)" stroke="#f0c050" stroke-width="0.8"/>
+  <text x="135" y="118" class="zone" fill="#f0c050" font-size="7px">父母</text>
+  <rect x="345" y="108" width="35" height="15" rx="3" fill="rgba(240,192,80,0.12)" stroke="#f0c050" stroke-width="0.8"/>
+  <text x="362" y="118" class="zone" fill="#f0c050" font-size="7px">父母</text>
+  
+  <!-- Mouth -->
+  <path d="M200,395 Q250,410 300,395" class="line" stroke-width="2"/>
+  <text x="250" y="405" class="zname" font-size="8px">口（出纳官）</text>
+  
+  <!-- Eyes -->
+  <ellipse cx="170" cy="210" rx="30" ry="8" fill="#1a1d28" stroke="#2a3347" stroke-width="1"/>
+  <ellipse cx="330" cy="210" rx="30" ry="8" fill="#1a1d28" stroke="#2a3347" stroke-width="1"/>
+  <!-- Pupils -->
+  <circle cx="170" cy="210" r="4" fill="#4a9eff" opacity="0.6"/>
+  <circle cx="330" cy="210" r="4" fill="#4a9eff" opacity="0.6"/>
+  
+  <!-- Ears -->
+  <ellipse cx="75" cy="250" rx="18" ry="40" fill="#11141e" stroke="#2a3347" stroke-width="1.5"/>
+  <text x="75" y="278" class="zname" font-size="7px" writing-mode="tb">耳·采听官</text>
+  <ellipse cx="425" cy="250" rx="18" ry="40" fill="#11141e" stroke="#2a3347" stroke-width="1.5"/>
+  <text x="425" y="278" class="zname" font-size="7px" writing-mode="tb">耳·采听官</text>
+  
+  <!-- Bottom legend -->
+  <rect x="60" y="480" width="380" height="130" rx="8" fill="#11141e" stroke="#2a3347" stroke-width="1"/>
+  <text x="250" y="500" text-anchor="middle" style="font-size:12px;font-weight:bold;fill:#e2e8f0">十二宫速查表</text>
+  
+  <text x="80" y="520" style="font-size:9px;fill:#ffd700">命宫</text><text x="105" y="520" style="font-size:9px;fill:#556074">· 两眉之间</text>
+  <text x="190" y="520" style="font-size:9px;fill:#4a9eff">官禄</text><text x="215" y="520" style="font-size:9px;fill:#556074">· 额中</text>
+  <text x="290" y="520" style="font-size:9px;fill:#3dd68c">财帛</text><text x="315" y="520" style="font-size:9px;fill:#556074">· 鼻头</text>
+  
+  <text x="80" y="538" style="font-size:9px;fill:#f06060">田宅</text><text x="105" y="538" style="font-size:9px;fill:#556074">· 眼睑</text>
+  <text x="190" y="538" style="font-size:9px;fill:#a855f7">夫妻</text><text x="215" y="538" style="font-size:9px;fill:#556074">· 鱼尾</text>
+  <text x="290" y="538" style="font-size:9px;fill:#f59e0b">兄弟</text><text x="315" y="538" style="font-size:9px;fill:#556074">· 两眉</text>
+  
+  <text x="80" y="556" style="font-size:9px;fill:#f0c050">子女</text><text x="105" y="556" style="font-size:9px;fill:#556074">· 卧蚕</text>
+  <text x="190" y="556" style="font-size:9px;fill:#f59e0b">疾厄</text><text x="215" y="556" style="font-size:9px;fill:#556074">· 山根</text>
+  <text x="290" y="556" style="font-size:9px;fill:#4a9eff">迁移</text><text x="315" y="556" style="font-size:9px;fill:#556074">· 额角</text>
+  
+  <text x="80" y="574" style="font-size:9px;fill:#a855f7">奴仆</text><text x="105" y="574" style="font-size:9px;fill:#556074">· 两腮</text>
+  <text x="190" y="574" style="font-size:9px;fill:#ffd700">福德</text><text x="215" y="574" style="font-size:9px;fill:#556074">· 额顶</text>
+  <text x="290" y="574" style="font-size:9px;fill:#f0c050">父母</text><text x="315" y="574" style="font-size:9px;fill:#556074">· 日月角</text>
+</svg>

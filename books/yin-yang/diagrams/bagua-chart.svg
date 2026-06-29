@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 900" style="background:#0a0d14">
+  <defs>
+    <style>
+      text { font-family: 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { font-size:28px; font-weight:bold; fill:#ffd700; }
+      .sub { font-size:14px; fill:#8892a8; }
+      .label { font-size:13px; fill:#e2e8f0; }
+      .desc { font-size:11px; fill:#556074; }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="400" y="45" text-anchor="middle" class="title">☰ 八卦全览图</text>
+  <text x="400" y="68" text-anchor="middle" class="sub">Eight Trigrams Reference Chart</text>
+  <line x1="100" y1="80" x2="700" y2="80" stroke="#2a3347" stroke-width="1"/>
+
+  <!-- Grid positions -->
+  <!-- Row 1: 乾·兑·离·震 -->
+  <!-- Row 2: 巽·坎·艮·坤 -->
+  
+  <!-- 1. 乾 ☰ -->
+  <g transform="translate(40, 100)">
+    <rect x="0" y="0" width="170" height="160" rx="8" fill="#11141e" stroke="#2a3347" stroke-width="1"/>
+    <text x="85" y="30" text-anchor="middle" style="font-size:36px;fill:#e2e8f0">☰</text>
+    <text x="85" y="55" text-anchor="middle" style="font-size:18px;font-weight:bold;fill:#4a9eff">乾 Qián</text>
+    <text x="85" y="75" text-anchor="middle" style="font-size:13px;fill:#e2e8f0">天 · Heaven</text>
+    <line x1="15" y1="85" x2="155" y2="85" stroke="#2a3347" stroke-width="0.5"/>
+    <text x="85" y="105" text-anchor="middle" style="font-size:12px;fill:#f0c050">五行：金  |  方位：西北</text>
+    <text x="85" y="125" text-anchor="middle" style="font-size:11px;fill:#8892a8">家人：父</text>
+    <rect x="15" y="135" width="140" height="16" rx="4" fill="#1a5bb5" opacity="0.3"/>
+    <text x="85" y="147" text-anchor="middle" style="font-size:10px;fill:#4a9eff">属性：健 · 刚健不息</text>
+  </g>
+
+  <!-- 2. 兑 ☱ -->
+  <g transform="translate(220, 100)">
+    <rect x="0" y="0" width="170" height="160" rx="8" fill="#11141e" stroke="#2a3347" stroke-width="1"/>
+    <text x="85" y="30" text-anchor="middle" style="font-size:36px;fill:#e2e8f0">☱</text>
+    <text x="85" y="55" text-anchor="middle" style="font-size:18px;font-weight:bold;fill:#3dd68c">兑 Duì</text>
+    <text x="85" y="75" text-anchor="middle" style="font-size:13px;fill:#e2e8f0">泽 · Lake</text>
+    <line x1="15" y1="85" x2="155" y2="85" stroke="#2a3347" stroke-width="0.5"/>
+    <text x="85" y="105" text-anchor="middle" style="font-size:12px;fill:#f0c050">五行：金  |  方位：正西</text>
+    <text x="85" y="125" text-anchor="middle" style="font-size:11px;fill:#8892a8">家人：少女</text>
+    <rect x="15" y="135" width="140" height="16" rx="4" fill="#1a8d5a" opacity="0.3"/>
+    <text x="85" y="147" text-anchor="middle" style="font-size:10px;fill:#3dd68c">属性：悦 · 喜悦沟通</text>
+  </g>
+
+  <!-- 3. 离 ☲ -->
+  <g transform="translate(400, 100)">
+    <rect x="0" y="0" width="170" height="160" rx="8" fill="#11141e" stroke="#2a3347" stroke-width="1"/>
+    <text x="85" y="30" text-anchor="middle" style="font-size:36px;fill:#e2e8f0">☲</text>
+    <text x="85" y="55" text-anchor="middle" style="font-size:18px;font-weight:bold;fill:#f06060">离 Lí</text>
+    <text x="85" y="75" text-anchor="middle" style="font-size:13px;fill:#e2e8f0">火 · Fire</text>
+    <line x1="15" y1="85" x2="155" y2="85" stroke="#2a3347" stroke-width="0.5"/>
+    <text x="85" y="105" text-anchor="middle" style="font-size:12px;fill:#f0c050">五行：火  |  方位：正南</text>
+    <text x="85" y="125" text-anchor="middle" style="font-size:11px;fill:#8892a8">家人：中女</text>
+    <rect x="15" y="135" width="140" height="16" rx="4" fill="#8b0000" opacity="0.3"/>
+    <text x="85" y="147" text-anchor="middle" style="font-size:10px;fill:#f06060">属性：附 · 光明依附</text>
+  </g>
+
+  <!-- 4. 震 ☳ -->
+  <g transform="translate(580, 100)">
+    <rect x="0" y="0" width="170" height="160" rx="8" fill="#11141e" stroke="#2a3347" stroke-width="1"/>
+    <text x="85" y="30" text-anchor="middle" style="font-size:36px;fill:#e2e8f0">☳</text>
+    <text x="85" y="55" text-anchor="middle" style="font-size:18px;font-weight:bold;fill="#a855f7">震 Zhèn</text>
+    <text x="85" y="75" text-anchor="middle" style="font-size:13px;fill:#e2e8f0">雷 · Thunder</text>
+    <line x1="15" y1="85" x2="155" y2="85" stroke="#2a3347" stroke-width="0.5"/>
+    <text x="85" y="105" text-anchor="middle" style="font-size:12px;fill:#f0c050">五行：木  |  方位：正东</text>
+    <text x="85" y="125" text-anchor="middle" style="font-size:11px;fill:#8892a8">家人：长子</text>
+    <rect x="15" y="135" width="140" height="16" rx="4" fill="#5b21b6" opacity="0.3"/>
+    <text x="85" y="147" text-anchor="middle" style="font-size:10px;fill:#a855f7">属性：动 · 震动勃发</text>
+  </g>
+
+  <!-- Row 2 -->
+  <!-- 5. 巽 ☴ -->
+  <g transform="translate(40, 280)">
+    <rect x="0" y="0" width="170" height="160" rx="8" fill="#11141e" stroke="#2a3347" stroke-width="1"/>
+    <text x="85" y="30" text-anchor="middle" style="font-size:36px;fill:#e2e8f0">☴</text>
+    <text x="85" y="55" text-anchor="middle" style="font-size:18px;font-weight:bold;fill="#3dd68c">巽 Xùn</text>
+    <text x="85" y="75" text-anchor="middle" style="font-size:13px;fill:#e2e8f0">风 · Wind</text>
+    <line x1="15" y1="85" x2="155" y2="85" stroke="#2a3347" stroke-width="0.5"/>
+    <text x="85" y="105" text-anchor="middle" style="font-size:12px;fill:#f0c050">五行：木  |  方位：东南</text>
+    <text x="85" y="125" text-anchor="middle" style="font-size:11px;fill:#8892a8">家人：长女</text>
+    <rect x="15" y="135" width="140" height="16" rx="4" fill="#1a8d5a" opacity="0.3"/>
+    <text x="85" y="147" text-anchor="middle" style="font-size:10px;fill:#3dd68c">属性：入 · 渗透无孔不入</text>
+  </g>
+
+  <!-- 6. 坎 ☵ -->
+  <g transform="translate(220, 280)">
+    <rect x="0" y="0" width="170" height="160" rx="8" fill="#11141e" stroke="#2a3347" stroke-width="1"/>
+    <text x="85" y="30" text-anchor="middle" style="font-size:36px;fill:#e2e8f0">☵</text>
+    <text x="85" y="55" text-anchor="middle" style="font-size:18px;font-weight:bold;fill="#4a9eff">坎 Kǎn</text>
+    <text x="85" y="75" text-anchor="middle" style="font-size:13px;fill:#e2e8f0">水 · Water</text>
+    <line x1="15" y1="85" x2="155" y2="85" stroke="#2a3347" stroke-width="0.5"/>
+    <text x="85" y="105" text-anchor="middle" style="font-size:12px;fill:#f0c050">五行：水  |  方位：正北</text>
+    <text x="85" y="125" text-anchor="middle" style="font-size:11px;fill:#8892a8">家人：中男</text>
+    <rect x="15" y="135" width="140" height="16" rx="4" fill="#1a5bb5" opacity="0.3"/>
+    <text x="85" y="147" text-anchor="middle" style="font-size:10px;fill:#4a9eff">属性：陷 · 险中求进</text>
+  </g>
+
+  <!-- 7. 艮 ☶ -->
+  <g transform="translate(400, 280)">
+    <rect x="0" y="0" width="170" height="160" rx="8" fill="#11141e" stroke="#2a3347" stroke-width="1"/>
+    <text x="85" y="30" text-anchor="middle" style="font-size:36px;fill:#e2e8f0">☶</text>
+    <text x="85" y="55" text-anchor="middle" style="font-size:18px;font-weight:bold;fill="#f59e0b">艮 Gèn</text>
+    <text x="85" y="75" text-anchor="middle" style="font-size:13px;fill:#e2e8f0">山 · Mountain</text>
+    <line x1="15" y1="85" x2="155" y2="85" stroke="#2a3347" stroke-width="0.5"/>
+    <text x="85" y="105" text-anchor="middle" style="font-size:12px;fill:#f0c050">五行：土  |  方位：东北</text>
+    <text x="85" y="125" text-anchor="middle" style="font-size:11px;fill:#8892a8">家人：少男</text>
+    <rect x="15" y="135" width="140" height="16" rx="4" fill="#92400e" opacity="0.3"/>
+    <text x="85" y="147" text-anchor="middle" style="font-size:10px;fill:#f59e0b">属性：止 · 知止有定</text>
+  </g>
+
+  <!-- 8. 坤 ☷ -->
+  <g transform="translate(580, 280)">
+    <rect x="0" y="0" width="170" height="160" rx="8" fill="#11141e" stroke="#2a3347" stroke-width="1"/>
+    <text x="85" y="30" text-anchor="middle" style="font-size:36px;fill:#e2e8f0">☷</text>
+    <text x="85" y="55" text-anchor="middle" style="font-size:18px;font-weight:bold;fill="#f59e0b">坤 Kūn</text>
+    <text x="85" y="75" text-anchor="middle" style="font-size:13px;fill:#e2e8f0">地 · Earth</text>
+    <line x1="15" y1="85" x2="155" y2="85" stroke="#2a3347" stroke-width="0.5"/>
+    <text x="85" y="105" text-anchor="middle" style="font-size:12px;fill:#f0c050">五行：土  |  方位：西南</text>
+    <text x="85" y="125" text-anchor="middle" style="font-size:11px;fill:#8892a8">家人：母</text>
+    <rect x="15" y="135" width="140" height="16" rx="4" fill="#92400e" opacity="0.3"/>
+    <text x="85" y="147" text-anchor="middle" style="font-size:10px;fill:#f59e0b">属性：顺 · 厚德载物</text>
+  </g>
+
+  <!-- Footer info -->
+  <line x1="100" y1="460" x2="700" y2="460" stroke="#2a3347" stroke-width="1"/>
+  <text x="400" y="485" text-anchor="middle" class="desc">先天卦序：乾1·兑2·离3·震4·巽5·坎6·艮7·坤8</text>
+  <text x="400" y="505" text-anchor="middle" class="desc">数字规律：1+8=9 · 2+7=9 · 3+6=9 · 4+5=9</text>
+  <text x="400" y="525" text-anchor="middle" class="desc">阴阳对待：乾(纯阳)⇄坤(纯阴) · 离(外阳)⇄坎(外阴) · 震(阳在下)⇄巽(阴在下) · 艮(阳在上)⇄兑(阴在上)</text>
+</svg>
