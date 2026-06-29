@@ -10,8 +10,6 @@
 >
 > 🚀 推荐从 **《心理学》** 开始：**[感知与注意 →](https://s66899.github.io/lamb/#psychology/ch01-perception-and-attention.md)**
 >
-> 📌 提示：国内访问可搭配镜像加速（见下方说明）
-
 ---
 
 ## 📚 书籍列表
@@ -132,35 +130,13 @@ books/
 
 ---
 
-## 🚀 国内镜像加速
+## 🚀 国内镜像
 
-GitHub Pages 在国内访问可能较慢，推荐以下方案：
-
-**方案一：Cloudflare Pages（推荐）**
-```bash
-# 1. Fork 本仓库到你的 GitHub
-# 2. 登录 https://dash.cloudflare.com → Workers & Pages
-# 3. 连接 GitHub 仓库，构建设置：
-#    - 构建命令：留空
-#    - 输出目录：/（根目录）
-#    - 分支：book
-# 4. 绑定自定义域名即可获得国内可访问的链接
-```
-
-**方案二：Gitee Pages**
-```bash
-# 1. 在 https://gitee.com 导入此 GitHub 仓库
-# 2. 仓库 → 服务 → Gitee Pages
-# 3. 选择 book 分支，部署即可获得 gitee.io 域名
-```
-
-**方案三：Vercel**
-```bash
-# 1. 登录 https://vercel.com → Import Git Repository
-# 2. 选择本仓库，Framework 选 "Other"
-# 3. 输出目录留空，分支选 book
-# 4. 自动获得 vercel.app 域名
-```
+1. 打开 https://dash.cloudflare.com → Workers & Pages
+2. 点 **Create** → **Pages** → **Connect to Git**
+3. 授权 Cloudflare 访问 GitHub，选择 `s66899/lamb` 仓库
+4. 部署配置：分支 `book`，框架预设 `None`，输出目录 `/`
+5. 点 **Save and Deploy**，等1分钟获得 `xxx.pages.dev` 域名
 
 ---
 
