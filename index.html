@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>📚 书架·交互学习</title>
+<title>📚 知识书塔 · CodeCombat 式学习游戏</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,9 +11,9 @@
 <!-- ═══ Splash ═══ -->
 <div id="splash">
   <div class="splash-inner">
-    <div class="splash-icon">📚</div>
-    <div class="splash-title">📖 加载中…</div>
-    <div class="splash-sub">✨ 整理书架 · 唤醒知识</div>
+    <div class="splash-icon">🗺️</div>
+    <div class="splash-title">📚 知识书塔</div>
+    <div class="splash-sub">⚔️ 用知识武装自己 · 闯关升级！</div>
     <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
   </div>
 </div>
@@ -24,18 +24,20 @@
   <!-- Header -->
   <header>
     <div class="h-left">
-      <button class="h-btn" onclick="toggleSidebar()" title="📂 侧栏" style="font-size:18px">☰</button>
-      <span class="h-logo" onclick="goHome()">🏠</span>
+      <button class="h-btn" onclick="toggleSidebar()" title="📂 地图" style="font-size:16px">☰</button>
+      <span class="h-logo" onclick="goHome()">🏰</span>
       <div class="h-search" onclick="openSearch()">
         <span>🔍</span>
-        <span class="h-search-text">🔎 搜搜看…</span>
+        <span class="h-search-text">🔎 搜索关卡…</span>
         <kbd>/</kbd>
       </div>
     </div>
     <div class="h-right">
-      <button class="h-btn" onclick="openStats()" title="📊 报告">📈</button>
-      <button class="h-btn" onclick="toggleStudyMode()" title="🎯 复习">🔁</button>
-      <button class="h-btn" onclick="randomChapter()" title="🎲 随机">🎲</button>
+      <!-- RPG HUD -->
+      <div id="rpgHud"></div>
+      <button class="h-btn" onclick="openStats()" title="📊 冒险报告">📈</button>
+      <button class="h-btn" onclick="toggleStudyMode()" title="🔁 复习">🔁</button>
+      <button class="h-btn" onclick="randomChapter()" title="🎲 随机关卡">🎲</button>
       <button class="h-btn" onclick="toggleTheme()" title="🌓 主题">🌓</button>
       <span class="h-badge" id="progressBadge">⬜ 0%</span>
     </div>
@@ -45,19 +47,20 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="side-section">
-        <div class="side-title">📚 藏书</div>
+        <div class="side-title">📚 地图列表</div>
         <div id="bookList"></div>
       </div>
       <div class="side-section" id="chSection" style="display:none">
-        <div class="side-title" id="chSectionTitle">🗂️ 目录</div>
+        <div class="side-title" id="chSectionTitle">🗂️ 关卡</div>
         <div id="chapterList"></div>
       </div>
       <div class="side-section side-section-links">
-        <div class="side-link" onclick="openSearch()">🔍 搜索</div>
-        <div class="side-link" onclick="toggleStudyMode()">🔁 复习</div>
-        <div class="side-link" onclick="randomChapter()">🎲 随缘</div>
-        <div class="side-link" onclick="openStats()">📈 数据</div>
-        <div class="side-link" onclick="showShortcuts()">⌨️ 快捷键</div>
+        <div class="side-link" onclick="openSearch()"><span class="sl-icon">🔍</span> 搜索</div>
+        <div class="side-link" onclick="openAchievements()"><span class="sl-icon">🏆</span> 成就<span class="sl-xp"></span></div>
+        <div class="side-link" onclick="openQuests()"><span class="sl-icon">📋</span> 任务<span class="sl-xp"></span></div>
+        <div class="side-link" onclick="toggleStudyMode()"><span class="sl-icon">🔁</span> 复习</div>
+        <div class="side-link" onclick="randomChapter()"><span class="sl-icon">🎲</span> 随缘</div>
+        <div class="side-link" onclick="openStats()"><span class="sl-icon">📈</span> 数据</div>
       </div>
     </aside>
 
@@ -67,11 +70,17 @@
       <!-- Dashboard -->
       <div id="viewDashboard">
         <div class="hero">
-          <div class="hero-emoji">📚</div>
-          <h1 class="hero-title">✨ 知识书架 ✨</h1>
+          <div class="hero-avatar" id="heroAvatar" onclick="openStats()">🧙</div>
+          <h1 class="hero-title">📚 知识书塔</h1>
+          <div class="hero-level-badge" id="heroLevel">Lv.1 · ✨ 初心者</div>
           <p class="hero-sub" id="heroSub"></p>
+          <div class="hero-xp-area">
+            <div class="hero-xp-label" id="heroXpLabel"><span>🧪 经验值</span><span>0%</span></div>
+            <div class="hero-xp-bar"><div class="hero-xp-fill" id="heroXpFill" style="width:0%"></div></div>
+          </div>
           <div class="hero-bar"><div class="hero-bar-fill" id="heroBar"></div></div>
           <div class="hero-streak" id="heroStreak"></div>
+          <div class="hero-achievements" id="heroAchievements"></div>
         </div>
         <div class="book-grid" id="bookGrid"></div>
       </div>
@@ -90,12 +99,12 @@
           <span class="tb-title" id="readerTitle"></span>
           <span class="tb-pos" id="chapterPos"></span>
           <div class="tb-group">
-            <button class="tb-btn" onclick="prevChapter()" title="◀ 上章">◀</button>
-            <button class="tb-btn" onclick="nextChapter()" title="下章 ▶">▶</button>
-            <button class="tb-btn" onclick="toggleReadMark()" id="readMarkBtn" title="✅ 标记">📌</button>
+            <button class="tb-btn" onclick="prevChapter()" title="◀ 上一关">◀</button>
+            <button class="tb-btn" onclick="nextChapter()" title="下一关 ▶">▶</button>
+            <button class="tb-btn" onclick="toggleReadMark()" id="readMarkBtn" title="✅ 通关">📌</button>
             <button class="tb-btn" onclick="toggleTocFn()" title="🗺️ 导航">🗺️</button>
             <button class="tb-btn" onclick="toggleFocus()" title="🧘 专注">🧘</button>
-            <button class="tb-btn" onclick="toggleQuizPanel()" title="🧪 测验">🧪</button>
+            <button class="tb-btn" onclick="toggleQuizPanel()" title="🧪 测试">🧪</button>
           </div>
           <div class="tb-group">
             <button class="tb-btn" onclick="decreaseFont()" title="🔽 缩小">🔽</button>
@@ -110,7 +119,7 @@
           </div>
           <div class="reader-main" id="readerMain">
             <div class="quiz-sidebar" id="quizSidebar" style="display:none">
-              <div class="quiz-title">🧪 小测</div>
+              <div class="quiz-title">🧪 关卡测试</div>
               <div id="quizContent"></div>
             </div>
             <div class="reader-content" id="readerContent">
@@ -118,51 +127,6 @@
               <div class="reader-nav" id="readerNav"></div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Overlay: Search -->
-      <div class="overlay" id="searchOverlay" style="display:none" onclick="if(event.target===this)closeSearch()">
-        <div class="panel panel-search" onclick="event.stopPropagation()">
-          <div class="panel-hd">
-            <input type="text" id="searchInput" placeholder="🔍 输关键词 · ↵ 搜全书" autofocus onkeydown="if(event.key==='Enter')doSearch(this.value)">
-            <button class="h-btn" onclick="closeSearch()">✕</button>
-          </div>
-          <div class="panel-bd" id="searchResults">
-            <div class="search-hint">⌨️ 输入 → ↵ 搜索</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Overlay: Stats -->
-      <div class="overlay" id="statsOverlay" style="display:none" onclick="if(event.target===this)closeStats()">
-        <div class="panel panel-stats" onclick="event.stopPropagation()">
-          <div class="panel-hd"><span>📈 学习报告</span><button class="h-btn" onclick="closeStats()">✕</button></div>
-          <div class="panel-bd" id="statsContent"></div>
-        </div>
-      </div>
-
-      <!-- Overlay: Study -->
-      <div class="overlay" id="studyOverlay" style="display:none" onclick="if(event.target===this)closeStudyMode()">
-        <div class="panel panel-study" onclick="event.stopPropagation()">
-          <div class="panel-hd"><span>🔁 复习卡片</span><button class="h-btn" onclick="closeStudyMode()">✕</button></div>
-          <div class="panel-bd" id="studyBody"></div>
-        </div>
-      </div>
-
-      <!-- Overlay: Shortcuts -->
-      <div class="overlay" id="shortcutsOverlay" style="display:none" onclick="if(event.target===this)closeShortcuts()">
-        <div class="panel panel-sm" onclick="event.stopPropagation()">
-          <div class="panel-hd"><span>⌨️ 快捷键</span><button class="h-btn" onclick="closeShortcuts()">✕</button></div>
-          <div class="panel-bd" id="shortcutsContent"></div>
-        </div>
-      </div>
-
-      <!-- Overlay: Quiz -->
-      <div class="overlay" id="quizOverlay" style="display:none" onclick="if(event.target===this)closeQuizOverlay()">
-        <div class="panel panel-quiz" onclick="event.stopPropagation()">
-          <div class="panel-hd"><span>🧪 知识测验</span><button class="h-btn" onclick="closeQuizOverlay()">✕</button></div>
-          <div class="panel-bd" id="quizFullContent"></div>
         </div>
       </div>
 
