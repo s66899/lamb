@@ -8,17 +8,21 @@ let MANIFEST = null;
 // ─── Markdown Parser ─────────────────────────────────
 const mdParse = (txt) => {
   if (!txt) return '';
-  let s = txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/__(.+?)__/g,'<strong>$1</strong>')
-    .replace(/_(.+?)_/g,'<em>$1</em>')
-    .replace(/~~(.+?)~~/g,'<del>$1</del>')
-    .replace(/`([^`]+)`/g,'<code>$1</code>');
-  s = s.replace(/`([^`]+)`/g,'<code>$1</code>');
-  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,(_,alt,src)=>'<img src="'+src.replace(/&amp;/g,'&')+'" alt="'+alt+'">');
+  // Escape HTML
+  let s = txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Inline formatting
+  const inline = [
+    [/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>'],
+    [/\*\*(.+?)\*\*/g,'<strong>$1</strong>'],[/\*(.+?)\*/g,'<em>$1</em>'],
+    [/__(.+?)__/g,'<strong>$1</strong>'],[/_(.+?)_/g,'<em>$1</em>'],
+    [/~~(.+?)~~/g,'<del>$1</del>'],[/`([^`]+)`/g,'<code>$1</code>'],
+  ];
+  inline.forEach(([re,repl]) => { s = s.replace(re, repl); });
+  // Images with SVG support
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,(_,alt,src)=>'<img src="'+src.replace(/&amp;/g,'&')+'" alt="'+alt+'" class="md-img" loading="lazy">');
+  // Links
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,(_,t,u)=>'<a href="'+u.replace(/&amp;/g,'&')+'" target="_blank">'+t+'</a>');
+  
   let lines = s.split('\n'), result = [], inTable = false, inCode = false;
   for (let i=0;i<lines.length;i++) {
     let l=lines[i];
@@ -49,8 +53,15 @@ const mdParse = (txt) => {
   if (inCode) result.push('</code></pre>');
   let out = result.join('\n');
   out = out.replace(/((?:<li>.*<\/li>\n?)+)/g,'<ul>$1</ul>');
+  // Center images with figcaptions
+  out = out.replace(/<p><img[^>]+><\/p>/g,(m)=>'<div class="img-container">'+m.replace(/^<p>/,'').replace(/<\/p>$/,'')+'</div>');
   return out;
 };
+
+// ─── 版本信息 ──────────────────────────────────────────
+// 每次更新内容后修改此行
+const APP_VERSION = 'v1.0.0';
+const APP_DATE = '2026-07-01';
 
 // ─── State ──────────────────────────────────────────────
 let currentView='dashboard', currentBookId=null, currentChapterIdx=-1;
@@ -140,15 +151,21 @@ function showXpPopup(amount, source) {
 }
 
 function showLevelUp(oldLvl, newLvl) {
+  const titles = ['修行者','探索者','学者','智者','大师','宗师','传说'];
+  const oldTitle = titles[Math.min(6,Math.floor(oldLvl/3))];
+  const newTitle = titles[Math.min(6,Math.floor(newLvl/3))];
+  const titleChanged = oldTitle !== newTitle;
   const overlay = document.createElement('div');
   overlay.className = 'levelup-overlay';
   overlay.innerHTML = `
     <div class="levelup-box">
       <div class="lu-icon">🎉</div>
-      <div class="lu-title">🎊 升级！</div>
+      <div class="lu-title">🎊 ${titleChanged?'称号晋升！':'升级！'}</div>
       <div style="font-size:48px;font-weight:700;color:var(--gold);margin:8px 0">Lv.${oldLvl} → Lv.${newLvl}</div>
-      <div class="lu-sub">✨ 知识就是力量！继续攀登！</div>
-      <button class="lu-btn" onclick="this.closest('.levelup-overlay').remove()">🎯 继续探索</button>
+      ${titleChanged ? `<div style="font-size:14px;color:var(--text2);margin-bottom:8px">${oldTitle} → <strong style="color:var(--green)">${newTitle}</strong></div>` : ''}
+      <div class="lu-sub">✨ ${['继续前行，知识之路永无止境！','智慧的增长是最大的力量！','每一页都是成长的阶梯！','你的坚持正在创造奇迹！','学识如海，继续扬帆！'][Math.min(4,Math.floor(newLvl/4))]}</div>
+      <div style="margin:12px 0;font-size:12px;color:var(--text3)">🎁 升级奖励：<span style="color:var(--green)">+${Math.floor(newLvl*100)} XP</span></div>
+      <button class="lu-btn" onclick="addXP(${Math.floor(newLvl*100)},'🎊 升级奖励');this.closest('.levelup-overlay').remove()">🎯 领取奖励继续探索</button>
     </div>`;
   document.body.appendChild(overlay);
   // Check achievements
@@ -393,10 +410,25 @@ function markStreak() {
     p._streak[today] = true;
     p._count = (p._count||0) + 1;
     setP(p);
-    // Streak bonus XP
-    const days = getStreakDays().filter(d=>d.done).length;
-    if (days >= 7) addXP(30, '🔥 7日连续奖励');
-    else if (days >= 3) addXP(15, '🔥 3日连续奖励');
+    // Streak bonus XP with celebration milestones
+    const streakDays = getStreakDays().filter(d=>d.done).length;
+    const milestoneMsgs = [
+      [3,'🔥 3日连击','继续加油，习惯在养成！',15],
+      [7,'🔥 7日连击','一周不懈怠，了不起！',30],
+      [14,'🔥 半月坚持','两个星期的毅力，奖励！',60],
+      [21,'🔥 三周连击','三周的坚持，超凡！',90],
+      [30,'🔥 月度达人','一个月的非凡毅力！',150],
+      [60,'🔥 双月传说','两个月如一日的坚持！',300],
+      [100,'🔥 百日王者','百日修炼，难能可贵！',500],
+    ];
+    for (const [days,title,msg,xp] of milestoneMsgs) {
+      if (streakDays === days) {
+        addXP(xp, title);
+        showAchievementPopup({icon:'🔥',name:title,desc:msg});
+        return;
+      }
+    }
+    addXP(5, '📖 每日阅读');
   }
 }
 
@@ -620,7 +652,11 @@ async function renderChapter() {
   }
   
   if (md) {
-    $('article').innerHTML = mdParse(md);
+    const versionFooter = `<hr style="margin-top:60px;opacity:0.3">
+<div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px 0;border-top:1px solid var(--border);margin-top:30px">
+  📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; 📅 更新日期：${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb
+</div>`;
+    $('article').innerHTML = mdParse(md) + versionFooter;
     makeCollapsible();
     setupQuiz(ch);
     markStreak();
@@ -1063,6 +1099,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const closeAll = () => {};
 function scrollToTop() { $('content').scrollTo({top:0, behavior:'smooth'}); }
+function openShortcuts() {
+  showOverlay('panel-sm', '⌨️ 快捷键', `
+    <div class="sc-grid">
+      <div class="sc-item"><span>🔍 搜索</span><kbd>/</kbd></div>
+      <div class="sc-item"><span>✕ 关闭面板</span><kbd>Esc</kbd></div>
+      <div class="sc-item"><span>◀ 上一关</span><kbd>←</kbd></div>
+      <div class="sc-item"><span>▶ 下一关</span><kbd>→</kbd></div>
+      <div class="sc-item"><span>📌 通关标记</span><kbd>B</kbd></div>
+      <div class="sc-item"><span>🧘 专注模式</span><kbd>F</kbd></div>
+      <div class="sc-item"><span>🏠 回到首页</span><kbd>H</kbd></div>
+      <div class="sc-item"><span>🎲 随机关卡</span><kbd>R</kbd></div>
+      <div class="sc-item"><span>📊 冒险报告</span><kbd>S</kbd></div>
+      <div class="sc-item"><span>🌓 主题切换</span><kbd>T</kbd></div>
+    </div>`);
+}
 function toggleQuizPanel() {
   const qs = $('quizSidebar');
   if (qs) qs.style.display = qs.style.display==='none' ? 'block' : 'none';
