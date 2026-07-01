@@ -1,0 +1,299 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" style="background:#0a0d14">
+  <defs>
+    <style>
+      text { font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+      .title { font-size:26px; font-weight:bold; fill:#ffd700; }
+      .sub { font-size:14px; fill:#8892a8; }
+      .line-label-cn { font-size:12px; font-weight:bold; text-anchor:middle; }
+      .line-label-en { font-size:10px; fill:#556074; text-anchor:middle; }
+      .mount-label { font-size:9px; fill:#4a5568; text-anchor:middle; }
+      .mount-label-sub { font-size:8px; fill:#3a4a5a; text-anchor:middle; }
+      .legend-title { font-size:13px; font-weight:bold; fill:#e2e8f0; }
+      .legend-item { font-size:11px; fill:#e2e8f0; }
+      .legend-sub { font-size:9px; fill:#556074; }
+      .small-desc { font-size:9px; fill:#556074; }
+    </style>
+    <!-- Glow filter for lines -->
+    <filter id="glowGreen">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowBlue">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowRed">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Star marker for 断掌 -->
+    <marker id="star" viewBox="-10 -10 20 20" markerWidth="18" markerHeight="18" refX="0" refY="0">
+      <path d="M0,-9 L1.8,-2.8 L8.1,-2.8 L3.15,1.1 L4.9,7.6 L0,3.8 L-4.9,7.6 L-3.15,1.1 L-8.1,-2.8 L-1.8,-2.8 Z" fill="#f0c050" stroke="#f0c050" stroke-width="0.5"/>
+    </marker>
+  </defs>
+
+  <!-- ===== TITLE SECTION ===== -->
+  <text x="300" y="38" text-anchor="middle" class="title">手掌三大主线图解</text>
+  <text x="300" y="62" text-anchor="middle" class="sub">Three Major Lines of Palmistry — Left Palm</text>
+  <line x1="80" y1="76" x2="520" y2="76" stroke="#2a3347" stroke-width="1"/>
+
+  <!-- ===== PALM SHADOW ===== -->
+  <ellipse cx="305" cy="390" rx="195" ry="170" fill="#0c101c" stroke="none"/>
+
+  <!-- ===== LEFT PALM OUTLINE (thumb on RIGHT) ===== -->
+  <!-- Palm body -->
+  <path d="M165,220 
+           Q140,240 130,300 
+           Q118,370 125,440 
+           Q135,510 170,555 
+           Q195,580 230,590 
+           Q280,600 320,590 
+           Q370,575 400,540 
+           Q425,505 440,450 
+           Q450,410 440,370 
+           Q432,340 425,325
+           L410,300
+           L425,310
+           Q440,330 450,360
+           Q465,400 455,445
+           Q440,505 405,545
+           Q365,585 310,598
+           Q250,608 195,590
+           Q145,568 118,505
+           Q98,450 100,380
+           Q102,310 120,260
+           Q130,235 155,220
+           Z" 
+        fill="#11141e" stroke="#2a3347" stroke-width="2"/>
+
+  <!-- Fingers -->
+  <!-- Pinky (left-most for left palm) -->
+  <path d="M165,220 
+           Q155,185 158,155 
+           Q162,125 175,118 
+           Q188,112 200,122 
+           Q210,132 210,155 
+           Q212,180 210,210
+           L205,215" 
+        fill="#11141e" stroke="#2a3347" stroke-width="1.8"/>
+  <line x1="160" y1="130" x2="208" y2="130" stroke="#2a3347" stroke-width="1"/>
+
+  <!-- Ring finger -->
+  <path d="M210,210 
+           Q215,165 220,125 
+           Q225,90 238,82 
+           Q252,76 265,88 
+           Q275,100 275,130 
+           Q276,170 272,205" 
+        fill="#11141e" stroke="#2a3347" stroke-width="1.8"/>
+  <line x1="222" y1="95" x2="273" y2="95" stroke="#2a3347" stroke-width="1"/>
+
+  <!-- Middle finger (tallest) -->
+  <path d="M272,205 
+           Q280,155 288,105 
+           Q293,68 307,60 
+           Q322,55 335,67 
+           Q346,82 346,115 
+           Q344,160 338,205" 
+        fill="#11141e" stroke="#2a3347" stroke-width="1.8"/>
+  <line x1="290" y1="72" x2="344" y2="72" stroke="#2a3347" stroke-width="1"/>
+
+  <!-- Index finger -->
+  <path d="M338,205 
+           Q348,160 358,125 
+           Q366,95 380,88 
+           Q394,84 405,95 
+           Q415,110 412,145 
+           Q408,185 400,220" 
+        fill="#11141e" stroke="#2a3347" stroke-width="1.8"/>
+  <line x1="360" y1="100" x2="410" y2="100" stroke="#2a3347" stroke-width="1"/>
+
+  <!-- Thumb (extending right) -->
+  <path d="M440,370 
+           Q455,360 475,348 
+           Q495,338 510,340 
+           Q528,342 532,355 
+           Q535,370 525,385 
+           Q512,405 488,415 
+           Q465,422 440,420
+           Q435,415 435,400" 
+        fill="#11141e" stroke="#2a3347" stroke-width="1.8"/>
+  <!-- Thumb nail -->
+  <ellipse cx="515" cy="352" rx="12" ry="8" fill="#1a1e2e" stroke="#2a3347" stroke-width="1" transform="rotate(-10,515,352)"/>
+
+  <!-- ===== MOUNTS (九丘) — subtle shaded areas ===== -->
+
+  <!-- 1. 水星丘 Mercury (below pinky) -->
+  <ellipse cx="188" cy="258" rx="28" ry="22" fill="rgba(61,214,140,0.10)" stroke="rgba(61,214,140,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="188" y="255" class="mount-label" fill="#3dd68c">水星丘</text>
+  <text x="188" y="267" class="mount-label-sub" fill="#3dd68c">Mercury</text>
+
+  <!-- 2. 太阳丘 Sun/Apollo (below ring finger) -->
+  <ellipse cx="248" cy="242" rx="26" ry="22" fill="rgba(240,192,80,0.10)" stroke="rgba(240,192,80,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="248" y="239" class="mount-label" fill="#f0c050">太阳丘</text>
+  <text x="248" y="251" class="mount-label-sub" fill="#f0c050">Apollo</text>
+
+  <!-- 3. 土星丘 Saturn (below middle finger) -->
+  <ellipse cx="306" cy="232" rx="26" ry="22" fill="rgba(245,158,11,0.10)" stroke="rgba(245,158,11,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="306" y="229" class="mount-label" fill="#f59e0b">土星丘</text>
+  <text x="306" y="241" class="mount-label-sub" fill="#f59e0b">Saturn</text>
+
+  <!-- 4. 木星丘 Jupiter (below index finger) -->
+  <ellipse cx="368" cy="245" rx="28" ry="22" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.25)" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="368" y="242" class="mount-label" fill="#4a9eff">木星丘</text>
+  <text x="368" y="254" class="mount-label-sub" fill="#4a9eff">Jupiter</text>
+
+  <!-- 5. 金星丘 Venus (thumb base area) -->
+  <ellipse cx="432" cy="410" rx="32" ry="30" fill="rgba(240,96,96,0.08)" stroke="rgba(240,96,96,0.20)" stroke-width="1" stroke-dasharray="3,3" transform="rotate(15,432,410)"/>
+  <text x="433" y="405" class="mount-label" fill="#f06060">金星丘</text>
+  <text x="433" y="418" class="mount-label-sub" fill="#f06060">Venus</text>
+
+  <!-- 6. 月丘 Moon (left edge, lower palm) -->
+  <ellipse cx="140" cy="430" rx="22" ry="38" fill="rgba(168,85,247,0.08)" stroke="rgba(168,85,247,0.20)" stroke-width="1" stroke-dasharray="3,3" transform="rotate(-8,140,430)"/>
+  <text x="127" y="425" class="mount-label" fill="#a855f7">月丘</text>
+  <text x="127" y="438" class="mount-label-sub" fill="#a855f7">Moon</text>
+
+  <!-- 7. 上火星丘 Upper Mars (between heart and head line) -->
+  <ellipse cx="270" cy="300" rx="24" ry="18" fill="rgba(245,158,11,0.07)" stroke="rgba(245,158,11,0.18)" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="270" y="297" class="mount-label" fill="#b8860b">上火星丘</text>
+  <text x="270" y="308" class="mount-label-sub" fill="#b8860b">Mars(+)</text>
+
+  <!-- 8. 下火星丘 Lower Mars (between life line and thumb) -->
+  <ellipse cx="388" cy="358" rx="22" ry="20" fill="rgba(245,158,11,0.07)" stroke="rgba(245,158,11,0.18)" stroke-width="1" stroke-dasharray="3,3" transform="rotate(10,388,358)"/>
+  <text x="388" y="355" class="mount-label" fill="#b8860b">下火星丘</text>
+  <text x="388" y="367" class="mount-label-sub" fill="#b8860b">Mars(−)</text>
+
+  <!-- 9. 地丘 Earth (lower center, near wrist) -->
+  <ellipse cx="290" cy="530" rx="36" ry="28" fill="rgba(72,187,120,0.08)" stroke="rgba(72,187,120,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="290" y="527" class="mount-label" fill="#48bb78">地丘</text>
+  <text x="290" y="540" class="mount-label-sub" fill="#48bb78">Earth</text>
+
+  <!-- ===== THREE MAJOR LINES ===== -->
+
+  <!-- 生命线 Life Line — Green #3dd68c -->
+  <!-- Starts between index and thumb, arcs around Venus mount -->
+  <path d="M388,245 
+           Q420,280 435,340 
+           Q448,400 430,460 
+           Q415,510 370,545 
+           Q340,565 310,575" 
+        stroke="#3dd68c" stroke-width="2.5" fill="none" filter="url(#glowGreen)" opacity="0.9"/>
+  <!-- Life line subtle inner track -->
+  <path d="M388,245 
+           Q420,280 435,340 
+           Q448,400 430,460 
+           Q415,510 370,545 
+           Q340,565 310,575" 
+        stroke="#3dd68c" stroke-width="1" fill="none" opacity="0.5"/>
+
+  <!-- 智慧线 Head Line — Blue #4a9eff -->
+  <!-- Starts near life line, crosses palm horizontally with slight dip -->
+  <path d="M380,270 
+           Q340,283 280,290 
+           Q210,298 155,300 
+           Q140,302 130,305" 
+        stroke="#4a9eff" stroke-width="2.5" fill="none" filter="url(#glowBlue)" opacity="0.9"/>
+  <!-- Head line subtle inner track -->
+  <path d="M380,270 
+           Q340,283 280,290 
+           Q210,298 155,300" 
+        stroke="#4a9eff" stroke-width="1" fill="none" opacity="0.5"/>
+
+  <!-- 感情线 Heart Line — Red #f06060 -->
+  <!-- Starts below pinky, curves upward across palm above head line -->
+  <path d="M180,250 
+           Q220,235 280,228 
+           Q340,222 380,230 
+           Q402,236 400,245" 
+        stroke="#f06060" stroke-width="2.5" fill="none" filter="url(#glowRed)" opacity="0.9"/>
+  <!-- Heart line subtle inner track -->
+  <path d="M180,250 
+           Q220,235 280,228 
+           Q340,222 380,230" 
+        stroke="#f06060" stroke-width="1" fill="none" opacity="0.5"/>
+
+  <!-- ===== LINE LABELS ===== -->
+
+  <!-- 生命线 / Life Line label -->
+  <line x1="358" y1="510" x2="358" y2="550" stroke="#3dd68c" stroke-width="1" opacity="0.5"/>
+  <line x1="358" y1="550" x2="130" y2="570" stroke="#2a3347" stroke-width="1"/>
+  <text x="130" y="567" class="line-label-cn" fill="#3dd68c">生命线</text>
+  <text x="130" y="583" class="line-label-en" fill="#3dd68c">Life Line</text>
+
+  <!-- 智慧线 / Head Line label -->
+  <line x1="175" y1="305" x2="175" y2="335" stroke="#4a9eff" stroke-width="1" opacity="0.5"/>
+  <line x1="175" y1="335" x2="90" y2="335" stroke="#2a3347" stroke-width="1"/>
+  <text x="90" y="332" class="line-label-cn" fill="#4a9eff">智慧线</text>
+  <text x="90" y="348" class="line-label-en" fill="#4a9eff">Head Line</text>
+
+  <!-- 感情线 / Heart Line label -->
+  <line x1="215" y1="233" x2="215" y2="195" stroke="#f06060" stroke-width="1" opacity="0.5"/>
+  <line x1="215" y1="195" x2="115" y2="195" stroke="#2a3347" stroke-width="1"/>
+  <text x="115" y="192" class="line-label-cn" fill="#f06060">感情线</text>
+  <text x="115" y="208" class="line-label-en" fill="#f06060">Heart Line</text>
+
+  <!-- ===== 断掌标记 Star Marker ===== -->
+  <!-- A 断掌 (simian crease) is when head and heart lines merge into one -->
+  <!-- Place star marker in the upper-center area where this would occur -->
+  <circle cx="305" cy="258" r="14" fill="none" stroke="rgba(240,192,80,0.4)" stroke-width="1"/>
+  <text x="305" y="255" font-size="9" fill="rgba(240,192,80,0.6)" text-anchor="middle">断掌</text>
+  <text x="305" y="266" font-size="8" fill="rgba(240,192,80,0.4)" text-anchor="middle">Simian</text>
+  
+  <!-- Annotations: the two arc arrows showing how heart+head lines merge in 断掌 -->
+  <path d="M320,240 Q330,248 325,258" stroke="rgba(240,192,80,0.35)" stroke-width="1.5" fill="none" marker-end="url(#star)"/>
+  <path d="M290,240 Q280,248 285,258" stroke="rgba(240,192,80,0.35)" stroke-width="1.5" fill="none"/>
+
+  <!-- ===== LEGEND BOX ===== -->
+  <rect x="40" y="630" width="520" height="180" rx="10" fill="#11141e" stroke="#2a3347" stroke-width="1.5"/>
+  <line x1="60" y1="658" x2="540" y2="658" stroke="#2a3347" stroke-width="0.5"/>
+  <text x="300" y="650" text-anchor="middle" class="legend-title">图例与说明 Legend &amp; Interpretation</text>
+
+  <!-- Legend - Left column: Line legends -->
+  <!-- Life Line -->
+  <line x1="60" y1="680" x2="110" y2="680" stroke="#3dd68c" stroke-width="3"/>
+  <text x="115" y="684" class="legend-item" fill="#3dd68c">生命线</text>
+  <text x="195" y="680" class="legend-sub">生命力·健康·重大变故</text>
+  <text x="195" y="694" class="legend-sub">Vitality, health, major life changes</text>
+
+  <!-- Head Line -->
+  <line x1="60" y1="714" x2="110" y2="714" stroke="#4a9eff" stroke-width="3"/>
+  <text x="115" y="718" class="legend-item" fill="#4a9eff">智慧线</text>
+  <text x="195" y="714" class="legend-sub">思维能力·判断力·心智</text>
+  <text x="195" y="728" class="legend-sub">Intellect, judgment, mental capacity</text>
+
+  <!-- Heart Line -->
+  <line x1="60" y1="748" x2="110" y2="748" stroke="#f06060" stroke-width="3"/>
+  <text x="115" y="752" class="legend-item" fill="#f06060">感情线</text>
+  <text x="195" y="748" class="legend-sub">情感·爱情·人际·心脏健康</text>
+  <text x="195" y="762" class="legend-sub">Emotions, romance, relationships, heart</text>
+
+  <!-- Legend - Right column: Special items -->
+  <line x1="60" y1="666" x2="540" y2="666" stroke="#1a2340" stroke-width="0.5"/>
+
+  <!-- 断掌 -->
+  <g transform="translate(370,684)">
+    <path d="M0,-7 L1.3,-2.2 L6,-2.2 L2.4,0.9 L3.6,5.9 L0,3 L-3.6,5.9 L-2.4,0.9 L-6,-2.2 L-1.3,-2.2 Z" fill="#f0c050" stroke="#f0c050" stroke-width="0.3"/>
+  </g>
+  <text x="382" y="688" class="legend-item" fill="#f0c050">断掌</text>
+  <text x="432" y="682" class="legend-sub">感情线与智慧线合二为一</text>
+  <text x="432" y="696" class="legend-sub">Merged heart &amp; head line</text>
+
+  <!-- Mount indicator -->
+  <ellipse cx="370" cy="724" rx="10" ry="8" fill="none" stroke="rgba(168,85,247,0.3)" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="386" y="728" class="legend-item" fill="#a855f7">九丘 · Mounts</text>
+  <text x="432" y="722" class="legend-sub">手丘反映对应领域能量</text>
+  <text x="432" y="736" class="legend-sub">Mounts reflect domain energy</text>
+
+  <!-- Footer -->
+  <line x1="80" y1="618" x2="520" y2="618" stroke="#2a3347" stroke-width="1"/>
+  <text x="300" y="818" text-anchor="middle" class="small-desc">手掌三大主线 · 相学基础 · 左右手同构</text>
+</svg>

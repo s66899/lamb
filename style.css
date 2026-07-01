@@ -154,8 +154,10 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
 .hero-xp-label { display:flex; justify-content:space-between; font-size:10px; color:var(--text3); margin-bottom:2px; }
 .hero-xp-bar { height:6px; background:var(--bg3); border-radius:3px; overflow:hidden; }
 .hero-xp-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--xp-color)); border-radius:3px; transition:width .6s; box-shadow:var(--glow-green); }
-.hero-bar { max-width:360px; height:4px; background:var(--bg3); border-radius:4px; margin:0 auto; overflow:hidden; }
+.hero-bar { max-width:360px; height:4px; background:var(--bg3); border-radius:4px; margin:0 auto; overflow:hidden; position:relative; }
 .hero-bar-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--blue),var(--green)); border-radius:4px; transition:width .6s; }
+.hero-bar-glow { position:absolute; top:0; left:0; height:100%; width:20px; background:rgba(255,255,255,.3); border-radius:4px; filter:blur(3px); animation:barGlow 2s ease-in-out infinite; }
+@keyframes barGlow { 0%,100%{transform:translateX(-10px)} 50%{transform:translateX(var(--bar-w,360px))} }
 .hero-streak { margin-top:6px; font-size:11px; color:var(--text3); }
 .hero-achievements { display:flex; gap:4px; justify-content:center; margin-top:6px; flex-wrap:wrap; }
 .hero-ach { font-size:18px; cursor:pointer; transition:all var(--transition); opacity:.5; }
@@ -258,6 +260,12 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
 .quiz-card .qc-result { font-size:10px; margin-top:3px; }
 
 /* ═══ Article ═══ */
+/* ═══ Image Display ═══ */
+.md-img { max-width:100%; height:auto; border-radius:var(--radius); margin:10px auto; display:block; border:1px solid var(--border); }
+.img-container { text-align:center; margin:12px 0; }
+.img-container .md-img { display:inline-block; }
+.img-container::after { content:''; display:block; margin-top:0; }
+
 article { line-height:1.9; font-size:var(--font-base); }
 article h1 { font-size:22px; margin:20px 0 10px; padding-bottom:6px; border-bottom:2px solid var(--border); }
 article h2 { font-size:17px; margin:18px 0 6px; padding:4px 0; cursor:pointer; position:relative; }
@@ -275,7 +283,8 @@ article code { background:var(--bg3); padding:1px 4px; border-radius:3px; font-s
 article pre { background:var(--bg3); padding:12px; border-radius:var(--radius-sm); overflow-x:auto; margin:10px 0; border:1px solid var(--border); }
 article pre code { background:none; padding:0; }
 article blockquote { border-left:3px solid var(--blue); padding-left:12px; margin:10px 0; color:var(--text2); }
-article table { width:100%; border-collapse:collapse; margin:10px 0; }
+article table { width:100%; border-collapse:collapse; margin:12px 0; font-size:13px; }
+article table caption { font-size:11px; color:var(--text2); padding:4px; caption-side:bottom; }
 article th,article td { padding:5px 8px; border:1px solid var(--border); text-align:left; font-size:13px; }
 article th { background:var(--bg3); font-weight:600; }
 article a { color:var(--blue); }
@@ -287,7 +296,16 @@ article a { color:var(--blue); }
 .focus-mode .content { padding:16px 48px; }
 .focus-mode .reader-toolbar .tb-group, .focus-mode .reader-toc { display:none; }
 .focus-mode .reader-layout { justify-content:center; }
-.focus-mode .reader-content { max-width:720px; }
+.focus-mode .reader-content { max-width:740px; }
+.focus-mode .focus-progress { color:var(--text3); font-size:10px; text-align:center; padding:4px 0; }
+
+/* ═══ Diagram / SVG container ═══ */
+.diagram-box {
+  background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px; margin:14px 0; text-align:center; overflow-x:auto;
+}
+.diagram-box svg, .diagram-box pre { display:inline-block; max-width:100%; }
+.diagram-box .diagram-caption { font-size:10px; color:var(--text3); margin-top:6px; }
 
 /* ═══ Overlay ═══ */
 .overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px); animation:fadeIn .2s ease; }
