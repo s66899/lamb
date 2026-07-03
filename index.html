@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>📚 知识书塔 · CodeCombat 式学习游戏</title>
+<title>🏸 羽毛球系统训练 · NSCA-CPT 科学体系</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,10 +11,10 @@
 <!-- ═══ Splash ═══ -->
 <div id="splash">
   <div class="splash-inner">
-    <div class="splash-icon">🗺️</div>
-    <div class="splash-title">🏸 羽毛球系统训练</div>
+    <div class="splash-icon">🏸</div>
+    <div class="splash-title">羽毛球系统训练</div>
     <div class="splash-sub">NSCA-CPT 科学体系 · 融合心理学 · 营养学 · 比赛策略</div>
-    <div style="font-size:10px;color:var(--text3);margin-bottom:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><span>🎯 5大模块</span><span>🏃‍♂️ 科学评估</span><span>📚 知识书塔</span><span>🧪 训练诊断</span></div>
+    <div style="font-size:10px;color:var(--text3);margin-bottom:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><span>🎯 5大模块</span><span>🩺 功能筛查</span><span>🧮 计算工具</span><span>📚 知识拓展</span></div>
     <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
   </div>
 </div>
@@ -25,22 +25,18 @@
   <!-- Header -->
   <header>
     <div class="h-left">
-      <button class="h-btn" onclick="toggleSidebar()" title="📂 地图" style="font-size:16px">☰</button>
-      <span class="h-logo" onclick="goHome()">🏰</span>
+      <button class="h-btn" onclick="toggleSidebar()" title="📂 菜单" style="font-size:16px">☰</button>
+      <span class="h-logo" onclick="goHome()">🏸</span>
       <div class="h-search" onclick="openSearch()">
         <span>🔍</span>
-        <span class="h-search-text">🔎 搜索关卡…</span>
+        <span class="h-search-text">搜索训练内容…</span>
         <kbd>/</kbd>
       </div>
     </div>
     <div class="h-right">
-      <!-- RPG HUD -->
       <div id="rpgHud"></div>
-      <button class="h-btn" onclick="openStats()" title="📊 冒险报告">📈</button>
-      <button class="h-btn" onclick="toggleStudyMode()" title="🔁 复习模式">🔁</button>
-      <button class="h-btn" onclick="randomChapter()" title="🎲 随机抽关">🎲</button>
+      <button class="h-btn" onclick="openStats()" title="📊 训练报告">📈</button>
       <button class="h-btn" onclick="toggleTheme()" title="🌓 主题切换">🌓</button>
-      <button class="h-btn" onclick="openShortcuts()" title="⌨️ 快捷键">⌨️</button>
       <span class="h-badge" id="progressBadge">⬜ 0%</span>
     </div>
   </header>
@@ -49,85 +45,93 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div id="bookList"></div>
-      <div class="side-section" id="chSection" style="display:none">
-        <div class="side-title" id="chSectionTitle">🗂️ 关卡</div>
-        <div id="chapterList"></div>
+      <div class="side-section side-section-links">
+        <div class="side-link" onclick="openTrainModule('badminton-tech')"><span class="sl-icon">🏸</span> 羽毛球技术</div>
+        <div class="side-link" onclick="openTrainModule('strength')"><span class="sl-icon">💪</span> 体能训练</div>
+        <div class="side-link" onclick="openTrainModule('psychology')"><span class="sl-icon">🧠</span> 心理训练</div>
+        <div class="side-link" onclick="openTrainModule('nutrition')"><span class="sl-icon">🥗</span> 营养恢复</div>
+        <div class="side-link" onclick="openTrainModule('competition')"><span class="sl-icon">🏆</span> 比赛策略</div>
       </div>
       <div class="side-section side-section-links">
-        <div class="side-link" onclick="openSearch()"><span class="sl-icon">🔍</span> 搜索</div>
-        <div class="side-link" onclick="openAchievements()"><span class="sl-icon">🏆</span> 成就<span class="sl-xp"></span></div>
-        <div class="side-link" onclick="openQuests()"><span class="sl-icon">📋</span> 任务<span class="sl-xp"></span></div>
-        <div class="side-link" onclick="toggleStudyMode()"><span class="sl-icon">🔁</span> 复习</div>
-        <div class="side-link" onclick="randomChapter()"><span class="sl-icon">🎲</span> 随缘</div>
-        <div class="side-link" onclick="openStats()"><span class="sl-icon">📈</span> 数据</div>
+        <div class="side-link" onclick="openScreening()"><span class="sl-icon">🩺</span> 功能筛查</div>
+        <div class="side-link" onclick="openCalculators()"><span class="sl-icon">🧮</span> 计算工具</div>
+        <div class="side-link" onclick="openDiagnosis()"><span class="sl-icon">🔍</span> 训练诊断</div>
+        <div class="side-link" onclick="openWeeklyCheck()"><span class="sl-icon">✅</span> 周检查</div>
+        <div class="side-link" onclick="openLevelFinder()"><span class="sl-icon">📊</span> 级别定位</div>
+      </div>
+      <div class="side-section">
+        <div class="side-title">📚 我的书塔</div>
+        <div id="towerList"></div>
       </div>
     </aside>
 
-    <!-- Content -->
+    <!-- Main Content -->
     <main class="content" id="content">
 
-      <!-- Dashboard -->
+      <!-- ═══════ Dashboard ═══════ -->
       <div id="viewDashboard">
+        <!-- Hero -->
         <div class="hero">
-          <div class="hero-avatar" id="heroAvatar" onclick="openStats()">🧙</div>
-          <h1 class="hero-title" id="heroTitle">🏸 羽毛球系统训练 · NSCA-CPT 科学体系</h1>
-          <div class="hero-level-badge" id="heroLevel">Lv.1 · ✨ 初心者</div>
-          <p class="hero-sub" id="heroSub"></p>
-
+          <div class="hero-avatar" onclick="openStats()">🏸</div>
+          <h1 class="hero-title" id="heroTitle">羽毛球系统训练</h1>
+          <div class="hero-level-badge" id="heroLevel">NSCA-CPT · 科学体系</div>
+          <p class="hero-sub" id="heroSub">基于NSCA CSCS最新运动科学，融合心理学·营养学·比赛策略</p>
           <div class="stat-row" id="statRow">
-            <div class="stat-box"><div class="s-num" id="sBooks">6</div><div class="s-label">📚 宝典</div></div>
-            <div class="stat-box"><div class="s-num" id="sChapters">0</div><div class="s-label">📖 关卡</div></div>
-            <div class="stat-box"><div class="s-num" id="sWords">0</div><div class="s-label">📝 万字</div></div>
-            <div class="stat-box"><div class="s-num" id="sProgress">0%</div><div class="s-label">📊 进度</div></div>
-            <div class="stat-box"><div class="s-num" id="sStreak">0</div><div class="s-label">🔥 连读</div></div>
-          </div>
-          <div class="bar-container" style="margin:6px auto 0;max-width:400px">
-            <div class="hero-xp-label" id="heroXpLabel"><span>🧪 经验值</span><span>0%</span></div>
-            <div class="hero-xp-bar"><div class="hero-xp-fill" id="heroXpFill" style="width:0%"></div></div>
+            <div class="stat-box"><div class="s-num" id="sModules">5</div><div class="s-label">🎯 训练模块</div></div>
+            <div class="stat-box"><div class="s-num" id="sDocs">0</div><div class="s-label">📖 教学文档</div></div>
+            <div class="stat-box"><div class="s-num" id="sLevels">8</div><div class="s-label">📊 进阶等级</div></div>
+            <div class="stat-box"><div class="s-num" id="sCycle">3yr</div><div class="s-label">📅 发展周期</div></div>
           </div>
           <div class="hero-bar"><div class="hero-bar-fill" id="heroBar"></div><div class="hero-bar-glow" id="heroBarGlow"></div></div>
-          <div class="hero-streak" id="heroStreak"></div>
-          <div class="hero-achievements" id="heroAchievements"></div>
-
-          <!-- Feature Cards -->
-          <div class="features" id="featuresSection">
-            <div class="feature-card">
-              <div class="fc-icon">🎮</div>
-              <div class="fc-title">RPG 闯关学习</div>
-              <div class="fc-desc">每本书是一座地图，每章是一道关卡。闯关升级，积累经验，解锁成就。</div>
-              <span class="fc-tag">游戏化</span>
-            </div>
-            <div class="feature-card">
-              <div class="fc-icon">🧪</div>
-              <div class="fc-title">知识点测验</div>
-              <div class="fc-desc">每关内置测验题，检验理解。全屏测验模式助你巩固记忆。</div>
-              <span class="fc-tag">主动学习</span>
-            </div>
-            <div class="feature-card">
-              <div class="fc-icon">🔥</div>
-              <div class="fc-title">连续阅读 & 奖励</div>
-              <div class="fc-desc">每日阅读打卡，保持连续天数。连击里程碑解锁大量XP奖励。</div>
-              <span class="fc-tag">习惯养成</span>
-            </div>
-            <div class="feature-card">
-              <div class="fc-icon">🏆</div>
-              <div class="fc-title">成就 & 称号系统</div>
-              <div class="fc-desc">14项成就待解锁，升级获得称号——从初心者到传说。</div>
-              <span class="fc-tag">正向激励</span>
-            </div>
-          </div>
         </div>
-        <div class="book-grid" id="bookGrid"></div>
+
+        <!-- ⚡ 核心原则 -->
+        <div id="principlesSection" class="principles-section"></div>
+
+        <!-- 🏆 训练等级 -->
+        <div class="section-divider">
+          <span class="sd-label">🏆 训练等级体系</span>
+          <div class="sd-line"></div>
+        </div>
+        <div id="levelSection" class="levels-grid"></div>
+
+        <!-- 🎯 5大训练模块 -->
+        <div class="section-divider">
+          <span class="sd-label">🎯 训练模块</span>
+          <div class="sd-line"></div>
+        </div>
+        <div id="moduleSection" class="modules-grid"></div>
+
+        <!-- 🛠️ 评估工具 -->
+        <div class="section-divider">
+          <span class="sd-label">🛠️ 评估工具</span>
+          <div class="sd-line"></div>
+        </div>
+        <div id="toolsSection" class="tools-grid"></div>
+
+        <!-- 🧮 快速参考 -->
+        <div class="section-divider">
+          <span class="sd-label">🧮 快速参考</span>
+          <div class="sd-line"></div>
+        </div>
+        <div id="referenceSection" class="ref-cards"></div>
+
+        <!-- 📚 我的书塔 -->
+        <div class="section-divider">
+          <span class="sd-label">📚 我的书塔 · 知识拓展</span>
+          <div class="sd-line"></div>
+        </div>
+        <div id="towerSection" class="tower-entry"></div>
       </div>
 
-      <!-- Book -->
+      <!-- ═══════ Module / Content View ═══════ -->
       <div id="viewBook" style="display:none">
         <div class="view-header" id="bookHeader"></div>
         <div class="book-stats" id="bookStats"></div>
-        <div class="chapter-grid" id="chapterGrid"></div>
+        <div id="contentGrid" class="content-grid"></div>
       </div>
 
-      <!-- Reader -->
+      <!-- ═══════ Reader (for books only) ═══════ -->
       <div id="viewReader" style="display:none">
         <div class="reader-toolbar">
           <button class="tb-btn" onclick="goToBook(currentBookId)">◀ 📂</button>
@@ -146,7 +150,6 @@
             <button class="tb-btn" onclick="increaseFont()" title="🔼 放大">🔼</button>
           </div>
         </div>
-
         <div class="reader-layout">
           <div class="reader-toc" id="readerToc">
             <div class="toc-title">🗺️ 导航</div>
@@ -154,7 +157,7 @@
           </div>
           <div class="reader-main" id="readerMain">
             <div class="quiz-sidebar" id="quizSidebar" style="display:none">
-              <div class="quiz-title">🧪 关卡测试</div>
+              <div class="quiz-title">🧪 测验</div>
               <div id="quizContent"></div>
             </div>
             <div class="reader-content" id="readerContent">
