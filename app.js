@@ -755,6 +755,13 @@ function goToBook(bid) {
 
 // ─── Reader ────────────────────────────────────
 function openChapter(idx) {
+  // 从书籍列表进入阅读器时，记录来源
+  if (navStack.length === 0 || (navStack.length > 0 && navStack[navStack.length-1].view !== 'book')) {
+    // 只有在当前不是从模块过来时，才推入书籍来源
+    if (!(navStack.length > 0 && navStack[navStack.length-1].view === 'module')) {
+      navStack.push({view:'book', bookId:currentBookId});
+    }
+  }
   currentChapterIdx = idx;
   showView('reader');
   renderChapter();
