@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-//  📚 知识书塔 · CodeCombat 风格 RPG 学习游戏
+//  📚 知识书塔 · RPG 闯关学习游戏 v2
 // ═══════════════════════════════════════════════════════════════════
 
 const RAW = 'https://raw.githubusercontent.com/s66899/lamb/book';
@@ -60,8 +60,8 @@ const mdParse = (txt) => {
 
 // ─── 版本信息 ──────────────────────────────────────────
 // 每次更新内容后修改此行
-const APP_VERSION = 'v1.0.1';
-const APP_DATE = '2026-07-01';
+const APP_VERSION = 'v2.0.0';
+const APP_DATE = '2026-07-03';
 
 // ─── State ──────────────────────────────────────────────
 let currentView='dashboard', currentBookId=null, currentChapterIdx=-1;
@@ -498,7 +498,9 @@ function renderDashboard() {
   const r = initRP();
   const tp = totalP();
   const totalCh = MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0);
+  const totalWords = MANIFEST.books.reduce((s,b)=>s+(b.totalWords||0),0);
   const pct = r.xpToNext>0 ? Math.min(100, Math.round(r.xp/r.xpToNext*100)) : 0;
+  const streakCount = getStreakDays().filter(d=>d.done).length;
   
   $('heroSub').textContent = `${MANIFEST.books.length} 本书 · ${totalCh} 个关卡 · Lv.${r.level}`;
   
@@ -514,6 +516,13 @@ function renderDashboard() {
   const lvBadge = $('heroLevel');
   if (lvBadge) lvBadge.textContent = `Lv.${r.level} · ${['✨ 初心者','🌟 学徒','🔥 学士','💫 硕士','👑 博士','🏆 宗师','🐉 传说'][Math.min(6,Math.floor(r.level/3))]}`;
   
+  // Stat counters (like reference site)
+  const sBooks = $('sBooks'); if (sBooks) sBooks.textContent = MANIFEST.books.length;
+  const sCh = $('sChapters'); if (sCh) sCh.textContent = totalCh;
+  const sWords = $('sWords'); if (sWords) sWords.textContent = (totalWords/10000).toFixed(1);
+  const sProg = $('sProgress'); if (sProg) sProg.textContent = Math.round(tp*100)+'%';
+  const str = $('sStreak'); if (str) str.textContent = streakCount;
+  
   // XP bar
   const xpFill = $('heroXpFill');
   if (xpFill) xpFill.style.width = pct+'%';
@@ -522,7 +531,6 @@ function renderDashboard() {
   
   // Streak
   const streakDays = getStreakDays();
-  const streakCount = streakDays.filter(d=>d.done).length;
   const ss = $('heroStreak');
   if (ss) ss.innerHTML = streakDays.map(d=>
     `<span class="ss-day ${d.done?'done':''} ${d.today?'today':''}" style="display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;font-size:8px;background:${d.done?'var(--green)':'var(--bg3)'};color:${d.done?'#fff':'var(--text3)'};${d.today?'border:2px solid var(--blue)':''}margin:0 1px">${new Date(d.key).getDate()}</span>`
@@ -533,6 +541,22 @@ function renderDashboard() {
   if (achEl) {
     const unlocked = Object.values(r.achievements||{}).filter(v=>v).length;
     achEl.innerHTML = `<span style="cursor:pointer;font-size:11px;color:var(--gold)" onclick="openAchievements()">🏆 成就 ${unlocked}/${Object.keys(ACHIEVEMENTS).length}</span>`;
+  }
+  
+  // Feature cards - update descriptions based on content
+  const featSection = $('featuresSection');
+  if (featSection) {
+    featSection.innerHTML = [
+      { icon:'🎮', title:'RPG 闯关学习', desc:`${MANIFEST.books.length}张知识地图，${totalCh}道关卡等你探索。闯关升级，积累经验，解锁成就。`, tag:'游戏化' },
+      { icon:'🧪', title:'知识点测验', desc:'每关内置测验题，检验理解。全屏测验模式助你巩固记忆。', tag:'主动学习' },
+      { icon:'🔥', title:'连续阅读奖励', desc:`已坚持 ${streakCount} 天连续阅读。保持每日打卡，解锁连击里程碑奖励。`, tag:'习惯养成' },
+      { icon:'🏆', title:'成就 & 称号', desc:`14项成就待解锁，${Object.values(r.achievements||{}).filter(v=>v).length}项已获得。升级获得称号——从初心者到传说。`, tag:'正向激励' },
+    ].map(f => `<div class="feature-card">
+      <div class="fc-icon">${f.icon}</div>
+      <div class="fc-title">${f.title}</div>
+      <div class="fc-desc">${f.desc}</div>
+      <span class="fc-tag">${f.tag}</span>
+    </div>`).join('');
   }
   
   // Book grid

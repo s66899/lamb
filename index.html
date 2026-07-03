@@ -76,13 +76,49 @@
           <h1 class="hero-title">📚 知识书塔</h1>
           <div class="hero-level-badge" id="heroLevel">Lv.1 · ✨ 初心者</div>
           <p class="hero-sub" id="heroSub"></p>
-          <div class="hero-xp-area">
+
+          <div class="stat-row" id="statRow">
+            <div class="stat-box"><div class="s-num" id="sBooks">6</div><div class="s-label">📚 宝典</div></div>
+            <div class="stat-box"><div class="s-num" id="sChapters">0</div><div class="s-label">📖 关卡</div></div>
+            <div class="stat-box"><div class="s-num" id="sWords">0</div><div class="s-label">📝 万字</div></div>
+            <div class="stat-box"><div class="s-num" id="sProgress">0%</div><div class="s-label">📊 进度</div></div>
+            <div class="stat-box"><div class="s-num" id="sStreak">0</div><div class="s-label">🔥 连读</div></div>
+          </div>
+          <div class="bar-container" style="margin:6px auto 0;max-width:400px">
             <div class="hero-xp-label" id="heroXpLabel"><span>🧪 经验值</span><span>0%</span></div>
             <div class="hero-xp-bar"><div class="hero-xp-fill" id="heroXpFill" style="width:0%"></div></div>
           </div>
           <div class="hero-bar"><div class="hero-bar-fill" id="heroBar"></div><div class="hero-bar-glow" id="heroBarGlow"></div></div>
           <div class="hero-streak" id="heroStreak"></div>
           <div class="hero-achievements" id="heroAchievements"></div>
+
+          <!-- Feature Cards -->
+          <div class="features" id="featuresSection">
+            <div class="feature-card">
+              <div class="fc-icon">🎮</div>
+              <div class="fc-title">RPG 闯关学习</div>
+              <div class="fc-desc">每本书是一座地图，每章是一道关卡。闯关升级，积累经验，解锁成就。</div>
+              <span class="fc-tag">游戏化</span>
+            </div>
+            <div class="feature-card">
+              <div class="fc-icon">🧪</div>
+              <div class="fc-title">知识点测验</div>
+              <div class="fc-desc">每关内置测验题，检验理解。全屏测验模式助你巩固记忆。</div>
+              <span class="fc-tag">主动学习</span>
+            </div>
+            <div class="feature-card">
+              <div class="fc-icon">🔥</div>
+              <div class="fc-title">连续阅读 & 奖励</div>
+              <div class="fc-desc">每日阅读打卡，保持连续天数。连击里程碑解锁大量XP奖励。</div>
+              <span class="fc-tag">习惯养成</span>
+            </div>
+            <div class="feature-card">
+              <div class="fc-icon">🏆</div>
+              <div class="fc-title">成就 & 称号系统</div>
+              <div class="fc-desc">14项成就待解锁，升级获得称号——从初心者到传说。</div>
+              <span class="fc-tag">正向激励</span>
+            </div>
+          </div>
         </div>
         <div class="book-grid" id="bookGrid"></div>
       </div>
