@@ -404,53 +404,231 @@ function openScreening() {
     </div>`;
 }
 
+// ─── 🧮 TDEE 计算器（真正可用） ──────────
+function calcTDEE() {
+  const gender = document.querySelector('input[name="tdee_gender"]:checked')?.value;
+  const weight = parseFloat(document.getElementById('tdee_weight')?.value);
+  const height = parseFloat(document.getElementById('tdee_height')?.value);
+  const age = parseInt(document.getElementById('tdee_age')?.value);
+  const activity = parseFloat(document.getElementById('tdee_activity')?.value);
+  const goal = document.getElementById('tdee_goal')?.value;
+
+  if (!gender || !weight || !height || !age) {
+    document.getElementById('tdee_result').innerHTML = '<span style="color:var(--red)">请填写所有字段</span>';
+    return;
+  }
+
+  // Mifflin-St Jeor BMR
+  let bmr;
+  if (gender === 'male') bmr = 10*weight + 6.25*height - 5*age + 5;
+  else bmr = 10*weight + 6.25*height - 5*age - 161;
+
+  const tdee = Math.round(bmr * activity);
+
+  // Goal adjustment
+  let goalCals = tdee;
+  if (goal === 'lose') goalCals = tdee - 500;
+  else if (goal === 'gain') goalCals = tdee + 300;
+  else if (goal === 'athlete') goalCals = tdee + 200;
+
+  // Macros based on goal and weight
+  let proteinFactor, carbFactor, fatFactor;
+  if (goal === 'lose') { proteinFactor = 2.2; carbFactor = 2; fatFactor = 0.9; }
+  else if (goal === 'gain') { proteinFactor = 1.8; carbFactor = 4; fatFactor = 0.9; }
+  else if (goal === 'athlete') { proteinFactor = 2.0; carbFactor = 5; fatFactor = 1.0; }
+  else { proteinFactor = 1.6; carbFactor = 3; fatFactor = 0.8; }
+
+  const protein = Math.round(proteinFactor * weight);
+  const carbs = Math.round(carbFactor * weight);
+  const fat = Math.round(fatFactor * weight);
+  const proteinCals = protein * 4;
+  const carbCals = carbs * 4;
+  const fatCals = fat * 9;
+
+  // Activity level labels
+  const actLabels = {'1.2':'久坐','1.375':'轻度','1.55':'中度','1.725':'高度','1.9':'极高度'};
+
+  document.getElementById('tdee_result').innerHTML = `
+    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-top:8px">
+      <div style="font-size:20px;font-weight:700;color:var(--blue);text-align:center;margin-bottom:6px">🔥 ${tdee} kcal/天</div>
+      <div style="display:flex;justify-content:center;gap:16px;font-size:10px;color:var(--text2);margin-bottom:8px">
+        <span>BMR ${Math.round(bmr)}</span>
+        <span>活动系数 ${actLabels[String(activity)]||activity}</span>
+      </div>
+      ${goal !== 'maintain' ? `<div style="text-align:center;font-size:11px;color:var(--green);margin-bottom:6px">🎯 目标摄入：${goalCals} kcal/天</div>` : ''}
+      <div style="height:1px;background:var(--border);margin:6px 0"></div>
+      <div style="font-size:11px;font-weight:500;margin-bottom:4px">🥩 每日营养素目标</div>
+      <div style="display:flex;gap:6px">
+        <div style="flex:1;background:var(--bg2);border-radius:6px;padding:6px;text-align:center">
+          <div style="font-size:8px;color:var(--text3)">蛋白质</div>
+          <div style="font-size:14px;font-weight:600;color:var(--red)">${protein}g</div>
+          <div style="font-size:8px;color:var(--text4)">${proteinCals}kcal</div>
+        </div>
+        <div style="flex:1;background:var(--bg2);border-radius:6px;padding:6px;text-align:center">
+          <div style="font-size:8px;color:var(--text3)">碳水</div>
+          <div style="font-size:14px;font-weight:600;color:var(--blue)">${carbs}g</div>
+          <div style="font-size:8px;color:var(--text4)">${carbCals}kcal</div>
+        </div>
+        <div style="flex:1;background:var(--bg2);border-radius:6px;padding:6px;text-align:center">
+          <div style="font-size:8px;color:var(--text3)">脂肪</div>
+          <div style="font-size:14px;font-weight:600;color:var(--orange)">${fat}g</div>
+          <div style="font-size:8px;color:var(--text4)">${fatCals}kcal</div>
+        </div>
+      </div>
+      <div style="height:3px;background:var(--bg2);border-radius:2px;margin-top:6px;overflow:hidden;display:flex">
+        <div style="width:${Math.round(proteinCals/goalCals*100)}%;background:var(--red);height:3px"></div>
+        <div style="width:${Math.round(carbCals/goalCals*100)}%;background:var(--blue);height:3px"></div>
+        <div style="width:${Math.round(fatCals/goalCals*100)}%;background:var(--orange);height:3px"></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:10px;font-size:8px;color:var(--text4);margin-top:2px">
+        <span style="color:var(--red)">● 蛋白${Math.round(proteinCals/goalCals*100)}%</span>
+        <span style="color:var(--blue)">● 碳水${Math.round(carbCals/goalCals*100)}%</span>
+        <span style="color:var(--orange)">● 脂肪${Math.round(fatCals/goalCals*100)}%</span>
+      </div>
+    </div>`;
+}
+
+// ─── 💧 水合计算器 ──────────
+function calcHydration() {
+  const weight = parseFloat(document.getElementById('hyd_weight')?.value);
+  const duration = parseInt(document.getElementById('hyd_duration')?.value) || 0;
+  const temp = parseInt(document.getElementById('hyd_temp')?.value) || 25;
+
+  if (!weight) {
+    document.getElementById('hyd_result').innerHTML = '<span style="color:var(--red)">请输入体重</span>';
+    return;
+  }
+
+  const daily = Math.round(weight * 33);
+  const exercise = Math.round(duration * 12);
+  const heatBonus = temp > 30 ? Math.round(daily * 0.2) : 0;
+  const total = daily + exercise + heatBonus;
+
+  document.getElementById('hyd_result').innerHTML = `
+    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-top:8px">
+      <div style="font-size:20px;font-weight:700;color:var(--blue);text-align:center;margin-bottom:4px">💧 ${total} ml</div>
+      <div style="display:flex;justify-content:center;gap:12px;font-size:10px;color:var(--text2)">
+        <span>日常 ${daily}ml</span>
+        ${exercise ? `<span>训练 +${exercise}ml</span>` : ''}
+        ${heatBonus ? `<span style="color:var(--orange)">高温 +${heatBonus}ml</span>` : ''}
+      </div>
+      <div style="text-align:center;font-size:9px;color:var(--text3);margin-top:4px">≈ ${(total/1000).toFixed(1)} 升</div>
+    </div>`;
+}
+
 function openCalculators() {
   showView('book');
   currentModule = 'calculators';
   $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>🧮 训练计算工具</h1>
-    <div class="vm">TDEE · 水合 · 训练量 · 营养素一键计算</div>`;
+    <div class="vm">填写数据，自动计算你的个性化训练参数</div>`;
   $('bookStats').innerHTML = '';
   $('contentGrid').innerHTML = `
+    <!-- 🔥 TDEE 计算器 -->
     <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">🔥 TDEE 每日总能耗</div>
-      <div class="calc-formula">男性 BMR = 10×体重(kg) + 6.25×身高(cm) - 5×年龄 + 5</div>
-      <div class="calc-formula">女性 BMR = 10×体重(kg) + 6.25×身高(cm) - 5×年龄 - 161</div>
-      <div class="calc-factor">
-        <span>久坐×1.2</span><span>轻度×1.375</span><span>中度×1.55</span><span>高度×1.725</span>
+      <div style="font-size:15px;font-weight:600;margin-bottom:10px">🔥 每日总能耗计算器</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;font-size:10px;color:var(--text2)">性别
+            <select id="tdee_gender" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+              <option value="male">男性</option>
+              <option value="female">女性</option>
+            </select>
+          </label>
+          <label style="flex:1;font-size:10px;color:var(--text2)">年龄
+            <input type="number" id="tdee_age" value="25" min="10" max="100" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+          </label>
+        </div>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;font-size:10px;color:var(--text2)">体重(kg)
+            <input type="number" id="tdee_weight" value="70" min="30" max="200" step="0.1" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+          </label>
+          <label style="flex:1;font-size:10px;color:var(--text2)">身高(cm)
+            <input type="number" id="tdee_height" value="175" min="100" max="250" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+          </label>
+        </div>
+        <label style="font-size:10px;color:var(--text2)">活动水平
+          <select id="tdee_activity" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+            <option value="1.2">久坐（几乎不运动）</option>
+            <option value="1.375" selected>轻度（每周1-3次低强度）</option>
+            <option value="1.55">中度（每周3-5次中强度）</option>
+            <option value="1.725">高度（每周6-7次高强度）</option>
+            <option value="1.9">极高度（每天2次训练）</option>
+          </select>
+        </label>
+        <label style="font-size:10px;color:var(--text2)">目标
+          <select id="tdee_goal" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+            <option value="maintain">维持体重</option>
+            <option value="lose">减脂（-500kcal）</option>
+            <option value="gain">增肌（+300kcal）</option>
+            <option value="athlete">运动员（+200kcal高碳水）</option>
+          </select>
+        </label>
+        <button onclick="calcTDEE()" style="margin-top:4px;padding:6px 16px;border:none;border-radius:6px;background:var(--blue);color:#fff;font-size:12px;cursor:pointer">📊 计算</button>
+        <div id="tdee_result"></div>
       </div>
     </div>
+
+    <!-- 💧 水合计算器 -->
     <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">🥩 三大营养素分配</div>
-      <div class="calc-formula"><span style="color:var(--red)">● 蛋白质</span> 维持1.2-1.6 · 增肌1.6-2.0 · 减脂2.0-2.4 g/kg</div>
-      <div class="calc-formula"><span style="color:var(--orange)">● 脂肪</span> 0.8-1.0 g/kg (占总热量20-25%)</div>
-      <div class="calc-formula"><span style="color:var(--blue)">● 碳水</span> 休息日2-3 · 训练日3-5 · 高强度5-7 g/kg</div>
-    </div>
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">💧 水合需求</div>
-      <div class="calc-formula">日常需要 = 体重(kg) × 33ml</div>
-      <div class="calc-formula">训练增加 = 训练时长(min) × 12ml</div>
-      <div class="calc-formula">高温增加(>30°C) = 日常×20%</div>
-    </div>
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">⏰ 训练后24小时恢复指南</div>
-      <div class="recovery-timeline">
-        <div class="rt-item"><span class="rt-time">0-30分钟</span><span>快速碳水1-1.2g/kg + 快速蛋白0.3-0.4g/kg + 整理拉伸</span></div>
-        <div class="rt-item"><span class="rt-time">30分-2h</span><span>正餐(碳水+蛋白+蔬菜) + 分次补水</span></div>
-        <div class="rt-item"><span class="rt-time">2h-睡前</span><span>泡沫轴全身10-15分钟 + 热水澡</span></div>
-        <div class="rt-item"><span class="rt-time" style="color:var(--gold)">睡眠7-9h</span><span style="color:var(--gold)">⭐ 生长激素分泌 + 组织修复 — 最重要不可替代</span></div>
-        <div class="rt-item"><span class="rt-time">次日晨</span><span>评估恢复状态 → 决定训练强度</span></div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:10px">💧 每日水合需求</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:10px;color:var(--text2)">体重(kg)
+          <input type="number" id="hyd_weight" value="70" min="20" max="200" step="0.1" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+        </label>
+        <label style="font-size:10px;color:var(--text2)">训练时长(分钟) <span style="color:var(--text3)">选填</span>
+          <input type="number" id="hyd_duration" value="60" min="0" max="300" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+        </label>
+        <label style="font-size:10px;color:var(--text2)">温度(°C) <span style="color:var(--text3)">选填</span>
+          <input type="number" id="hyd_temp" value="25" min="-10" max="50" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+        </label>
+        <button onclick="calcHydration()" style="margin-top:4px;padding:6px 16px;border:none;border-radius:6px;background:var(--blue);color:#fff;font-size:12px;cursor:pointer">💧 计算</button>
+        <div id="hyd_result"></div>
       </div>
     </div>
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;grid-column:1/-1">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">🔄 不同训练类型恢复时间</div>
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <tr><th style="text-align:left;padding:4px 8px;border-bottom:1px solid var(--border)">训练类型</th><th style="padding:4px 8px;border-bottom:1px solid var(--border)">恢复时间</th><th style="padding:4px 8px;border-bottom:1px solid var(--border)">建议频率</th></tr>
-        <tr><td style="padding:4px 8px">纯技术训练</td><td style="padding:4px 8px">4-8小时</td><td style="padding:4px 8px">每天都可以练</td></tr>
-        <tr><td style="padding:4px 8px">步伐训练</td><td style="padding:4px 8px">24-36小时</td><td style="padding:4px 8px">隔天练</td></tr>
-        <tr><td style="padding:4px 8px">力量训练</td><td style="padding:4px 8px">48-72小时</td><td style="padding:4px 8px">每周2-3次</td></tr>
-        <tr><td style="padding:4px 8px">高强度间歇</td><td style="padding:4px 8px">48-72小时</td><td style="padding:4px 8px">每周2次</td></tr>
-        <tr><td style="padding:4px 8px">对抗/比赛</td><td style="padding:4px 8px">48-72小时</td><td style="padding:4px 8px">每周1-2次</td></tr>
+
+    <!-- 恢复指南 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
+      <div style="font-size:15px;font-weight:600;margin-bottom:8px">⏰ 训练后24小时恢复指南</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;gap:8px;font-size:10px;color:var(--text2);padding:5px 8px;background:var(--bg3);border-radius:4px">
+          <span style="min-width:70px;font-weight:500;color:var(--blue)">0-30分钟</span>
+          <span>快速碳水1-1.2g/kg + 蛋白0.3-0.4g/kg + 整理拉伸</span>
+        </div>
+        <div style="display:flex;gap:8px;font-size:10px;color:var(--text2);padding:5px 8px;background:var(--bg3);border-radius:4px">
+          <span style="min-width:70px;font-weight:500;color:var(--blue)">30分-2h</span>
+          <span>正餐(碳水+蛋白+蔬菜) + 分次补水</span>
+        </div>
+        <div style="display:flex;gap:8px;font-size:10px;color:var(--text2);padding:5px 8px;background:var(--bg3);border-radius:4px">
+          <span style="min-width:70px;font-weight:500;color:var(--blue)">2h-睡前</span>
+          <span>泡沫轴10-15分钟 + 热水澡</span>
+        </div>
+        <div style="display:flex;gap:8px;font-size:10px;color:var(--text2);padding:5px 8px;background:var(--bg3);border-radius:4px;border-left:2px solid var(--gold)">
+          <span style="min-width:70px;font-weight:500;color:var(--gold)">睡眠7-9h</span>
+          <span>⭐ 生长激素分泌 + 组织修复 — 不可替代</span>
+        </div>
+        <div style="display:flex;gap:8px;font-size:10px;color:var(--text2);padding:5px 8px;background:var(--bg3);border-radius:4px">
+          <span style="min-width:70px;font-weight:500;color:var(--blue)">次日晨</span>
+          <span>评估恢复状态 → 决定训练强度</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 营养素参考 + 恢复时间表 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
+      <div style="font-size:15px;font-weight:600;margin-bottom:8px">🥩 营养素参考速查</div>
+      <div style="font-size:10px;color:var(--text2);padding:3px 0"><span style="color:var(--red)">● 蛋白</span> 维持1.2-1.6 / 增肌1.6-2.0 / 减脂2.0-2.4 g/kg</div>
+      <div style="font-size:10px;color:var(--text2);padding:3px 0"><span style="color:var(--orange)">● 脂肪</span> 0.8-1.0 g/kg (20-25%)</div>
+      <div style="font-size:10px;color:var(--text2);padding:3px 0"><span style="color:var(--blue)">● 碳水</span> 休息2-3 / 训练3-5 / 高强度5-7 g/kg</div>
+      <div style="height:1px;background:var(--border);margin:10px 0"></div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:6px">🔄 训练恢复时间</div>
+      <table style="width:100%;border-collapse:collapse;font-size:10px">
+        <tr><th style="text-align:left;padding:3px 6px;border-bottom:1px solid var(--border)">类型</th><th style="padding:3px 6px;border-bottom:1px solid var(--border)">恢复</th><th style="padding:3px 6px;border-bottom:1px solid var(--border)">频率</th></tr>
+        <tr><td style="padding:3px 6px">纯技术</td><td style="padding:3px 6px">4-8h</td><td style="padding:3px 6px">每天</td></tr>
+        <tr><td style="padding:3px 6px">步伐</td><td style="padding:3px 6px">24-36h</td><td style="padding:3px 6px">隔天</td></tr>
+        <tr><td style="padding:3px 6px">力量</td><td style="padding:3px 6px">48-72h</td><td style="padding:3px 6px">每周2-3次</td></tr>
+        <tr><td style="padding:3px 6px">高强度</td><td style="padding:3px 6px">48-72h</td><td style="padding:3px 6px">每周2次</td></tr>
+        <tr><td style="padding:3px 6px">比赛</td><td style="padding:3px 6px">48-72h</td><td style="padding:3px 6px">每周1-2次</td></tr>
       </table>
     </div>`;
 }
