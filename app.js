@@ -7,6 +7,7 @@ let MANIFEST = null;
 let currentModule = 'dashboard';
 let currentBookId = null;
 let currentChapterIdx = -1;
+let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
 const APP_VERSION = 'v3.0.0';
@@ -172,99 +173,35 @@ function renderDashboard() {
   $('sCycle').textContent = '3yr';
   $('heroSub').textContent = `${TRAIN_MODULES.length}大训练模块 · 融合心理学·营养学·比赛策略 · 基于NSCA-CSCS科学体系`;
 
-  // ── ⚡ 核心原则 ──
-  $('principlesSection').innerHTML = `
-    <div class="section-divider"><span class="sd-label">⚡ 核心训练原则</span><div class="sd-line"></div></div>
-    <div class="principles-table">
-      <div class="principle-row header">
-        <span class="pr-col1">原则</span>
-        <span class="pr-col2">为什么</span>
-        <span class="pr-col3">什么不能做</span>
-      </div>
-      <div class="principle-row">
-        <span class="pr-col1"><strong>动作质量 > 训练数量</strong></span>
-        <span class="pr-col2">神经肌肉系统记住的是你重复最多的模式，练错的动作重复100次=巩固100次错误</span>
-        <span class="pr-col3">不能用"做了多少次"衡量训练效果</span>
-      </div>
-      <div class="principle-row">
-        <span class="pr-col1"><strong>神经肌肉控制 > 力量输出</strong></span>
-        <span class="pr-col2">神经系统先学会控制肌肉，肌肉才能发力。顺序不能反</span>
-        <span class="pr-col3">不能在动作模式不稳定时加重量</span>
-      </div>
-      <div class="principle-row">
-        <span class="pr-col1"><strong>预防损伤 > 追求表现</strong></span>
-        <span class="pr-col2">一次受伤=倒退回起点，恢复时间往往是训练时间的3-10倍</span>
-        <span class="pr-col3">不能在疲劳状态下冲击极限</span>
-      </div>
-      <div class="principle-row">
-        <span class="pr-col1"><strong>长期发展 > 短期进步</strong></span>
-        <span class="pr-col2">神经系统适应需要4-6周，结缔组织初步适应约8-12周</span>
-        <span class="pr-col3">不能每周都加量</span>
-      </div>
-    </div>
-    <div class="principle-footer">这四个原则不是建议，是底线。任何训练安排必须同时满足四条才能执行。</div>`;
-
-  // ── 🏆 训练等级体系 ──
-  $('levelSection').innerHTML = LEVELS.map((l,i) => `
-    <div class="level-card card-stagger" onclick="openLevelDetail('${l.id}')" style="animation-delay:${i*0.04}s">
-      <div class="lc-badge">${l.id}</div>
-      <div class="lc-emoji">${l.emoji}</div>
-      <div class="lc-label">${l.label}</div>
-      <div class="lc-time">${l.time}</div>
-      <div class="lc-desc">${l.desc}</div>
-    </div>`).join('');
-
-  // ── 🎯 训练模块 ──
-  $('moduleSection').innerHTML = TRAIN_MODULES.map(m => {
-    const colors = {'var(--blue)':'#4f9aff','var(--green)':'#3dd68c','var(--purple)':'#a855f7','var(--orange)':'#f59e0b','var(--red)':'#f06060'};
-    const c = colors[m.color]||'#4f9aff';
-    return `<div class="module-card" onclick="openTrainModule('${m.id}')" style="border-top:3px solid ${c}">
+  // ── 🎯 5大训练模块（主要内容） ──
+  $('moduleSection').innerHTML = TRAIN_MODULES.map((m,i) => `
+    <div class="module-card stagger" onclick="openTrainModule('${m.id}')">
       <div class="mc-icon">${m.icon}</div>
       <div class="mc-title">${m.title}</div>
       <div class="mc-desc">${m.desc}</div>
-      <div class="mc-tags">${m.tags.map(t=>`<span class="mc-tag" style="border-color:${c}20;color:${c}">${t}</span>`).join('')}</div>
-      <div class="mc-foot"><span>📖 ${m.docs} 教学文档</span><span class="mc-arrow">查看详情 →</span></div>
-    </div>`;
-  }).join('');
+      <div class="mc-tags">${m.tags.map(t=>`<span class="mc-tag">${t}</span>`).join('')}</div>
+      <div class="mc-foot"><span>📖 ${m.topics.length} 课题</span><span style="color:var(--blue)">查看 →</span></div>
+    </div>`).join('');
 
-  // ── 🛠️ 评估工具 ──
+  // ── 🛠️ 评估工具（辅助） ──
   const TOOLS = [
-    {icon:'🩺',title:'功能筛查',desc:'6个测试·10分钟·每月重测',action:'openScreening()',color:'var(--blue)'},
-    {icon:'📊',title:'级别定位',desc:'回答问题找到起始级别',action:'openLevelFinder()',color:'var(--purple)'},
-    {icon:'✅',title:'状态自查',desc:'绿/黄/红码训练决策',action:'openWeeklyCheck()',color:'var(--green)'},
-    {icon:'🔍',title:'训练诊断',desc:'60+症状→原因→方案',action:'openDiagnosis()',color:'var(--orange)'},
-    {icon:'🧮',title:'计算工具',desc:'TDEE·水合·训练量计算',action:'openCalculators()',color:'var(--red)'},
+    {icon:'🩺',title:'功能筛查',desc:'6项测试·10分钟',action:'openScreening()'},
+    {icon:'📊',title:'级别定位',desc:'找到你的级别',action:'openLevelFinder()'},
+    {icon:'✅',title:'周状态自查',desc:'绿黄红码决策',action:'openWeeklyCheck()'},
+    {icon:'🔍',title:'训练诊断',desc:'症状→原因',action:'openDiagnosis()'},
+    {icon:'🧮',title:'计算器',desc:'TDEE·营养素·水合',action:'openCalculators()'},
   ];
   $('toolsSection').innerHTML = TOOLS.map((t,i) => `
-    <div class="tool-card card-stagger" onclick="${t.action}" style="animation-delay:${i*0.05}s">
+    <div class="tool-card stagger" onclick="${t.action}">
       <div class="tc-icon">${t.icon}</div>
       <div class="tc-title">${t.title}</div>
       <div class="tc-desc">${t.desc}</div>
     </div>`).join('');
 
-  // ── 🧮 快速参考公式 ──
-  $('referenceSection').innerHTML = `
-    <div class="ref-card">
-      <div class="ref-title">🔥 TDEE 每日总能耗</div>
-      <div class="ref-formula">BMR = 10×体重(kg) + 6.25×身高(cm) - 5×年龄 + 5 <span style="color:var(--text3);font-size:10px">(男)</span></div>
-      <div class="ref-formula">BMR = 10×体重(kg) + 6.25×身高(cm) - 5×年龄 - 161 <span style="color:var(--text3);font-size:10px">(女)</span></div>
-      <div class="ref-detail">久坐×1.2 · 轻度×1.375 · 中度×1.55 · 高度×1.725</div>
-    </div>
-    <div class="ref-card">
-      <div class="ref-title">🥩 三大营养素</div>
-      <div class="ref-formula"><span style="color:var(--red)">蛋白</span> 维持1.2-1.6 / 增肌1.6-2.0 / 减脂2.0-2.4 g/kg</div>
-      <div class="ref-formula"><span style="color:var(--orange)">脂肪</span> 0.8-1.0 g/kg (20-25%)</div>
-      <div class="ref-formula"><span style="color:var(--blue)">碳水</span> 休息2-3 / 训练3-5 / 高强度5-7 g/kg</div>
-    </div>
-    <div class="ref-card">
-      <div class="ref-title">💧 水合公式</div>
-      <div class="ref-formula">日常 = 体重(kg) × 33ml</div>
-      <div class="ref-formula">训练 = 时长(min) × 12ml</div>
-      <div class="ref-formula">高温(>30°C) +20%</div>
-    </div>
-    <div class="ref-card" style="grid-column:1/-1;text-align:center;padding:10px 0;cursor:pointer" onclick="openCalculators()">
-      <span style="font-size:12px;color:var(--blue)">📐 打开完整计算工具 →</span>
-    </div>`;
+  // 原则/等级/公式区域置空（简化页面）
+  $('principlesSection').innerHTML = '';
+  $('levelSection').innerHTML = '';
+  $('referenceSection').innerHTML = '';
 
   // ── 📚 书塔入口 ──
   renderTowerEntry();
@@ -323,9 +260,10 @@ function openTrainModule(modId) {
   if (!mod) return;
   currentModule = modId;
   showView('book');
-  $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回总览</div>
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>${mod.icon} ${mod.title}</h1>
     <div class="vm">${mod.desc}</div>`;
+  navStack = []; // 重置导航栈：总览是起点
   const bookCount = new Set(mod.topics.map(t=>t.book)).size;
   $('bookStats').innerHTML = `
     <div class="bs-item"><span class="bs-num">${mod.topics.length}</span><span class="bs-label">📖 训练课题</span></div>
@@ -355,6 +293,8 @@ function openModuleTopic(modId, topicIdx) {
   if (!topic) return;
   const book = MANIFEST.books.find(b=>b.id===topic.book);
   if (!book || !book.chapters[topic.ch]) return;
+  // 保存导航状态：从模块进入书籍
+  navStack.push({view:'module', moduleId: modId});
   goToBook(topic.book);
   setTimeout(() => openChapter(topic.ch), 350);
 }
@@ -377,7 +317,7 @@ function openLevelDetail(levelId) {
 function openScreening() {
   showView('book');
   currentModule = 'screening';
-  $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回总览</div>
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>🩺 羽毛球专项功能筛查</h1>
     <div class="vm">BSFS v1.0 · 6个测试 · 10分钟完成 · 每月重测</div>`;
   $('bookStats').innerHTML = '';
@@ -467,7 +407,7 @@ function openScreening() {
 function openCalculators() {
   showView('book');
   currentModule = 'calculators';
-  $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回总览</div>
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>🧮 训练计算工具</h1>
     <div class="vm">TDEE · 水合 · 训练量 · 营养素一键计算</div>`;
   $('bookStats').innerHTML = '';
@@ -575,7 +515,7 @@ function goToBook(bid) {
   const p = chProgress(bid);
   const readCount = Math.round(p * book.chapters.length);
 
-  $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回总览</div>
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>${book.emoji} ${book.title}</h1>
     <div class="vm">${book.desc}</div>`;
   $('bookStats').innerHTML = `
@@ -682,15 +622,43 @@ const mdParse = (txt) => {
 
 // ─── View Switch ──────────────────────────────
 function showView(v) {
-  ['dashboard','book','reader'].forEach(k=>{const id='view'+k.charAt(0).toUpperCase()+k.slice(1);if($(id))$(id).style.display=k===v?'block':'none';});
+  ['dashboard','book','reader'].forEach(k=>{
+    const id='view'+k.charAt(0).toUpperCase()+k.slice(1);
+    const el=$(id);
+    if(!el)return;
+    el.style.display=k===v?'block':'none';
+    // 视图切换时重置动画
+    if(k===v){el.style.animation='none';el.offsetHeight;el.style.animation='';}
+  });
   $('content').scrollTo({top:0,behavior:'smooth'});
 }
 
 function goHome() {
   currentBookId=null;currentChapterIdx=-1;currentModule='dashboard';
-  $('chSection').style.display='none';
+  navStack=[];
   showView('dashboard');
   renderDashboard();
+}
+
+// ─── 返回上一页 ───
+function goBack() {
+  if (navStack.length === 0) { goHome(); return; }
+  const prev = navStack.pop();
+  switch (prev.view) {
+    case 'dashboard': goHome(); break;
+    case 'module':
+      currentModule = prev.moduleId;
+      showView('book');
+      $('content').className='content view-page'; // 重置动画类
+      openTrainModule(prev.moduleId);
+      break;
+    case 'book':
+      currentBookId = prev.bookId;
+      showView('book');
+      goToBook(prev.bookId);
+      break;
+    default: goHome();
+  }
 }
 
 function openSearch() {
