@@ -69,7 +69,7 @@
     <main class="content" id="content">
 
       <!-- ═══════ Dashboard ═══════ -->
-      <div id="viewDashboard">
+      <div id="viewDashboard" class="view-page">
         <!-- Hero -->
         <div class="hero">
           <div class="hero-avatar" onclick="openStats()">🏸</div>
@@ -125,14 +125,14 @@
       </div>
 
       <!-- ═══════ Module / Content View ═══════ -->
-      <div id="viewBook" style="display:none">
+      <div id="viewBook" style="display:none" class="view-page view-page-back">
         <div class="view-header" id="bookHeader"></div>
         <div class="book-stats" id="bookStats"></div>
         <div id="contentGrid" class="content-grid"></div>
       </div>
 
       <!-- ═══════ Reader (for books only) ═══════ -->
-      <div id="viewReader" style="display:none">
+      <div id="viewReader" style="display:none" class="view-page">
         <div class="reader-toolbar">
           <button class="tb-btn" onclick="goToBook(currentBookId)">◀ 📂</button>
           <span class="tb-title" id="readerTitle"></span>

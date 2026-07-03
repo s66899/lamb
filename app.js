@@ -13,27 +13,60 @@ const APP_VERSION = 'v3.0.0';
 const APP_DATE = '2026-07-03';
 
 // ─── 5大训练模块 ──────────────────────────
+// ─── 5大训练模块（绑定真实书籍章节） ─────
 const TRAIN_MODULES = [
   { id:'badminton-tech', icon:'🏸', title:'羽毛球技术', color:'var(--blue)',
-    desc:'基于NSCA-CSCS运动科学，融合世界顶级教练实战经验的手法·步伐·球路一体化训练体系',
-    tags:['握拍','高远球','杀球','网前','步伐','球路','战术'], docs:20,
-    chapters:['基础握拍与准备姿势','正手高远球技术','反手技术体系','网前小球技术','步伐体系','杀球与扣杀','平抽快挡','综合训练','常见错误纠正','比赛心理'] },
+    desc:'手法·步伐·球路一体化训练体系',
+    tags:['握拍','高远球','杀球','网前','步伐'],
+    topics:[
+      {label:'握拍与准备姿势',  book:'badminton', ch:0, desc:'所有技术的根基——正确握拍'},
+      {label:'正手高远球技术', book:'badminton', ch:1, desc:'发力与弧线的核心'},
+      {label:'反手技术体系',   book:'badminton', ch:2, desc:'被忽视的半壁江山'},
+      {label:'网前小球技术',   book:'badminton', ch:3, desc:'细节决定成败'},
+      {label:'步伐体系',       book:'badminton', ch:4, desc:'场上移动的根基'},
+      {label:'杀球与扣杀',     book:'badminton', ch:5, desc:'攻击力的极致'},
+      {label:'平抽快挡',       book:'badminton', ch:6, desc:'双打的灵魂'},
+      {label:'综合训练',       book:'badminton', ch:7, desc:'从单项到实战'},
+      {label:'战术进阶',       book:'badminton', ch:8, desc:'战术组合与球路变化'},
+    ]},
   { id:'strength', icon:'💪', title:'体能训练', color:'var(--green)',
-    desc:'关节稳定·代谢适应·间歇训练·周期安排 — 科学力量与体能训练体系',
-    tags:['肩关节','膝关节','核心力量','代谢','间歇','周期'], docs:18,
-    chapters:['训练哲学','运动解剖','基础力量','爆发力训练','敏捷性','柔韧性','核心训练','周期化训练','损伤预防','恢复策略'] },
+    desc:'力量·代谢·周期·体能',
+    tags:['力量','代谢','体能','力学'],
+    topics:[
+      {label:'羽毛球专项体能',  book:'badminton', ch:9, desc:'体能训练全面解析'},
+      {label:'NSCA-CPT入门',   book:'nsca-cpt',  ch:0, desc:'NSCA训练哲学入门'},
+      {label:'力学分析基础',    book:'engineering-mechanics', ch:0, desc:'力量训练中的力学'},
+      {label:'动力学与运动',    book:'engineering-mechanics', ch:8, desc:'运动的动力学分析'},
+    ]},
   { id:'psychology', icon:'🧠', title:'心理训练', color:'var(--purple)',
-    desc:'注意力·压力适应·自我调节·决策信心 — 从动机心理学到赛场心理韧性',
-    tags:['注意力','压力','自我对话','目标','心流','韧性'], docs:15,
-    chapters:['动机理论','目标设定','注意力训练','压力管理','自我效能','心流体验','情绪调节','团队动力','比赛心理','心理韧性'] },
+    desc:'注意力·动机·情绪·心理韧性',
+    tags:['注意力','动机','情绪','压力'],
+    topics:[
+      {label:'感知与注意力',    book:'psychology', ch:0, desc:'注意力的机制'},
+      {label:'动机与需求',      book:'psychology', ch:3, desc:'训练动机的激发'},
+      {label:'情绪与情感',      book:'psychology', ch:4, desc:'情绪管理'},
+      {label:'比赛心理框架',    book:'badminton',  ch:10,desc:'比赛心理构建'},
+      {label:'比赛心理学(上)',  book:'badminton',  ch:11,desc:'比赛心理技巧'},
+      {label:'社会影响与团队',  book:'psychology', ch:6, desc:'团队动力'},
+      {label:'认知偏差',        book:'psychology', ch:7, desc:'认知与决策'},
+    ]},
   { id:'nutrition', icon:'🥗', title:'营养恢复', color:'var(--orange)',
-    desc:'TDEE计算·营养素分配·训练后恢复时间轴·睡眠优化 — 科学营养恢复体系',
-    tags:['蛋白','碳水','脂肪','水合','睡眠','补剂'], docs:12,
-    chapters:['能量代谢基础','宏量营养素','微量营养素','训练前营养','训练后恢复','水合策略','补剂科学','睡眠优化','周期营养','体重管理'] },
+    desc:'运动营养·恢复·睡眠',
+    tags:['营养','恢复','水合','睡眠'],
+    topics:[
+      {label:'NSCA-CPT入门',    book:'nsca-cpt',  ch:0, desc:'运动营养入门'},
+      {label:'训练后恢复',       book:'badminton',  ch:7, desc:'综合训练中的恢复'},
+    ]},
   { id:'competition', icon:'🏆', title:'比赛策略', color:'var(--red)',
-    desc:'对手分析·战术选择·节奏控制·体能分配 — 从准备到复盘完整比赛流程',
-    tags:['对手分析','战术库','节奏','体能分配','复盘'], docs:14,
-    chapters:['对手分析框架','战术选择','节奏控制','体能分配','心理博弈','临场调整','复盘方法','赛前准备','赛中应变','赛后恢复'] },
+    desc:'对手分析·战术选择·心理博弈',
+    tags:['战术','心理','节奏','复盘'],
+    topics:[
+      {label:'比赛心理准备',     book:'badminton', ch:10, desc:'赛前心理框架'},
+      {label:'战术进阶',         book:'badminton', ch:8,  desc:'战术组合库'},
+      {label:'比赛心理学(下)',   book:'badminton', ch:11, desc:'高级心理博弈'},
+      {label:'综合实战',         book:'badminton', ch:7,  desc:'从训练到实战'},
+      {label:'投资博弈思维',     book:'finance',   ch:9,  desc:'比赛思维共通点'},
+    ]},
 ];
 
 // ─── 训练等级 ──────────────────────────
@@ -135,7 +168,7 @@ function renderDashboard() {
 
   // ── Stats ──
   $('sModules').textContent = TRAIN_MODULES.length;
-  $('sDocs').textContent = TRAIN_MODULES.reduce((s,m)=>s+m.docs,0);
+  $('sDocs').textContent = TRAIN_MODULES.reduce((s,m)=>s+m.topics.length,0);
   $('sCycle').textContent = '3yr';
   $('heroSub').textContent = `${TRAIN_MODULES.length}大训练模块 · 融合心理学·营养学·比赛策略 · 基于NSCA-CSCS科学体系`;
 
@@ -172,8 +205,8 @@ function renderDashboard() {
     <div class="principle-footer">这四个原则不是建议，是底线。任何训练安排必须同时满足四条才能执行。</div>`;
 
   // ── 🏆 训练等级体系 ──
-  $('levelSection').innerHTML = LEVELS.map(l => `
-    <div class="level-card" onclick="openLevelDetail('${l.id}')">
+  $('levelSection').innerHTML = LEVELS.map((l,i) => `
+    <div class="level-card card-stagger" onclick="openLevelDetail('${l.id}')" style="animation-delay:${i*0.04}s">
       <div class="lc-badge">${l.id}</div>
       <div class="lc-emoji">${l.emoji}</div>
       <div class="lc-label">${l.label}</div>
@@ -202,8 +235,8 @@ function renderDashboard() {
     {icon:'🔍',title:'训练诊断',desc:'60+症状→原因→方案',action:'openDiagnosis()',color:'var(--orange)'},
     {icon:'🧮',title:'计算工具',desc:'TDEE·水合·训练量计算',action:'openCalculators()',color:'var(--red)'},
   ];
-  $('toolsSection').innerHTML = TOOLS.map(t => `
-    <div class="tool-card" onclick="${t.action}">
+  $('toolsSection').innerHTML = TOOLS.map((t,i) => `
+    <div class="tool-card card-stagger" onclick="${t.action}" style="animation-delay:${i*0.05}s">
       <div class="tc-icon">${t.icon}</div>
       <div class="tc-title">${t.title}</div>
       <div class="tc-desc">${t.desc}</div>
@@ -284,7 +317,7 @@ function renderSidebar() {
   list.innerHTML = html;
 }
 
-// ─── 训练模块详情 ────────────────────────
+// ─── 训练模块详情（绑定真实书籍章节） ─────
 function openTrainModule(modId) {
   const mod = TRAIN_MODULES.find(m=>m.id===modId);
   if (!mod) return;
@@ -293,35 +326,37 @@ function openTrainModule(modId) {
   $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回总览</div>
     <h1>${mod.icon} ${mod.title}</h1>
     <div class="vm">${mod.desc}</div>`;
+  const bookCount = new Set(mod.topics.map(t=>t.book)).size;
   $('bookStats').innerHTML = `
-    <div class="bs-item"><span class="bs-num">${mod.chapters.length}</span><span class="bs-label">📖 训练主题</span></div>
+    <div class="bs-item"><span class="bs-num">${mod.topics.length}</span><span class="bs-label">📖 训练课题</span></div>
     <div class="bs-item"><span class="bs-num">${mod.tags.length}</span><span class="bs-label">🏷️ 核心标签</span></div>
-    <div class="bs-item"><span class="bs-num">${mod.docs}</span><span class="bs-label">📚 教学文档</span></div>`;
-  $('contentGrid').innerHTML = mod.chapters.map((title, i) => `
-    <div class="chapter-card fade-in" onclick="openModuleTopic('${mod.id}',${i})">
+    <div class="bs-item"><span class="bs-num">${bookCount}</span><span class="bs-label">📚 关联书籍</span></div>`;
+  const getBookEmoji = (bid)=>{const b=MANIFEST?.books.find(x=>x.id===bid);return b?b.emoji:'📖';};
+  const getBookTitle = (bid)=>{const b=MANIFEST?.books.find(x=>x.id===bid);return b?b.title:bid;};
+  $('contentGrid').innerHTML = mod.topics.map((t, i) => `
+    <div class="chapter-card card-stagger" onclick="openModuleTopic('${mod.id}',${i})">
       <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${mod.color};opacity:.6"></div>
       <div class="cc-num">${String(i+1).padStart(2,'0')}</div>
-      <div class="cc-title">${title}</div>
-      <div class="cc-foot"><span>${mod.icon}</span><span style="color:${mod.color}">学习 →</span></div>
+      <div class="cc-title">${t.label}</div>
+      <div class="cc-h2" style="font-size:10px;color:var(--text2);margin:2px 0">${t.desc}</div>
+      <div class="cc-foot">
+        <span>${getBookEmoji(t.book)} ${getBookTitle(t.book)}</span>
+        <span style="color:${mod.color};font-weight:500">阅读 →</span>
+      </div>
     </div>`).join('');
   updateProgress();
 }
 
-// ─── 模块主题（跳转到对应书籍章节） ──────
+// ─── 模块主题→跳转真实书籍章节 ──────────
 function openModuleTopic(modId, topicIdx) {
-  // Try to find a matching chapter from one of the module's books
   const mod = TRAIN_MODULES.find(m=>m.id===modId);
   if (!mod || !MANIFEST) return;
-  // Find first book from this module and open a chapter
-  for (const bid of mod.books) {
-    const book = MANIFEST.books.find(b=>b.id===bid);
-    if (book && book.chapters.length > 0) {
-      const chIdx = Math.min(topicIdx % book.chapters.length, book.chapters.length - 1);
-      goToBook(bid);
-      setTimeout(() => openChapter(chIdx), 300);
-      return;
-    }
-  }
+  const topic = mod.topics[topicIdx];
+  if (!topic) return;
+  const book = MANIFEST.books.find(b=>b.id===topic.book);
+  if (!book || !book.chapters[topic.ch]) return;
+  goToBook(topic.book);
+  setTimeout(() => openChapter(topic.ch), 350);
 }
 
 // ─── 级别详情 ────────────────────────────

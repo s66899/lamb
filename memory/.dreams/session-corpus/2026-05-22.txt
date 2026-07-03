@@ -1,0 +1,2 @@
+[main/sessions/main/e7ff2b46-abda-4bc3-9c3c-6ae40339083e.jsonl#L5] User: Conversation context (untrusted, chronological, selected for current message): #1771 Thu 2026-05-21 10:19 GMT+8 Lamb: 早上好 #1777 Thu 2026-05-21 10:56 GMT+8 Lamb: 写书的任务继续还有之前没改的任务羽毛球训练计划的 #1781 Thu 2026-05-21 10:58 GMT+8 Lamb: 之前传在 ima 知识库里面的羽毛球两个月训练计划你给写了一周的，现在补全 增肌训练计划
+[main/sessions/main/e7ff2b46-abda-4bc3-9c3c-6ae40339083e.jsonl#L10] Assistant: ⚠️ Something went wrong while processing your request. Please try again, or use /new to start a fresh session.
