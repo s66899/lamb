@@ -436,15 +436,77 @@ article hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
 .sr-p { font-size:11px; color:var(--text2); }
 .sr-p em { color:var(--text); font-style:normal; font-weight:600; }
 
-/* ═══ Responsive ═══ */
-@media (max-width:768px) {
-  .sidebar { position:fixed; z-index:50; height:100%; box-shadow:var(--shadow); }
-  .sidebar.closed { margin-left:calc(var(--sidebar-w) * -1); }
-  .content { padding:14px; }
+/* ═══════════════════════════════════════
+   Responsive：平板 + 手机 + 桌面 三端
+   ═══════════════════════════════════════ */
+
+/* ── 平板 (481px - 1023px) ── */
+@media (max-width:1023px) and (min-width:481px) {
+  .sidebar {
+    position:fixed; z-index:50; height:100%;
+    box-shadow:var(--shadow);
+    width:220px; min-width:220px;
+  }
+  .sidebar.closed { margin-left:-220px; }
+  .content { padding:16px 20px; }
+  .modules-grid { grid-template-columns:repeat(2,1fr); }
+  .tools-grid { grid-template-columns:repeat(3,1fr); }
+  .content-grid { grid-template-columns:repeat(2,1fr); }
+  .reader-toc { width:150px; min-width:150px; }
+  .stat-row { gap:4px; }
+  .stat-box { min-width:60px; padding:5px 10px; }
+  .stat-box .s-num { font-size:14px; }
+}
+
+/* ── 手机 (≤480px) ── */
+@media (max-width:480px) {
+  .sidebar {
+    position:fixed; z-index:50; height:100%;
+    box-shadow:var(--shadow);
+    width:220px; min-width:220px;
+  }
+  .sidebar.closed { margin-left:-220px; }
+  .content { padding:10px 12px; }
+  header { padding:4px 10px; height:44px; }
+  .layout { height:calc(100vh - 44px); }
+  .h-search-text, .h-search kbd { display:none; }
+  .h-badge { display:none; }
+  #rpgHud .rpg-xp-bar, #rpgHud .rpg-xp-text { display:none; }
+  #rpgHud { gap:4px; }
   .modules-grid { grid-template-columns:1fr; }
   .tools-grid { grid-template-columns:1fr 1fr; }
+  .content-grid { grid-template-columns:1fr; }
+  .stat-row { gap:3px; }
+  .stat-box { min-width:55px; padding:4px 6px; }
+  .stat-box .s-num { font-size:13px; }
+  .stat-box .s-label { font-size:8px; }
+  .hero-title { font-size:20px; }
+  .hero-sub { font-size:11px; }
+  .section-title { font-size:13px; margin-bottom:8px; }
+  .module-card { padding:12px; }
+  .mc-icon { font-size:24px; }
+  .mc-title { font-size:12px; }
+  .tool-card { padding:10px; }
+  .tc-icon { font-size:18px; }
+  .calc-card { padding:14px; }
   .reader-toc { display:none!important; }
   .reader-main { flex-direction:column; }
   .quiz-sidebar { width:100%; }
   .reader-layout { flex-direction:column; }
+  .reader-toolbar { gap:2px; }
+  .tb-title { font-size:10px; }
+  .tb-btn { font-size:9px; padding:2px 6px; }
+  .view-header h1 { font-size:16px; }
+  article { font-size:14px; }
+  article h1 { font-size:18px; }
+  article h2 { font-size:15px; }
+  .book-stats { gap:10px; padding:8px 12px; }
+  .bs-num { font-size:13px; }
+  .chapter-card { padding:10px 12px; }
+  .tower-card { min-width:80px; }
+  .tower-card .tc-emoji { font-size:18px; }
+  .calc-card input, .calc-card select { font-size:13px!important; padding:6px 8px!important; }
+  .panel-sm { width:95vw; }
+  .panel-stats { width:95vw; }
+  .panel-achievement { width:95vw; }
 }

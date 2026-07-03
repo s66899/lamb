@@ -152,6 +152,43 @@ function openAchievements(){const r=getRP();if(!r.achievements)r.achievements={}
 // ─── 每日任务 ──────────────────────────────
 const $=id=>document.getElementById(id);
 const $$=s=>document.querySelectorAll(s);
+
+// ─── 三端设备检测 ─────────────────
+let DEVICE = 'desktop';
+function detectDevice() {
+  const w = window.innerWidth;
+  // 允许 URL 参数强制指定 ?device=mobile|tablet|desktop
+  const param = new URLSearchParams(window.location.search).get('device');
+  if (param && ['mobile','tablet','desktop'].includes(param)) {
+    DEVICE = param;
+  } else if (w <= 480) {
+    DEVICE = 'mobile';
+  } else if (w <= 1023) {
+    DEVICE = 'tablet';
+  } else {
+    DEVICE = 'desktop';
+  }
+  document.documentElement.setAttribute('data-device', DEVICE);
+  // 平板和手机默认收起侧栏
+  if (DEVICE !== 'desktop' && !sidebarWasManuallyOpened) {
+    toggleSidebar(false);
+  }
+}
+
+let sidebarWasManuallyOpened = false;
+
+// ─── 监听窗口变化 ─────────────────
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    detectDevice();
+    // 如果从手机切换到桌面，展开侧栏
+    if (window.innerWidth > 1023) {
+      toggleSidebar(true);
+    }
+  }, 200);
+});
 function getDailyQuests(){return[{id:'daily_read',icon:'📖',name:'每日阅读',desc:'读一章',check:(r)=>true,reward:'+20 XP'},{id:'daily_quiz',icon:'🧪',name:'测验',desc:'答对3题',check:(r)=>(r.totalQuizCorrect||0)>=3}];}
 function openQuests(){const r=getRP();if(!r.quests)r.quests={};const qs=getDailyQuests();let h='<div class="quest-list">';for(const q of qs){const done=r.quests[q.id];h+=`<div class="quest-item ${done?'completed':''}"><div class="qi-icon">${q.icon}</div><div class="qi-info"><div class="qi-name">${q.name}</div><div class="qi-desc">${q.desc}</div><div class="qi-reward">🎁 ${q.reward}</div></div>${done?'✅':''}</div>`;}h+='</div>';showOverlay('panel-quest','📋 每日任务',h);}
 
@@ -851,7 +888,12 @@ async function doSearch(query){query=query.trim();if(!query){$('searchResults').
 function goSearchResult(bid,file){goToBook(bid);const b=MANIFEST.books.find(x=>x.id===bid);const idx=b?.chapters.findIndex(c=>c.file===file);if(idx>=0)setTimeout(()=>openChapter(idx),300);}
 
 // ─── Sidebar ──────────────────────────────────
-function toggleSidebar(show){if(show===undefined)show=!sidebarOpen;$('sidebar').classList.toggle('closed',!show);sidebarOpen=show;}
+function toggleSidebar(show){
+  if(show===undefined)show=!sidebarOpen;
+  $('sidebar').classList.toggle('closed',!show);
+  sidebarOpen=show;
+  if(show) sidebarWasManuallyOpened=true;
+}
 let sidebarOpen=true;
 
 // ─── Overlay ──────────────────────────────────
@@ -869,9 +911,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   bar.style.width='90%';await sleep(200);
   initRP();bar.style.width='100%';await sleep(200);
   $('splash').style.display='none';$('app').style.display='block';
+  detectDevice();
   renderDashboard();updateProgress();
   $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);});
-  if(window.innerWidth<=768)toggleSidebar(false);
   setTimeout(checkAchievements,2000);
 });
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
