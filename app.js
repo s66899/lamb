@@ -900,22 +900,75 @@ let sidebarOpen=true;
 function showOverlay(cls,title,body){const overlay=document.createElement('div');overlay.className='overlay';overlay.id='_tmpOverlay';overlay.onclick=function(e){if(e.target===this)this.remove();};overlay.innerHTML=`<div class="${cls}" onclick="event.stopPropagation()"><div class="panel-hd"><span>${title}</span><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-bd">${body}</div></div>`;document.body.appendChild(overlay);}
 
 // ─── Init ───────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-  const bar = $('splashBar');
-  if(!bar)return;
-  bar.style.width='25%';await sleep(150);
-  MANIFEST = MANIFEST_DATA;
-  bar.style.width='60%';await sleep(120);
-  const theme=localStorage.getItem('bk_theme');if(theme)document.documentElement.setAttribute('data-theme',theme);
-  const savedFont=localStorage.getItem('bk_font');if(savedFont){fontBase=parseInt(savedFont);document.documentElement.style.setProperty('--font-base',fontBase+'px');}
-  bar.style.width='90%';await sleep(200);
-  initRP();bar.style.width='100%';await sleep(200);
-  $('splash').style.display='none';$('app').style.display='block';
-  detectDevice();
-  renderDashboard();updateProgress();
-  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);});
-  setTimeout(checkAchievements,2000);
+// ─── 安全启动（防卡死） ────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // 5秒强制退出 splash（防止任何错误导致卡死）
+  const splashTimer = setTimeout(() => {
+    const s = $('splash');
+    if (s && s.style.display !== 'none') {
+      s.style.display = 'none';
+      const a = $('app');
+      if (a) a.style.display = 'block';
+      try { renderDashboard(); } catch(e) { console.error('Fallback render error:', e); }
+    }
+  }, 5000);
+
+  // 主启动流程
+  (async () => {
+    try {
+      const bar = $('splashBar');
+      if (!bar) return;
+      bar.style.width = '25%'; await sleep(120);
+      
+      if (typeof MANIFEST_DATA !== 'undefined') {
+        MANIFEST = MANIFEST_DATA;
+      } else {
+        console.warn('MANIFEST_DATA not found, trying fetch...');
+        try {
+          const resp = await fetch('manifest_data.js');
+          const text = await resp.text();
+          eval(text);
+          MANIFEST = MANIFEST_DATA;
+        } catch(e2) {
+          console.error('Manifest load failed:', e2);
+        }
+      }
+      bar.style.width = '60%'; await sleep(100);
+
+      const theme = localStorage.getItem('bk_theme');
+      if (theme) document.documentElement.setAttribute('data-theme', theme);
+      const savedFont = localStorage.getItem('bk_font');
+      if (savedFont) { fontBase = parseInt(savedFont); document.documentElement.style.setProperty('--font-base', fontBase + 'px'); }
+
+      bar.style.width = '85%'; await sleep(100);
+      initRP();
+      bar.style.width = '100%'; await sleep(100);
+      
+      clearTimeout(splashTimer);
+      $('splash').style.display = 'none';
+      $('app').style.display = 'block';
+      detectDevice();
+      renderDashboard();
+      updateProgress();
+      $('content').addEventListener('scroll', () => {
+        $('fab').classList.toggle('show', $('content').scrollTop > 300);
+      });
+      setTimeout(checkAchievements, 2000);
+    } catch (err) {
+      console.error('Init failed:', err);
+      // 强制显示
+      clearTimeout(splashTimer);
+      const s = $('splash');
+      if (s) s.style.display = 'none';
+      const a = $('app');
+      if (a) a.style.display = 'block';
+    }
+  })();
 });
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function scrollToTop() { $('content').scrollTo({ top: 0, behavior: 'smooth' }); }
+const closeAll = () => {};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function scrollToTop(){$('content').scrollTo({top:0,behavior:'smooth'});}
 const closeAll=()=>{};
