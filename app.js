@@ -1,9 +1,52 @@
 // ═══════════════════════════════════════════════════════════════════
-//  📚 知识书塔 · RPG 闯关学习游戏 v2
-// ═══════════════════════════════════════════════════════════════════
+//  🏸 羽毛球系统训练 · NSCA-CPT 科学体系
+//  ═══════════════════════════════════════════════════════════════════
 
 const RAW = 'https://raw.githubusercontent.com/s66899/lamb/book';
 let MANIFEST = null;
+let currentModule = 'dashboard';
+
+// ─── 5大训练模块配置 ──────────────────────────
+const TRAIN_MODULES = [
+  {
+    id:'badminton-tech', icon:'🏸', title:'羽毛球技术', color:'var(--blue)',
+    desc:'手法·步伐·球路·战术一体化训练体系',
+    tags:['握拍','高远球','杀球','网前','步伐','球路'],
+    books:['badminton'],
+    chaptersBase:['基础握拍','正手高远球','反手技术','网前小球','步伐体系','杀球扣杀','平抽快挡','综合训练','常见错误','比赛心理']
+  },
+  {
+    id:'strength', icon:'💪', title:'体能训练', color:'var(--green)',
+    desc:'关节稳定·代谢适应·间歇训练·周期安排',
+    tags:['肩关节','膝关节','核心力量','代谢训练','周期化'],
+    books:['nsca-cpt'],
+    chaptersBase:['训练哲学','解剖基础','力量训练','爆发力','敏捷性','柔韧性','核心训练','周期化','损伤预防','恢复策略']
+  },
+  {
+    id:'psychology', icon:'🧠', title:'心理训练', color:'var(--purple)',
+    desc:'注意力·压力适应·自我调节·决策信心',
+    tags:['注意力','压力管理','自我对话','目标设定','心流'],
+    books:['psychology'],
+    chaptersBase:['动机理论','目标设定','注意力训练','压力管理','自我效能','心流体验','情绪调节','团队动力','比赛心理','心理韧性']
+  },
+  {
+    id:'nutrition', icon:'🥗', title:'营养恢复', color:'var(--orange)',
+    desc:'TDEE计算·营养素分配·训练后恢复·睡眠优化',
+    tags:['蛋白质','碳水','脂肪','水合','睡眠'],
+    books:['nsca-cpt'],
+    chaptersBase:['能量代谢','宏量营养素','微量营养素','训练前营养','训练后恢复','水合策略','补剂科学','睡眠优化','周期营养','体重管理']
+  },
+  {
+    id:'competition', icon:'🏆', title:'比赛策略', color:'var(--red)',
+    desc:'对手分析·战术选择·节奏控制·体能分配',
+    tags:['对手分析','战术库','节奏控制','心理战术','复盘'],
+    books:['badminton','psychology'],
+    chaptersBase:['对手分析','战术选择','节奏控制','体能分配','心理博弈','临场调整','复盘分析','赛前准备','赛中应变','赛后恢复']
+  }
+];
+
+// ─── 书塔书籍入口（次要） ─────────────────────
+const TOWER_BOOKS = ['badminton','finance','psychology','engineering-mechanics','nsca-cpt','yin-yang'];
 
 // ─── Markdown Parser ─────────────────────────────────
 const mdParse = (txt) => {
@@ -60,7 +103,7 @@ const mdParse = (txt) => {
 
 // ─── 版本信息 ──────────────────────────────────────────
 // 每次更新内容后修改此行
-const APP_VERSION = 'v2.0.0';
+const APP_VERSION = 'v2.1.0';
 const APP_DATE = '2026-07-03';
 
 // ─── State ──────────────────────────────────────────────
@@ -463,11 +506,22 @@ function toggleSidebar(show) {
   sidebarOpen = show;
 }
 
-function renderBookList() {
+// ─── Sidebar：训练模块 + 书塔入口 ──────────
+function renderBookListShort() {
   const list = $('bookList');
-  list.innerHTML = MANIFEST.books.map(b => {
+  // Training modules section
+  let html = '<div class="side-section"><div class="side-title">🎯 训练模块</div>';
+  html += TRAIN_MODULES.map(m => `
+    <div class="b-item ${currentModule===m.id?'active':''}" onclick="openTrainModule('${m.id}')" style="border-left:3px solid transparent;${currentModule===m.id?'border-left-color:'+m.color:''}">
+      <span class="be">${m.icon}</span>
+      <span class="bt">${m.title}</span>
+    </div>`).join('');
+  html += '</div>';
+  
+  // Book tower (collapsible-like)
+  html += '<div class="side-section"><div class="side-title" style="display:flex;align-items:center;gap:4px;cursor:pointer" onclick="goHome()">📚 知识书塔 <span style="font-size:8px;color:var(--text4)">拓展</span></div>';
+  html += MANIFEST.books.filter(b=>TOWER_BOOKS.includes(b.id)).map(b => {
     const p = chProgress(b.id);
-    const r = initRP();
     return `<div class="b-item ${currentBookId===b.id?'active':''}" data-bid="${b.id}" onclick="goToBook('${b.id}')">
       <span class="be">${b.emoji}</span>
       <span class="bt">${b.title}</span>
@@ -475,7 +529,12 @@ function renderBookList() {
       <span class="bp" style="width:${Math.round(p*100)}%"></span>
     </div>`;
   }).join('');
+  html += '</div>';
+  
+  list.innerHTML = html;
 }
+
+function renderBookList() { renderBookListShort(); }
 
 function renderChapters(bid) {
   const book = MANIFEST.books.find(b=>b.id===bid);
@@ -494,7 +553,9 @@ function renderChapters(bid) {
 }
 
 // ─── Dashboard ────────────────────────────────
+// ─── 渲染训练总览（首页） ──────────────────
 function renderDashboard() {
+  currentModule = 'dashboard';
   const r = initRP();
   const tp = totalP();
   const totalCh = MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0);
@@ -502,26 +563,25 @@ function renderDashboard() {
   const pct = r.xpToNext>0 ? Math.min(100, Math.round(r.xp/r.xpToNext*100)) : 0;
   const streakCount = getStreakDays().filter(d=>d.done).length;
   
-  $('heroSub').textContent = `${MANIFEST.books.length} 本书 · ${totalCh} 个关卡 · Lv.${r.level}`;
+  showView('dashboard');
+  $('chSection').style.display='none';
   
-  // Avatar
-  const avatarEl = $('heroAvatar');
-  if (avatarEl) {
-    const avatars = ['🧙','🧝','🦸','🧛','🧞','🦄','🐉','🦅'];
-    const idx = (r.level-1) % avatars.length;
-    avatarEl.textContent = r.avatar || avatars[idx];
-  }
-  
-  // Level badge
-  const lvBadge = $('heroLevel');
-  if (lvBadge) lvBadge.textContent = `Lv.${r.level} · ${['✨ 初心者','🌟 学徒','🔥 学士','💫 硕士','👑 博士','🏆 宗师','🐉 传说'][Math.min(6,Math.floor(r.level/3))]}`;
-  
-  // Stat counters (like reference site)
-  const sBooks = $('sBooks'); if (sBooks) sBooks.textContent = MANIFEST.books.length;
+  // 主要统计
+  const sBooks = $('sBooks'); if (sBooks) sBooks.textContent = TRAIN_MODULES.length;
   const sCh = $('sChapters'); if (sCh) sCh.textContent = totalCh;
   const sWords = $('sWords'); if (sWords) sWords.textContent = (totalWords/10000).toFixed(1);
   const sProg = $('sProgress'); if (sProg) sProg.textContent = Math.round(tp*100)+'%';
   const str = $('sStreak'); if (str) str.textContent = streakCount;
+  
+  // Hero
+  const avatarEl = $('heroAvatar');
+  if (avatarEl) {
+    const avatars = ['🧙','🧝','🦸','🧛','🧞','🦄','🐉','🦅'];
+    avatarEl.textContent = r.avatar || avatars[(r.level-1)%avatars.length];
+  }
+  $('heroTitle').textContent = '🏸 羽毛球系统训练 · NSCA-CPT 科学体系';
+  $('heroSub').textContent = `${TRAIN_MODULES.length} 大训练模块 · ${totalCh} 篇教学文档 · 8 级进阶体系 · 3 年完整发展周期`;
+  $('heroLevel').textContent = `Lv.${r.level} · ${['✨ 初心者','🌟 学徒','🔥 学士','💫 硕士','👑 博士','🏆 宗师','🐉 传说'][Math.min(6,Math.floor(r.level/3))]}`;
   
   // XP bar
   const xpFill = $('heroXpFill');
@@ -536,53 +596,158 @@ function renderDashboard() {
     `<span class="ss-day ${d.done?'done':''} ${d.today?'today':''}" style="display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;font-size:8px;background:${d.done?'var(--green)':'var(--bg3)'};color:${d.done?'#fff':'var(--text3)'};${d.today?'border:2px solid var(--blue)':''}margin:0 1px">${new Date(d.key).getDate()}</span>`
   ).join('') + `<span style="margin-left:6px;font-size:10px">🔥 ${streakCount} 天</span>`;
   
-  // Achievements
+  // Achievements link
   const achEl = $('heroAchievements');
   if (achEl) {
     const unlocked = Object.values(r.achievements||{}).filter(v=>v).length;
     achEl.innerHTML = `<span style="cursor:pointer;font-size:11px;color:var(--gold)" onclick="openAchievements()">🏆 成就 ${unlocked}/${Object.keys(ACHIEVEMENTS).length}</span>`;
   }
   
-  // Feature cards - update descriptions based on content
+  // ── 🎯 核心训练原则（对标参考站） ──
   const featSection = $('featuresSection');
   if (featSection) {
-    featSection.innerHTML = [
-      { icon:'🎮', title:'RPG 闯关学习', desc:`${MANIFEST.books.length}张知识地图，${totalCh}道关卡等你探索。闯关升级，积累经验，解锁成就。`, tag:'游戏化' },
-      { icon:'🧪', title:'知识点测验', desc:'每关内置测验题，检验理解。全屏测验模式助你巩固记忆。', tag:'主动学习' },
-      { icon:'🔥', title:'连续阅读奖励', desc:`已坚持 ${streakCount} 天连续阅读。保持每日打卡，解锁连击里程碑奖励。`, tag:'习惯养成' },
-      { icon:'🏆', title:'成就 & 称号', desc:`14项成就待解锁，${Object.values(r.achievements||{}).filter(v=>v).length}项已获得。升级获得称号——从初心者到传说。`, tag:'正向激励' },
-    ].map(f => `<div class="feature-card">
-      <div class="fc-icon">${f.icon}</div>
-      <div class="fc-title">${f.title}</div>
-      <div class="fc-desc">${f.desc}</div>
-      <span class="fc-tag">${f.tag}</span>
-    </div>`).join('');
+    featSection.innerHTML = `
+    <div class="principles-title" style="grid-column:1/-1;text-align:center;margin-bottom:4px">
+      <span style="font-size:16px;font-weight:600">⚡ 核心训练原则</span>
+      <span style="font-size:10px;color:var(--text3);display:block;margin-top:2px">任何训练安排必须同时满足四条才能执行</span>
+    </div>
+    <div class="principle-card" style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:var(--radius);padding:16px 14px;transition:all var(--transition);">
+      <div class="fc-icon">🎯</div>
+      <div class="fc-title">动作质量 > 训练数量</div>
+      <div class="fc-desc">神经肌肉系统记住的是你重复最多的模式。练错的动作重复100次=巩固100次错误。</div>
+      <span class="fc-tag" style="background:var(--red-bg);color:var(--red)">不能用次数衡量效果</span>
+    </div>
+    <div class="principle-card" style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:var(--radius);padding:16px 14px;transition:all var(--transition);">
+      <div class="fc-icon">🧠</div>
+      <div class="fc-title">神经肌肉控制 > 力量输出</div>
+      <div class="fc-desc">神经系统先学会控制肌肉，肌肉才能发力。动作模式不稳定时不能加重量。</div>
+      <span class="fc-tag" style="background:var(--purple-bg);color:var(--purple)">顺序不能反</span>
+    </div>
+    <div class="principle-card" style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:var(--radius);padding:16px 14px;transition:all var(--transition);">
+      <div class="fc-icon">🛡️</div>
+      <div class="fc-title">预防损伤 > 追求表现</div>
+      <div class="fc-desc">一次受伤=倒退回起点。恢复时间往往是训练时间的3-10倍。</div>
+      <span class="fc-tag" style="background:var(--red-bg);color:var(--red)">不能在疲劳时冲击极限</span>
+    </div>
+    <div class="principle-card" style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:var(--radius);padding:16px 14px;transition:all var(--transition);">
+      <div class="fc-icon">📈</div>
+      <div class="fc-title">长期发展 > 短期进步</div>
+      <div class="fc-desc">神经系统适应需要4-6周，结缔组织初步适应约8-12周。</div>
+      <span class="fc-tag" style="background:var(--blue-bg);color:var(--blue)">不能每周都加量</span>
+    </div>`;
   }
   
-  // Book grid
+  // ── 5大训练模块卡片 ──
   const grid = $('bookGrid');
+  grid.innerHTML = TRAIN_MODULES.map(m => {
+    // Count related chapters from manifest
+    let chCount = 0;
+    m.books.forEach(bid => {
+      const book = MANIFEST.books.find(b=>b.id===bid);
+      if (book) chCount += book.chapters.length;
+    });
+    return `<div class="training-card" onclick="openTrainModule('${m.id}')" style="background:linear-gradient(145deg,var(--bg2),var(--bg3),var(--bg2));border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all var(--transition);position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;width:100%;height:3px;background:${m.color}"></div>
+      <div style="font-size:36px;margin-bottom:8px">${m.icon}</div>
+      <div style="font-size:17px;font-weight:600;margin-bottom:4px">${m.title}</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:10px">${m.desc}</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
+        ${m.tags.map(t => `<span style="font-size:9px;background:var(--bg4);color:var(--text3);padding:1px 8px;border-radius:10px;border:1px solid var(--border)">${t}</span>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px">
+        <span>📖 ${chCount} 篇文档</span>
+        <span style="color:${m.color}">查看详情 →</span>
+      </div>
+    </div>`;
+  }).join('');
+  
+  // ── 📚 书塔入口（小型，放底部） ──
+  grid.innerHTML += `<div style="grid-column:1/-1;text-align:center;margin-top:8px">
+    <div onclick="openBookTower()" style="display:inline-flex;align-items:center;gap:10px;padding:14px 28px;background:linear-gradient(135deg,var(--bg3),var(--bg4));border:1px solid var(--border);border-radius:var(--radius-xl);cursor:pointer;transition:all var(--transition);">
+      <span style="font-size:28px">📚</span>
+      <div style="text-align:left">
+        <div style="font-size:14px;font-weight:600">知识书塔</div>
+        <div style="font-size:10px;color:var(--text3)">${MANIFEST.books.length}本书 · ${totalCh}关 · 拓展阅读</div>
+      </div>
+      <span style="font-size:18px;color:var(--text3)">→</span>
+    </div>
+  </div>`;
+  
+  renderBookListShort();
+  updateProgress();
+}
+
+// ─── 书塔入口（次要） ────────────────────
+function openBookTower() {
+  currentModule = 'tower';
+  showView('book');
+  $('chSection').style.display='none';
+  $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回训练总览</div>
+    <h1>📚 知识书塔 · 拓展阅读</h1>
+    <div class="vm">${MANIFEST.books.length}本书 · 专业知识深度阅读</div>`;
+  $('bookStats').innerHTML = '';
+  const grid = $('chapterGrid');
   grid.innerHTML = MANIFEST.books.map(b => {
     const p = chProgress(b.id);
-    return `<div class="book-card fade-in" data-bid="${b.id}" onclick="goToBook('${b.id}')">
+    return `<div class="book-card fade-in" data-bid="${b.id}" onclick="goToBook('${b.id}')" style="background:linear-gradient(145deg,var(--bg2),var(--bg3),var(--bg2));border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all var(--transition);position:relative;overflow:hidden;">
       <div class="bc-glow"></div>
-      <div class="bc-accent" style="background:${b.color}"></div>
-      <div class="bc-head">
-        <span class="bc-emoji">${b.emoji}</span>
-        <span class="bc-title">${b.title}</span>
+      <div class="bc-accent" style="position:absolute;top:0;left:0;width:4px;height:100%;border-radius:0 2px 2px 0;background:${b.color}"></div>
+      <div class="bc-head" style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="font-size:26px">${b.emoji}</span>
+        <span style="font-size:15px;font-weight:600">${b.title}</span>
       </div>
-      <div class="bc-desc">${b.desc}</div>
-      <div class="bc-meta">
+      <div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:8px">${b.desc}</div>
+      <div style="display:flex;gap:10px;font-size:10px;color:var(--text3);flex-wrap:wrap">
         <span>📖 ${b.chapters.length} 关</span>
         <span>📝 ${(b.totalWords/10000).toFixed(1)} 万字</span>
         <span>✅ ${Math.round(p*100)}%</span>
       </div>
-      <div class="bc-bar"><div class="bc-fill" style="width:${Math.round(p*100)}%;background:${b.color}"></div></div>
-      <div class="bc-xp">🏅 ${Math.round(b.totalWords/1000)} XP</div>
+      <div style="margin-top:8px;height:4px;background:var(--bg3);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${Math.round(p*100)}%;background:${b.color};border-radius:4px;transition:width .5s"></div>
+      </div>
     </div>`;
   }).join('');
+}
+
+// ─── 打开训练模块 ────────────────────
+function openTrainModule(modId) {
+  const mod = TRAIN_MODULES.find(m=>m.id===modId);
+  if (!mod) return;
+  currentModule = modId;
+  showView('book');
+  $('chSection').style.display='none';
   
-  renderBookList();
-  updateProgress();
+  $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回训练总览</div>
+    <h1>${mod.icon} ${mod.title}</h1>
+    <div class="vm">${mod.desc}</div>`;
+  
+  // Stats
+  let chCount = 0;
+  mod.books.forEach(bid => {
+    const book = MANIFEST.books.find(b=>b.id===bid);
+    if (book) chCount += book.chapters.length;
+  });
+  $('bookStats').innerHTML = `
+    <div class="bs-item"><span class="bs-num">${mod.chaptersBase.length}</span><span class="bs-label">📖 训练主题</span></div>
+    <div class="bs-item"><span class="bs-num">${mod.tags.length}</span><span class="bs-label">🏷️ 核心标签</span></div>
+    <div class="bs-item"><span class="bs-num">${chCount}</span><span class="bs-label">📚 相关文档</span></div>
+  `;
+  
+  // Module content grid
+  const grid = $('chapterGrid');
+  grid.innerHTML = mod.chaptersBase.map((title, i) => `
+    <div class="chapter-card fade-in" onclick="openChapter(${i})" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;cursor:pointer;transition:all var(--transition);position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${mod.color};opacity:.6"></div>
+      <div style="font-size:9px;color:var(--text3);margin-bottom:3px">训练主题 ${String(i+1).padStart(2,'0')}</div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:4px">${title}</div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);">
+        <span>🔍 学习</span>
+        <span style="color:${mod.color}">${mod.icon}</span>
+      </div>
+    </div>
+  `).join('');
+  
+  renderBookListShort();
 }
 
 // ─── Book View (关卡地图) ─────────────────────
@@ -630,10 +795,9 @@ function goToBook(bid) {
 }
 
 function goHome() {
-  currentBookId=null; currentChapterIdx=-1;
+  currentBookId=null; currentChapterIdx=-1; currentModule='dashboard';
   showView('dashboard');
   renderDashboard();
-  $('chSection').style.display='none';
 }
 
 // ─── Reader ────────────────────────────────────
