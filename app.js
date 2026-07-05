@@ -40,6 +40,11 @@ const TRAIN_MODULES = [
     tags:['对手分析','战术库','节奏','体能分配','复盘'], docs:14,
     books:[],
     chapters:['对手分析框架','战术选择','节奏控制','体能分配','心理博弈','临场调整','复盘方法','赛前准备','赛中应变','赛后恢复'] },
+  { id:'coach', icon:'🎯', title:'教练板块', color:'var(--gold)',
+    desc:'AI教练辅助 · 训练计划编排 · 动作分析指导 · 个性化周期规划',
+    tags:['AI教练','训练计划','动作分析','周期规划','数据追踪'], docs:12,
+    books:['nsca-cpt','badminton'],
+    chapters:['训练计划设计原则','周期性训练编排','动作质量评估体系','训练负荷调控','个性化方案制定','技术诊断方法论','比赛录像分析','训练日志与复盘','运动员心理辅导','智能教练工具'] },
 ];
 
 // ─── 训练等级 ──────────────────────────
@@ -587,6 +592,171 @@ function openLevelFinder() {
       <p style="padding-left:12px">→ 没有 = L0-2 · 基本有 = L3-4 · 完整体系 = L5+</p>
     </div>
     <div style="margin-top:12px;text-align:center;font-size:10px;color:var(--text3)">详细评估请参考训练等级体系</div>`);
+}
+
+// ─── 🎯 教练板块 ──────────────────────────
+function openCoach() {
+  showView('book');
+  currentModule = 'coach';
+  navStack.push({view:'dashboard'});
+  historyPush('coach', {});
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
+    <h1>🎯 教练板块</h1>
+    <div class="vm">AI辅助 · 训练计划 · 动作分析 · 周期规划 — 教练工具包</div>`;
+  $('bookStats').innerHTML = '';
+  $('contentGrid').innerHTML = `
+    <!-- 训练计划制定 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">📋 周期性训练计划</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:8px">
+        根据NSCA-CPT周期化训练理论，一体化的训练计划分为：<br>
+        <strong>大周期</strong>（6-12个月 · 赛季规划）<br>
+        <strong>中周期</strong>（3-6周 · 专项阶段）<br>
+        <strong>小周期</strong>（1周 · 具体执行）
+      </div>
+      <div style="font-size:10px;color:var(--text3);padding:6px 10px;background:var(--bg3);border-radius:6px;margin-bottom:6px">
+        📖 相关书籍：NSCA-CPT 训练哲学 · 工程力学 动力学分析
+      </div>
+      <button onclick="goToBook('nsca-cpt');setTimeout(()=>openChapter(0),200)" class="tb-btn">📖 查看NSCA-CPT入门</button>
+      <button onclick="goToBook('engineering-mechanics');setTimeout(()=>openChapter(8),200)" class="tb-btn" style="margin-left:4px">⚙️ 查看力学分析</button>
+    </div>
+
+    <!-- 训练负荷调控 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">📊 训练负荷调控</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:8px">
+        关键指标：<br>
+        <strong>RPE</strong>（主观疲劳评分 1-10）<br>
+        <strong>训练量</strong>（次数×组数×负荷）<br>
+        <strong>训练密度</strong>（组间休息时间）<br>
+        <strong>恢复窗口</strong>（48-72h大肌群，24-48h小肌群）
+      </div>
+      <div style="font-size:10px;color:var(--text3);padding:6px 10px;background:var(--bg3);border-radius:6px">
+        💡 建议：使用 RPE+心率 双指标监控强度，每周总增幅不超10%
+      </div>
+    </div>
+
+    <!-- 动作质量评估 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">🔍 动作质量评估体系</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:8px">
+        动作质量分级标准：<br>
+        🟢 <strong>Level 1</strong> — 基础模式建立（神经肌肉控制）<br>
+        🟡 <strong>Level 2</strong> — 动作自动化（无需意识控制）<br>
+        🟠 <strong>Level 3</strong> — 负荷适应（加减重不变形）<br>
+        🔴 <strong>Level 4</strong> — 疲劳抗性（疲劳下仍保持标准）
+      </div>
+      <div style="font-size:10px;color:var(--text3);padding:6px 10px;background:var(--bg3);border-radius:6px">
+        ⚠️ 原则：未达到Level 2之前不加负荷，未达到Level 3之前不加量
+      </div>
+    </div>
+
+    <!-- 个性化方案 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">🧑‍🏫 个性化方案制定</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:8px">
+        根据你的：
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;font-size:10px">
+        <label style="color:var(--text2)">① 当前级别（L0-L7）
+          <select id="coachLevel" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+            <option value="0">L0 — 零基础</option><option value="1">L1 — 基础建立</option>
+            <option value="2">L2 — 技术入门</option><option value="3">L3 — 技术熟练</option>
+            <option value="4">L4 — 技术精进</option><option value="5">L5 — 战术应用</option>
+            <option value="6">L6 — 准专业</option><option value="7">L7 — 专业水平</option>
+          </select>
+        </label>
+        <label style="color:var(--text2)">② 训练频率（每周）
+          <select id="coachFreq" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+            <option value="2">2次/周</option><option value="3" selected>3次/周</option>
+            <option value="4">4次/周</option><option value="5">5次/周</option>
+            <option value="6">6次/周</option>
+          </select>
+        </label>
+        <label style="color:var(--text2)">③ 训练时间
+          <select id="coachTime" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+            <option value="60">60分钟</option><option value="90" selected>90分钟</option>
+            <option value="120">120分钟</option><option value="150">150分钟</option>
+          </select>
+        </label>
+        <button onclick="generateCoachPlan()" style="margin-top:6px;padding:6px 16px;border:none;border-radius:6px;background:var(--blue);color:#fff;font-size:12px;cursor:pointer">🎯 生成训练方案</button>
+        <div id="coachResult" style="margin-top:6px"></div>
+      </div>
+    </div>
+
+    <!-- 训练日志 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">📝 训练日志快速模板</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.7;margin-bottom:6px">
+        每次训练后记录：<br>
+        📅 日期：___ · ⏱ 时长：___<br>
+        🎯 训练内容：___<br>
+        📊 RPE（1-10）：___<br>
+        💪 状态（🟢🟡🔴）：___<br>
+        📝 备注/改进点：___
+      </div>
+      <div style="font-size:10px;color:var(--text3);padding:6px 10px;background:var(--bg3);border-radius:6px">
+        💡 连续记录3周可发现疲劳累积趋势，及时调整训练计划
+      </div>
+    </div>
+
+    <!-- 心理辅导 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">🧠 运动员心理辅导框架</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
+        <strong>赛前7天心理准备：</strong><br>
+        D-7：回顾训练数据，建立信心<br>
+        D-5：模拟比赛场景，视觉化训练<br>
+        D-3：战术确认，应急预案<br>
+        D-1：放松训练，早睡<br>
+        D-Day：激活唤醒，专注当下
+      </div>
+      <button onclick="openTrainModule('psychology')" class="tb-btn">🧠 查看心理训练模块</button>
+    </div>
+
+    <div style="grid-column:1/-1;text-align:center;padding:12px;font-size:10px;color:var(--text3)">
+      🎯 教练板块 · 基于NSCA-CPT科学体系 · 更多功能持续更新
+    </div>`;
+  updateProgress();
+}
+
+// ─── 生成训练方案 ────────────────────────
+function generateCoachPlan() {
+  const level = parseInt(document.getElementById('coachLevel')?.value);
+  const freq = parseInt(document.getElementById('coachFreq')?.value);
+  const time = parseInt(document.getElementById('coachTime')?.value);
+  if (isNaN(level) || isNaN(freq)) { return; }
+
+  const techniquePct = Math.max(15, 55 - level * 5);
+  const strengthPct = Math.max(10, 15 + level * 3);
+  const cardioPct = Math.max(10, 15 + level * 2);
+  const recovery = 100 - techniquePct - strengthPct - cardioPct;
+
+  const freqAdvice = freq <= 2 ? '低频率建议技术为主，每次90分钟专项训练' :
+                     freq <= 3 ? '标准频率技术+体能交替，力量每周2次' :
+                     freq <= 4 ? '高频率可采用分化训练：技术/力量/体能循环' :
+                     '超高频率注意疲劳管理，建议每4周减量一周';
+
+  const levelNames = ['零基础','基础','入门','熟练','精进','战术','准专业','专业'];
+
+  document.getElementById('coachResult').innerHTML = `
+    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;margin-top:4px;font-size:11px;line-height:1.6">
+      <div style="font-weight:600;margin-bottom:4px;color:var(--gold)">🎯 ${levelNames[level] || '自定义'} · 每周${freq}次 · 每次${time}分钟</div>
+      <div style="height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;display:flex;margin-bottom:6px">
+        <div style="width:${techniquePct}%;background:var(--blue);height:3px" title="技术${techniquePct}%"></div>
+        <div style="width:${strengthPct}%;background:var(--green);height:3px" title="力量${strengthPct}%"></div>
+        <div style="width:${cardioPct}%;background:var(--orange);height:3px" title="体能${cardioPct}%"></div>
+        <div style="width:${recovery}%;background:var(--purple);height:3px" title="恢复${recovery}%"></div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:9px;color:var(--text2)">
+        <span style="color:var(--blue)">● 技术${techniquePct}%</span>
+        <span style="color:var(--green)">● 力量${strengthPct}%</span>
+        <span style="color:var(--orange)">● 体能${cardioPct}%</span>
+        <span style="color:var(--purple)">● 恢复${recovery}%</span>
+      </div>
+      <div style="margin-top:6px;font-size:10px;color:var(--text2)">${freqAdvice}</div>
+      <div style="margin-top:4px;font-size:9px;color:var(--text3)">💡 每4周重新评估调整比例</div>
+    </div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════
