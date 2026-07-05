@@ -1,0 +1,15 @@
+# Node / workspace artifacts (never commit)
+node_modules/
+.openclaw/
+
+# OS junk
+Thumbs.db
+.DS_Store
+
+# Editor temp
+*.swp
+*~
+
+# Logs (don't ship to Pages)
+*.log
+logs/

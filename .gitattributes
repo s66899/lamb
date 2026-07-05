@@ -1,0 +1,4 @@
+# Force-disable LFS for this repo to avoid actions/checkout failures
+# (LFS isn't actually used here; workspace accidentally inherited the global filter)
+* -text -merge -diff -lfs -lockable
+*.md diff=markdown
