@@ -1022,7 +1022,7 @@ function openCoach() {
             📊 评估 → 📋 计划 → 📚 学习 → ⚡ 速查 → 🎬 实战
           </div>
         </div>
-        <a href="coach/index.html" target="_blank" class="tb-btn" style="font-size:12px;padding:6px 14px;background:var(--gold);color:#000;border:none;font-weight:600">🚀 打开教练工作台</a>
+        <a href="javascript:void(0)" onclick="openCoachInline('coach/index.html','教练工作台')" class="tb-btn" style="font-size:12px;padding:6px 14px;background:var(--gold);color:#000;border:none;font-weight:600">🚀 打开教练工作台</a>
       </div>
     </div>
 
@@ -1034,7 +1034,7 @@ function openCoach() {
         省队/市队/国家队选材级测评。<br>
         30+题目，6大维度，7级结果。
       </div>
-      <a href="coach/level-assessment.html" target="_blank" class="tb-btn">📋 开始评估 →</a>
+      <a href="javascript:void(0)" onclick="openCoachInline('coach/level-assessment.html','学员水平评估')" class="tb-btn">📋 开始评估 →</a>
     </div>
 
     <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
@@ -1043,7 +1043,7 @@ function openCoach() {
       <div style="font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:8px">
         13章完整体系：教练素养→运动科学→训练方法→体能→营养→康复→心理→课例模板
       </div>
-      <a href="coach/coach-guide.html" target="_blank" class="tb-btn">📖 开始学习 →</a>
+      <a href="javascript:void(0)" onclick="openCoachInline('coach/coach-guide.html','教练速成指导书')" class="tb-btn">📖 开始学习 →</a>
     </div>
 
     <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
@@ -1053,7 +1053,7 @@ function openCoach() {
         7-16岁训练路径总览。<br>
         按年龄给答案：教什么/不教什么/怎么教。
       </div>
-      <a href="coach/coach-manual-v2.html" target="_blank" class="tb-btn">⚡ 快速查阅 →</a>
+      <a href="javascript:void(0)" onclick="openCoachInline('coach/coach-manual-v2.html','教练速查手册')" class="tb-btn">⚡ 快速查阅 →</a>
     </div>
 
     <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
@@ -1063,7 +1063,7 @@ function openCoach() {
         分龄训练详细方案：<br>
         7-9岁 · 9-11岁 · 11-13岁 · 13-16岁
       </div>
-      <a href="coach/kids-training-program-part1.html" target="_blank" class="tb-btn">📋 查看方案 →</a>
+      <a href="javascript:void(0)" onclick="openCoachInline('coach/kids-training-program-part1.html','儿童训练方案')" class="tb-btn">📋 查看方案 →</a>
     </div>
 
     <!-- 训练计划制定 -->
@@ -1120,32 +1120,32 @@ function openCoach() {
       <div style="font-size:14px;font-weight:600;margin-bottom:4px;color:var(--blue)">🎯 教练工作台 · 教练系统融合</div>
       <div style="font-size:10px;color:var(--text2);margin-bottom:10px">6专家21轮研讨产出的一体化教练工具，直接在新窗口打开使用</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">
-        <a href="coach/index.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+        <a href="javascript:void(0)" onclick="openCoachInline('coach/index.html','教练工作台')" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
           <div style="font-size:22px">🏟️</div>
           <div style="font-size:12px;font-weight:600;margin:4px 0">教练工作台</div>
           <div style="font-size:9px;color:var(--text3)">总入口 · 所有工具跳转</div>
         </a>
-        <a href="coach/level-assessment.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+        <a href="javascript:void(0)" onclick="openCoachInline('coach/level-assessment.html','学员水平评估')" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
           <div style="font-size:22px">📊</div>
           <div style="font-size:12px;font-weight:600;margin:4px 0">学员水平评估</div>
           <div style="font-size:9px;color:var(--text3)">30+题 · 6维度 · 7级结果</div>
         </a>
-        <a href="coach/coach-guide.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+        <a href="javascript:void(0)" onclick="openCoachInline('coach/coach-guide.html','教练速成指导书')" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
           <div style="font-size:22px">📚</div>
           <div style="font-size:12px;font-weight:600;margin:4px 0">教练速成指导书</div>
           <div style="font-size:9px;color:var(--text3)">13章系统体系</div>
         </a>
-        <a href="coach/coach-manual-v2.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+        <a href="javascript:void(0)" onclick="openCoachInline('coach/coach-manual-v2.html','训练前速查手册')" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
           <div style="font-size:22px">⚡</div>
           <div style="font-size:12px;font-weight:600;margin:4px 0">训练前速查手册</div>
           <div style="font-size:9px;color:var(--text3)">7-16岁按龄速查</div>
         </a>
-        <a href="coach/kids-training-program-part1.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+        <a href="javascript:void(0)" onclick="openCoachInline('coach/kids-training-program-part1.html','儿童训练分龄方案')" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
           <div style="font-size:22px">🧒</div>
           <div style="font-size:12px;font-weight:600;margin:4px 0">儿童训练分龄方案</div>
           <div style="font-size:9px;color:var(--text3)">7-9·9-11·11-13·13-16</div>
         </a>
-        <a href="coach/coach-manual-v2.html#ch1" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+        <a href="javascript:void(0)" onclick="openCoachInline('coach/coach-manual-v2.html','课例模板库')" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
           <div style="font-size:22px">📋</div>
           <div style="font-size:12px;font-weight:600;margin:4px 0">课例模板库</div>
           <div style="font-size:9px;color:var(--text3)">含课时间接实例</div>
@@ -1893,6 +1893,28 @@ let sidebarOpen=true;
 
 // ─── Overlay ──────────────────────────────────
 function showOverlay(cls,title,body){const overlay=document.createElement('div');overlay.className='overlay';overlay.id='_tmpOverlay';overlay.onclick=function(e){if(e.target===this)this.remove();};overlay.innerHTML=`<div class="${cls}" onclick="event.stopPropagation()"><div class="panel-hd"><span>${title}</span><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-bd">${body}</div></div>`;document.body.appendChild(overlay);}
+
+// ─── 教练系统内嵌 iframe 加载 ────────
+function openCoachInline(url, title) {
+  // 移除已有 overlay
+  const existing = document.getElementById('_tmpOverlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay coach-inline-overlay';
+  overlay.id = '_tmpOverlay';
+  overlay.onclick = function(e) { if (e.target === this) this.remove(); };
+  overlay.innerHTML = `<div class="coach-inline-wrap" onclick="event.stopPropagation()">
+    <div class="panel-hd coach-inline-hd">
+      <span>🎯 ${title}</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <a href="${url}" target="_blank" class="h-btn" title="新窗口打开">↗</a>
+        <button class="h-btn" onclick="this.closest('.overlay').remove()" title="关闭">✕</button>
+      </div>
+    </div>
+    <iframe src="${url}" class="coach-inline-iframe" referrerpolicy="no-referrer"></iframe>
+  </div>`;
+  document.body.appendChild(overlay);
+}
 
 // ─── Init ───────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {

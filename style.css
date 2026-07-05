@@ -340,6 +340,12 @@ article hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
 
 /* ── 模块内联内容（营养/比赛） ─── */
 .reader-module-content { font-size:13px; line-height:1.7; }
+
+/* ── 教练系统内嵌 iframe ─── */
+.coach-inline-overlay { align-items:stretch !important; justify-content:center !important; padding:12px; }
+.coach-inline-wrap { width:100%; max-width:960px; height:100%; max-height:90vh; background:var(--bg2); border-radius:var(--radius-lg); overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.25); animation:slideUp .3s ease; }
+.coach-inline-hd { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:13px; font-weight:600; background:var(--bg); }
+.coach-inline-iframe { flex:1; width:100%; border:none; background:var(--bg2); }
 .reader-module-content .tip { display:block; background:rgba(79,154,255,.06); border-left:3px solid var(--blue); padding:8px 12px; border-radius:6px; margin:10px 0; font-size:12px; color:var(--text); }
 [data-theme="dark"] .reader-module-content .tip { background:rgba(79,154,255,.10); }
 .reader-module-content table { margin:10px 0; font-size:11px; }
