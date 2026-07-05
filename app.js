@@ -216,7 +216,7 @@ function renderDashboard() {
         <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">计划设计</span>
         <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">课例模板</span>
         <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">速查手册</span>
-        <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">元淳系统</span>
+        <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">教练系统</span>
       </div>
       <div class="mc-foot"><span>🏆 6专家 · 21轮研讨</span><span class="mc-arrow">进入教练工作台 →</span></div>
     </div>` + TRAIN_MODULES.filter(m=>m.id!=='coach').map(m => {
@@ -672,7 +672,7 @@ function openCoach() {
         <div style="flex:1;min-width:200px">
           <div style="font-size:14px;font-weight:600;margin-bottom:2px;color:var(--gold)">羽毛球教练系统 · 教练工作台</div>
           <div style="font-size:10px;color:var(--text2);line-height:1.5">
-            元淳联合6位专家21轮研讨出品 · 从零基础到独立执教的系统化教练成长路径<br>
+            6位专家联合21轮研讨出品 · 从零基础到独立执教的系统化教练成长路径<br>
             📊 评估 → 📋 计划 → 📚 学习 → ⚡ 速查 → 🎬 实战
           </div>
         </div>
@@ -769,9 +769,9 @@ function openCoach() {
       </div>
     </div>
 
-    <!-- 教练腰带 · 元淳系统融合区 -->
+    <!-- 教练腰带 · 教练系统融合区 -->
     <div class="calc-card" style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--blue);border-radius:var(--radius);padding:16px;grid-column:1/-1">
-      <div style="font-size:14px;font-weight:600;margin-bottom:4px;color:var(--blue)">🎯 教练工作台 · 元淳系统融合</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;color:var(--blue)">🎯 教练工作台 · 教练系统融合</div>
       <div style="font-size:10px;color:var(--text2);margin-bottom:10px">6专家21轮研讨产出的一体化教练工具，直接在新窗口打开使用</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">
         <a href="coach/index.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
@@ -841,7 +841,7 @@ function openCoach() {
     </div>
 
     <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:10px;color:var(--text3)">
-      🎯 教练板块 · NSCA-CPT科学体系 + 元淳6专家21轮研讨体系融合 · v3.5.0
+      🎯 教练板块 · NSCA-CPT科学体系 + 6专家21轮研讨体系融合 · v3.5.0
     </div>`;
   updateProgress();
 }
