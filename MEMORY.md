@@ -92,3 +92,12 @@
 - [x] 四本书ch08-ch11部分补充（2026-05-20）
 - [ ] 当前需继续写下一章（羽毛球ch12、金融ch12、心理学ch11、工程力学ch11）
 - [i] 定时任务cron持续故障，需修复或手动执行
+
+### 🚀 v3.4.0 部署记录（2026-07-05）
+- 推送到 book 分支
+- 修复模块→阅读跳转闪烁（直接跳阅读器，跳过书塔列表）
+- 新增 browser history pushState + popstate 支持物理后退键
+- 统一所有返回按钮为 goBack()，navStack 不再丢失
+- renderChapter 添加 8 秒 fetch 超时防卡死
+- openScreening/openCalculators 支持返回
+- 清理重复变量声明（sleep/closeAll/scrollToTop）

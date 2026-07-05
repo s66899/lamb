@@ -144,6 +144,19 @@ function renderDashboard() {
   $('sDocs').textContent = TRAIN_MODULES.reduce((s,m)=>s+m.docs,0);
   $('sCycle').textContent = '3yr';
   $('heroSub').textContent = `${TRAIN_MODULES.length}大训练模块 · 融合心理学·营养学·比赛策略 · 基于NSCA-CSCS科学体系`;
+  // 版本号（首页可见）
+  const verEl = document.createElement('div');
+  verEl.style.cssText = 'font-size:9px;color:var(--text4);margin-top:4px;cursor:pointer';
+  verEl.textContent = `${APP_VERSION} · ${APP_DATE}`;
+  verEl.onclick = () => openStats();
+  const heroSub = $('heroSub');
+  if (heroSub && !document.getElementById('heroVersion')) {
+    verEl.id = 'heroVersion';
+    heroSub.after(verEl);
+  } else {
+    const existing = document.getElementById('heroVersion');
+    if (existing) existing.textContent = `${APP_VERSION} · ${APP_DATE}`;
+  }
 
   // ── ⚡ 核心原则 ──
   $('principlesSection').innerHTML = `
