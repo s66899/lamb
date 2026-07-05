@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>羽毛球教练系统 · 教练工作台</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0c14;--surface:#16162a;--surface-2:#1e1e3a;--surface-3:#282850;--border:#333366;--text:#f0f0ff;--text-2:#9090b0;--text-3:#606080;--red:#ff4466;--green:#22c55e;--blue:#3b82f6;--purple:#8b5cf6;--orange:#f97316;--teal:#14b8a6;--gold:#fbbf24;--pink:#ec4899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans SC',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 20% 50%,rgba(59,130,246,0.06) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(139,92,246,0.04) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(236,72,153,0.03) 0%,transparent 50%);z-index:-1}
+
+/* ===== HEADER ===== */
+.header{text-align:center;padding:4rem 1.5rem 2.5rem;position:relative}
+.header::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(139,92,246,0.15) 0%,transparent 70%);pointer-events:none}
+.header .badge{display:inline-block;padding:0.35rem 1.2rem;background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(236,72,153,0.2));border:1px solid rgba(139,92,246,0.3);border-radius:20px;font-size:0.75rem;color:var(--purple);font-weight:600;letter-spacing:1px;margin-bottom:1rem;backdrop-filter:blur(10px)}
+.header h1{font-size:2.5rem;font-weight:900;background:linear-gradient(135deg,#fff 0%,#c084fc 40%,#f472b6 70%,#fbbf24 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.3;margin-bottom:0.6rem;position:relative}
+.header .sub{color:var(--text-2);font-size:1rem;max-width:600px;margin:0 auto;line-height:1.7}
+.header .stats{display:flex;justify-content:center;gap:2.5rem;margin-top:2rem;flex-wrap:wrap}
+.header .stat{text-align:center;padding:0.8rem 1.2rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;min-width:80px}
+.header .stat .num{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header .stat .label{font-size:0.65rem;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;margin-top:0.2rem}
+
+.container{max-width:1000px;margin:0 auto;padding:0 1rem}
+
+/* ===== WORKFLOW ===== */
+.workflow{margin:2.5rem 0}
+.workflow-title{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:1.2rem;text-align:center;display:flex;align-items:center;justify-content:center;gap:0.5rem}
+.workflow-title::before,.workflow-title::after{content:'';width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--border))}
+.workflow-steps{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding:0.5rem 0}
+.wf-step{flex:1;min-width:150px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 0.8rem;text-align:center;position:relative;cursor:pointer;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);text-decoration:none;color:var(--text)}
+.wf-step:hover{border-color:var(--purple);transform:translateY(-4px);box-shadow:0 8px 30px rgba(139,92,246,0.2)}
+.wf-step::after{content:'→';position:absolute;right:-14px;top:50%;transform:translateY(-50%);font-size:1.1rem;color:var(--text-3);z-index:1;font-weight:700}
+.wf-step:last-child::after{display:none}
+.wf-step .wf-num{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--purple);font-weight:700;margin-bottom:0.4rem;letter-spacing:0.5px}
+.wf-step .wf-icon{font-size:1.8rem;margin-bottom:0.4rem;filter:drop-shadow(0 2px 8px rgba(139,92,246,0.3))}
+.wf-step .wf-name{font-weight:700;font-size:0.9rem;margin-bottom:0.2rem}
+.wf-step .wf-desc{font-size:0.7rem;color:var(--text-3);line-height:1.4}
+
+/* ===== SECTION ===== */
+section{margin:2.5rem 0}
+.sec-title{font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+.sec-title::before{content:'';width:4px;height:16px;border-radius:2px;background:linear-gradient(180deg,var(--purple),var(--pink))}
+
+/* ===== CARDS ===== */
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;margin:1rem 0}
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);text-decoration:none;color:var(--text);display:block;position:relative;overflow:hidden}
+.tool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),var(--pink));opacity:0;transition:opacity 0.3s}
+.tool-card:hover{border-color:var(--purple);transform:translateY(-4px);box-shadow:0 12px 40px rgba(139,92,246,0.15)}
+.tool-card:hover::before{opacity:1}
+.tool-card .tc-icon{font-size:2rem;margin-bottom:0.6rem;filter:drop-shadow(0 2px 8px rgba(139,92,246,0.3))}
+.tool-card .tc-name{font-weight:700;font-size:1.1rem;margin-bottom:0.4rem}
+.tool-card .tc-desc{font-size:0.85rem;color:var(--text-2);margin-bottom:0.8rem;line-height:1.6}
+.tool-card .tc-tags{display:flex;gap:0.4rem;flex-wrap:wrap}
+.tag{display:inline-block;padding:0.2rem 0.6rem;border-radius:6px;font-size:0.65rem;font-weight:600}
+.tag-green{background:rgba(34,197,94,0.15);color:var(--green)}
+.tag-blue{background:rgba(59,130,246,0.15);color:var(--blue)}
+.tag-purple{background:rgba(139,92,246,0.15);color:var(--purple)}
+.tag-orange{background:rgba(249,115,22,0.15);color:var(--orange)}
+.tag-pink{background:rgba(236,72,153,0.15);color:var(--pink)}
+
+/* ===== QUICK ACCESS ===== */
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.8rem;margin:1rem 0}
+.quick-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:0.8rem;transition:all 0.2s}
+.quick-card:hover{border-color:var(--purple);background:var(--surface-2);transform:translateX(4px)}
+.quick-card .qc-icon{font-size:1.3rem;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(139,92,246,0.2))}
+.quick-card .qc-text{font-size:0.85rem;font-weight:600}
+
+/* ===== FEATURE LIST ===== */
+.feature-list{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:1rem 0}
+@media(max-width:600px){.feature-list{grid-template-columns:1fr}}
+.feature-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;transition:all 0.2s}
+.feature-item:hover{border-color:var(--purple)}
+.feature-item .fi-title{font-weight:700;font-size:0.9rem;margin-bottom:0.3rem;display:flex;align-items:center;gap:0.3rem}
+.feature-item .fi-desc{color:var(--text-2);font-size:0.8rem;line-height:1.5}
+
+/* ===== FILE TABLE ===== */
+.file-table{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;overflow-x:auto}
+.file-table table{width:100%;border-collapse:collapse;font-size:0.82rem}
+.file-table th{text-align:left;padding:0.6rem;border-bottom:1px solid var(--border);color:var(--text-3);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px}
+.file-table td{padding:0.6rem;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--text-2)}
+.file-table tr:hover td{background:rgba(139,92,246,0.03)}
+
+/* ===== FOOTER ===== */
+.footer{text-align:center;padding:3rem 1.5rem;color:var(--text-3);font-size:0.8rem;border-top:1px solid var(--border);margin-top:3rem}
+.footer p{margin-bottom:0.3rem}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.tool-card,.quick-card,.feature-item{animation:fadeInUp 0.5s ease forwards}
+.tool-card:nth-child(1){animation-delay:0.1s}
+.tool-card:nth-child(2){animation-delay:0.2s}
+.tool-card:nth-child(3){animation-delay:0.3s}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  .header{padding:3rem 1rem 2rem}
+  .header h1{font-size:1.8rem}
+  .header .stats{gap:1rem}
+  .header .stat{min-width:70px;padding:0.6rem 0.8rem}
+  .header .stat .num{font-size:1.5rem}
+  .wf-step{min-width:120px;padding:0.8rem 0.6rem}
+  .tool-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="badge">COACH WORKSPACE</div>
+  <h1>羽毛球教练系统</h1>
+  <div class="sub">从零基础到独立执教 · 评估→学习→实践→提升的完整教练成长路径</div>
+  <div class="stats">
+    <div class="stat"><div class="num">7</div><div class="label">教学模块</div></div>
+    <div class="stat"><div class="num">13</div><div class="label">知识章节</div></div>
+    <div class="stat"><div class="num">10</div><div class="label">实战案例</div></div>
+    <div class="stat"><div class="num">30+</div><div class="label">测评题目</div></div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ===== WORKFLOW ===== -->
+<div class="workflow">
+  <div class="workflow-title">教练工作流 · 从评估到执教的完整路径</div>
+  <div class="workflow-steps">
+    <a href="level-assessment.html" class="wf-step">
+      <div class="wf-num">STEP 1</div>
+      <div class="wf-icon">📊</div>
+      <div class="wf-name">评估学员</div>
+      <div class="wf-desc">测试孩子当前水平</div>
+    </a>
+    <a href="coach-guide.html#ch8" class="wf-step">
+      <div class="wf-num">STEP 2</div>
+      <div class="wf-icon">📋</div>
+      <div class="wf-name">制定计划</div>
+      <div class="wf-desc">选择对应训练课模板</div>
+    </a>
+    <a href="coach-guide.html" class="wf-step">
+      <div class="wf-num">STEP 3</div>
+      <div class="wf-icon">📚</div>
+      <div class="wf-name">学习方法</div>
+      <div class="wf-desc">掌握训练方法论</div>
+    </a>
+    <a href="coach-manual-v2.html" class="wf-step">
+      <div class="wf-num">STEP 4</div>
+      <div class="wf-icon">⚡</div>
+      <div class="wf-name">快速参考</div>
+      <div class="wf-desc">训练前5分钟速查</div>
+    </a>
+    <a href="coach-guide.html#ch13" class="wf-step">
+      <div class="wf-num">STEP 5</div>
+      <div class="wf-icon">🎬</div>
+      <div class="wf-name">案例学习</div>
+      <div class="wf-desc">应对真实教学场景</div>
+    </a>
+  </div>
+</div>
+
+<!-- ===== TOOLS ===== -->
+<section>
+  <div class="sec-title">核心工具</div>
+  <div class="tool-grid">
+    <a href="level-assessment.html" class="tool-card">
+      <div class="tc-icon">📊</div>
+      <div class="tc-name">学员水平评估</div>
+      <div class="tc-desc">省队/市队/国家队选材级测评。30+题目，6大维度（体能/技术/战术/比赛/心理），自动计算年龄加成，7级结果路径。</div>
+      <div class="tc-tags">
+        <span class="tag tag-green">交互式</span>
+        <span class="tag tag-blue">30+题目</span>
+        <span class="tag tag-purple">7级结果</span>
+      </div>
+    </a>
+    <a href="coach-guide.html" class="tool-card">
+      <div class="tc-icon">📚</div>
+      <div class="tc-name">教练速成指导书</div>
+      <div class="tc-desc">13章完整知识体系：教练素养→运动科学→训练方法→体能→营养→康复→心理→课例→评估→应急→家长沟通→职业发展→实战案例。</div>
+      <div class="tc-tags">
+        <span class="tag tag-green">13章</span>
+        <span class="tag tag-orange">系统化</span>
+        <span class="tag tag-pink">快速上岗</span>
+      </div>
+    </a>
+    <a href="coach-manual-v2.html" class="tool-card">
+      <div class="tc-icon">⚡</div>
+      <div class="tc-name">教练速查手册</div>
+      <div class="tc-desc">7-16岁训练路径总览。6专家21轮研讨，按年龄给答案：教什么/不教什么/怎么教。训练前5分钟速查。</div>
+      <div class="tc-tags">
+        <span class="tag tag-green">快速查阅</span>
+        <span class="tag tag-blue">21轮研讨</span>
+        <span class="tag tag-purple">打印友好</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ===== QUICK ACCESS ===== -->
+<section>
+  <div class="sec-title">快速入口</div>
+  <div class="quick-grid">
+    <a href="level-assessment.html" class="quick-card"><span class="qc-icon">📋</span><span class="qc-text">新学员评估</span></a>
+    <a href="coach-guide.html#ch8" class="quick-card"><span class="qc-icon">📝</span><span class="qc-text">课例模板库</span></a>
+    <a href="coach-guide.html#ch4" class="quick-card"><span class="qc-icon">💪</span><span class="qc-text">体能训练动作库</span></a>
+    <a href="coach-guide.html#ch5" class="quick-card"><span class="qc-icon">🍎</span><span class="qc-text">营养指导</span></a>
+    <a href="coach-guide.html#ch6" class="quick-card"><span class="qc-icon">🩺</span><span class="qc-text">伤病预防</span></a>
+    <a href="coach-guide.html#ch7" class="quick-card"><span class="qc-icon">🧠</span><span class="qc-text">运动心理</span></a>
+    <a href="coach-guide.html#ch10" class="quick-card"><span class="qc-icon">🚑</span><span class="qc-text">应急处理</span></a>
+    <a href="coach-guide.html#ch11" class="quick-card"><span class="qc-icon">📢</span><span class="qc-text">家长沟通</span></a>
+    <a href="coach-guide.html#ch13" class="quick-card"><span class="qc-icon">🎬</span><span class="qc-text">实战案例</span></a>
+    <a href="coach-manual-v2.html" class="quick-card"><span class="qc-icon">⏰</span><span class="qc-text">发育窗口期</span></a>
+    <a href="coach-manual-v2.html" class="quick-card"><span class="qc-icon">🎯</span><span class="qc-text">多球参数速查</span></a>
+    <a href="coach-manual-v2.html" class="quick-card"><span class="qc-icon">📅</span><span class="qc-text">技术时间线</span></a>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section>
+  <div class="sec-title">系统特色</div>
+  <div class="feature-list">
+    <div class="feature-item">
+      <div class="fi-title">📊 数据驱动评估</div>
+      <div class="fi-desc">30+题目全面采集体能/技战术/心理数据，自动计算年龄加成，给出7级精准定位</div>
+    </div>
+    <div class="feature-item">
+      <div class="fi-title">📋 课例拿来即用</div>
+      <div class="fi-desc">7-9/9-11/11-13/13-16岁四套完整课例模板，精确到分钟，教练照着做就行</div>
+    </div>
+    <div class="feature-item">
+      <div class="fi-title">🎬 实战案例教学</div>
+      <div class="fi-desc">10个真实教学场景，从"孩子哭了"到"家长问能走专业吗"，30秒应对方案</div>
+    </div>
+    <div class="feature-item">
+      <div class="fi-title">🔬 科学依据支撑</div>
+      <div class="fi-desc">运动科学/发展心理学/营养学/康复医学四大学科支撑，不是经验主义</div>
+    </div>
+    <div class="feature-item">
+      <div class="fi-title">⚡ 快速查阅设计</div>
+      <div class="fi-desc">训练前5分钟速查手册，按年龄给答案，教练不用翻遍全书找答案</div>
+    </div>
+    <div class="feature-item">
+      <div class="fi-title">📱 响应式设计</div>
+      <div class="fi-desc">手机/平板/电脑均可使用，教练在训练场边也能快速查阅</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FILE LIST ===== -->
+<section>
+  <div class="sec-title">完整文件索引</div>
+  <div class="file-table">
+    <table>
+      <thead>
+        <tr>
+          <th>文件</th>
+          <th>用途</th>
+          <th>适用场景</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>index.html</strong></td>
+          <td>教练工作台（入口）</td>
+          <td>所有场景的起点</td>
+        </tr>
+        <tr>
+          <td><strong>level-assessment.html</strong></td>
+          <td>学员水平评估</td>
+          <td>新学员入学/定期评估</td>
+        </tr>
+        <tr>
+          <td><strong>coach-guide.html</strong></td>
+          <td>教练速成指导书（13章）</td>
+          <td>新手学习/日常参考</td>
+        </tr>
+        <tr>
+          <td><strong>coach-manual-v2.html</strong></td>
+          <td>教练速查手册</td>
+          <td>训练前快速查阅</td>
+        </tr>
+        <tr>
+          <td><strong>coach-manual-7to16.html</strong></td>
+          <td>教练手册（初版）</td>
+          <td>已整合到v2，仅供归档</td>
+        </tr>
+        <tr>
+          <td><strong>kids-training-program-part1-3.html</strong></td>
+          <td>儿童训练方案详细版</td>
+          <td>详细技术教学参考</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+  <p>羽毛球教练系统 · 六专家联合设计 · 20轮研讨 · 可投入实际教学使用</p>
+  <p style="font-size:0.7rem;margin-top:0.5rem;color:var(--text-3)">内容基于运动科学、发展心理学和教练实践编写，仅供参考。具体训练方案请结合学员个体情况调整。</p>
+</div>
+
+</div><!-- /container -->
+</body>
+</html>

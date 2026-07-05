@@ -602,120 +602,119 @@ function openCoach() {
   historyPush('coach', {});
   $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>🎯 教练板块</h1>
-    <div class="vm">AI辅助 · 训练计划 · 动作分析 · 周期规划 — 教练工具包</div>`;
-  $('bookStats').innerHTML = '';
+    <div class="vm">教练工作台 · 学员评估 · 训练设计 · 6专家21轮研讨体系</div>`;
+  $('bookStats').innerHTML = `
+    <div class="bs-item"><span class="bs-num">6</span><span class="bs-label">📚 教学模块</span></div>
+    <div class="bs-item"><span class="bs-num">13</span><span class="bs-label">📖 知识章节</span></div>
+    <div class="bs-item"><span class="bs-num">30+</span><span class="bs-label">🧪 测评题目</span></div>
+    <div class="bs-item"><span class="bs-num">21</span><span class="bs-label">🔄 研讨轮次</span></div>`;
   $('contentGrid').innerHTML = `
+    <!-- 教练系统主入口 -->
+    <div class="calc-card" style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--gold);border-radius:var(--radius);padding:16px;grid-column:1/-1">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div style="font-size:32px">🏟️</div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;color:var(--gold)">羽毛球教练系统 · 教练工作台</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.5">
+            元淳联合6位专家21轮研讨出品 · 从零基础到独立执教的系统化教练成长路径<br>
+            📊 评估 → 📋 计划 → 📚 学习 → ⚡ 速查 → 🎬 实战
+          </div>
+        </div>
+        <a href="coach/index.html" target="_blank" class="tb-btn" style="font-size:12px;padding:6px 14px;background:var(--gold);color:#000;border:none;font-weight:600">🚀 打开教练工作台</a>
+      </div>
+    </div>
+
+    <!-- 核心工具卡片 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:28px;margin-bottom:6px">📊</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">学员水平评估</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:8px">
+        省队/市队/国家队选材级测评。<br>
+        30+题目，6大维度，7级结果。
+      </div>
+      <a href="coach/level-assessment.html" target="_blank" class="tb-btn">📋 开始评估 →</a>
+    </div>
+
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:28px;margin-bottom:6px">📚</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">教练速成指导书</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:8px">
+        13章完整体系：教练素养→运动科学→训练方法→体能→营养→康复→心理→课例模板
+      </div>
+      <a href="coach/coach-guide.html" target="_blank" class="tb-btn">📖 开始学习 →</a>
+    </div>
+
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:28px;margin-bottom:6px">⚡</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">教练速查手册</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:8px">
+        7-16岁训练路径总览。<br>
+        按年龄给答案：教什么/不教什么/怎么教。
+      </div>
+      <a href="coach/coach-manual-v2.html" target="_blank" class="tb-btn">⚡ 快速查阅 →</a>
+    </div>
+
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:28px;margin-bottom:6px">🧒</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">儿童训练方案</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.5;margin-bottom:8px">
+        分龄训练详细方案：<br>
+        7-9岁 · 9-11岁 · 11-13岁 · 13-16岁
+      </div>
+      <a href="coach/kids-training-program-part1.html" target="_blank" class="tb-btn">📋 查看方案 →</a>
+    </div>
+
     <!-- 训练计划制定 -->
     <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">📋 周期性训练计划</div>
       <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:8px">
-        根据NSCA-CPT周期化训练理论，一体化的训练计划分为：<br>
         <strong>大周期</strong>（6-12个月 · 赛季规划）<br>
         <strong>中周期</strong>（3-6周 · 专项阶段）<br>
         <strong>小周期</strong>（1周 · 具体执行）
       </div>
-      <div style="font-size:10px;color:var(--text3);padding:6px 10px;background:var(--bg3);border-radius:6px;margin-bottom:6px">
-        📖 相关书籍：NSCA-CPT 训练哲学 · 工程力学 动力学分析
-      </div>
-      <button onclick="goToBook('nsca-cpt');setTimeout(()=>openChapter(0),200)" class="tb-btn">📖 查看NSCA-CPT入门</button>
-      <button onclick="goToBook('engineering-mechanics');setTimeout(()=>openChapter(8),200)" class="tb-btn" style="margin-left:4px">⚙️ 查看力学分析</button>
+      <button onclick="goToBook('nsca-cpt');setTimeout(()=>openChapter(0),200)" class="tb-btn">📖 NSCA-CPT入门</button>
     </div>
 
     <!-- 训练负荷调控 -->
     <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">📊 训练负荷调控</div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:8px">
-        关键指标：<br>
-        <strong>RPE</strong>（主观疲劳评分 1-10）<br>
-        <strong>训练量</strong>（次数×组数×负荷）<br>
-        <strong>训练密度</strong>（组间休息时间）<br>
-        <strong>恢复窗口</strong>（48-72h大肌群，24-48h小肌群）
+      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
+        <strong>RPE</strong> 1-10 · <strong>训练量</strong> 次×组×重<br>
+        <strong>恢复窗口</strong> 24-72h
       </div>
-      <div style="font-size:10px;color:var(--text3);padding:6px 10px;background:var(--bg3);border-radius:6px">
-        💡 建议：使用 RPE+心率 双指标监控强度，每周总增幅不超10%
-      </div>
-    </div>
-
-    <!-- 动作质量评估 -->
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
-      <div style="font-size:15px;font-weight:600;margin-bottom:6px">🔍 动作质量评估体系</div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:8px">
-        动作质量分级标准：<br>
-        🟢 <strong>Level 1</strong> — 基础模式建立（神经肌肉控制）<br>
-        🟡 <strong>Level 2</strong> — 动作自动化（无需意识控制）<br>
-        🟠 <strong>Level 3</strong> — 负荷适应（加减重不变形）<br>
-        🔴 <strong>Level 4</strong> — 疲劳抗性（疲劳下仍保持标准）
-      </div>
-      <div style="font-size:10px;color:var(--text3);padding:6px 10px;background:var(--bg3);border-radius:6px">
-        ⚠️ 原则：未达到Level 2之前不加负荷，未达到Level 3之前不加量
+      <div style="font-size:9px;color:var(--text3);padding:4px 8px;background:var(--bg3);border-radius:4px">
+        💡 每周总增幅不超10% · 4周后减量
       </div>
     </div>
 
     <!-- 个性化方案 -->
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
-      <div style="font-size:15px;font-weight:600;margin-bottom:6px">🧑‍🏫 个性化方案制定</div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:8px">
-        根据你的：
-      </div>
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;grid-column:span 2">
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">🧑‍🏫 个性化训练方案生成</div>
       <div style="display:flex;flex-direction:column;gap:4px;font-size:10px">
-        <label style="color:var(--text2)">① 当前级别（L0-L7）
-          <select id="coachLevel" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
-            <option value="0">L0 — 零基础</option><option value="1">L1 — 基础建立</option>
-            <option value="2">L2 — 技术入门</option><option value="3">L3 — 技术熟练</option>
-            <option value="4">L4 — 技术精进</option><option value="5">L5 — 战术应用</option>
-            <option value="6">L6 — 准专业</option><option value="7">L7 — 专业水平</option>
-          </select>
-        </label>
-        <label style="color:var(--text2)">② 训练频率（每周）
-          <select id="coachFreq" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
-            <option value="2">2次/周</option><option value="3" selected>3次/周</option>
-            <option value="4">4次/周</option><option value="5">5次/周</option>
-            <option value="6">6次/周</option>
-          </select>
-        </label>
-        <label style="color:var(--text2)">③ 训练时间
-          <select id="coachTime" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
-            <option value="60">60分钟</option><option value="90" selected>90分钟</option>
-            <option value="120">120分钟</option><option value="150">150分钟</option>
-          </select>
-        </label>
-        <button onclick="generateCoachPlan()" style="margin-top:6px;padding:6px 16px;border:none;border-radius:6px;background:var(--blue);color:#fff;font-size:12px;cursor:pointer">🎯 生成训练方案</button>
-        <div id="coachResult" style="margin-top:6px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <label style="flex:1;min-width:120px">① 级别
+            <select id="coachLevel" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+              ${['L0零基础','L1基础','L2入门','L3熟练','L4精进','L5战术','L6准专业','L7专业'].map((l,i)=>`<option value="${i}">${l}</option>`).join('')}
+            </select>
+          </label>
+          <label style="flex:1;min-width:80px">② 频率
+            <select id="coachFreq" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+              ${[2,3,4,5,6].map(f=>`<option value="${f}"${f===3?' selected':''}>${f}次/周</option>`).join('')}
+            </select>
+          </label>
+          <label style="flex:1;min-width:80px">③ 时长
+            <select id="coachTime" style="display:block;width:100%;margin-top:2px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:11px">
+              ${[60,90,120,150].map(t=>`<option value="${t}"${t===90?' selected':''}>${t}分钟</option>`).join('')}
+            </select>
+          </label>
+        </div>
+        <button onclick="generateCoachPlan()" style="margin-top:4px;padding:6px 16px;border:none;border-radius:6px;background:var(--blue);color:#fff;font-size:12px;cursor:pointer">🎯 生成训练方案</button>
+        <div id="coachResult" style="margin-top:4px"></div>
       </div>
     </div>
 
-    <!-- 训练日志 -->
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
-      <div style="font-size:15px;font-weight:600;margin-bottom:6px">📝 训练日志快速模板</div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.7;margin-bottom:6px">
-        每次训练后记录：<br>
-        📅 日期：___ · ⏱ 时长：___<br>
-        🎯 训练内容：___<br>
-        📊 RPE（1-10）：___<br>
-        💪 状态（🟢🟡🔴）：___<br>
-        📝 备注/改进点：___
-      </div>
-      <div style="font-size:10px;color:var(--text3);padding:6px 10px;background:var(--bg3);border-radius:6px">
-        💡 连续记录3周可发现疲劳累积趋势，及时调整训练计划
-      </div>
-    </div>
-
-    <!-- 心理辅导 -->
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
-      <div style="font-size:15px;font-weight:600;margin-bottom:6px">🧠 运动员心理辅导框架</div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        <strong>赛前7天心理准备：</strong><br>
-        D-7：回顾训练数据，建立信心<br>
-        D-5：模拟比赛场景，视觉化训练<br>
-        D-3：战术确认，应急预案<br>
-        D-1：放松训练，早睡<br>
-        D-Day：激活唤醒，专注当下
-      </div>
-      <button onclick="openTrainModule('psychology')" class="tb-btn">🧠 查看心理训练模块</button>
-    </div>
-
-    <div style="grid-column:1/-1;text-align:center;padding:12px;font-size:10px;color:var(--text3)">
-      🎯 教练板块 · 基于NSCA-CPT科学体系 · 更多功能持续更新
+    <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:10px;color:var(--text3)">
+      🎯 教练板块 · 基于NSCA-CPT科学体系 + 元淳教练系统 · 六专家联合设计 · 21轮研讨
     </div>`;
   updateProgress();
 }
