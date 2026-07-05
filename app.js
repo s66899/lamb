@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.5.6';
+const APP_VERSION = 'v3.5.7';
 const APP_DATE = '2026-07-05';
 
 // ─── 5大训练模块 ──────────────────────────
