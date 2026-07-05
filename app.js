@@ -1033,16 +1033,40 @@ function showView(v) {
     if (el) el.style.display = key === v ? 'block' : 'none';
   }
   $('content').scrollTo({top:0,behavior:'smooth'});
+  // FAB 可见性：首页隐藏 home FAB，非首页显示
+  const homeFab = document.getElementById('fabHome');
+  if (homeFab) homeFab.classList.toggle('show', v !== 'dashboard');
+  // 搜索 FAB 始终可见（只是位置不同）
+  const searchFab = document.getElementById('fabSearch');
+  if (searchFab) searchFab.classList.toggle('show', v !== 'dashboard');
 }
 
 // ─── 返回首页 ───
 function goHome() {
-  currentBookId=null;currentChapterIdx=-1;currentModule='dashboard';
-  $('chSection').style.display='none';
-  navStack=[];
+  // 关闭所有可能打开的 overlay
+  document.querySelectorAll('.overlay').forEach(o => o.remove());
+  // 关闭可能的浮层
+  document.querySelectorAll('._tmpOverlay').forEach(o => o.remove());
+  // 重置状态
+  currentBookId = null;
+  currentChapterIdx = -1;
+  currentModule = 'dashboard';
+  const chSection = $('chSection');
+  if (chSection) chSection.style.display = 'none';
+  // 关闭侧边栏（手机端）
+  document.querySelector('.sidebar')?.classList.remove('open');
+  // 重置导航
+  navStack = [];
   historyReplace('dashboard', {});
+  // 显示首页
   showView('dashboard');
   renderDashboard();
+  // 滚到顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const content = $('content');
+  if (content) content.scrollTo({ top: 0, behavior: 'smooth' });
+  // 触发一次resize以让 chart 重新计算
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
 }
 
 // ─── 返回上一页 ───

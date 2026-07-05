@@ -849,3 +849,212 @@ input:focus, select:focus, textarea:focus {
   transform: scale(0.98);
   transition-duration: 0.06s;
 }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   🎨 Coach System Theme Override — 参考 coach/index.html
+   - 深紫蓝渐变背景 + 毛玻璃卡片
+   - iOS spring 动效
+   - 响应式自适应
+════════════════════════════════════════════════════════════════════════ */
+:root {
+  --bg:#0c0c14; --bg2:#16162a; --bg3:#1e1e3a; --bg4:#282850;
+  --surface:#16162a; --surface2:#1e1e3a; --surface3:#282850;
+  --border:#333366; --border2:#48486a;
+  --text:#f0f0ff; --text2:#9090b0; --text3:#606080; --text4:#484870;
+  --blue:#3b82f6; --blue2:#2563eb; --blue3:#1d4ed8;
+  --green:#22c55e; --orange:#f97316; --red:#ff4466;
+  --purple:#8b5cf6; --gold:#fbbf24; --pink:#ec4899; --teal:#14b8a6;
+  --radius:14px; --radius-sm:10px; --radius-lg:20px;
+  --shadow:0 4px 24px rgba(0,0,0,.25);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.15);
+  --shadow-card:0 8px 32px rgba(0,0,0,.2);
+  --shadow-glow:0 0 30px rgba(139,92,246,.12);
+}
+
+[data-theme="dark"] {
+  --bg:#0a0a0f; --bg2:#12121f; --bg3:#1a1a2e; --bg4:#222240;
+  --border:#282850; --border2:#383868;
+}
+
+/* ── 背景层（紫蓝渐变） ─────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 80%, rgba(236,72,153,0.04) 0%, transparent 60%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── 卡片升级 ─────────────────────────── */
+.module-card, .tool-card, .level-card, .calc-card, .chapter-card {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  transition: transform 0.3s var(--ios-spring), box-shadow 0.3s var(--ios-curve), border-color 0.3s !important;
+}
+.module-card:hover, .tool-card:hover, .level-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 40px rgba(139,92,246,.15) !important;
+  border-color: var(--purple) !important;
+}
+.module-card:hover { border-color: var(--blue) !important; }
+
+/* ── Module card detail ──────────────── */
+.mc-icon { filter: drop-shadow(0 4px 12px rgba(139,92,246,.2)); }
+
+/* ── Sidebar 卡片化 ─────────────────────── */
+.sidebar {
+  background: var(--bg2) !important;
+  border-right: 1px solid var(--border) !important;
+}
+.side-link:hover { background: var(--surface3) !important; transform: translateX(2px); }
+.side-link.active { background: var(--blue) !important; color: #fff !important; }
+
+/* ── Hero 渐变文字 ─────────────────────────── */
+.hero-title {
+  background: linear-gradient(135deg, #f0f0ff, #8b5cf6 50%, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── 侧边栏折叠标题 ─────────────────── */
+.side-title.collapsible::after { color: var(--text4); }
+
+/* ── 按钮重绘 ─────────────────── */
+.tb-btn {
+  background: var(--surface2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  transition: all 0.2s var(--ios-spring) !important;
+}
+.tb-btn:hover { background: var(--surface3) !important; border-color: var(--blue) !important; }
+.tb-btn:active { transform: scale(0.95); }
+
+/* ── 书籍条目 ─────────────────── */
+.b-item { border-radius: var(--radius-sm); }
+.b-item:hover { background: var(--surface3); }
+
+/* ── 分段标题 ─────────────────── */
+.section-divider { margin: 20px 0 12px; display: flex; align-items: center; gap: 8px; }
+.sd-label { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+
+/* ── 原则表格 ─────────────────── */
+.principles-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 1rem 0;
+}
+.principle-row {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 1.5fr;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+  font-size: 12px;
+}
+.principle-row:last-child { border-bottom: none; }
+.principle-row.header {
+  background: var(--surface3);
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 10px;
+}
+.principle-footer {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text2);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ── overlay 背景模糊 ────────── */
+.overlay { background: rgba(0,0,0,0.6) !important; backdrop-filter: blur(8px); }
+.panel {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3) !important;
+  animation: panelSlide 0.4s var(--ios-spring) !important;
+}
+@keyframes panelSlide {
+  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── headers ↕ back ────────── */
+header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
+
+/* ── 响应式：手机端 ───────────────────────────────── */
+@media (max-width: 640px) {
+  :root { --sidebar-w: 100%; }
+  .hero { padding: 16px; border-radius: 18px; }
+  .hero-title { font-size: 20px; }
+  .hero-sub { font-size: 11px; }
+  .hero-stats { gap: 8px; flex-wrap: wrap; }
+  .hero-stat-card { min-width: 70px; padding: 8px; }
+  .hero-stat-num { font-size: 18px; }
+  .module-card { padding: 14px; }
+  .mc-icon { font-size: 28px; }
+  .mc-title { font-size: 14px; }
+  .mc-desc { font-size: 11px; }
+  .tool-card { padding: 14px; }
+  .level-card { padding: 12px; }
+  .lc-emoji { font-size: 28px; }
+  .principles-table { font-size: 10px; }
+  .principle-row { grid-template-columns: 1fr !important; gap: 4px; font-size: 10px; }
+  .h-search-text { display: none; }
+  .h-home-btn .hh-text { display: none; }
+  .h-home-btn { padding: 4px 6px; }
+  .h-home-btn .hh-icon { font-size: 14px; }
+  .rpg-level { padding: 2px 4px; }
+  .rpg-level .lvl-text { display: none; }
+  .h-badge { display: none; }
+  .panel { width: 95vw; max-height: 85vh; }
+  .fab-home { width: 46px; height: 46px; right: 12px; bottom: 60px; }
+  .fab-search { width: 36px; height: 36px; right: 50px; font-size: 14px; }
+}
+
+/* ── 响应式：平板 ───────────────────────────────── */
+@media (min-width: 641px) and (max-width: 1024px) {
+  :root { --sidebar-w: 220px; }
+  .hero-title { font-size: 24px; }
+  .module-card { padding: 16px; }
+  .principle-row { grid-template-columns: 1.2fr 1.8fr 1.2fr; }
+}
+
+/* ── 触摸屏优化 ─────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  .ios-press:hover { transform: none !important; }
+  .module-card:hover, .tool-card:hover, .level-card:hover { transform: none !important; }
+  .side-link, .tb-btn, .h-btn { -webkit-tap-highlight-color: transparent; }
+}
+
+/* ── 内容区域骨架 ─────────────────────── */
+.view-dashboard, .view-book, .view-reader {
+  animation: iosSlideIn 0.4s var(--ios-spring-smooth);
+}
+@keyframes iosSlideIn {
+  0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Module grid ───────────────────────── */
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+@media (max-width: 640px) { .module-grid { grid-template-columns: 1fr; } }
