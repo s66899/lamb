@@ -30,12 +30,18 @@ jobs:
 
       - name: Switch Pages to Actions-only mode
         run: |
-          echo "Current Pages config:"
-          gh api /repos/${{ github.repository }}/pages 2>&1 | head -10
-          echo "---"
-          echo "Trying to switch to Actions mode..."
-          gh api /repos/${{ github.repository }}/pages -X PUT --input - <<< '{"build_type":"workflow"}' 2>&1 || echo "API update failed (expected if token lacks admin). Next push may still trigger built-in workflow."
-          echo "Done."
+          echo "=== 当前 Pages 配置 ==="
+          CURRENT=\$(gh api /repos/\${{ github.repository }}/pages -q '.build_type + " " + .source.branch' 2>/dev/null || echo "unknown")
+          echo "build_type: \$CURRENT"
+          echo "=== 尝试切换到 Actions mode ==="
+          RESULT=\$(gh api /repos/\${{ github.repository }}/pages -X PUT -f build_type=workflow --silent 2>&1)
+          echo "Switch result: \$RESULT"
+          if echo "\$RESULT" | grep -qi "Bad Request\|403\|Not Found"; then
+            echo "❌ API 调用被拒绝（Token 无 admin 权限）"
+            echo "需要手动去 Settings → Pages → 切 Source 为 GitHub Actions"
+          else
+            echo "✅ 切换成功！下次 push 不会再触发内置 Pages workflow"
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
