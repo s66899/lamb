@@ -601,12 +601,19 @@ body, button, input, select, textarea {
 header {
   backdrop-filter: var(--ios-blur-light);
   -webkit-backdrop-filter: var(--ios-blur-light);
-  background: rgba(255, 255, 255, 0.78) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background 0.4s var(--ios-curve), box-shadow 0.4s var(--ios-curve);
 }
 [data-theme="dark"] header {
   background: rgba(28, 28, 30, 0.85) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.03);
+}
+
+/* ── 白天/黑夜平滑过渡 ─── */
+*, *::before, *::after {
+  transition: background-color 0.3s var(--ios-curve), color 0.3s var(--ios-curve), border-color 0.3s var(--ios-curve), box-shadow 0.3s var(--ios-curve), opacity 0.3s var(--ios-curve);
 }
 
 /* ── 卡片按压效果 ─────────────────────────── */
