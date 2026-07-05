@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.5.8';
+const APP_VERSION = 'v3.5.9';
 const APP_DATE = '2026-07-05';
 
 // ─── 5大训练模块 ──────────────────────────
@@ -2274,6 +2274,58 @@ function showStudentDashboard() {
   const p = getP();
   let read = 0;
   if (MANIFEST) for (const b of MANIFEST.books) read += (p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;
+  // ── 计算今日训练任务：根据已读进度推荐下一章 ──
+  let nextBook = null, nextChapter = null, nextIdx = -1;
+  if (MANIFEST) {
+    // 优先级：badminton → nsca-cpt → psychology → finance → engineering → yin-yang
+    const priority = ['badminton','nsca-cpt','psychology','finance','engineering-mechanics','yin-yang'];
+    for (const bid of priority) {
+      const b = MANIFEST.books.find(x=>x.id===bid);
+      if (!b) continue;
+      const readFiles = p[b.id] || [];
+      const unreadIdx = b.chapters.findIndex(c => !readFiles.includes(c.file));
+      if (unreadIdx >= 0) { nextBook = b; nextChapter = b.chapters[unreadIdx]; nextIdx = unreadIdx; break; }
+    }
+  }
+  const readPct = totalCh ? Math.round(read / totalCh * 100) : 0;
+  // 根据进度决定训练建议
+  let dailyHint = '';
+  if (read === 0) {
+    dailyHint = '? 一切从「握拍」开始，建立正确的动作模式是终身受益的事。';
+  } else if (readPct < 20) {
+    dailyHint = '? 基础期：专注技术动作定型，不要急。每个动作重复100次比学10个新动作更有效。';
+  } else if (readPct < 50) {
+    dailyHint = '? 进阶期：开始重视体能和战术，营养恢复板块别忽略。';
+  } else if (readPct < 80) {
+    dailyHint = '? 提高期：把学到的东西放进实战，多打比赛多复盘。';
+  } else {
+    dailyHint = '? 精进期：查漏补缺，回顾薄弱环节，从心理学/金融/工程力学中找跨领域灵感。';
+  }
+  const dailyTaskHtml = nextBook && nextChapter ? `
+    <div class="calc-card" style="grid-column:1/-1;padding:14px;background:linear-gradient(135deg,var(--bg2),rgba(255,214,10,.06));border:2px solid var(--gold)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="font-size:22px">🎯</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">今日训练任务</div>
+          <div style="font-size:10px;color:var(--text3)">基于你的已读进度自动推荐</div>
+        </div>
+        <div style="font-size:10px;background:var(--gold);color:#000;padding:2px 8px;border-radius:8px;font-weight:600">NEXT</div>
+      </div>
+      <div style="background:var(--bg3);padding:10px;border-radius:6px;margin-bottom:8px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:2px">📘 ${nextBook.title} · 第${nextIdx+1}章</div>
+        <div style="font-size:13px;font-weight:600">${nextChapter.title}</div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:8px">${dailyHint}</div>
+      <button onclick="openTrainModule('${nextBook.id}');setTimeout(()=>openModuleTopic('${nextBook.id}',${nextIdx}),300)" class="tb-btn" style="width:100%;background:var(--gold);color:#000;font-weight:600">▶ 开始今日训练</button>
+    </div>
+  ` : `
+    <div class="calc-card" style="grid-column:1/-1;padding:14px;background:linear-gradient(135deg,var(--bg2),rgba(61,214,140,.08));border:2px solid var(--green);text-align:center">
+      <div style="font-size:36px">🎉</div>
+      <div style="font-size:14px;font-weight:600;margin:6px 0">全部章节已通关！</div>
+      <div style="font-size:11px;color:var(--text3)">进入教练系统持续精进，或挑战更多实战</div>
+    </div>
+  `;
+
   $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>🧑‍🎓 我的成长</h1>
     <div class="vm">学员视角 · 你的训练成长记录</div>`;
@@ -2289,10 +2341,11 @@ function showStudentDashboard() {
         </div>
       </div>
     </div>
+    ${dailyTaskHtml}
     <div class="calc-card" style="padding:14px">
       <div style="font-size:13px;font-weight:600;margin-bottom:8px">📖 阅读进度</div>
       <div style="font-size:24px;font-weight:700;color:var(--blue)">${read} / ${totalCh}</div>
-      <div style="font-size:10px;color:var(--text3)">已读章节 / 总章节</div>
+      <div style="font-size:10px;color:var(--text3)">已读章节 / 总章节 · ${readPct}%</div>
       <div style="height:6px;background:var(--bg3);border-radius:3px;margin-top:6px;overflow:hidden">
         <div style="height:100%;width:${(read/Math.max(totalCh,1))*100}%;background:var(--blue)"></div>
       </div>
@@ -2307,8 +2360,9 @@ function showStudentDashboard() {
       <div style="font-size:24px;font-weight:700;color:var(--gold)">${Object.values(r.achievements||{}).filter(v=>v).length}</div>
       <div style="font-size:10px;color:var(--text3)">已解锁</div>
     </div>
-    <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:11px;display:flex;gap:8px;justify-content:center">
+    <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:11px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
       <button onclick="localStorage.removeItem(ROLE_LSK);openRoleCenter()" class="tb-btn">🔄 切换身份</button>
+      <button onclick="openCoach()" class="tb-btn" style="background:var(--gold);color:#000;font-weight:600">👨‍🏫 教练工作台</button>
     </div>
   `;
   updateProgress();
@@ -2323,16 +2377,43 @@ function showCoachDashboard(coachId) {
   navStack.push({view:'dashboard'});
   historyPush('role-coach', {coachId});
   const students = coach.students.map(sid=>data.students.find(s=>s.id===sid)).filter(Boolean);
+  // 计算活跃状态 + 排序：需关注的（>7天未活跃）排在最前
+  const now = Date.now();
+  const annotated = students.map(s => {
+    const days = Math.floor((now - new Date(s.lastActive).getTime()) / 86400000);
+    let status = 'ok'; // 活跃
+    let statusLabel = '✅ 活跃';
+    if (days > 7) { status = 'urgent'; statusLabel = `🔴 ${days}天未动`; }
+    else if (days >= 3) { status = 'warn'; statusLabel = `🟡 ${days}天未动`; }
+    return { ...s, _days: days, _status: status, _statusLabel: statusLabel };
+  });
+  annotated.sort((a, b) => {
+    const order = { urgent: 0, warn: 1, ok: 2 };
+    return order[a._status] - order[b._status];
+  });
+  const urgentCount = annotated.filter(s => s._status === 'urgent').length;
+  const warnCount = annotated.filter(s => s._status === 'warn').length;
   $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>👨‍🏫 ${coach.name}的学员</h1>
-    <div class="vm">教练视角 · 所带 ${students.length} 名学员的成长</div>`;
+    <div class="vm">教练视角 · 所带 ${students.length} 名学员 · ${urgentCount>0?`🔴 ${urgentCount}名需关注`:warnCount>0?`🟡 ${warnCount}名待跟进`:'✅ 全部活跃'}</div>`;
   $('contentGrid').innerHTML = `
-    ${students.map(s => `
-      <div class="calc-card" style="padding:14px;border-left:3px solid var(--blue)">
+    ${annotated.length > 0 ? `
+      <div class="calc-card" style="grid-column:1/-1;padding:10px 14px;background:linear-gradient(135deg,var(--bg2),rgba(255,107,107,.04));border:1px solid ${urgentCount>0?'var(--red)':warnCount>0?'var(--orange)':'var(--green)'}">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px">
+          <span><strong>本周关注</strong></span>
+          <span style="color:var(--text3)">🔴 ${urgentCount} · 🟡 ${warnCount} · ✅ ${annotated.length - urgentCount - warnCount}</span>
+        </div>
+      </div>
+    ` : ''}
+    ${annotated.map(s => {
+      const borderColor = s._status === 'urgent' ? 'var(--red)' : s._status === 'warn' ? 'var(--orange)' : 'var(--blue)';
+      const bgTint = s._status === 'urgent' ? 'rgba(255,107,107,.05)' : s._status === 'warn' ? 'rgba(255,184,77,.05)' : '';
+      return `
+      <div class="calc-card" style="padding:14px;border-left:3px solid ${borderColor};${bgTint?`background:linear-gradient(135deg,var(--bg2),${bgTint})`:''}">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <div>
-            <div style="font-size:15px;font-weight:600">${s.name}</div>
-            <div style="font-size:10px;color:var(--text3)">Lv.${s.level} · ${s.xp} XP · 最近活跃 ${s.lastActive}</div>
+            <div style="font-size:15px;font-weight:600">${s.name} ${s._status==='urgent'?'<span style="font-size:10px;background:var(--red);color:#fff;padding:1px 6px;border-radius:6px;margin-left:4px">需关注</span>':''}</div>
+            <div style="font-size:10px;color:var(--text3)">Lv.${s.level} · ${s.xp} XP · ${s._statusLabel}</div>
           </div>
           <div style="font-size:18px">🧑‍🎓</div>
         </div>
@@ -2350,10 +2431,12 @@ function showCoachDashboard(coachId) {
             <div style="font-size:9px;color:var(--text3)">训练等级</div>
           </div>
         </div>
+        ${s._status === 'urgent' ? `<div style="margin-top:6px;font-size:10px;color:var(--red);text-align:center;padding:4px;background:rgba(255,107,107,.06);border-radius:4px">💡 建议本周主动联系，了解训练状态</div>` : ''}
       </div>
-    `).join('') || '<div class="calc-card" style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text3)">暂无学员，点击右上「⚙️ 管理员设置」分配</div>'}
-    <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:11px;display:flex;gap:8px;justify-content:center">
+    `}).join('') || '<div class="calc-card" style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text3)">暂无学员，点击右上「⚙️ 管理员设置」分配</div>'}
+    <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:11px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
       <button onclick="openAdminSettings()" class="tb-btn">⚙️ 管理员设置</button>
+      <button onclick="openCoach()" class="tb-btn" style="background:var(--gold);color:#000;font-weight:600">👨‍🏫 教练工作台</button>
       <button onclick="localStorage.removeItem(ROLE_LSK);openRoleCenter()" class="tb-btn">🔄 切换身份</button>
     </div>
   `;

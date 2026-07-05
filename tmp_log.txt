@@ -1,3 +1,0 @@
-857d509 v3.5.3: 交互式计算器+营养/比赛模块补全内容
-be92d25 fix: remove 元淳 brand references - unified coach system
-3bb7ecd v3.5.2: 全交互教练向�?训练方案/饮食/症状分析/案例)+新CSS
