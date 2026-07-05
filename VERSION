@@ -1,8 +1,16 @@
-v3.0.0
-2026-07-03
+v3.4.0
+2026-07-05
 🏸 羽毛球系统训练 · 版本记录
 
 更新说明：
+- v3.4.0 (2026-07-05)：导航修复——修复模块→阅读跳转闪烁、浏览器后退键无效、navStack流程丢失
+  修复：openModuleTopic 直接跳阅读器（跳过书塔列表闪烁）+ 精确 topic→book→ch 映射
+  新增：history.pushState/popstate 支持浏览器物理后退键
+  修复：goBack 导航栈 + 统一所有"← 返回"按钮为 goBack()
+  新增：renderModuleOnly 保留 navStack 不重置
+  修复：renderChapter 加载防卡死（8秒超时）
+  修复：openScreening/openCalculators 支持返回
+  清理：移除 duplicate const 声明
 - v3.0.0 (2026-07-03)：重大重构——站点评分为训练评估教学工具，对标参考站风格
   首页：核心原则表格 | 8级进阶体系 | 5大训练模块 | 6大评估工具 | 快速参考公式
   子页：功能筛查6项测试 | TDEE/营养/水合/恢复计算器 | 训练诊断 | 周检查 | 级别定位器

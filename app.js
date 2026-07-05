@@ -7,10 +7,11 @@ let MANIFEST = null;
 let currentModule = 'dashboard';
 let currentBookId = null;
 let currentChapterIdx = -1;
+let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.0.0';
-const APP_DATE = '2026-07-03';
+const APP_VERSION = 'v3.4.0';
+const APP_DATE = '2026-07-05';
 
 // ─── 5大训练模块 ──────────────────────────
 const TRAIN_MODULES = [
@@ -295,7 +296,7 @@ function openTrainModule(modId) {
   if (!mod) return;
   currentModule = modId;
   showView('book');
-  $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回总览</div>
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>${mod.icon} ${mod.title}</h1>
     <div class="vm">${mod.desc}</div>`;
   $('bookStats').innerHTML = `
@@ -314,23 +315,58 @@ function openTrainModule(modId) {
 
 // ─── 模块主题（跳转到对应书籍章节） ──────
 function openModuleTopic(modId, topicIdx) {
-  // Try to find a matching chapter from one of the module's books
   const mod = TRAIN_MODULES.find(m=>m.id===modId);
-  if (!mod || !MANIFEST || !mod.books || !mod.books.length) {
-    // No book mapping — fall back to showing the module detail page
-    openTrainModule(modId);
-    return;
-  }
-  // Find first book from this module and open a chapter
-  for (const bid of mod.books) {
-    const book = MANIFEST.books.find(b=>b.id===bid);
-    if (book && book.chapters.length > 0) {
-      const chIdx = Math.min(topicIdx % book.chapters.length, book.chapters.length - 1);
-      goToBook(bid);
-      setTimeout(() => openChapter(chIdx), 300);
+  if (!mod || !MANIFEST) return;
+  // 保存导航状态：从模块进入
+  navStack.push({view:'module', moduleId: modId});
+  // 优先使用 topics 精确映射（每个主题对应一个 book+ch）
+  if (mod.topics && mod.topics[topicIdx]) {
+    const topic = mod.topics[topicIdx];
+    const book = MANIFEST.books.find(b=>b.id===topic.book);
+    if (book && book.chapters[topic.ch]) {
+      currentBookId = topic.book;
+      currentModule = 'tower';
+      openChapter(topic.ch);
       return;
     }
   }
+  // 降级：用 mod.books 和 topicIdx 模运算找章节
+  if (mod.books && mod.books.length) {
+    for (const bid of mod.books) {
+      const book = MANIFEST.books.find(b=>b.id===bid);
+      if (book && book.chapters.length > 0) {
+        const chIdx = Math.min(topicIdx % book.chapters.length, book.chapters.length - 1);
+        currentBookId = bid;
+        currentModule = 'tower';
+        openChapter(chIdx);
+        return;
+      }
+    }
+  }
+  // 无匹配 → 回到模块视图
+  navStack.pop();
+  openTrainModule(modId);
+}
+
+// ─── 仅渲染模块内容（不重置 navStack） ──
+function renderModuleOnly(modId) {
+  const mod = TRAIN_MODULES.find(m=>m.id===modId);
+  if (!mod) return;
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
+    <h1>${mod.icon} ${mod.title}</h1>
+    <div class="vm">${mod.desc}</div>`;
+  $('bookStats').innerHTML = `
+    <div class="bs-item"><span class="bs-num">${mod.chapters.length}</span><span class="bs-label">📖 训练主题</span></div>
+    <div class="bs-item"><span class="bs-num">${mod.tags.length}</span><span class="bs-label">🏷️ 核心标签</span></div>
+    <div class="bs-item"><span class="bs-num">${mod.docs}</span><span class="bs-label">📚 教学文档</span></div>`;
+  $('contentGrid').innerHTML = mod.chapters.map((title, i) => `
+    <div class="chapter-card fade-in" onclick="openModuleTopic('${mod.id}',${i})">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${mod.color};opacity:.6"></div>
+      <div class="cc-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="cc-title">${title}</div>
+      <div class="cc-foot"><span>${mod.icon}</span><span style="color:${mod.color}">学习 →</span></div>
+    </div>`).join('');
+  updateProgress();
 }
 
 // ─── 级别详情 ────────────────────────────
@@ -351,7 +387,9 @@ function openLevelDetail(levelId) {
 function openScreening() {
   showView('book');
   currentModule = 'screening';
-  $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回总览</div>
+  navStack.push({view:'dashboard'});
+  historyPush('screening', {});
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>🩺 羽毛球专项功能筛查</h1>
     <div class="vm">BSFS v1.0 · 6个测试 · 10分钟完成 · 每月重测</div>`;
   $('bookStats').innerHTML = '';
@@ -441,7 +479,9 @@ function openScreening() {
 function openCalculators() {
   showView('book');
   currentModule = 'calculators';
-  $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回总览</div>
+  navStack.push({view:'dashboard'});
+  historyPush('calculators', {});
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>🧮 训练计算工具</h1>
     <div class="vm">TDEE · 水合 · 训练量 · 营养素一键计算</div>`;
   $('bookStats').innerHTML = '';
@@ -546,10 +586,11 @@ function goToBook(bid) {
   showView('book');
   const book = MANIFEST.books.find(b=>b.id===bid);
   if (!book) return;
+  historyPush('book', {bookId: bid});
   const p = chProgress(bid);
   const readCount = Math.round(p * book.chapters.length);
 
-  $('bookHeader').innerHTML = `<div class="back" onclick="goHome()">← 返回总览</div>
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>${book.emoji} ${book.title}</h1>
     <div class="vm">${book.desc}</div>`;
   $('bookStats').innerHTML = `
@@ -574,9 +615,17 @@ function goToBook(bid) {
 
 // ─── Reader ────────────────────────────────────
 function openChapter(idx) {
+  // 记录来源（如果栈顶没有重复 book 条目）
+  const top = navStack.length > 0 ? navStack[navStack.length-1] : null;
+  if (!top || top.view !== 'book') {
+    if (!top || top.view !== 'module') {
+      navStack.push({view:'book', bookId:currentBookId});
+    }
+  }
   currentChapterIdx = idx;
   showView('reader');
   renderChapter();
+  historyPush('reader', {bookId: currentBookId, chapterIdx: idx});
 }
 
 async function renderChapter() {
@@ -596,9 +645,22 @@ async function renderChapter() {
   $('article').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">⏳ 加载…</div>';
   let md = null;
   const localUrl = `books/${currentBookId}/${ch.file}`;
-  try { const r1=await fetch(localUrl); if(r1.ok) md=await r1.text(); } catch(e) {}
+  // 8秒超时兜底，防止 fetch 卡死
+  const fetchWithTimeout = (url, ms=8000) => {
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(null), ms);
+      fetch(url).then(r => { clearTimeout(timer); resolve(r); }).catch(() => { clearTimeout(timer); resolve(null); });
+    });
+  };
+  try {
+    const r1 = await fetchWithTimeout(localUrl);
+    if (r1 && r1.ok) md = await r1.text();
+  } catch(e) {}
   if (!md) {
-    try { const r2=await fetch(`${RAW}/books/${currentBookId}/${ch.file}`); if(r2.ok) md=await r2.text(); } catch(e2) {}
+    try {
+      const r2 = await fetchWithTimeout(`${RAW}/books/${currentBookId}/${ch.file}`);
+      if (r2 && r2.ok) md = await r2.text();
+    } catch(e2) {}
   }
   if (md) {
     $('article').innerHTML = mdParse(md) + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
@@ -664,11 +726,40 @@ function showView(v) {
   $('content').scrollTo({top:0,behavior:'smooth'});
 }
 
+// ─── 返回首页 ───
 function goHome() {
   currentBookId=null;currentChapterIdx=-1;currentModule='dashboard';
   $('chSection').style.display='none';
+  navStack=[];
+  historyReplace('dashboard', {});
   showView('dashboard');
   renderDashboard();
+}
+
+// ─── 返回上一页 ───
+function goBack() {
+  if (navStack.length === 0) { goHome(); return; }
+  const prev = navStack.pop();
+  if (navStack.length > 0) {
+    historyReplace(navStack[navStack.length-1].view, navStack[navStack.length-1]);
+  } else {
+    historyReplace('dashboard', {});
+  }
+  switch (prev.view) {
+    case 'dashboard': goHome(); break;
+    case 'module':
+      currentModule = prev.moduleId;
+      showView('book');
+      $('content').className='content view-page';
+      openTrainModule(prev.moduleId);
+      break;
+    case 'book':
+      currentBookId = prev.bookId;
+      showView('book');
+      goToBook(prev.bookId);
+      break;
+    default: goHome();
+  }
 }
 
 function openSearch() {
@@ -805,5 +896,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   if(window.innerWidth<=768)toggleSidebar(false);
   setTimeout(checkAchievements,2000);
 });
+
+// ─── History API（浏览器后退键支持） ──
+function historyPush(view, state) {
+  history.pushState({view, ...state}, '', window.location.pathname);
+}
+function historyReplace(view, state) {
+  history.replaceState({view, ...state}, '', window.location.pathname);
+}
+window.addEventListener('popstate', (e) => {
+  if (!e.state || !e.state.view) { goHome(); return; }
+  if (navStack.length === 0 && e.state.view !== 'dashboard') { goHome(); }
+});
+
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function scrollToTop(){$('content').scrollTo({top:0,behavior:'smooth'});}
