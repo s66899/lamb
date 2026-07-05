@@ -10,8 +10,8 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.7.0';
-const APP_DATE = '2026-07-05';
+const APP_VERSION = 'v3.7.1';
+const APP_DATE = '2026-07-06';
 
 // ─── 全局错误边界（防白屏）─────────────────
 window.addEventListener('error', (e) => {
@@ -181,8 +181,26 @@ const MODULE_CONTENT = {
 
       <h3>睡眠：最重要的恢复手段</h3>
       <table><tr><th>睡眠时长</th><th>恢复效果</th><th>生长激素分泌</th></tr><tr><td><6h</td><td>不足</td><td>↓ 70%</td></tr><tr><td>7-8h</td><td>良好</td><td>峰值（深度睡眠）</td></tr><tr><td>>9h</td><td>过剩</td><td>无明显额外收益</td></tr></table>
+
+      <h3>深度睡眠：生长激素的「主战场」</h3>
+      <p>生长激素（GH）70-80%在入睡后第一个90分钟内的深度睡眠（N3阶段）脉冲式分泌，每晚3-5个分泌峰。它直接驱动肌肉修复、脂肪分解、骨骼重建。<strong>深睡少1小时 = 训练效果打7折</strong>。</p>
+      <table><tr><th>睡眠阶段</th><th>时段</th><th>主要功能</th></tr><tr><td>N1 浅睡</td><td>入睡5-15min</td><td>过渡期，肌肉放松</td></tr><tr><td>N2 中度睡眠</td><td>整晚50-60%</td><td>记忆整合，体温下降</td></tr><tr><td>N3 深度睡眠</td><td>前半夜2小时为主</td><td>GH分泌、肌肉修复、免疫</td></tr><tr><td>REM 快速眼动</td><td>后半夜增多</td><td>情绪调节、技能固化</td></tr></table>
+
+      <h3>睡眠卫生学 12 条</h3>
+      <ol><li><strong>固定作息</strong>：每天上床/起床时间误差<30分钟（周末也不例外）</li><li><strong>睡前90分钟无屏幕</strong>：蓝光抑制褪黑素释放3-4小时</li><li><strong>室温18-20°C</strong>：身体核心温度下降才能入睡，室温过高会减少深睡</li><li><strong>全黑环境</strong>：用遮光窗帘+眼罩，光线让褪黑素减少50%</li><li><strong>睡前避免咖啡因</strong>：咖啡因半衰期5-6小时，下午2点后别喝</li><li><strong>酒精≠助眠</strong>：酒精会破坏REM睡眠，睡前3小时别喝</li><li><strong>晚餐别太晚</strong>：睡前2-3小时完成晚餐，避免消化影响深睡</li><li><strong>睡前放松仪式</strong>：温水澡（38-40°C，15min）/阅读纸质书/拉伸</li><li><strong>床只用来睡觉</strong>：不在床上工作、看手机、思考问题</li><li><strong>白天有阳光</strong>：晨起晒10-15分钟阳光，校准生物钟</li><li><strong>运动时机</strong>：高强度训练距睡前至少3小时（瑜伽等低强度可近睡）</li><li><strong>失眠时不要看表</strong>：起床去另一个房间做无聊的事，困了再回床</li></ol>
+
+      <h3>最佳睡眠时机</h3>
+      <p><strong>理想入睡时间</strong>：22:00-23:00（与褪黑素分泌高峰对齐）<br><strong>理想起床时间</strong>：6:00-7:30（含90分钟睡眠周期×4-5个完整周期）<br><strong>深度睡眠密度</strong>：前半夜是后半夜的2-3倍，<u>早睡1小时=多1小时深睡</u></p>
+
+      <h3>训练日的午睡策略</h3>
+      <table><tr><th>午睡时长</th><th>效果</th><th>适用场景</th></tr><tr><td>10-20分钟（咖啡午睡）</td><td>警觉性+30%</td><td>下午训练前快速充电</td></tr><tr><td>30-45分钟</td><td>认知+体能恢复</td><td>周末大训练量后</td></tr><tr><td>90分钟（完整周期）</td><td>含REM，情绪恢复</td><td>极度疲劳或比赛恢复</td></tr><tr><td>>60分钟但<90分钟</td><td>⚠️ 睡眠惯性</td><td>不推荐，会越睡越累</td></tr></table>
+      <p class='tip'>💡 咖啡午睡（Napuccino）：喝完咖啡立刻小睡20分钟，醒来咖啡因起效+警觉性双倍提升。下午训练前最强技巧。</p>
+
+      <h3>失眠 / 轮班运动员对策</h3>
+      <p>① <strong>褪黑素补充</strong>：0.5-3mg，睡前30分钟（短期使用，长期依赖会降低自身分泌）<br>② <strong>镁补充</strong>：甘氨酸镁 200-400mg，睡前30分钟（放松神经肌肉）<br>③ <strong>渐进式肌肉放松</strong>：从脚趾到头顶，每组肌肉绷紧5秒+放松10秒<br>④ <strong>4-7-8呼吸法</strong>：吸气4秒-屏息7秒-呼气8秒，4轮循环可诱导入睡<br>⑤ <strong>蓝光过滤眼镜</strong>：夜间训练或值班必备，琥珀色镜片过滤>90%蓝光</p>
+
       <p class='tip'>💡 训练后不恢复=训练没效果。恢复不是偷懒，是训练的一部分。</p>
-      <hr><p><em>参考文献：NSCA-CPT第6版·恢复与再生 / ISSN 2018 运动恢复指南</em></p>
+      <hr><p><em>参考文献：NSCA-CPT第6版·恢复与再生 / ISSN 2018 运动恢复指南 / Walker M《Why We Sleep》2017 / Halson SL. Sleep in elite athletes. Sports Med 2014</em></p>
     </div>`,
     // 5. 营养窗口
     `<div class="reader-module-content"><h2>🍽️ 训练前后营养窗口</h2>
