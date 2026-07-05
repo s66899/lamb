@@ -1,4 +1,4 @@
-// ═══════════════════════════════════════════════════════════════════
+﻿// ═══════════════════════════════════════════════════════════════════
 //  🏸 羽毛球系统训练 · NSCA-CPT 科学评估教学体系
 // ═══════════════════════════════════════════════════════════════════
 
@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.5.3';
+const APP_VERSION = 'v3.5.4';
 const APP_DATE = '2026-07-05';
 
 // ─── 5大训练模块 ──────────────────────────
@@ -47,7 +47,372 @@ const TRAIN_MODULES = [
     chapters:['训练计划设计原则','周期性训练编排','动作质量评估体系','训练负荷调控','个性化方案制定','技术诊断方法论','比赛录像分析','训练日志与复盘','运动员心理辅导','智能教练工具'] },
 ];
 
-// ─── 训练等级 ──────────────────────────
+// ─── 模块内联内容（营养/比赛等无 book 映射的模块） ──
+const MODULE_CONTENT = {
+  nutrition: [
+    // 1. TDEE
+    `<div class="reader-module-content">
+      <h2>🔥 TDEE 每日总能耗详解</h2>
+      <p><strong>TDEE</strong>（Total Daily Energy Expenditure）= 基础代谢（BMR）+ 食物热效应（TEF）+ 活动消耗（PA）+ 运动消耗（EAT）。</p>
+      <h3>基础代谢 BMR（Mifflin-St Jeor 公式）</h3>
+      <p><strong>男性</strong>：BMR = 10 × 体重(kg) + 6.25 × 身高(cm) - 5 × 年龄 + 5</p>
+      <p><strong>女性</strong>：BMR = 10 × 体重(kg) + 6.25 × 身高(cm) - 5 × 年龄 - 161</p>
+      <p>示例：70kg / 175cm / 25岁男性 <br>BMR = 10×70 + 6.25×175 - 5×25 + 5 = 700 + 1093.75 - 125 + 5 = 1673.75 kcal</p>
+      <h3>活动系数（PA）</h3>
+      <table><tr><th>级别</th><th>系数</th><th>描述</th></tr><tr><td>久坐</td><td>1.2</td><td>办公室工作，几乎不运动</td></tr><tr><td>轻度</td><td>1.375</td><td>每周1-3天轻度运动</td></tr><tr><td>中度</td><td>1.55</td><td>每周3-5天中等运动（推荐）</td></tr><tr><td>高度</td><td>1.725</td><td>每周6-7天高强度训练</td></tr><tr><td>极高</td><td>1.9</td><td>专业运动员/体力劳动者</td></tr></table>
+      <p><strong>计算</strong>：TDEE = BMR × 活动系数</p>
+      <h3>食物热效应 TEF</h3>
+      <p>蛋白质 TEF = 20-30%（最高）<br>碳水 TEF = 5-10%<br>脂肪 TEF = 0-3%<br>混合膳食平均 TEF = 总热量 × 10%</p>
+      <h3>减脂/增肌热量调整</h3>
+      <p><strong>减脂</strong>：TDEE - 300~500 kcal/天（每周减0.3-0.5kg）<br><strong>增肌</strong>：TDEE + 200~400 kcal/天（每周增0.2-0.3kg）<br><strong>维持</strong>：TDEE 不变</p>
+      <p class="tip">💡 不要每天称体重。每周固定时间称一次，观察2周趋势再调整热量。快速减重（>1kg/周）会导致肌肉流失。</p>
+      <hr><p><em>参考文献：Mifflin MD, et al. A new predictive equation for resting energy expenditure. Am J Clin Nutr. 1990. / NSCA-CPT 营养指南第4章</em></p>
+    </div>`,
+    // 2. 三大营养素
+    `<div class="reader-module-content">
+      <h2>🥩 三大营养素分配</h2>
+      <p>运动营养的核心是三大宏量营养素的合理分配：蛋白质、碳水化合物、脂肪。</p>
+      <h3>蛋白质（Protein）</h3>
+      <table><tr><th>目标</th><th>推荐量 (g/kg/天)</th><th>总热量占比</th></tr><tr><td>维持</td><td>1.2 - 1.6</td><td>15-20%</td></tr><tr><td>增肌</td><td>1.6 - 2.0</td><td>20-25%</td></tr><tr><td>减脂</td><td>2.0 - 2.4</td><td>25-30%</td></tr></table>
+      <p>蛋白质每次摄入上限约 0.4-0.55g/kg（最佳吸收），例如70kg运动员每餐约需28-38g蛋白。超过部分并不会增加肌肉合成速度，而是氧化供能或转化为脂肪。</p>
+      <h3>碳水化合物（Carbohydrate）</h3>
+      <table><tr><th>训练强度</th><th>推荐量 (g/kg/天)</th><th>总热量占比</th></tr><tr><td>休息日/低强度</td><td>2 - 3</td><td>40-45%</td></tr><tr><td>中等训练</td><td>3 - 5</td><td>45-55%</td></tr><tr><td>高强度/专业训练</td><td>5 - 7</td><td>55-65%</td></tr></table>
+      <p>优先选择低GI碳水（全谷物、燕麦、薯类、豆类），训练后2小时内可用高GI碳水快速补充肌糖原。</p>
+      <h3>脂肪（Fat）</h3>
+      <p>推荐量：0.8 - 1.0 g/kg/天（占总热量20-25%）<br>低于20%会影响睾酮水平和脂溶性维生素吸收。</p>
+      <table><tr><th>类型</th><th>推荐来源</th><th>占比</th></tr><tr><td>单不饱和</td><td>橄榄油、牛油果、坚果</td><td>10-15%</td></tr><tr><td>多不饱和（Omega-3）</td><td>深海鱼、亚麻籽、奇亚籽</td><td>5-10%</td></tr><tr><td>饱和脂肪</td><td>动物脂肪、椰子油</td><td>＜10%</td></tr><tr><td>反式脂肪</td><td>油炸食品、加工食品</td><td>＜1%</td></tr></table>
+      <h3>实战比例速查</h3>
+      <p><strong>增肌期</strong>：蛋白20% / 碳水55% / 脂肪25%（总TDEE+200~400）<br><strong>减脂期</strong>：蛋白30% / 碳水40% / 脂肪30%（总TDEE-300~500）<br><strong>维持期</strong>：蛋白20% / 碳水50% / 脂肪30%</p>
+      <p class="tip">💡 70kg运动员增肌期（TDEE≈2600kcal + 300 = 2900kcal）：蛋白145g（20%）/ 碳水399g（55%）/ 脂肪81g（25%）</p>
+      <hr><p><em>参考文献：NSCA-CPT第5版第11章·运动营养 / JISSN 2017, 14:31</em></p>
+    </div>`,
+    // 3. 水合
+    `<div class="reader-module-content">
+      <h2>💧 确定水合需求</h2>
+      <p>水合状态直接影响运动表现。体重下降2%即可导致力量下降20%、耐力下降30%。</p>
+      <h3>每日总水合需求</h3>
+      <p><strong>日常基础</strong>：体重(kg) × 33ml<br><strong>训练加量</strong>：训练时长(min) × 12ml<br><strong>高温修正</strong>：环境温度>30°C 加20%</p>
+      <p>示例：70kg运动员，训练60分钟，常温 → 70×33 + 60×12 = 2310 + 720 = <strong>3030ml</strong></p>
+      <h3>训练中的水合策略</h3>
+      <table><tr><th>时间</th><th>建议</th><th>量参考</th></tr><tr><td>训练前2h</td><td>补充500-600ml</td><td>一大瓶水</td></tr><tr><td>训练前15-30min</td><td>补充200-300ml</td><td>一小瓶水</td></tr><tr><td>训练中（每15-20min）</td><td>补充150-250ml</td><td>每15分钟喝几口</td></tr><tr><td>训练后</td><td>补回流失量的125-150%</td><td>称体重差×1.25</td></tr></table>
+      <h3>判断水合状态的简易方法</h3>
+      <p>① <strong>尿液颜色法</strong>：浅柠檬黄=水合良好，深琥珀色=脱水<br>② <strong>体重法</strong>：训练前后称体重差，每减1kg≈脱水1L<br>③ <strong>口渴感法</strong>：感到口渴时已脱水1-2%，不要等到口渴才补水</p>
+      <h3>运动饮料的选择</h3>
+      <p>训练<60分钟：白水足够<br>训练60-90分钟：6-8%碳水溶液（500ml水+30g糖+少量盐）<br>训练>90分钟：专业运动饮料+电解质补充</p>
+      <p class="tip">💡 自制运动饮料：1L水 + 60g蜂蜜/糖 + 1g盐（约1/4茶匙）+ 少许柠檬汁</p>
+      <hr><p><em>参考文献：ACSM Position Stand: Exercise and Fluid Replacement, 2007 / NSCA-CPT 营养学第5章</em></p>
+    </div>`,
+    // 4. 恢复时间线
+    `<div class="reader-module-content">
+      <h2>⏰ 训练后恢复时间线</h2>
+      <p>训练后的恢复是训练效果的保障。科学恢复时间线根据训练后不同阶段，采取不同的恢复策略。
+
+      <h3>训练后0-30分钟：快速恢复窗口</h3>
+      <p><strong>目标</strong>：迅速补充肌糖原、启动肌肉修复<br><strong>碳水</strong>：1.0-1.2g/kg（高GI，如香蕉+运动饮料）<br><strong>蛋白</strong>：0.3-0.4g/kg（乳清蛋白最佳，快速吸收）<br><strong>水合</strong>：补回流失体重的125-150%</p>
+      <p>示例：70kg运动员 → 70g碳水 + 25g蛋白 ≈ 一根香蕉+500ml运动饮料+一杯蛋白粉</p>
+
+      <h3>训练后30分钟-2小时：正餐窗口</h3>
+      <p><strong>目标</strong>：持续补充营养素、促进组织修复<br><strong>碳水化合物</strong>：1.5-2.0g/kg（中低GI为主）<br><strong>蛋白质</strong>：0.4-0.5g/kg（整蛋白如鸡胸肉、鱼、鸡蛋）<br><strong>脂肪</strong>：少量（不影响消化吸收）<br><strong>蔬菜</strong>：抗氧化物+微量元素</p>
+
+      <h3>训练后2小时-睡前：恢复巩固期</h3>
+      <p><strong>目标</strong>：降低皮质醇、促进睡眠质量<br><strong>恢复手段</strong>：泡沫轴10-15分钟（放松筋膜）<br><strong>拉伸</strong>：静态拉伸15-30秒每个肌群<br><strong>冷热交替浴</strong>：冷水1-3分钟 + 温水3-5分钟 × 3轮</p>
+      <p><strong>营养补充</strong>：缓释蛋白（酪蛋白20-30g）或睡前酸奶+坚果</p>
+
+      <h3>训练后次日：超量恢复期</h3>
+      <p>训练后24-48小时出现超量恢复（Supercompensation）：
+      <br>肌糖原合成速率峰值在训练后12-24小时
+      <br>肌肉蛋白合成在训练后24-48小时持续升高
+      <br>神经系统恢复需24-72小时</p>
+
+      <h3>睡眠：最重要的恢复手段</h3>
+      <table><tr><th>睡眠时长</th><th>恢复效果</th><th>生长激素分泌</th></tr><tr><td><6h</td><td>不足</td><td>↓ 70%</td></tr><tr><td>7-8h</td><td>良好</td><td>峰值（深度睡眠）</td></tr><tr><td>>9h</td><td>过剩</td><td>无明显额外收益</td></tr></table>
+      <p class='tip'>💡 训练后不恢复=训练没效果。恢复不是偷懒，是训练的一部分。</p>
+      <hr><p><em>参考文献：NSCA-CPT第6版·恢复与再生 / ISSN 2018 运动恢复指南</em></p>
+    </div>`,
+    // 5. 营养窗口
+    `<div class="reader-module-content"><h2>🍽️ 训练前后营养窗口</h2>
+      <p>训练前后的营养安排直接影响训练质量和恢复效果。不重视营养窗口，训练效果至少打五折。</p>
+
+      <h3>训练前餐（训练前1.5-3小时）</h3>
+      <p><strong>目标</strong>：保证训练时能量充足、防止低血糖<br><strong>碳水</strong>：1-2g/kg（中低GI，缓慢释放能量）<br><strong>蛋白</strong>：0.15-0.3g/kg（少量即可）<br><strong>脂肪</strong>：低（<15g，避免消化不良）<br><strong>水</strong>：训练前2小时补充500-600ml</p>
+      <p>推荐餐单：</p>
+      <ul><li>全麦面包2片 + 花生酱 + 香蕉</li><li>燕麦粥（50g） + 半个苹果 + 少量坚果</li><li>希腊酸奶 + 莓果 + 少量蜂蜜</li></ul>
+
+      <h3>训练中补给（>60分钟训练）</h3>
+      <p><strong>碳水</strong>：30-60g/小时（6-8%碳水溶液）<br><strong>水合</strong>：每15-20分钟150-250ml<br><strong>电解质</strong>：训练>90分钟补充钠（300-500mg/L）</p>
+
+      <h3>训练后补餐（训练后30分钟内）</h3>
+      <p><strong>目标</strong>：最大化肌糖原再合成、启动肌肉修复<br><strong>碳水</strong>：1.0-1.5g/kg（高GI，尽快补充糖原）<br><strong>蛋白</strong>：0.3-0.5g/kg（乳清蛋白首选）<br><strong>蛋白碳水比</strong>：1:3 到 1:4</p>
+      <p>推荐：蛋白粉（25g）+ 运动饮料（500ml）+ 香蕉1根</p>
+
+      <h3>不同训练类型的营养微调</h3>
+      <table><tr><th>训练类型</th><th>训练前</th><th>训练后</th></tr><tr><td>力量训练</td><td>正常碳水+高蛋白</td><td>高蛋白+中碳水</td></tr><tr><td>耐力训练</td><td>高碳水（1-2g/kg）</td><td>高碳水+中蛋白</td></tr><tr><td>高强度间歇</td><td>高碳水+充足水合</td><td>高碳水+蛋白+电解质</td></tr><tr><td>技术训练</td><td>中碳水+正常水合</td><td>正常恢复餐即可</td></tr></table>
+      <p class='tip'>💡 空腹训练会加速肌肉分解。即使是晨练，也建议吃一根香蕉或半片面包再训练。</p>
+      <hr><p><em>参考文献：ACSM Joint Position Statement: Nutrition and Athletic Performance, 2016 / NSCA-CPT 运动营养</em></p>
+    </div>`,
+    // 6. 蛋白质策略
+    `<div class="reader-module-content"><h2>🥩 蛋白质摄入策略</h2>
+      <p>蛋白质是肌肉修复和增长的核心原料。合理分配蛋白质摄入比总量更重要。</p>
+
+      <h3>每日总量的误区</h3>
+      <p>很多人追求一天吃了多少克蛋白，但80%的人一天摄入的蛋白集中在晚餐一顿，其他餐不达标。肌肉蛋白合成（MPS）每次被激活持续约3-5小时，之后进入不应期。所以分餐比总量更重要。</p>
+
+      <h3>蛋白质分配：4-5餐 × 0.4g/kg</h3>
+      <p>理想模式：每餐摄入 0.4-0.55g/kg，间隔 3-5 小时</p>
+      <p>70kg运动员参考：</p>
+      <ul><li>早餐：28g（3个鸡蛋 + 一杯牛奶）</li><li>加餐：20g（希腊酸奶 200g）</li><li>午餐：35g（鸡胸肉 120g）</li><li>训练后：25g（蛋白粉1勺）</li><li>晚餐：35g（三文鱼 150g）</li><li>总计：约 143g（≈2.0g/kg）</li></ul>
+
+      <h3>蛋白质来源质量排名</h3>
+      <table><tr><th>来源</th><th>PDCAAS</th><th>特点</th></tr><tr><td>乳清蛋白</td><td>1.0</td><td>吸收最快，训练后首选</td></tr><tr><td>酪蛋白</td><td>1.0</td><td>缓释6-8h，睡前推荐</td></tr><tr><td>鸡蛋</td><td>1.0</td><td>氨基酸谱完整</td></tr><tr><td>牛肉/鸡胸肉</td><td>0.9-1.0</td><td>整蛋白+微量元素</td></tr><tr><td>鱼</td><td>0.9-1.0</td><td>富含Omega-3</td></tr><tr><td>大豆</td><td>0.9-1.0</td><td>植物蛋白最佳</td></tr><tr><td>大米/豌豆蛋白</td><td>0.7-0.8</td><td>需互补搭配</td></tr></table>
+
+      <h3>亮氨酸触发阈值</h3>
+      <p>每餐至少含 2-3g 亮氨酸才能最大化激活 MPS：<br>100g鸡胸肉 ≈ 2.8g亮氨酸<br>3个鸡蛋 ≈ 2.1g亮氨酸<br>1勺蛋白粉 ≈ 2.5g亮氨酸</p>
+
+      <h3>特殊场景</h3>
+      <p><strong>减脂期</strong>：蛋白提高到2.0-2.4g/kg，防止肌肉流失<br><strong>素食者</strong>：需要比正常多20-30%蛋白，注意互补（豆类+谷物）<br><strong>老年运动员</strong>：每餐需要更多亮氨酸（3-4g）对抗合成抵抗</p>
+      <p class='tip'>💡 蛋白不是越多越好。超过2.4g/kg的额外蛋白不会增加肌肉，反而增加肾脏负担。</p>
+      <hr><p><em>参考文献：Schoenfeld BJ, Aragon AA. How much protein can the body use? JISSN 2018 / NSCA-CPT Nutrition</em></p>
+    </div>`,
+    // 7. 电解质平衡
+    `<div class="reader-module-content"><h2>💧 电解质平衡</h2>
+      <p>电解质是维持神经传导和肌肉收缩的关键。大量出汗导致的电解质失衡是抽筋和疲劳的主要原因。</p>
+
+      <h3>主要电解质及其功能</h3>
+      <table><tr><th>电解质</th><th>功能</th><th>推荐日摄入</th><th>主要来源</th></tr><tr><td>钠 (Na+)</td><td>水平衡、神经信号</td><td>1500-2300mg</td><td>食盐、运动饮料</td></tr><tr><td>钾 (K+)</td><td>肌肉收缩、心悸稳定</td><td>3500-4700mg</td><td>香蕉、土豆、绿叶菜</td></tr><tr><td>钙 (Ca2+)</td><td>骨健康、肌肉收缩</td><td>1000-1300mg</td><td>奶制品、绿叶菜、豆腐</td></tr><tr><td>镁 (Mg2+)</td><td>肌肉放松、能量代谢</td><td>310-420mg</td><td>坚果、豆类、全谷物</td></tr><tr><td>氯 (Cl-)</td><td>胃酸、电解质平衡</td><td>2300-3600mg</td><td>食盐</td></tr></table>
+
+      <h3>运动中电解质流失</h3>
+      <p>1小时高强度羽毛球训练平均流失：<br>钠：800-1500mg<br>钾：200-400mg<br>镁：10-30mg</p>
+
+      <h3>电解质补充策略</h3>
+      <p><strong>训练<60分钟</strong>：白水足够<br><strong>训练60-90分钟</strong>：运动饮料（含钠300-500mg/L）<br><strong>训练>90分钟或高温环境</strong>：专业电解质粉 + 碳水</p>
+
+      <h3>自制电解质饮料</h3>
+      <p>1L水 + 1/4茶匙盐（≈500mg钠）+ 60g蜂蜜/糖 + 柠檬汁少许 + 可选：200mg镁粉</p>
+
+      <h3>抽筋预防</h3>
+      <p><strong>训练前</strong>：吃一根香蕉（钾）+ 喝足水<br><strong>训练中</strong>：每30分钟补充电解质<br><strong>训练后</strong>：多吃绿叶蔬菜和坚果<br><strong>长期</strong>：注意镁摄入（70%的人缺镁）</p>
+      <p class='tip'>💡 半夜小腿抽筋往往是镁不足。睡前补充200-400mg镁可显著改善。</p>
+      <hr><p><em>参考文献：ACSM Position Stand: Exercise and Fluid Replacement / ISSN 电解质指南</em></p>
+    </div>`,
+    // 8. 运动补剂
+    `<div class="reader-module-content"><h2>💊 运动补剂速查</h2>
+      <p>补剂是锦上添花，不是雪中送炭。先做好基础营养再考虑补剂。以下基于科学证据分级。</p>
+
+      <h3>A级（强证据支持）</h3>
+      <table><tr><th>补剂</th><th>剂量</th><th>效果</th><th>适合人群</th></tr><tr><td>乳清蛋白</td><td>20-40g/次</td><td>肌肉蛋白合成</td><td>所有运动员</td></tr><tr><td>肌酸</td><td>3-5g/天</td><td>力量+爆发力+认知</td><td>力量/爆发力运动</td></tr><tr><td>咖啡因</td><td>3-6mg/kg</td><td>耐力+警觉性</td><td>赛前/大强度训练</td></tr><tr><td>Beta-丙氨酸</td><td>3-6g/天</td><td>延迟肌肉酸胀感</td><td>1-4分钟高强度运动</td></tr><tr><td>碳酸氢钠</td><td>0.3g/kg</td><td>缓冲乳酸</td><td>高强度间歇训练</td></tr></table>
+
+      <h3>B级（中等到弱证据）</h3>
+      <p><strong>支链氨基酸（BCAA）</strong>：不如整蛋白有效，但训练中可减少感知疲劳<br><strong>谷氨酰胺</strong>：免疫支持，但正常饮食者无需额外补充<br><strong>HMB</strong>：可能减少肌肉分解，新手和老年人效果更好<br><strong>Omega-3</strong>：抗炎+恢复，2-3g EPA/DHA/天</p>
+
+      <h3>C级（证据不足或不推荐）</h3>
+      <p><strong>睾酮促进剂</strong>：无效<br><strong>CLA</strong>：减脂效果微乎其微<br><strong>左旋肉碱</strong>：减脂无效<br><strong>胶原蛋白</strong>：关节健康证据不足，不如吃够蛋白</p>
+
+      <h3>补剂使用原则</h3>
+      <p>① 补剂是补充，不是替代<br>② 一次最多用3种<br>③ 选择第三方认证品牌（NSF/Informed Sport）<br>④ 注意咖啡因总量（每天400mg以内安全）<br>⑤ 新手先从蛋白粉+肌酸开始</p>
+      <p class='tip'>💡 99%的'专利配方'和'快速见效'都是营销。如果一个补剂吹得太夸张，那它就是夸张的。</p>
+      <hr><p><em>参考文献：ISSN Exercise & Sport Nutrition Review / Australian Institute of Sport Supplement Classification</em></p>
+    </div>`,
+    // 9. 周期化营养
+    `<div class="reader-module-content"><h2>🔄 周期化营养</h2>
+      <p>周期化营养是指根据训练周期的不同阶段，调整营养策略以匹配训练需求和身体状态。</p>
+
+      <h3>周期划分</h3>
+      <table><tr><th>周期</th><th>训练重点</th><th>热量</th><th>蛋白</th><th>碳水</th></tr><tr><td>基础期</td><td>技术积累、力量基础</td><td>维持/微增</td><td>1.6-1.8g/kg</td><td>3-4g/kg</td></tr><tr><td>强度期</td><td>高强度、专项训练</td><td>维持+200</td><td>1.8-2.0g/kg</td><td>4-5g/kg</td></tr><tr><td>比赛期</td><td>减量、赛前准备</td><td>维持</td><td>1.6-1.8g/kg</td><td>5-6g/kg（碳加载）</td></tr><tr><td>恢复期</td><td>主动恢复</td><td>微减</td><td>1.4-1.6g/kg</td><td>2-3g/kg</td></tr></table>
+
+      <h3>训练日 vs 休息日</h3>
+      <p><strong>训练日</strong>：碳水高 + 适当高热量，支持训练+恢复<br><strong>休息日</strong>：碳水降低 + 热量微减，促进脂肪代谢敏感化</p>
+      <p>一天碳水波动：训练日4-5g/kg → 休息日2-3g/kg（交替式周期化）</p>
+
+      <h3>碳加载周期</h3>
+      <p><strong>比赛前5-7天</strong>：<br>第5天：碳水稍减（2-3g/kg）→ 耗尽存量<br>第4天：碳水3-4g/kg<br>第3天：碳水5-6g/kg<br>第2天：碳水6-7g/kg<br>第1天（赛前）：碳水7-8g/kg + 充足水合</p>
+      <p>碳加载可增加肌糖原储存20-50%，显著提升耐力表现。</p>
+      <p class='tip'>💡 周期化营养不是天天吃一样的东西。聪明的运动员会根据体重、训练强度、周期阶段动态调整。</p>
+      <hr><p><em>参考文献：Jeukendrup AE. Periodized Nutrition for Athletes. Sports Med 2017 / NSCA-CSCS 营养周期化</em></p>
+    </div>`,
+    // 10. 体重管理
+    `<div class="reader-module-content"><h2>⚖️ 体重管理</h2>
+      <p>运动员的体重管理不是简单的'减肥'，而是在保持/提升运动表现的前提下优化体成分。</p>
+
+      <h3>体成分目标</h3>
+      <table><tr><th>性别/项目</th><th>体脂率参考</th><th>BMI参考</th></tr><tr><td>男性羽毛球</td><td>8-15%</td><td>20-24</td></tr><tr><td>女性羽毛球</td><td>15-22%</td><td>18-22</td></tr><tr><td>一般健康男性</td><td>10-20%</td><td>18.5-24</td></tr><tr><td>一般健康女性</td><td>18-28%</td><td>18.5-24</td></tr></table>
+
+      <h3>减脂指南</h3>
+      <p><strong>安全速率</strong>：每周减0.3-0.5kg（过多会肌肉流失）<br><strong>热量缺口</strong>：每日TDEE-300~500kcal<br><strong>蛋白提高</strong>：升至2.0-2.4g/kg，保留肌肉<br><strong>碳水时机</strong>：训练日碳水集中在训练前后<br><strong>监控频率</strong>：每周称1次体重 + 每2周测围度</p>
+
+      <h3>增肌指南</h3>
+      <p><strong>热量盈余</strong>：每日TDEE+200~400kcal<br><strong>蛋白达标</strong>：1.6-2.0g/kg，分4-5餐<br><strong>碳水保证</strong>：3-5g/kg，保证训练强度<br><strong>耐心</strong>：健康增重每月0.5-1kg</p>
+
+      <h3>平台期突破</h3>
+      <p>① 调整热量：减脂期降低100-200kcal/天<br>② 调整训练：改变训练模式/增加负荷<br>③ 检查蛋白：是不是吃够<br>④ 检查睡眠：<7小时影响瘦素<br>⑤ 重新估算TDEE：体重变了，BMR也变了</p>
+
+      <h3>体重管理雷区</h3>
+      <p>❌ 每日称体重（体水分波动让你焦虑）<br>❌ 节食（掉代谢，掉肌肉，掉表现）<br>❌ 极低碳水（影响训练质量）<br>❌ 快速减重（>1kg/周几乎必然掉肌肉）<br>❌ 只看体重不看体脂（体重不变但体脂可以降）</p>
+      <p class='tip'>💡 体重是数字，表现才是真相。3个月后你跑得更快、跳得更高、杀得更狠，体重的几斤浮动根本不重要。</p>
+      <hr><p><em>参考文献：ACSM Guidelines for Exercise Testing and Prescription / NSCA 体成分管理</em></p>
+    </div>`,
+  ],
+    competition: [
+    // 1. 赛前1周
+    `<div class="reader-module-content">
+      <h2>⚔️ 赛前1周倒计时</h2>
+      <p>赛前一周的决定性因素不是训练，而是管理。管理好状态、管理好身体、管理好心态。</p>
+      <h3>倒计时安排</h3>
+      <table><tr><th>天数</th><th>训练</th><th>营养</th><th>恢复</th></tr><tr><td>T-7</td><td>最后一次高强度训练</td><td>正常碳水</td><td>泡沫轴+拉伸</td></tr><tr><td>T-6</td><td>中等强度技术训练</td><td>正常</td><td>正常睡眠</td></tr><tr><td>T-5</td><td>中等强度技术训练</td><td>碳加载开始（3-4g/kg）</td><td>充足水合</td></tr><tr><td>T-4</td><td>低强度有氧+激活</td><td>碳水4-5g/kg</td><td>筋膜放松</td></tr><tr><td>T-3</td><td>比赛模拟（减量65%）</td><td>碳水5-6g/kg</td><td>睡眠充分</td></tr><tr><td>T-2</td><td>完整休息</td><td>碳水持续</td><td>轻运动+拉伸</td></tr><tr><td>T-1</td><td>激活训练（30min）</td><td>碳水6-7g/kg</td><td>早睡</td></tr><tr><td>比赛日</td><td>赛前热身</td><td>赛前餐(3h前)</td><td>上场</td></tr></table>
+      <h3>赛前减量原则</h3>
+      <p><strong>训练量</strong>：减到平时的40-60%<br><strong>强度</strong>：维持或微增（保持神经激活）<br><strong>频率</strong>：不减（保持肌肉记忆）</p>
+      <h3>赛前心理准备清单</h3>
+      <p>☐ 准备好比赛装备（球拍穿线、鞋、毛巾、水壶）<br>☐ 规划好交通和到达时间<br>☐ 写一个3句话的比赛计划（关键词触发）<br>☐ 想象成功的画面（积极的内心演练）</p>
+      <p class="tip">💡 赛前一周不要尝试任何新东西。新球鞋、新食物、新动作——全部留在训练中验证过。</p>
+      <hr><p><em>参考文献：Mujika I, Padilla S. Tapering for Performance. Sports Med 2003 / NSCA 比赛准备指南</em></p>
+    </div>`,
+    // 2. 赛中关键策略
+    `<div class="reader-module-content">
+      <h2>🎯 赛中关键策略</h2>
+      <p>比赛中的决策质量决定比赛走向。以下策略体系来自世界级教练和运动员的实战经验。</p>
+      <h3>开局策略（0-5分）</h3>
+      <p><strong>目的</strong>：试探对手、建立节奏<br><strong>发球</strong>：2-3种发球轮换（不要只用一种）<br><strong>接发</strong>：以回中为主，不追求直接得分<br><strong>试探方向</strong>：对手正手位？反手位？网前？后场？<br><strong>关键数字</strong>：前5分至少打3种不同的球路</p>
+      <h3>中期策略（5-15分）</h3>
+      <p><strong>目的</strong>：消耗对手、扩大优势<br><strong>节奏变化</strong>：快→慢→快的交替<br><strong>线路选择</strong>：重复点+突然变线<br><strong>体能管理</strong>：长短球结合，让对手多跑</p>
+      <h3>局末策略（15-21分）</h3>
+      <p><strong>领先时</strong>：维持节奏、不冒险变线、耐心等待对手失误<br><strong>落后时</strong>：主动变节奏、增加变化、打不同球路增加不确定性<br><strong>关键分（20平以后）</strong>：用你最稳的球路、不要打你只有50%把握的球</p>
+      <h3>局间调整</h3>
+      <p>90秒局间休息：<br>0-30秒：擦汗、喝水、慢走<br>30-60秒：分析对手模式（这一局发现了什么）<br>60-90秒：制定下一局战术（1-2个执行点）</p>
+      <h3>关键比赛原则</h3>
+      <p>① 对手弱的球路多打、强的球路尽量避开<br>② 连续失分≥2分时必须变节奏<br>③ 不要跟对手比"谁更凶"——凶的前提是有把握<br>④ 每一分都是新的开始，不要想上一分</p>
+      <p class="tip">💡 比赛的对手不是对面那个人，是你自己。谁先控制住自己的情绪，谁就赢了90%。</p>
+      <hr><p><em>参考文献：林丹《直到世界尽头》比赛策略篇 / 李永波教练体系</em></p>
+    </div>`,
+    // 3. 比赛心理准备
+    `<div class="reader-module-content">
+      <h2>🧠 比赛心理准备</h2>
+      <p>高水平比赛最后都是心理的比拼。技术层面的差距在赛前训练中已经决定，比赛中的胜负取决于心理调节。</p>
+      <h3>赛前心理状态分级</h3>
+      <table><tr><th>状态</th><th>心率(静息+)</th><th>表现</th></tr><tr><td>低迷</td><td>+0~5 bpm</td><td>反应慢，注意力散漫</td></tr><tr><td>热身最佳区</td><td>+10~20 bpm</td><td>专注、反应快、爆发力足</td></tr><tr><td>过度紧张</td><td>+30~50 bpm</td><td>动作僵硬、失误多、判断力下降</td></tr><tr><td>恐慌</td><td>+50+ bpm</td><td>完全失控</td></tr></table>
+      <h3>激活法（进入最佳区）</h3>
+      <p><strong>音乐激活</strong>：赛前听熟悉的激昂音乐3-5首<br><strong>动作激活</strong>：重击球、跨步、跳跃等大肌肉动作<br><strong>自我暗示</strong>："我准备好了""这场我能赢"简短有力的话<br><strong>呼吸激活</strong>：4-7-8呼吸法（吸气4秒-屏7秒-呼8秒）×3轮</p>
+      <h3>降压法（应对过度紧张）</h3>
+      <p><strong>场边冷处理</strong>：不看对手、不看比分、专注于自己的球拍<br><strong>正向自我对话</strong>："这只是训练中的一分"<br><strong>重置仪式</strong>：擦汗、拍球、调整球拍线——形成自己的"重启仪式"<br><strong>身体放松</strong>：抖动双手、深呼吸、摇头放松</p>
+      <h3>赛中注意力管理</h3>
+      <p>① <strong>聚焦当下</strong>：不追忆上一分，也不预测下一分<br>② <strong>执行计划</strong>：每分前想一个关键词触发动作<br>③ <strong>过程导向</strong>：关注"我要做什么"而非"我要赢"</p>
+      <p class="tip">💡 顶级运动员的标志不是不紧张，而是能在紧张中继续执行正确的动作。</p>
+      <hr><p><em>参考文献：James E. Loehr《The New Toughness Training for Sports》/ 运动心理学竞赛焦虑研究</em></p>
+    </div>`,
+    // 4. 对手分析框架
+    `<div class="reader-module-content">
+      <h2>📊 对手分析框架</h2>
+      <p>知己知彼百战百胜。赛前对对手的分析应该系统化，避免临时看两眼就说"知道"。</p>
+      <h3>分析维度清单</h3>
+      <table><tr><th>维度</th><th>关注点</th><th>记录方法</th></tr><tr><td>技术维度</th><td>正手、反手、网前、杀球、防御</th><th>记录命中率</td></tr><tr><td>战术维度</th><td>常用球路、变化频率、套路</th><th>记录3种最常用套路</td></tr><tr><td>身体维度</th><td>速度、力量、耐力、柔韧</th><th>评估等级1-5</td></tr><tr><td>心理维度</th><td>关键分稳定性、失误后调整</th><th>观察反应</td></tr><tr><td>体能维度</th><td>多拍能力、长局表现</th><th>记录第3局后表现</td></tr></table>
+      <h3>赛前情报收集</h3>
+      <p>① <strong>录像分析</strong>：找到对手最近3-5场比赛的完整录像<br>② <strong>数据统计</strong>：发球得分率、接发得分率、网前得分率<br>③ <strong>弱点标注</strong>：画出对手"必胜球"和"必败球"<br>④ <strong>历史交锋</strong>：回顾你与对手过去交锋的情况</p>
+      <h3>对手档案模板</h3>
+      <p>姓名/右手或左手/身高体重/<br>常用发球: 1. 2. 3.<br>强势技术: 1. 2. 3.<br>薄弱环节: 1. 2. 3.<br>心理特征: 1. 2. 3.<br>战术倾向: 进攻型？拉吊型？防守反击型？<br>应对方案: 1. 2. 3.</p>
+      <h3>场上即时观察（开局5分）</h3>
+      <p>① 对手的移动范围和重心<br>② 击球时的稳定性<br>③ 各种球的实际速度<br>④ 在压力下的选择倾向</p>
+      <p class="tip">💡 不要被对手的"名头"吓到。任何对手都有弱点，比赛开始前的分析决定你能否找到它。</p>
+      <hr><p><em>参考文献：《Winning Ugly》Brad Gilbert / NSCA 运动情报学</em></p>
+    </div>`,
+    // 5. 对手技术弱点
+    `<div class="reader-module-content">
+      <h2>🔍 对手技术弱点识别</h2>
+      <p>找到对手的弱点还不够，要懂得持续攻击弱点，让对手无法适应。</p>
+      <h3>常见羽毛球弱点模式</h3>
+      <table><tr><th>弱点类型</th><th>识别方法</th><th>攻击策略</th></tr><tr><td>反手弱</td><td>对手反手回球质量差</td><td>多打反手位+重复反手</td></tr><tr><td>网前弱</td><td>对手网前挑球高、放网下网</td><td>多放网+勾对角</td></tr><tr><td>过渡球弱</td><td>对手中场球处理粗糙</td><td>多打中场软压</td></tr><tr><td>后退慢</td><td>对手从网前退到后场迟钝</td><td>网前→后场组合球</td></tr><tr><td>前场慢</td><td>对手从后场上网迟钝</td><td>高远球→网前组合</td></tr><tr><td>心理崩</td><td>对手连续失分后失误率飙升</td><td>保持攻势不放松</td></tr></table>
+      <h3>弱点的三大特征</h3>
+      <p><strong>① 持续性</strong>：不是偶尔失误，而是每次打到那里都差<br><strong>② 不可调整</strong>：对手知道但调整不过来<br><strong>③ 多拍暴露</strong>：越打越长越暴露</p>
+      <h3>攻击弱点的实战技巧</h3>
+      <p>① <strong>伪装</strong>：从对手强的位置开始，让他以为你打强的方向<br>② <strong>突然</strong>：在他准备好之前突然变线到弱点<br>③ <strong>重复</strong>：同一线路连续3-5次，让对手无法应对<br>④ <strong>加大压力</strong>：球速/角度/落点都最刁</p>
+      <h3>对手反扑的应对</h3>
+      <p>对手会调整，所以要预留plan B：<br>① 第一次攻击失败 → 改打次弱方向<br>② 对手突然加强弱点 → 改打其他方向<br>③ 对手改变战术 → 重新观察5分再调整</p>
+      <p class="tip">💡 真正的强者是"无弱点"的球员。普通球员3-5个弱点，顶尖球员只有1-2个。找到对手的弱点持续攻击是基本功。</p>
+      <hr><p><em>参考文献：羽毛球队训练学·对手分析章 / 李矛教练战术分析</em></p>
+    </div>`,
+    // 6. 体能分配
+    `<div class="reader-module-content">
+      <h2>🏃 体能分配策略</h2>
+      <p>羽毛球三局两胜可以打90分钟以上，没有体能分配意识的人会在第2局末或第3局崩溃。</p>
+      <h3>比赛三局体能曲线</h3>
+      <table><tr><th>阶段</th><th>体能水平</th><th>策略</th></tr><tr><td>第1局0-10分</td><td>100%</td><td>全力执行既定战术</td></tr><tr><td>第1局10-21分</td><td>85-90%</td><td>建立优势、控制节奏</td></tr><tr><td>第2局0-10分</td><td>75-85%</td><td>稳定心态、稳中求变</td></tr><tr><td>第2局10-21分</td><td>65-75%</td><td>体能决战期，谁撑住谁赢</td></tr><tr><td>第3局决胜</td><td>看恢复情况</td><td>拼意志+拼战术</td></tr></table>
+      <h3>局间休息的科学利用</h3>
+      <p>90秒局间：<br>0-30秒：补水（150-200ml）+ 慢走<br>30-60秒：呼吸调整（4-7-8呼吸 × 3轮）<br>60-90秒：擦汗、整理装备、心态调整</p>
+      <h3>节省体能的实战技巧</h3>
+      <p>① <strong>合理回位</strong>：不要每次都全力回中心，预判+站位<br>② <strong>有效击球</strong>：每分都打有目的的球，不浪费体力<br>③ <strong>借力打力</strong>：对手发力时挡/抽，不要对拉<br>④ <strong>节奏控制</strong>：根据体能调整回合速度</p>
+      <h3>决胜局体能管理</h3>
+      <p>第3局开局前5分：<br>① 优先恢复，不能开局就拼光<br>② 用你最擅长的开局方式<br>③ 不冒险球，稳中求胜<br>④ 关键分11分换边时再做心理和身体重置</p>
+      <p class="tip">💡 体能不只是身体，更是心理。第3局输掉的比赛90%是心理先崩，身体还在。</p>
+      <hr><p><em>参考文献：林丹体能训练课 / NSCA 羽毛球体能训练</em></p>
+    </div>`,
+    // 7. 实战案例
+    `<div class="reader-module-content">
+      <h2>🎬 实战案例学习</h2>
+      <p>从真实比赛中提炼规律，比理论更能指导实战。</p>
+      <h3>案例1：林丹 vs 李宗伟 2016里约半决赛</h3>
+      <p><strong>背景</strong>：李宗伟世界排名第一，林丹第二，前两次交手李宗伟胜。</p>
+      <p><strong>关键策略</strong>：<br>① 林丹主动放弃纯进攻模式，采用拉吊+突击<br>② 针对李宗伟正手区空当持续施压<br>③ 节奏控制：林丹故意放慢节奏，让李宗伟"有力无处使"<br>④ 关键分处理：林丹更敢出手（基于多次大赛经验）</p>
+      <p><strong>结果</strong>：林丹2-1逆转，第3局关键时刻打出神仙球。</p>
+      <p><strong>启示</strong>：顶级对决不是比谁更凶，而是比谁失误更少、关键分更稳。</p>
+      <h3>案例2：业余选手反败为胜典型场景</h3>
+      <p><strong>背景</strong>：业余比赛，第一局大比分落后（5-15）。</p>
+      <p><strong>反败策略</strong>：<br>① 暂停后不再想比分，只打"下一个球"<br>② 主动变节奏：打之前从未用过的球路<br>③ 针对对手已经"放松警惕"的心态突袭<br>④ 减少无谓失误，用稳定回球消耗对手注意力</p>
+      <p><strong>结果</strong>：连追10分反超。</p>
+      <p><strong>启示</strong>：业余比赛心理因素占比远大于技术。领先的容易松懈，落后方一旦起势，对手很难应对。</p>
+      <h3>案例3：双打配合失误典型</h3>
+      <p><strong>背景</strong>：业余双打，两名选手争抢同一区域，导致空当。</p>
+      <p><strong>问题</strong>：<br>① 分区不明确，前后职责重叠<br>② 沟通仅靠喊叫，节奏不一致<br>③ 一人被压制时另一人不知道补位</p>
+      <p><strong>改进</strong>：<br>① 赛前明确"前后"或"左右"站位<br>② 建立简单暗号（如"我的"）<br>③ 形成"谁在前谁主导"的默契</p>
+      <p class="tip">💡 比赛经验是最好的教练。多看比赛录像+赛后复盘，比看100篇战术文章都管用。</p>
+      <hr><p><em>参考文献：BWF世界羽联官方比赛录像库 / 林丹自传《直到世界尽头》</em></p>
+    </div>`,
+    // 8. 局间调整
+    `<div class="reader-module-content">
+      <h2>🔄 局间调整</h2>
+      <p>两局之间的90秒比场上每一秒都重要。这是唯一能"重启"的时刻。</p>
+      <h3>局间调整的三大任务</h3>
+      <p>① <strong>身体调整</strong>（30秒）：补水、降温、肌肉放松<br>② <strong>战术复盘</strong>（30秒）：刚才一局发生了什么？哪些有效哪些无效？<br>③ <strong>心态调整</strong>（30秒）：放下上一局，专注于下一局</p>
+      <h3>一局结束后的快速复盘</h3>
+      <p>必问3个问题：<br>① 上一局对手的什么球路让我最难受？<br>② 我做的最有效的战术是什么？<br>③ 下一局要保持什么、改变什么？</p>
+      <h3>针对不同比分情况的调整</h3>
+      <table><tr><th>情况</th><th>调整方向</th></tr><tr><td>领先较多</td><td>维持战术、控制失误、不打冒险球</td></tr><tr><td>落后较多</td><td>主动变化、用未展示过的战术突袭</td></tr><tr><td>比分胶着</td><td>坚持自己的节奏，不要被对手带偏</td></tr><tr><td>第2局失分快</td><td>可能体能/心态问题，简化战术稳住</td></tr></table>
+      <h3>教练员局间指导</h3>
+      <p>如果带教练比赛：<br>① 教练用最简洁的语言（2-3句话）<br>② 给1-2个具体执行点，不是泛泛建议<br>③ 永远先肯定再提改进<br>④ 注意语气：鼓励 > 指责</p>
+      <p class="tip">💡 90秒局间能做的最重要的事不是讨论战术，而是让身体和心理都"重启"。</p>
+      <hr><p><em>参考文献：BWF官方教练员培训教材 / 中国羽毛球队训练学</em></p>
+    </div>`,
+    // 9. 赛后复盘
+    `<div class="reader-module-content">
+      <h2>📝 赛后复盘</h2>
+      <p>比赛结束不是终点，而是下一场比赛的起点。真正的成长发生在赛后复盘中。</p>
+      <h3>复盘的黄金时间</h3>
+      <p><strong>赛后30分钟内</strong>（情绪记忆最清晰）：<br>① 找一个安静的地方坐下<br>② 把即时感受写下来（不管好坏）<br>③ 评分：身体状态、心理状态、技术发挥各10分</p>
+      <p><strong>赛后2小时内</strong>（细节记忆还清晰）：<br>① 重新看比赛录像或回忆关键分<br>② 列出3个做的好的地方和3个需要改进的地方<br>③ 标记关键转折分（比分发生重大变化的几个球）</p>
+      <p><strong>赛后24小时内</strong>（认知更客观）：<br>① 和教练/球友讨论<br>② 写完整的复盘报告<br>③ 制定下阶段的训练调整计划</p>
+      <h3>复盘模板</h3>
+      <p>比赛日期/对手/比分/<br>技术表现（正手/反手/网前/杀球/步伐）：<br>战术执行（开局/中期/局末）：<br>心理状态（开局/中期/关键分）：<br>体能分配（三局体能曲线）：<br>亮点（3个）：<br>改进点（3个）：<br>下阶段训练调整：</p>
+      <h3>胜负观</h3>
+      <p>① <strong>赢了不飘</strong>：分析对手为什么失误而非自己发挥好<br>② <strong>输了不崩</strong>：找具体问题，下次针对性训练<br>③ <strong>过程导向</strong>：关注执行是否到位，而非比分<br>④ <strong>长期思维</strong>：一场比赛是长期训练的一次检验</p>
+      <p class="tip">💡 复盘比训练更重要。一场不复盘的比赛=白打。一场深度复盘的比赛=额外获得10次训练。</p>
+      <hr><p><em>参考文献：《复盘+》陈中 / 运动训练学复盘理论 / 羽毛球队教练员培训</em></p>
+    </div>`,
+    // 10. 长期比赛计划
+    `<div class="reader-module-content">
+      <h2>🎯 长期比赛计划</h2>
+      <p>真正的比赛不只是上场那几小时，而是围绕比赛建立的全年/多年规划。</p>
+      <h3>年度比赛计划制定</h3>
+      <table><tr><th>阶段</th><th>时间</th><th>任务</th></tr><tr><td>赛季规划期</th><td>12-1月</td><th>确定年度比赛清单+目标</td></tr><tr><td>基础积累期</td><td>2-4月</td><th>体能+基本技术强化</td></tr><tr><td>专项强化期</td><td>5-7月</td><th>针对性战术+模拟比赛</td></tr><tr><td>比赛高峰期</th><td>8-10月</td><th>比赛为主+维持训练</td></tr><tr><td>总结调整期</th><td>11月</td><th>全年复盘+下年规划</td></tr></table>
+      <h3>比赛分级管理</h3>
+      <p><strong>A级（核心目标）</strong>：年度1-3个最重要的比赛，提前3-6个月规划<br><strong>B级（重要赛事）</strong>：月度1-2个重要比赛，提前1-2个月准备<br><strong>C级（练习赛）</strong>：周度训练性比赛，重在练手</p>
+      <h3>每场比赛的角色</h3>
+      <p>① <strong>核心目标比赛</strong>：调整到最佳状态，全力争胜<br>② <strong>重要比赛</strong>：比平时训练更投入，争取好成绩<br>③ <strong>练习赛</strong>：尝试新战术、新组合，不看重胜负</p>
+      <h3>长期运动员发展</h3>
+      <p>① <strong>年度目标</strong>：技术提升点+参赛目标+身体指标<br>② <strong>3年规划</strong>：技术全面性+战术体系+心理成熟<br>③ <strong>5年愿景</strong>：定位（业余高手/半专业/教练员）</p>
+      <h3>避免的长期陷阱</h3>
+      <p>❌ 频繁参赛无规划（过度疲劳+无法集中准备）<br>❌ 一场比赛决定论（单场胜负不代表真实水平）<br>❌ 训练和比赛割裂（每场比赛都应服务长期目标）<br>❌ 缺乏复盘的连续性（不复盘 = 没有进步）</p>
+      <p class="tip">💡 业余选手一年能打10-30场比赛，每场比赛都有价值，前提是你有完整的规划。</p>
+      <hr><p><em>参考文献：NSCA 长期训练计划理论 / 运动训练学 周期化训练</em></p>
+    </div>`,
+  ],
+};
+
 const LEVELS = [
   { id:'L0', label:'第零级 · 零基础启蒙', time:'0-1个月', emoji:'🌱',
     desc:'建立正确的神经肌肉控制模式，培养本体感觉和基础运动能力。从零到握拍和基本站位。' },
@@ -417,9 +782,34 @@ function openModuleTopic(modId, topicIdx) {
       }
     }
   }
+  // 降级：使用内联内容（营养/比赛等无 book 映射的模块）
+  if (MODULE_CONTENT[modId] && MODULE_CONTENT[modId][topicIdx]) {
+    renderModuleInline(mod, topicIdx);
+    return;
+  }
   // 无匹配 → 回到模块视图
   navStack.pop();
   openTrainModule(modId);
+}
+
+// ─── 渲染模块内联内容 ───
+function renderModuleInline(mod, topicIdx) {
+  showView('reader');
+  const html = MODULE_CONTENT[mod.id][topicIdx];
+  const title = mod.chapters[topicIdx].replace(/^[^\w一-龥]+/, '').trim();
+  $('readerTitle').textContent = `${mod.icon} ${mod.title} · ${title}`;
+  $('chapterPos').textContent = `${topicIdx+1}/${mod.chapters.length}`;
+  $('readMarkBtn').textContent = '📌';
+  const hasPrev = topicIdx > 0;
+  const hasNext = topicIdx < mod.chapters.length - 1;
+  $('readerNav').innerHTML = `
+    <button class="tb-btn" onclick="renderModuleInline(TRAIN_MODULES.find(m=>m.id==='${mod.id}'), ${topicIdx-1})" ${hasPrev?'':'disabled'}>◀ 上一节</button>
+    <button class="tb-btn" onclick="openTrainModule('${mod.id}')">⏏ 返回模块</button>
+    <button class="tb-btn" onclick="renderModuleInline(TRAIN_MODULES.find(m=>m.id==='${mod.id}'), ${topicIdx+1})" ${hasNext?'':'disabled'}>下一节 ▶</button>`;
+  $('article').innerHTML = html;
+  $('content').scrollTo({top:0,behavior:'smooth'});
+  updateProgress();
+  historyPush('module-inline', {moduleId: mod.id, topicIdx: topicIdx});
 }
 
 // ─── 仅渲染模块内容（不重置 navStack） ──
@@ -1570,3 +1960,6 @@ if(r) r.innerHTML="日常"+daily+"ml + 训练"+train+"ml = "+Math.round((daily+t
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function scrollToTop(){$('content').scrollTo({top:0,behavior:'smooth'});}
+
+
+
