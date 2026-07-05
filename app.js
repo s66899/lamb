@@ -886,6 +886,342 @@ function generateCoachPlan() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+//  🎯 教练交互式工具（全可点击选择 → 输出方案）
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── 训练方案向导（多步点击式） ──────────
+function openCoachWizard() {
+  showView('book');
+  currentModule = 'coach';
+  navStack.push({view:'dashboard'});
+  historyPush('coach', {});
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
+    <h1>🎯 训练方案向导</h1>
+    <div class="vm">三步选择 → 自动生成完整周期训练方案</div>`;
+  $('bookStats').innerHTML = '';
+  $('contentGrid').innerHTML = `
+    <div style="grid-column:1/-1">
+      <div id="qwStep1" class="qw-step">
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:var(--purple)">步骤 ①：选择训练目标</div>
+        <div class="qw-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">
+          <button onclick="qwSetGoal(0)" class="qw-btn">🏋️ 增肌塑形</button>
+          <button onclick="qwSetGoal(1)" class="qw-btn">⚡ 爆发力提升</button>
+          <button onclick="qwSetGoal(2)" class="qw-btn">🏃 耐力提升</button>
+          <button onclick="qwSetGoal(3)" class="qw-btn">🤸 综合体能</button>
+          <button onclick="qwSetGoal(4)" class="qw-btn">🏸 羽毛球专项</button>
+          <button onclick="qwSetGoal(5)" class="qw-btn">🔄 伤病后恢复</button>
+        </div>
+      </div>
+
+      <div id="qwStep2" class="qw-step" style="display:none">
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:var(--purple)">步骤 ②：选择当前级别</div>
+        <div class="qw-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px">
+          <button onclick="qwSetLevel(0)" class="qw-btn qw-sm">🟢 L0-L1 零基础</button>
+          <button onclick="qwSetLevel(1)" class="qw-btn qw-sm">🟡 L2-L3 入门</button>
+          <button onclick="qwSetLevel(2)" class="qw-btn qw-sm">🟠 L4-L5 进阶</button>
+          <button onclick="qwSetLevel(3)" class="qw-btn qw-sm">🔴 L6-L7 专业</button>
+        </div>
+      </div>
+
+      <div id="qwStep3" class="qw-step" style="display:none">
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:var(--purple)">步骤 ③：选择每周训练频率</div>
+        <div class="qw-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:500px">
+          <button onclick="qwSetFreq(2)" class="qw-btn">2次</button>
+          <button onclick="qwSetFreq(3)" class="qw-btn">3次</button>
+          <button onclick="qwSetFreq(4)" class="qw-btn">4次</button>
+          <button onclick="qwSetFreq(5)" class="qw-btn">5次</button>
+          <button onclick="qwSetFreq(6)" class="qw-btn">6次</button>
+        </div>
+      </div>
+
+      <div id="qwResult" style="display:none;animation:iosSlideIn 0.4s var(--ios-spring-smooth)"></div>
+    </div>`;
+  updateProgress();
+}
+
+// Wizard state
+let QW = { goal: -1, level: -1, freq: 3 };
+
+function qwSetGoal(g) { QW.goal = g; document.getElementById('qwStep1').style.display='none'; document.getElementById('qwStep2').style.display='block'; }
+function qwSetLevel(l) { QW.level = l; document.getElementById('qwStep2').style.display='none'; document.getElementById('qwStep3').style.display='block'; }
+
+const GOALS = ['增肌塑形','爆发力提升','耐力提升','综合体能','羽毛球专项','伤病后恢复'];
+const QW_LEVELS = ['L0-L1 零基础','L2-L3 入门','L4-L5 进阶','L6-L7 专业'];
+
+function qwSetFreq(f) {
+  QW.freq = f;
+  document.getElementById('qwStep3').style.display='none';
+  const g = GOALS[QW.goal], l = LEVELS[QW.level];
+  // Generate plan based on selections
+  const plans = [
+    /* 增肌 */   ['3组×8-12次 力量','2组×15-20次 耐力','渐进超载+隔天练','RPE6-8'],
+    /* 爆发力 */ ['5组×3-5次 爆发','2组×10次 辅助','Olympic lift+跳箱','RPE7-9'],
+    /* 耐力 */   ['3-4组×20+次','动作循环训练','间歇训练每周3次','RPE5-7'],
+    /* 综合 */   ['2组各×12次','力量+有氧混合','每周编排不同','RPE6-8'],
+    /* 羽毛球 */ ['步法+多球+体能','技术60%+体能40%','每周3-5练','RPE5-8'],
+    /* 恢复 */   ['低强度+纠正','激活+拉伸','监控RPE不过6','RPE3-5'],
+  ];
+  const p = plans[QW.goal] || plans[0];
+  
+  let planHtml = `<div style="background:var(--surface);border:1px solid var(--blue);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px;color:var(--purple)">🎯 ${g} · ${l} · 每周${f}次</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:12px">基于NSCA-CPT周期训练理论 · 教练参考方案</div>`;
+  
+  // Training week structure
+  planHtml += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">核心训练</div>
+        <div style="font-size:12px;line-height:1.8">${p[0]}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">辅助训练</div>
+        <div style="font-size:12px;line-height:1.8">${p[1]}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">编排建议</div>
+        <div style="font-size:12px;line-height:1.8">${p[2]}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">强度监控</div>
+        <div style="font-size:12px;line-height:1.8">${p[3]}</div>
+      </div>
+    </div>`;
+  
+  // Weekly schedule
+  const days = ['周一','周二','周三','周四','周五','周六','周日'];
+  const types = ['力量','有氧','休息','技术','体能','比赛模拟','恢复'];
+  if (g === '羽毛球专项') types[0]='技术训练'; types[2]='积极性恢复';
+  planHtml += `<div style="margin-bottom:12px">
+    <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">📅 本周安排</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">`;
+  for (let d = 0; d < 7; d++) {
+    const active = d < f;
+    const type = active ? types[d % types.length] : '休息';
+    const isRest = type === '休息' || type === '恢复';
+    planHtml += `<div style="background:${isRest||!active?'var(--surface3)':'var(--blue)'}15;border-radius:var(--radius-sm);padding:8px;text-align:center">
+      <div style="font-size:9px;color:var(--text3)">${days[d]}</div>
+      <div style="font-size:10px;font-weight:600;color:${isRest||!active?'var(--text3)':'var(--blue)'};margin-top:2px">${isRest?'—':type}</div>
+    </div>`;
+  }
+  planHtml += `</div></div>`;
+  
+  // Nutrition tip based on goal
+  const nutrition = [
+    /* 增肌 */   '高蛋白（1.6-2.2g/kg）+ 热量盈余300-500kcal · 训练前后补充快慢蛋白',
+    /* 爆发力 */ '肌酸5g/天 + 碳水足量 · 训练前2h高碳低脂',
+    /* 耐力 */   '碳水负载 + 充足电解质 · 训练中补充运动饮料',
+    /* 综合 */   '均衡膳食 50%碳水30%蛋白20%脂肪',
+    /* 羽毛球 */ '中等碳水 + 充分补水 · 赛前3h进食',
+    /* 恢复 */   '抗炎饮食 + Omega-3 · 充足蛋白质修复',
+  ];
+  planHtml += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:12px">
+    <div style="font-size:12px;font-weight:600;margin-bottom:4px;color:var(--green)">🍎 饮食建议</div>
+    <div style="font-size:11px;color:var(--text2);line-height:1.6">${nutrition[QW.goal]}</div>
+  </div>`;
+  
+  // Case study / note for coaches
+  planHtml += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:8px">
+    <div style="font-size:12px;font-weight:600;margin-bottom:4px;color:var(--orange)">📋 教练备注</div>
+    <div style="font-size:11px;color:var(--text2);line-height:1.6">
+      <strong>案例：</strong>${g}项目水平${l}的训练者——<br>
+      • 前2周重点建立动作模式，不加负荷<br>
+      • 第3-4周渐进加载，每两周调整一次<br>
+      • 第4周后安排减量周，防止累积疲劳<br>
+      • 每月评估一次，根据进展调整下月计划
+    </div>
+  </div>`;
+  
+  planHtml += `</div>`;
+  
+  document.getElementById('qwResult').innerHTML = planHtml + `
+    <div style="text-align:center;margin-top:12px">
+      <button onclick="openCoachWizard()" class="tb-btn" style="background:var(--blue);color:#fff;border:none;padding:8px 20px">🔄 重新选择</button>
+      <button onclick="goBack()" class="tb-btn" style="margin-left:8px">← 返回教练系统</button>
+    </div>`;
+  document.getElementById('qwResult').style.display='block';
+  document.getElementById('qwResult').scrollIntoView({behavior:'smooth'});
+}
+
+// ─── 饮食方案向导 ──────────────────────────
+function openDietWizard() {
+  showView('book');
+  currentModule = 'coach';
+  navStack.push({view:'dashboard'});
+  historyPush('coach', {});
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
+    <h1>🍎 饮食方案向导</h1>
+    <div class="vm">点击选择 → 生成个性化饮食建议</div>`;
+  $('bookStats').innerHTML = '';
+  $('contentGrid').innerHTML = `
+    <div style="grid-column:1/-1">
+      <div id="dwStep1" class="qw-step">
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:var(--green)">步骤 ①：你的身体类型</div>
+        <div class="qw-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:450px">
+          <button onclick="dwNext(0)" class="qw-btn">🏋️ 肌肉型</button>
+          <button onclick="dwNext(1)" class="qw-btn">🧘 匀称型</button>
+          <button onclick="dwNext(2)" class="qw-btn">🦵 纤细型</button>
+        </div>
+      </div>
+      <div id="dwStep2" class="qw-step" style="display:none">
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:var(--green)">步骤 ②：你的目标</div>
+        <div class="qw-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:450px">
+          <button onclick="dwSetGoal(0)" class="qw-btn">💪 增肌</button>
+          <button onclick="dwSetGoal(1)" class="qw-btn">🔥 减脂</button>
+          <button onclick="dwSetGoal(2)" class="qw-btn">⚖️ 维持</button>
+        </div>
+      </div>
+      <div id="dwResult" style="display:none;animation:iosSlideIn 0.4s var(--ios-spring-smooth)"></div>
+    </div>`;
+  updateProgress();
+}
+
+let DW = { body: -1, goal: -1 };
+const BODY_TYPES = ['肌肉型','匀称型','纤细型'];
+const DIET_GOALS = ['增肌','减脂','维持'];
+
+function dwNext(b) { DW.body = b; document.getElementById('dwStep1').style.display='none'; document.getElementById('dwStep2').style.display='block'; }
+function dwSetGoal(g) {
+  DW.goal = g;
+  document.getElementById('dwStep2').style.display='none';
+  
+  const plans = [
+    // 增肌 per body type
+    [
+      '热量盈余350-500kcal · 蛋白质2.0g/kg · 碳水量4-6g/kg<br>• 加餐：训练前香蕉+花生酱，训练后蛋白粉+燕麦<br>• 推荐：鸡胸肉、鸡蛋、牛肉、糙米、红薯、牛油果',
+      '热量盈余250-350kcal · 蛋白质1.8g/kg · 碳水3-5g/kg<br>• 注意：你容易长脂肪，蛋白质要均匀分配每餐<br>• 推荐：三文鱼、鸡腿肉、藜麦、豆类、坚果',
+      '热量盈余200-300kcal · 蛋白质2.0g/kg · 碳水量5-6g/kg<br>• 加餐频率要高：一日5-6餐<br>• 推荐：瘦牛羊肉、全蛋、全麦、土豆、奶制品',
+    ],
+    // 减脂 per body type
+    [
+      '热量缺口300-500kcal · 蛋白质2.2-2.6g/kg · 低碳<br>• 注意降低碳水但不降蛋白<br>• 推荐：鸡胸、蛋白、绿叶菜、鱼、花椰菜',
+      '热量缺口300-400kcal · 蛋白质2.0g/kg · 碳水2-4g/kg<br>• 均衡缺脂，避免肌肉流失<br>• 推荐：瘦牛肉、鱼肉、燕麦、西兰花、蓝莓',
+      '热量缺口200-300kcal · 蛋白质2.2g/kg · 碳水3-4g/kg<br>• 你最需要保留肌肉量<br>• 推荐：红瘦肉、鸡蛋、藜麦、南瓜、菠菜',
+    ],
+    // 维持 per body type
+    [
+      'TDEE±100kcal · 蛋白质1.6-1.8g/kg<br>• 保持现有饮食，重点监控体重<br>• 推荐：多样化饮食，注意蔬果摄入',
+      'TDEE水平 · 蛋白质1.6g/kg · 均衡三大营养素<br>• 周中一次自由餐<br>• 推荐：地中海饮食模式',
+      'TDEE+100-150kcal · 蛋白质1.8g/kg · 碳水足量<br>• 你代谢高，要多吃才能维持体重<br>• 推荐：全谷物、蛋白质、优质脂肪',
+    ],
+  ];
+  
+  const plan = plans[DW.goal][DW.body];
+  const body = BODY_TYPES[DW.body];
+  const goal = DIET_GOALS[DW.goal];
+  const calTip = ['增肌期间推荐每3周调整热量','减脂期间关注体脂率而非体重变化','维持期每月做一次饮食回顾'][DW.goal];
+  
+  document.getElementById('dwResult').innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--green);border-radius:var(--radius-lg);padding:20px">
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px;color:var(--green)">🍎 ${body} · ${goal}饮食方案</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px">基于NSCA-CPT营养学 + 运动营养指南</div>
+      <div style="font-size:12px;line-height:2;color:var(--text)">${plan}</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;margin-top:12px">
+        <div style="font-size:11px;font-weight:600;color:var(--text2)">💡 教练提示</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px">${calTip}</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;margin-top:8px">
+        <div style="font-size:11px;font-weight:600;color:var(--orange)">📋 案例参考</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.6">
+          <strong>案例</strong> — ${body}运动员，目标${goal}：<br>
+          • 前2周先调整饮食模式，不急减/增热量<br>
+          • 第3周开始按计划执行，同时监控训练表现<br>
+          • 每2周称重+围度（不要每天称）<br>
+          • 4周后评估效果，如有必要调整10%热量<br>
+          • ⚠️ 减脂期如果训练表现下降，适当增加碳水
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px">
+      <button onclick="openDietWizard()" class="tb-btn" style="background:var(--green);color:#fff;border:none;padding:8px 20px">🔄 重新选择</button>
+      <button onclick="goBack()" class="tb-btn" style="margin-left:8px">← 返回教练系统</button>
+    </div>`;
+  document.getElementById('dwResult').style.display='block';
+  document.getElementById('dwResult').scrollIntoView({behavior:'smooth'});
+}
+
+// ─── 症状分析与解决方案 ────────────────────
+function openSymptomWizard() {
+  showView('book');
+  currentModule = 'coach';
+  navStack.push({view:'dashboard'});
+  historyPush('coach', {});
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
+    <h1>🔍 症状分析 + 解决方案</h1>
+    <div class="vm">点击症状 → 获取分析和教练策略</div>`;
+  $('bookStats').innerHTML = '';
+  $('contentGrid').innerHTML = `
+    <div style="grid-column:1/-1">
+      <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:var(--red)">选择常见问题 / 症状</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px">
+        <button onclick="showSymptomSolution(0)" class="qw-btn" style="text-align:left;padding:12px;font-size:12px">🏃 膝盖前方疼痛</button>
+        <button onclick="showSymptomSolution(1)" class="qw-btn" style="text-align:left;padding:12px;font-size:12px">🤲 肩部弹响/疼痛</button>
+        <button onclick="showSymptomSolution(2)" class="qw-btn" style="text-align:left;padding:12px;font-size:12px">🦶 脚踝扭伤恢复慢</button>
+        <button onclick="showSymptomSolution(3)" class="qw-btn" style="text-align:left;padding:12px;font-size:12px">💪 下背酸痛/紧张</button>
+        <button onclick="showSymptomSolution(4)" class="qw-btn" style="text-align:left;padding:12px;font-size:12px">🖐️ 手腕痛（高球/扣杀）</button>
+        <button onclick="showSymptomSolution(5)" class="qw-btn" style="text-align:left;padding:12px;font-size:12px">🏃 跟腱炎/足跟痛</button>
+        <button onclick="showSymptomSolution(6)" class="qw-btn" style="text-align:left;padding:12px;font-size:12px">👋 网球肘/肱骨外上髁炎</button>
+        <button onclick="showSymptomSolution(7)" class="qw-btn" style="text-align:left;padding:12px;font-size:12px">🦵 腿后侧拉伤</button>
+      </div>
+      <div id="symptomResult" style="display:none;animation:iosSlideIn 0.4s var(--ios-spring-smooth)"></div>
+    </div>`;
+  updateProgress();
+}
+
+const SYMPTOMS = [
+  { name:'膝盖前方疼痛', cause:'股四头肌紧张+髌腱压力过大，常见于频繁弓箭步/蹲跳训练',
+    solution:'① 泡沫轴放松股四头肌+髂胫束 ② 强化臀部（单腿臀桥）③ 减少跳跃类训练2周 ④ 冰敷运动后10分钟',
+    coachNote:'案例：15岁男选手起跳扣杀落地屈膝不足，前两周休息做等长训练，第三周恢复50%量，一个月后完全恢复' },
+  { name:'肩部弹响/疼痛', cause:'肩袖肌群疲劳+肱骨头前移，常见于过头类动作过多',
+    solution:'① 每天做肩袖外旋+YTWL激活 ② 训练前用弹力带做肩部热身 ③ 暂停过头举重/频繁杀球 ④ 避免内旋超过生理范围',
+    coachNote:'案例：运动员抱怨杀球时肩痛，检查发现肩袖外旋不足+胸大肌紧张。2周矫正训练（拉伸胸大肌+强化下斜方肌+外旋肌群训练），症状完全消失。' },
+  { name:'脚踝扭伤恢复慢', cause:'距腓前韧带损伤+本体感觉下降+腓骨肌群弱化',
+    solution:'① RICE原则前48小时 ② 72小时后无负重关节活动 ③ 第5天平衡板训练 ④ 弹力带抗阻外翻训练',
+    coachNote:'案例：运动员脚踝反复扭伤5次，强制休息12周+本体感觉训练+跟腱钉，之后2年未再扭伤。' },
+  { name:'下背酸痛/紧张', cause:'久坐+髋屈肌紧张+核心弱+腰椎代偿',
+    solution:'① 每天猫牛式+儿童式放松 ② 平板支撑+死虫式 ③ 臀桥激活 ④ 暂停直腿硬拉',
+    coachNote:'案例：35岁业余选手下背痛2周，专注核心+臀肌+髋灵活性训练2周，症状消失。' },
+  { name:'手腕痛（高球/扣杀）', cause:'腕伸肌腱过度使用+握拍过紧+球拍扭力大',
+    solution:'① 暂停发力动作 ② 握力球热身+伸腕屈腕 ③ 换轻拍 ④ 握拍60%力度',
+    coachNote:'案例：杀球150个/天改80个+增加手腕热身+放松握拍，1周后好转。' },
+  { name:'跟腱炎/足跟痛', cause:'跑跳过密+小腿柔韧不足+落地冲击大',
+    solution:'① 跟腱离心训练（台阶边缘慢放）3组×15次 ② 停跳1周 ③ 冰敷 ④ 支撑鞋',
+    coachNote:'案例：跟腱离心训练+停跳+减量50%→一个月完全无症状。' },
+  { name:'网球肘/肱骨外上髁炎', cause:'腕伸肌群起点慢性炎症+反手动作过多',
+    solution:'① 暂停发力10-14天 ② 伸腕离心训练 ③ 冰敷3次/天 ④ 护肘',
+    coachNote:'案例：改为转体代替小臂发力+离心训练2周→逐步恢复4周→无痛训练。' },
+  { name:'腿后侧拉伤', cause:'腘绳肌柔韧不足+股四腘绳不平衡+疲劳',
+    solution:'① RICE 48h ② 72h无痛活动 ③ 等长收缩 ④ 北欧腘绳肌训练',
+    coachNote:'案例：恢复6周+每周2次北欧腘绳肌训练→半年未复发。' },
+];
+
+function showSymptomSolution(idx) {
+  const s = SYMPTOMS[idx];
+  if (!s) return;
+  document.getElementById('symptomResult').innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--red);border-radius:var(--radius-lg);padding:20px;margin-top:8px">
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px;color:var(--red)">🔍 ${s.name}</div>
+      <div style="margin-bottom:8px">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:2px">📌 原因</div>
+        <div style="font-size:12px;color:var(--text);line-height:1.6">${s.cause}</div>
+      </div>
+      <div style="margin-bottom:8px">
+        <div style="font-size:12px;font-weight:600;color:var(--green)">✅ 解决方案</div>
+        <div style="font-size:12px;color:var(--text);line-height:1.8">${s.solution}</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--orange)">📋 教练案例</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px">${s.coachNote}</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px">
+      <button onclick="openSymptomWizard()" class="tb-btn" style="background:var(--red);color:#fff;border:none">🔄 重新选择</button>
+      <button onclick="goBack()" class="tb-btn" style="margin-left:8px">← 返回</button>
+    </div>`;
+  document.getElementById('symptomResult').style.display='block';
+  document.getElementById('symptomResult').scrollIntoView({behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════════════════════════════
 //  📚 书塔阅读（次要功能）
 // ═══════════════════════════════════════════════════════════════════
 

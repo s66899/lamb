@@ -1058,3 +1058,41 @@ header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
   gap: 14px;
 }
 @media (max-width: 640px) { .module-grid { grid-template-columns: 1fr; } }
+
+
+/* ── 教练向导按钮 / 步骤 ────────────────────── */
+.qw-step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.qw-grid {
+  display: grid;
+  gap: 8px;
+}
+.qw-btn {
+  padding: 14px 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ios-spring);
+  text-align: center;
+  font-family: var(--ios-font);
+}
+.qw-btn:hover {
+  background: var(--surface3);
+  border-color: var(--blue);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59,130,246,.15);
+}
+.qw-btn:active {
+  transform: scale(0.96);
+  transition-duration: 0.06s;
+}
+.qw-sm { font-size: 12px; padding: 12px 16px; }
