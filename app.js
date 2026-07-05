@@ -43,7 +43,6 @@ const TRAIN_MODULES = [
   { id:'coach', icon:'🎯', title:'教练板块', color:'var(--gold)',
     desc:'AI教练辅助 · 训练计划编排 · 动作分析指导 · 个性化周期规划',
     tags:['AI教练','训练计划','动作分析','周期规划','数据追踪'], docs:12,
-    books:['nsca-cpt','badminton'],
     chapters:['训练计划设计原则','周期性训练编排','动作质量评估体系','训练负荷调控','个性化方案制定','技术诊断方法论','比赛录像分析','训练日志与复盘','运动员心理辅导','智能教练工具'] },
 ];
 
@@ -760,6 +759,23 @@ function openModuleTopic(modId, topicIdx) {
   if (!mod || !MANIFEST) return;
   // 保存导航状态：从模块进入
   navStack.push({view:'module', moduleId: modId});
+  // 教练板块专用：每个 topic 映射到具体 coach 工具
+  if (modId === 'coach') {
+    const coachTools = [
+      { url:'coach/coach-guide.html', title:'教练速成指导书 · 训练计划设计' },
+      { url:'coach/coach-guide.html', title:'教练速成指导书 · 周期化训练' },
+      { url:'coach/level-assessment.html', title:'学员水平评估 · 动作质量评估' },
+      { url:'coach/coach-manual-v2.html', title:'教练速查手册 · 训练负荷调控' },
+      { url:'coach/coach-manual-v2.html', title:'教练速查手册 · 个性化方案制定' },
+      { url:'coach/coach-guide.html', title:'教练速成指导书 · 技术诊断方法论' },
+      { url:'coach/index.html', title:'教练工作台 · 比赛录像分析' },
+      { url:'coach/coach-manual-v2.html', title:'教练速查手册 · 训练日志与复盘' },
+      { url:'coach/coach-guide.html', title:'教练速成指导书 · 运动员心理辅导' },
+      { url:'coach/index.html', title:'教练工作台 · 智能教练工具' },
+    ];
+    const tool = coachTools[topicIdx];
+    if (tool) { openCoachInline(tool.url, tool.title); return; }
+  }
   // 优先使用 topics 精确映射（每个主题对应一个 book+ch）
   if (mod.topics && mod.topics[topicIdx]) {
     const topic = mod.topics[topicIdx];
