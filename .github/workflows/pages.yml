@@ -3,9 +3,10 @@ name: Deploy Pages (custom)
 on:
   push:
     branches: [book]
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -26,6 +27,12 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
+      - name: Switch to Actions Pages mode
+        run: |
+          gh api /repos/${{ github.repository }}/pages -X PUT -f build_type=workflow --silent || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build (no-op, static site)
         run: echo "Static site — nothing to build"
