@@ -28,9 +28,14 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Switch to Actions Pages mode
+      - name: Switch Pages to Actions-only mode
         run: |
-          gh api /repos/${{ github.repository }}/pages -X PUT -f build_type=workflow --silent || true
+          echo "Current Pages config:"
+          gh api /repos/${{ github.repository }}/pages 2>&1 | head -10
+          echo "---"
+          echo "Trying to switch to Actions mode..."
+          gh api /repos/${{ github.repository }}/pages -X PUT --input - <<< '{"build_type":"workflow"}' 2>&1 || echo "API update failed (expected if token lacks admin). Next push may still trigger built-in workflow."
+          echo "Done."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
