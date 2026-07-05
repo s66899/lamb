@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.5.0';
+const APP_VERSION = 'v3.5.3';
 const APP_DATE = '2026-07-05';
 
 // ─── 5大训练模块 ──────────────────────────
@@ -30,16 +30,16 @@ const TRAIN_MODULES = [
     tags:['注意力','压力','自我对话','目标','心流','韧性'], docs:15,
     books:['psychology'],
     chapters:['动机理论','目标设定','注意力训练','压力管理','自我效能','心流体验','情绪调节','团队动力','比赛心理','心理韧性'] },
-  { id:'nutrition', icon:'🥗', title:'营养恢复', color:'var(--orange)',
+  { id:'nutrition', icon:'🍎', title:'营养恢复', color:'var(--orange)',
     desc:'TDEE计算·营养素分配·训练后恢复时间轴·睡眠优化 — 科学营养恢复体系',
     tags:['蛋白','碳水','脂肪','水合','睡眠','补剂'], docs:12,
     books:[],
-    chapters:['能量代谢基础','宏量营养素','微量营养素','训练前营养','训练后恢复','水合策略','补剂科学','睡眠优化','周期营养','体重管理'] },
+    chapters:['🔥 TDEE每日总能耗','🥩 三大营养素分配','💧 确定水合需求','⏰ 训练后恢复时间线','🍽️ 训练前后营养窗口','🥩 蛋白质摄入策略','💧 电解质平衡','💊 运动补剂速查','🔄 周期化营养','⚖️ 体重管理'] },
   { id:'competition', icon:'🏆', title:'比赛策略', color:'var(--red)',
     desc:'对手分析·战术选择·节奏控制·体能分配 — 从准备到复盘完整比赛流程',
     tags:['对手分析','战术库','节奏','体能分配','复盘'], docs:14,
     books:[],
-    chapters:['对手分析框架','战术选择','节奏控制','体能分配','心理博弈','临场调整','复盘方法','赛前准备','赛中应变','赛后恢复'] },
+    chapters:['⚔️ 赛前1周倒计时','🎯 赛中关键策略','🧠 比赛心理准备','📊 对手分析框架','🔍 对手技术弱点','🏃 体能分配策略','🎬 实战案例学习','🔄 局间调整','📝 赛后复盘','🎯 长期比赛计划'] },
   { id:'coach', icon:'🎯', title:'教练板块', color:'var(--gold)',
     desc:'AI教练辅助 · 训练计划编排 · 动作分析指导 · 个性化周期规划',
     tags:['AI教练','训练计划','动作分析','周期规划','数据追踪'], docs:12,
@@ -551,59 +551,15 @@ function openScreening() {
 }
 
 function openCalculators() {
-  showView('book');
-  currentModule = 'calculators';
-  navStack.push({view:'dashboard'});
-  historyPush('calculators', {});
-  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
-    <h1>🧮 训练计算工具</h1>
-    <div class="vm">TDEE · 水合 · 训练量 · 营养素一键计算</div>`;
-  $('bookStats').innerHTML = '';
-  $('contentGrid').innerHTML = `
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">🔥 TDEE 每日总能耗</div>
-      <div class="calc-formula">男性 BMR = 10×体重(kg) + 6.25×身高(cm) - 5×年龄 + 5</div>
-      <div class="calc-formula">女性 BMR = 10×体重(kg) + 6.25×身高(cm) - 5×年龄 - 161</div>
-      <div class="calc-factor">
-        <span>久坐×1.2</span><span>轻度×1.375</span><span>中度×1.55</span><span>高度×1.725</span>
-      </div>
-    </div>
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">🥩 三大营养素分配</div>
-      <div class="calc-formula"><span style="color:var(--red)">● 蛋白质</span> 维持1.2-1.6 · 增肌1.6-2.0 · 减脂2.0-2.4 g/kg</div>
-      <div class="calc-formula"><span style="color:var(--orange)">● 脂肪</span> 0.8-1.0 g/kg (占总热量20-25%)</div>
-      <div class="calc-formula"><span style="color:var(--blue)">● 碳水</span> 休息日2-3 · 训练日3-5 · 高强度5-7 g/kg</div>
-    </div>
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">💧 水合需求</div>
-      <div class="calc-formula">日常需要 = 体重(kg) × 33ml</div>
-      <div class="calc-formula">训练增加 = 训练时长(min) × 12ml</div>
-      <div class="calc-formula">高温增加(>30°C) = 日常×20%</div>
-    </div>
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">⏰ 训练后24小时恢复指南</div>
-      <div class="recovery-timeline">
-        <div class="rt-item"><span class="rt-time">0-30分钟</span><span>快速碳水1-1.2g/kg + 快速蛋白0.3-0.4g/kg + 整理拉伸</span></div>
-        <div class="rt-item"><span class="rt-time">30分-2h</span><span>正餐(碳水+蛋白+蔬菜) + 分次补水</span></div>
-        <div class="rt-item"><span class="rt-time">2h-睡前</span><span>泡沫轴全身10-15分钟 + 热水澡</span></div>
-        <div class="rt-item"><span class="rt-time" style="color:var(--gold)">睡眠7-9h</span><span style="color:var(--gold)">⭐ 生长激素分泌 + 组织修复 — 最重要不可替代</span></div>
-        <div class="rt-item"><span class="rt-time">次日晨</span><span>评估恢复状态 → 决定训练强度</span></div>
-      </div>
-    </div>
-    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;grid-column:1/-1">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">🔄 不同训练类型恢复时间</div>
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <tr><th style="text-align:left;padding:4px 8px;border-bottom:1px solid var(--border)">训练类型</th><th style="padding:4px 8px;border-bottom:1px solid var(--border)">恢复时间</th><th style="padding:4px 8px;border-bottom:1px solid var(--border)">建议频率</th></tr>
-        <tr><td style="padding:4px 8px">纯技术训练</td><td style="padding:4px 8px">4-8小时</td><td style="padding:4px 8px">每天都可以练</td></tr>
-        <tr><td style="padding:4px 8px">步伐训练</td><td style="padding:4px 8px">24-36小时</td><td style="padding:4px 8px">隔天练</td></tr>
-        <tr><td style="padding:4px 8px">力量训练</td><td style="padding:4px 8px">48-72小时</td><td style="padding:4px 8px">每周2-3次</td></tr>
-        <tr><td style="padding:4px 8px">高强度间歇</td><td style="padding:4px 8px">48-72小时</td><td style="padding:4px 8px">每周2次</td></tr>
-        <tr><td style="padding:4px 8px">对抗/比赛</td><td style="padding:4px 8px">48-72小时</td><td style="padding:4px 8px">每周1-2次</td></tr>
-      </table>
-    </div>`;
-}
-
-function openDiagnosis() {
+showView("book");
+currentModule="calculators";
+navStack.push({view:"dashboard"});
+historyPush("calculators",{});
+document.getElementById("bookHeader").innerHTML='<div class="back" onclick="goBack()">← 返回</div><h1>🧮 训练计算工具</h1><div class="vm">选参数→自动结果</div>';
+document.getElementById("bookStats").innerHTML="";
+document.getElementById("contentGrid").innerHTML="<div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--blue)\">🔥 TDEE</div><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px\"><label>性别<select id=\"tdeeGender\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=male>男</option><option value=female>女</option></select></label><label>体重(kg)<input id=\"tdeeWeight\" type=number value=70 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>身高(cm)<input id=\"tdeeHeight\" type=number value=175 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>年龄<input id=\"tdeeAge\" type=number value=25 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>活动<select id=\"tdeeActivity\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=1.2>久坐</option><option value=1.375>轻度</option><option value=1.55 selected>中度</option><option value=1.725>高度</option><option value=1.9>极高</option></select></label></div><button onclick=\"calcTDEE()\" class=\"qw-btn\" style=\"background:var(--blue);color:#fff;border:none;width:100%\">🔥 计算 TDEE</button><div id=\"tdeeResult\" style=\"margin-top:8px;font-size:12px\"></div></div><div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--green)\">🥩 营养素</div><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px\"><label>体重<input id=\"macroWeight\" type=number value=70 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>目标<select id=\"macroGoal\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=maintain>维持</option><option value=gain>增肌</option><option value=lose>减脂</option></select></label><label>TDEE<input id=\"macroTDEE\" type=number value=2500 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label></div><button onclick=\"calcMacro()\" class=\"qw-btn\" style=\"background:var(--green);color:#fff;border:none;width:100%\">🥩 计算营养素</button><div id=\"macroResult\" style=\"margin-top:8px;font-size:12px\"></div></div><div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--blue)\">💧 水合</div><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px\"><label>体重<input id=\"waterWeight\" type=number value=70 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>训练(分钟)<input id=\"waterTrain\" type=number value=60 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>温度<select id=\"waterTemp\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=1>常温</option><option value=1.2>&gt;30°C</option></select></label></div><button onclick=\"calcWater()\" class=\"qw-btn\" style=\"background:var(--blue);color:#fff;border:none;width:100%\">💧 计算水合</button><div id=\"waterResult\" style=\"margin-top:8px;font-size:12px\"></div></div><div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--gold)\">⏰ 恢复时间线</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:var(--text2)\"><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--blue)\">0-30分</strong><br>快速碳水1-1.2g/kg+蛋白0.3-0.4g/kg</div><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--blue)\">30分-2h</strong><br>正餐(碳水+蛋白+蔬菜)</div><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--blue)\">2h-睡前</strong><br>泡沫轴10-15分钟</div><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--gold)\">睡眠7-9h</strong><br>⭐ 组织修复</div></div></div>";
+updateProgress();
+}function openDiagnosis() {
   showOverlay('panel-sm', '🔍 训练问题诊断', `
     <div class="diag-list">
       <div class="diag-item"><strong style="color:var(--text)">动作标准但没进步</strong><br><span style="color:var(--text2);font-size:11px">→ 检查训练量/恢复/变式</span></div>
@@ -1577,6 +1533,40 @@ window.addEventListener('popstate', (e) => {
   if (!e.state || !e.state.view) { goHome(); return; }
   if (navStack.length === 0 && e.state.view !== 'dashboard') { goHome(); }
 });
+
+function calcTDEE(){
+var g=(document.getElementById("tdeeGender")||{}).value||"male";
+var w=parseFloat((document.getElementById("tdeeWeight")||{}).value)||70;
+var h=parseFloat((document.getElementById("tdeeHeight")||{}).value)||175;
+var a=parseInt((document.getElementById("tdeeAge")||{}).value)||25;
+var act=parseFloat((document.getElementById("tdeeActivity")||{}).value)||1.55;
+var bmr=g==="male"?10*w+6.25*h-5*a+5:10*w+6.25*h-5*a-161;
+var tdee=Math.round(bmr*act);
+var r=document.getElementById("tdeeResult");
+if(r) r.innerHTML="BMR:"+Math.round(bmr)+"kcal | TDEE:"+tdee+"kcal/天";
+}
+function calcMacro(){
+var w=parseFloat((document.getElementById("macroWeight")||{}).value)||70;
+var g=(document.getElementById("macroGoal")||{}).value||"maintain";
+var tdee=parseFloat((document.getElementById("macroTDEE")||{}).value)||2500;
+var pMult={maintain:1.7,gain:2,lose:2.2};
+var calAdj={maintain:0,gain:350,lose:-400};
+var protein=Math.round(pMult[g]*w);
+var fat=Math.round(0.8*w);
+var cal=tdee+calAdj[g];
+var carb=Math.round((cal-protein*4-fat*9)/4);
+var r=document.getElementById("macroResult");
+if(r) r.innerHTML="蛋白"+protein+"g 脂肪"+fat+"g 碳水"+carb+"g 总计"+cal+"kcal";
+}
+function calcWater(){
+var w=parseFloat((document.getElementById("waterWeight")||{}).value)||70;
+var t=parseInt((document.getElementById("waterTrain")||{}).value)||60;
+var temp=parseFloat((document.getElementById("waterTemp")||{}).value)||1;
+var daily=Math.round(w*33*temp);
+var train=Math.round(t*12);
+var r=document.getElementById("waterResult");
+if(r) r.innerHTML="日常"+daily+"ml + 训练"+train+"ml = "+Math.round((daily+train)/10)/100+"L";
+}
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function scrollToTop(){$('content').scrollTo({top:0,behavior:'smooth'});}
