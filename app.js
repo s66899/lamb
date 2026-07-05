@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.5.9';
+const APP_VERSION = 'v3.6.0';
 const APP_DATE = '2026-07-05';
 
 // ─── 5大训练模块 ──────────────────────────
@@ -2288,6 +2288,26 @@ function showStudentDashboard() {
     }
   }
   const readPct = totalCh ? Math.round(read / totalCh * 100) : 0;
+  // ── 计算连续学习天数（基于 p._streak） ──
+  const streakMap = p._streak || {};
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dayKey = (d) => d.toISOString().slice(0,10);
+  let currentStreak = 0;
+  // 从今天往回数连续天数；若今天未读但昨天读了，仍保留 streak（宽容到昨天）
+  for (let i=0; i<365; i++) {
+    const d = new Date(today); d.setDate(today.getDate()-i);
+    if (streakMap[dayKey(d)]) currentStreak++;
+    else if (i === 0) continue; // 今天还没读不打断
+    else break;
+  }
+  // 计算累计活跃天数（用于总览）
+  const totalActiveDays = Object.values(streakMap).filter(Boolean).length;
+  // 近 14 天热力图数据（用于可视化）
+  const heatmap14 = [];
+  for (let i=13; i>=0; i--) {
+    const d = new Date(today); d.setDate(today.getDate()-i);
+    heatmap14.push({ date: dayKey(d), label: ['日','一','二','三','四','五','六'][d.getDay()], active: !!streakMap[dayKey(d)] });
+  }
   // 根据进度决定训练建议
   let dailyHint = '';
   if (read === 0) {
@@ -2301,6 +2321,14 @@ function showStudentDashboard() {
   } else {
     dailyHint = '? 精进期：查漏补缺，回顾薄弱环节，从心理学/金融/工程力学中找跨领域灵感。';
   }
+  // 连续学习激励语
+  let streakHint = '';
+  if (currentStreak === 0) streakHint = '今天还没阅读，读一章开启连胜 🔥';
+  else if (currentStreak === 1) streakHint = '起步日！坚持 7 天解锁「周行者」成就';
+  else if (currentStreak < 7) streakHint = `再坚持 ${7-currentStreak} 天解锁「周行者」`;
+  else if (currentStreak < 30) streakHint = `稳定输出！距「月度习惯」还差 ${30-currentStreak} 天`;
+  else if (currentStreak < 100) streakHint = `🏆 已是真习惯！距「百日筑基」还差 ${100-currentStreak} 天`;
+  else streakHint = '👑 百日筑基达成！你是真正的修行者';
   const dailyTaskHtml = nextBook && nextChapter ? `
     <div class="calc-card" style="grid-column:1/-1;padding:14px;background:linear-gradient(135deg,var(--bg2),rgba(255,214,10,.06));border:2px solid var(--gold)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -2349,6 +2377,31 @@ function showStudentDashboard() {
       <div style="height:6px;background:var(--bg3);border-radius:3px;margin-top:6px;overflow:hidden">
         <div style="height:100%;width:${(read/Math.max(totalCh,1))*100}%;background:var(--blue)"></div>
       </div>
+    </div>
+    <div class="calc-card" style="grid-column:1/-1;padding:14px;background:linear-gradient(135deg,var(--bg2),rgba(255,107,53,.05));border:1px solid ${currentStreak>=7?'var(--orange)':'var(--border)'}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="font-size:36px;line-height:1">🔥</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <div style="font-size:24px;font-weight:700;color:var(--orange)">${currentStreak}</div>
+            <div style="font-size:11px;color:var(--text3)">天连续学习</div>
+            <div style="font-size:10px;color:var(--text3);margin-left:auto">累计活跃 ${totalActiveDays} 天</div>
+          </div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;line-height:1.5">${streakHint}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:4px;justify-content:space-between;background:var(--bg3);padding:8px;border-radius:6px">
+        ${heatmap14.map((d,i) => {
+          const isToday = i === heatmap14.length - 1;
+          const bg = d.active ? (isToday ? 'var(--orange)' : 'var(--green)') : 'var(--bg2)';
+          const color = d.active ? '#fff' : 'var(--text3)';
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px" title="${d.date}${d.active?' · 已学习':''}">
+            <div style="width:100%;height:18px;background:${bg};border-radius:3px;${isToday?'box-shadow:0 0 0 1px var(--orange)':''}"></div>
+            <div style="font-size:9px;color:${color}">${d.label}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="font-size:9px;color:var(--text3);text-align:center;margin-top:6px">近 14 天学习热力图（绿/橙=已学，灰=未学）</div>
     </div>
     <div class="calc-card" style="padding:14px">
       <div style="font-size:13px;font-weight:600;margin-bottom:8px">🧪 测验成绩</div>
