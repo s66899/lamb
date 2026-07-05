@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.5.4';
+const APP_VERSION = 'v3.5.6';
 const APP_DATE = '2026-07-05';
 
 // ─── 5大训练模块 ──────────────────────────
@@ -741,8 +741,10 @@ function openTrainModule(modId) {
   $('bookStats').innerHTML = `
     <div class="bs-item"><span class="bs-num">${mod.chapters.length}</span><span class="bs-label">📖 训练主题</span></div>
     <div class="bs-item"><span class="bs-num">${mod.tags.length}</span><span class="bs-label">🏷️ 核心标签</span></div>
-    <div class="bs-item"><span class="bs-num">${mod.docs}</span><span class="bs-label">📚 教学文档</span></div>`;
-  $('contentGrid').innerHTML = mod.chapters.map((title, i) => `
+    <div class="bs-item"><span class="bs-num">${mod.docs}</span><span class="bs-label">📚 教学文档</span></div>
+    ${(modId==='nutrition'||modId==='competition') ? `<div class="bs-item" style="cursor:pointer;background:var(--bg3);border-radius:6px;padding:4px 8px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><span class="bs-num">🛠️</span><span class="bs-label">交互工具</span></div>` : ''}`;
+  const toolBtn = (modId==='nutrition'||modId==='competition') ? `<div class="calc-card" style="grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),var(--bg3));border:2px solid ${mod.color};border-radius:var(--radius);padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><div style="font-size:32px">${modId==='nutrition'?'🍎':'🏆'}</div><div style="flex:1"><div style="font-size:14px;font-weight:600;color:${mod.color}">${modId==='nutrition'?'营养交互工具集':'比赛交互工具集'}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">${modId==='nutrition'?'餐食计算器·出汗率计算·补剂时间表':'赛前清单·对手弱点·赛后自评'}</div></div><div style="font-size:18px">→</div></div>` : '';
+  $('contentGrid').innerHTML = toolBtn + mod.chapters.map((title, i) => `
     <div class="chapter-card fade-in" onclick="openModuleTopic('${mod.id}',${i})">
       <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${mod.color};opacity:.6"></div>
       <div class="cc-num">${String(i+1).padStart(2,'0')}</div>
@@ -812,7 +814,175 @@ function renderModuleInline(mod, topicIdx) {
   historyPush('module-inline', {moduleId: mod.id, topicIdx: topicIdx});
 }
 
-// ─── 仅渲染模块内容（不重置 navStack） ──
+// ─── 营养交互工具集 ────────
+function openNutritionTools() {
+  showOverlay('panel-tools', '🍎 营养交互工具', `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="calc-card" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">🥧 快速餐食计算器</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px">
+          <label style="font-size:10px">体重(kg)<input id="npWeight" type="number" value="70" style="display:block;width:100%;margin-top:2px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px"></label>
+          <label style="font-size:10px">目标
+            <select id="npGoal" style="display:block;width:100%;margin-top:2px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px">
+              <option value="gain">增肌</option><option value="lose" selected>减脂</option><option value="maintain">维持</option>
+            </select>
+          </label>
+        </div>
+        <button onclick="calcNutritionPlan()" class="tb-btn" style="width:100%;background:var(--orange);color:#fff">⚖️ 生成每日餐单</button>
+        <div id="npResult" style="margin-top:8px;font-size:11px;line-height:1.6"></div>
+      </div>
+
+      <div class="calc-card" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">💧 出汗率计算器</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px">
+          <label style="font-size:10px">训练前体重(kg)<input id="swBefore" type="number" value="70.0" step="0.1" style="display:block;width:100%;margin-top:2px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px"></label>
+          <label style="font-size:10px">训练后体重(kg)<input id="swAfter" type="number" value="69.4" step="0.1" style="display:block;width:100%;margin-top:2px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px"></label>
+          <label style="font-size:10px">训练时长(min)<input id="swDuration" type="number" value="60" style="display:block;width:100%;margin-top:2px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px"></label>
+        </div>
+        <button onclick="calcSweatRate()" class="tb-btn" style="width:100%;background:var(--blue);color:#fff">💧 计算出汗率</button>
+        <div id="swResult" style="margin-top:8px;font-size:11px;line-height:1.6"></div>
+      </div>
+
+      <div class="calc-card" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">💊 补剂时间表（点击查证）</div>
+        <table style="width:100%;font-size:11px;border-collapse:collapse">
+          <tr style="background:var(--bg3)"><th style="padding:5px;text-align:left">补剂</th><th style="padding:5px">剂量</th><th style="padding:5px">时机</th></tr>
+          <tr><td style="padding:4px">肌酸</td><td style="text-align:center">3-5g/天</td><td style="text-align:center">任意时间</td></tr>
+          <tr style="background:var(--bg3)"><td style="padding:4px">乳清蛋白</td><td style="text-align:center">20-40g</td><td style="text-align:center">训练后</td></tr>
+          <tr><td style="padding:4px">咖啡因</td><td style="text-align:center">3-6mg/kg</td><td style="text-align:center">赛前30-60min</td></tr>
+          <tr style="background:var(--bg3)"><td style="padding:4px">Beta-丙氨酸</td><td style="text-align:center">3-6g/天</td><td style="text-align:center">随餐</td></tr>
+          <tr><td style="padding:4px">Omega-3</td><td style="text-align:center">2-3g EPA/DHA</td><td style="text-align:center">随餐</td></tr>
+        </table>
+      </div>
+    </div>
+  `);
+}
+
+function calcNutritionPlan() {
+  const w = parseFloat(document.getElementById('npWeight')?.value) || 70;
+  const g = document.getElementById('npGoal')?.value || 'lose';
+  let protein, fat, carb, calories;
+  if (g === 'gain') { protein = w*1.8; fat = w*1.0; carb = w*5; calories = protein*4 + fat*9 + carb*4; }
+  else if (g === 'lose') { protein = w*2.2; fat = w*0.8; carb = w*3; calories = protein*4 + fat*9 + carb*4; }
+  else { protein = w*1.6; fat = w*0.9; carb = w*4; calories = protein*4 + fat*9 + carb*4; }
+  const meals = [
+    { name:'早餐', p:Math.round(protein*0.25), c:Math.round(carb*0.30), f:Math.round(fat*0.25) },
+    { name:'加餐', p:Math.round(protein*0.15), c:Math.round(carb*0.10), f:Math.round(fat*0.10) },
+    { name:'午餐', p:Math.round(protein*0.30), c:Math.round(carb*0.30), f:Math.round(fat*0.30) },
+    { name:'训练后', p:Math.round(protein*0.15), c:Math.round(carb*0.15), f:Math.round(fat*0.10) },
+    { name:'晚餐', p:Math.round(protein*0.15), c:Math.round(carb*0.15), f:Math.round(fat*0.25) },
+  ];
+  const html = `<div style="background:var(--bg3);padding:8px;border-radius:6px;margin-bottom:6px"><strong>📊 每日总量：</strong>${Math.round(calories)} kcal · P${Math.round(protein)}g · C${Math.round(carb)}g · F${Math.round(fat)}g</div>` +
+    meals.map(m => `<div style="padding:4px 0;border-bottom:1px solid var(--border)"><strong>${m.name}</strong> · 蛋白${m.p}g · 碳水${m.c}g · 脂肪${m.f}g</div>`).join('');
+  const r = document.getElementById('npResult'); if (r) r.innerHTML = html;
+}
+
+function calcSweatRate() {
+  const before = parseFloat(document.getElementById('swBefore')?.value);
+  const after = parseFloat(document.getElementById('swAfter')?.value);
+  const dur = parseFloat(document.getElementById('swDuration')?.value);
+  if (!before || !after || !dur || before < after) { const r = document.getElementById('swResult'); if (r) r.innerHTML = '❌ 请输入有效体重差'; return; }
+  const loss = before - after;
+  const rateL = (loss * 1000) / dur; // ml/min
+  const fluidReplace = loss * 1.5; // L
+  let status = rateL < 12 ? '🟢 低出汗率' : rateL < 20 ? '🟡 中出汗率' : '🔴 高出汗率';
+  document.getElementById('swResult').innerHTML = `<div style="background:var(--bg3);padding:8px;border-radius:6px"><strong>📊 出汗率：</strong>${rateL.toFixed(1)} ml/min · ${status}</div><div style="margin-top:6px">⚠️ 体重损失：<strong>${loss.toFixed(2)} kg</strong> (=脱水 ${(loss*1000).toFixed(0)} ml)<br>💧 需要补充液体：<strong>${fluidReplace.toFixed(1)} L</strong> (训练后1-2小时内)</div>`;
+}
+
+// ─── 比赛交互工具集 ────────
+function openCompetitionTools() {
+  showOverlay('panel-tools', '🏆 比赛交互工具', `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="calc-card" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">📋 赛前检查清单</div>
+        <div style="display:grid;gap:4px;font-size:11px">
+          ${['🏸 球拍穿线（赛前24h内）','👟 球鞋状态检查','🍌 能量棒/香蕉','💧 充足补水','🧖 赛前30min热身','🎯 比赛计划关键词','👕 比赛服+备用衣','📱 关闭通知','🧊 冰袋/冷却毛巾','📝 记分卡'].map(t => `<label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" class="match-check" data-item="${t}"><span>${t}</span></label>`).join('')}
+        </div>
+        <div style="margin-top:8px;display:flex;gap:6px"><button onclick="document.querySelectorAll('.match-check').forEach(c=>c.checked=true)" class="tb-btn" style="background:var(--green);color:#fff;font-size:11px">✅ 全选</button><button onclick="document.querySelectorAll('.match-check').forEach(c=>c.checked=false)" class="tb-btn" style="background:var(--bg3);color:var(--text);font-size:11px">↺ 重置</button><span id="checkCount" style="margin-left:auto;font-size:11px;color:var(--text2);align-self:center">已选 0/10</span></div>
+      </div>
+
+      <div class="calc-card" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">🔍 对手弱点速判</div>
+        <div style="display:grid;gap:6px;font-size:11px">
+          <label>对手类型
+            <select id="oppType" style="display:block;width:100%;margin-top:2px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px">
+              <option value="atk">进攻型</option><option value="def">防守型</option><option value="ctl">控制型</option><option value="mix">均衡型</option>
+            </select>
+          </label>
+          <label>主要弱点
+            <select id="oppWeak" style="display:block;width:100%;margin-top:2px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px">
+              <option>反手位</option><option>网前小球</option><option>中场球</option><option>后退速度</option><option>上网速度</option><option>关键分心理</option>
+            </select>
+          </label>
+        </div>
+        <button onclick="genOppTactic()" class="tb-btn" style="width:100%;margin-top:6px;background:var(--red);color:#fff">🎯 生成战术</button>
+        <div id="oppResult" style="margin-top:8px;font-size:11px;line-height:1.6"></div>
+      </div>
+
+      <div class="calc-card" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">📝 赛后自评模板</div>
+        <div style="display:grid;gap:4px;font-size:11px">
+          <label>技术发挥<input type="range" id="selfTech" min="1" max="10" value="7" style="width:100%"></label>
+          <label>心理状态<input type="range" id="selfPsych" min="1" max="10" value="7" style="width:100%"></label>
+          <label>体能分配<input type="range" id="selfFit" min="1" max="10" value="7" style="width:100%"></label>
+          <label>战术执行<input type="range" id="selfTact" min="1" max="10" value="7" style="width:100%"></label>
+        </div>
+        <div id="selfResult" style="margin-top:6px;font-size:10px;color:var(--text3)">调整滑块查看评分</div>
+        <button onclick="exportSelfEval()" class="tb-btn" style="width:100%;margin-top:6px;background:var(--blue);color:#fff;font-size:11px">📤 复制到剪贴板</button>
+      </div>
+    </div>
+  `);
+  // Bind checkbox counter
+  setTimeout(() => {
+    const checks = document.querySelectorAll('.match-check');
+    const counter = document.getElementById('checkCount');
+    checks.forEach(c => c.addEventListener('change', () => {
+      const cnt = document.querySelectorAll('.match-check:checked').length;
+      if (counter) counter.textContent = `已选 ${cnt}/${checks.length}`;
+    }));
+    // Bind sliders
+    ['selfTech','selfPsych','selfFit','selfTact'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', updateSelfEval);
+    });
+    updateSelfEval();
+  }, 100);
+}
+
+function genOppTactic() {
+  const type = document.getElementById('oppType')?.value;
+  const weak = document.getElementById('oppWeak')?.value;
+  const tactics = {
+    atk: '⚔️ 对手是进攻型：\n• 不跟他对拉，主动控网前\n• 用防守反击消耗对手体力\n• 抓住他失误后的空当期',
+    def: '🛡️ 对手是防守型：\n• 耐心拉吊找机会\n• 突然加速变线打破节奏\n• 用重复吊球+杀对角组合',
+    ctl: '🎯 对手是控制型：\n• 加快节奏，用速度压制\n• 主动进攻破坏他的控球\n• 发球变化打乱他的节奏',
+    mix: '🎲 对手是均衡型：\n• 试探2-3种战术，找到弱点\n• 持续攻击其薄弱环节\n• 保持变化不让他适应'
+  };
+  const weakTactic = `\n\n🔍 针对 ${weak}：\n• 比赛开局多打这个位置\n• 重复3-5次让对手不适应\n• 关键分优先攻击`;
+  document.getElementById('oppResult').innerHTML = `<div style="background:var(--bg3);padding:8px;border-radius:6px;white-space:pre-line">${tactics[type]}${weakTactic}</div>`;
+}
+
+function updateSelfEval() {
+  const tech = +document.getElementById('selfTech')?.value || 0;
+  const psych = +document.getElementById('selfPsych')?.value || 0;
+  const fit = +document.getElementById('selfFit')?.value || 0;
+  const tact = +document.getElementById('selfTact')?.value || 0;
+  const total = tech + psych + fit + tact;
+  const avg = (total / 4).toFixed(1);
+  let level = avg >= 8 ? '🌟 出色' : avg >= 6.5 ? '👍 良好' : avg >= 5 ? '⚠️ 一般' : '🔴 需改进';
+  document.getElementById('selfResult').innerHTML = `<div style="background:var(--bg3);padding:6px;border-radius:6px"><strong>综合 ${avg}/10</strong> · ${level}<br><span style="font-size:10px;color:var(--text3)">技术${tech} · 心理${psych} · 体能${fit} · 战术${tact}</span></div>`;
+}
+
+function exportSelfEval() {
+  const tech = +document.getElementById('selfTech')?.value || 0;
+  const psych = +document.getElementById('selfPsych')?.value || 0;
+  const fit = +document.getElementById('selfFit')?.value || 0;
+  const tact = +document.getElementById('selfTact')?.value || 0;
+  const avg = ((tech + psych + fit + tact) / 4).toFixed(1);
+  const checks = [...document.querySelectorAll('.match-check:checked')].map(c => c.dataset.item).join(' / ');
+  const txt = `🏸 赛后自评 ${new Date().toISOString().slice(0,10)}\n综合 ${avg}/10\n· 技术 ${tech}/10\n· 心理 ${psych}/10\n· 体能 ${fit}/10\n· 战术 ${tact}/10${checks ? '\n赛前准备：' + checks : ''}`;
+  navigator.clipboard.writeText(txt).then(() => alert('✅ 已复制到剪贴板'));
+}
 function renderModuleOnly(modId) {
   const mod = TRAIN_MODULES.find(m=>m.id===modId);
   if (!mod) return;
