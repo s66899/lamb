@@ -1,0 +1,1 @@
+{"hasCalcInteractive":false,"hasNutritionContent":false,"hasCompetitionContent":false,"syntax":"OK"}
