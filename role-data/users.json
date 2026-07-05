@@ -1,0 +1,16 @@
+{
+  "_note": "默认角色数据 · 首次访问自动加载到 localStorage（lamb_role_data_v1）",
+  "students": [
+    { "id": "s1", "name": "小明", "level": 3, "xp": 245, "chaptersRead": 12, "lastActive": "2026-07-05", "quizScore": 8 },
+    { "id": "s2", "name": "小红", "level": 5, "xp": 480, "chaptersRead": 28, "lastActive": "2026-07-04", "quizScore": 15 },
+    { "id": "s3", "name": "小华", "level": 2, "xp": 120, "chaptersRead": 5, "lastActive": "2026-07-03", "quizScore": 3 },
+    { "id": "s4", "name": "小芳", "level": 4, "xp": 360, "chaptersRead": 18, "lastActive": "2026-07-02", "quizScore": 10 },
+    { "id": "s5", "name": "小军", "level": 1, "xp": 50, "chaptersRead": 2, "lastActive": "2026-06-30", "quizScore": 1 }
+  ],
+  "coaches": [
+    { "id": "c1", "name": "李教练", "students": ["s1", "s2"], "totalXp": 1200 },
+    { "id": "c2", "name": "王教练", "students": ["s3", "s4"], "totalXp": 980 },
+    { "id": "c3", "name": "张教练", "students": ["s5"], "totalXp": 650 }
+  ],
+  "principal": { "id": "p1", "name": "总校长" }
+}

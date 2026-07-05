@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.5.7';
+const APP_VERSION = 'v3.5.8';
 const APP_DATE = '2026-07-05';
 
 // ─── 5大训练模块 ──────────────────────────
@@ -674,6 +674,9 @@ function renderSidebar() {
   html += '<div class="side-section side-section-links">';
   html += `<div class="side-link ${currentModule==='dashboard'?'active':''}" onclick="goHome()"><span class="sl-icon">🏠</span> 首页</div>`;
   html += `<div class="side-link ${currentModule==='coach'?'active':''}" onclick="openCoach()"><span class="sl-icon">🎯</span> 教练系统</div>`;
+  const curRole = getCurrentRole();
+  const roleIcon = curRole?.role === 'principal' ? '🏛️' : curRole?.role === 'coach' ? '👨‍🏫' : curRole?.role === 'student' ? '🧑‍🎓' : '🎭';
+  html += `<div class="side-link ${currentModule==='role-dashboard'?'active':''}" onclick="openRoleCenter()"><span class="sl-icon">${roleIcon}</span> 角色中心</div>`;
   html += '</div>';
 
   // ── 阅读（折叠）──
@@ -2171,3 +2174,366 @@ function scrollToTop(){$('content').scrollTo({top:0,behavior:'smooth'});}
 
 
 
+
+
+// ─── 角色系统（校长/教练/学员） ─────────
+const ROLE_LSK = 'lamb_role_v1';
+const ROLE_DATA_LSK = 'lamb_role_data_v1';
+function loadRoleData() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(ROLE_DATA_LSK));
+    if (stored && stored.students && stored.coaches) return stored;
+  } catch(e) {}
+  const seed = {
+    students: [
+      { id:'s1', name:'小明', level:3, xp:245, chaptersRead:12, lastActive:'2026-07-05', quizScore:8 },
+      { id:'s2', name:'小红', level:5, xp:480, chaptersRead:28, lastActive:'2026-07-04', quizScore:15 },
+      { id:'s3', name:'小华', level:2, xp:120, chaptersRead:5, lastActive:'2026-07-03', quizScore:3 },
+      { id:'s4', name:'小芳', level:4, xp:360, chaptersRead:18, lastActive:'2026-07-02', quizScore:10 },
+      { id:'s5', name:'小军', level:1, xp:50, chaptersRead:2, lastActive:'2026-06-30', quizScore:1 },
+    ],
+    coaches: [
+      { id:'c1', name:'李教练', students:['s1','s2'], totalXp:1200 },
+      { id:'c2', name:'王教练', students:['s3','s4'], totalXp:980 },
+      { id:'c3', name:'张教练', students:['s5'], totalXp:650 },
+    ],
+    principal: { id:'p1', name:'总校长' },
+  };
+  setRoleData(seed);
+  return seed;
+}
+function setRoleData(d) { localStorage.setItem(ROLE_DATA_LSK, JSON.stringify(d)); }
+function getCurrentRole() { try { return JSON.parse(localStorage.getItem(ROLE_LSK)||'null'); } catch { return null; } }
+function setCurrentRole(role, userId) { localStorage.setItem(ROLE_LSK, JSON.stringify({ role, userId, ts:Date.now() })); }
+
+function openRoleCenter() {
+  const cur = getCurrentRole();
+  if (!cur) showRoleSelection();
+  else if (cur.role === 'student') showStudentDashboard();
+  else if (cur.role === 'coach') showCoachDashboard(cur.userId);
+  else if (cur.role === 'principal') showPrincipalDashboard();
+}
+
+function showRoleSelection() {
+  showOverlay('panel-roles', '🎭 选择身份', `
+    <div style="display:grid;gap:10px">
+      ${[
+        { role:'principal', icon:'🏛️', name:'校长', desc:'查看所有学员和教练的总览' },
+        { role:'coach', icon:'👨‍🏫', name:'教练员', desc:'查看所带学员的成长' },
+        { role:'student', icon:'🧑‍🎓', name:'学员', desc:'查看自己的成长记录' }
+      ].map(r => `
+        <div class="calc-card" onclick="selectRole('${r.role}')" style="padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px">
+          <div style="font-size:30px">${r.icon}</div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:600">${r.name}</div><div style="font-size:10px;color:var(--text3)">${r.desc}</div></div>
+          <div style="font-size:18px">→</div>
+        </div>`).join('')}
+    </div>
+  `);
+}
+
+function selectRole(role) {
+  const data = loadRoleData();
+  if (role === 'student') {
+    setCurrentRole('student', 'self');
+    document.getElementById('_tmpOverlay')?.remove();
+    showStudentDashboard();
+  } else if (role === 'coach') {
+    showOverlay('panel-coach-pick', '👨‍🏫 选择教练身份', `
+      <div style="display:grid;gap:8px">
+        ${data.coaches.map(c => `
+          <div class="calc-card" onclick="pickCoach('${c.id}')" style="padding:12px;cursor:pointer;display:flex;align-items:center;gap:10px">
+            <div style="font-size:24px">👨‍🏫</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600">${c.name}</div>
+              <div style="font-size:10px;color:var(--text3)">带 ${c.students.length} 名学员 · 总XP ${c.totalXp}</div>
+            </div>
+            <div style="font-size:14px">→</div>
+          </div>`).join('')}
+      </div>
+    `);
+  } else if (role === 'principal') {
+    setCurrentRole('principal', data.principal.id);
+    document.getElementById('_tmpOverlay')?.remove();
+    showPrincipalDashboard();
+  }
+}
+
+function pickCoach(coachId) {
+  setCurrentRole('coach', coachId);
+  document.getElementById('_tmpOverlay')?.remove();
+  showCoachDashboard(coachId);
+}
+
+function showStudentDashboard() {
+  const r = initRP();
+  showView('book');
+  currentModule = 'role-dashboard';
+  navStack.push({view:'dashboard'});
+  historyPush('role-student', {});
+  const totalCh = MANIFEST ? MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0) : 0;
+  const p = getP();
+  let read = 0;
+  if (MANIFEST) for (const b of MANIFEST.books) read += (p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
+    <h1>🧑‍🎓 我的成长</h1>
+    <div class="vm">学员视角 · 你的训练成长记录</div>`;
+  $('contentGrid').innerHTML = `
+    <div class="calc-card" style="grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),rgba(61,214,140,.05));border:2px solid var(--green);padding:16px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:48px">${r.avatar}</div>
+        <div style="flex:1">
+          <div style="font-size:18px;font-weight:600">Lv.${r.level} · ${r.xp}/${r.xpToNext} XP</div>
+          <div style="height:8px;background:var(--bg3);border-radius:4px;margin-top:6px;overflow:hidden">
+            <div style="height:100%;width:${(r.xp/r.xpToNext)*100}%;background:var(--green)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="calc-card" style="padding:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">📖 阅读进度</div>
+      <div style="font-size:24px;font-weight:700;color:var(--blue)">${read} / ${totalCh}</div>
+      <div style="font-size:10px;color:var(--text3)">已读章节 / 总章节</div>
+      <div style="height:6px;background:var(--bg3);border-radius:3px;margin-top:6px;overflow:hidden">
+        <div style="height:100%;width:${(read/Math.max(totalCh,1))*100}%;background:var(--blue)"></div>
+      </div>
+    </div>
+    <div class="calc-card" style="padding:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">🧪 测验成绩</div>
+      <div style="font-size:24px;font-weight:700;color:var(--purple)">${r.totalQuizCorrect||0}</div>
+      <div style="font-size:10px;color:var(--text3)">累计答对题数</div>
+    </div>
+    <div class="calc-card" style="padding:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">🏆 成就</div>
+      <div style="font-size:24px;font-weight:700;color:var(--gold)">${Object.values(r.achievements||{}).filter(v=>v).length}</div>
+      <div style="font-size:10px;color:var(--text3)">已解锁</div>
+    </div>
+    <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:11px;display:flex;gap:8px;justify-content:center">
+      <button onclick="localStorage.removeItem(ROLE_LSK);openRoleCenter()" class="tb-btn">🔄 切换身份</button>
+    </div>
+  `;
+  updateProgress();
+}
+
+function showCoachDashboard(coachId) {
+  const data = loadRoleData();
+  const coach = data.coaches.find(c=>c.id===coachId);
+  if (!coach) return;
+  showView('book');
+  currentModule = 'role-dashboard';
+  navStack.push({view:'dashboard'});
+  historyPush('role-coach', {coachId});
+  const students = coach.students.map(sid=>data.students.find(s=>s.id===sid)).filter(Boolean);
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
+    <h1>👨‍🏫 ${coach.name}的学员</h1>
+    <div class="vm">教练视角 · 所带 ${students.length} 名学员的成长</div>`;
+  $('contentGrid').innerHTML = `
+    ${students.map(s => `
+      <div class="calc-card" style="padding:14px;border-left:3px solid var(--blue)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div>
+            <div style="font-size:15px;font-weight:600">${s.name}</div>
+            <div style="font-size:10px;color:var(--text3)">Lv.${s.level} · ${s.xp} XP · 最近活跃 ${s.lastActive}</div>
+          </div>
+          <div style="font-size:18px">🧑‍🎓</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11px">
+          <div style="background:var(--bg3);padding:6px;border-radius:4px;text-align:center">
+            <div style="font-weight:600;color:var(--blue)">${s.chaptersRead}</div>
+            <div style="font-size:9px;color:var(--text3)">已读章节</div>
+          </div>
+          <div style="background:var(--bg3);padding:6px;border-radius:4px;text-align:center">
+            <div style="font-weight:600;color:var(--purple)">${s.quizScore}</div>
+            <div style="font-size:9px;color:var(--text3)">测验答对</div>
+          </div>
+          <div style="background:var(--bg3);padding:6px;border-radius:4px;text-align:center">
+            <div style="font-weight:600;color:var(--green)">Lv.${s.level}</div>
+            <div style="font-size:9px;color:var(--text3)">训练等级</div>
+          </div>
+        </div>
+      </div>
+    `).join('') || '<div class="calc-card" style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text3)">暂无学员，点击右上「⚙️ 管理员设置」分配</div>'}
+    <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:11px;display:flex;gap:8px;justify-content:center">
+      <button onclick="openAdminSettings()" class="tb-btn">⚙️ 管理员设置</button>
+      <button onclick="localStorage.removeItem(ROLE_LSK);openRoleCenter()" class="tb-btn">🔄 切换身份</button>
+    </div>
+  `;
+  updateProgress();
+}
+
+function showPrincipalDashboard() {
+  const data = loadRoleData();
+  showView('book');
+  currentModule = 'role-dashboard';
+  navStack.push({view:'dashboard'});
+  historyPush('role-principal', {});
+  const totalStudents = data.students.length;
+  const avgLevel = totalStudents ? (data.students.reduce((s,x)=>s+x.level,0)/totalStudents).toFixed(1) : '0';
+  const avgXp = totalStudents ? Math.round(data.students.reduce((s,x)=>s+x.xp,0)/totalStudents) : 0;
+  const activeLast7Days = data.students.filter(s=>{
+    const days = (Date.now() - new Date(s.lastActive).getTime())/86400000;
+    return days <= 7;
+  }).length;
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
+    <h1>🏛️ ${data.principal.name} · 总览</h1>
+    <div class="vm">校长视角 · 学员与教练的成长总览</div>`;
+  $('contentGrid').innerHTML = `
+    <div class="calc-card" style="padding:14px;grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),rgba(255,214,10,.05));border:2px solid var(--gold)">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">📊 全局概览</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--blue)">${totalStudents}</div><div style="font-size:10px;color:var(--text3)">学员</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--green)">${data.coaches.length}</div><div style="font-size:10px;color:var(--text3)">教练</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--purple)">${avgLevel}</div><div style="font-size:10px;color:var(--text3)">平均等级</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--orange)">${activeLast7Days}</div><div style="font-size:10px;color:var(--text3)">7天内活跃</div></div>
+      </div>
+    </div>
+    <div class="calc-card" style="padding:14px;grid-column:1/-1">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">👨‍🏫 教练员列表</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px">
+        ${data.coaches.map(c => {
+          const cStudents = c.students.map(sid=>data.students.find(s=>s.id===sid)).filter(Boolean);
+          const cAvgLvl = cStudents.length ? (cStudents.reduce((s,x)=>s+x.level,0)/cStudents.length).toFixed(1) : '-';
+          return `<div style="background:var(--bg3);padding:10px;border-radius:6px">
+            <div style="font-size:13px;font-weight:600">${c.name}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">带 ${cStudents.length} 名学员 · 平均 Lv.${cAvgLvl}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="calc-card" style="padding:14px;grid-column:1/-1">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">🧑‍🎓 学员列表</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;font-size:11px;border-collapse:collapse">
+          <tr style="background:var(--bg3)">
+            <th style="padding:6px;text-align:left">姓名</th>
+            <th style="padding:6px">等级</th>
+            <th style="padding:6px">XP</th>
+            <th style="padding:6px">已读</th>
+            <th style="padding:6px">测验</th>
+            <th style="padding:6px">最近活跃</th>
+            <th style="padding:6px">教练</th>
+          </tr>
+          ${data.students.map(s => {
+            const coach = data.coaches.find(c=>c.students.includes(s.id));
+            const days = Math.floor((Date.now() - new Date(s.lastActive).getTime())/86400000);
+            const activeColor = days <= 1 ? 'var(--green)' : days <= 7 ? 'var(--orange)' : 'var(--text3)';
+            return `<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:6px;font-weight:600">${s.name}</td>
+              <td style="padding:6px;text-align:center">Lv.${s.level}</td>
+              <td style="padding:6px;text-align:center;color:var(--blue)">${s.xp}</td>
+              <td style="padding:6px;text-align:center">${s.chaptersRead}</td>
+              <td style="padding:6px;text-align:center;color:var(--purple)">${s.quizScore}</td>
+              <td style="padding:6px;text-align:center;color:${activeColor}">${days === 0 ? '今天' : days+'天前'}</td>
+              <td style="padding:6px;text-align:center">${coach?.name||'-'}</td>
+            </tr>`;
+          }).join('') || '<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text3)">暂无学员</td></tr>'}
+        </table>
+      </div>
+    </div>
+    <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:11px;display:flex;gap:8px;justify-content:center">
+      <button onclick="openAdminSettings()" class="tb-btn">⚙️ 管理员设置</button>
+      <button onclick="localStorage.removeItem(ROLE_LSK);openRoleCenter()" class="tb-btn">🔄 切换身份</button>
+    </div>
+  `;
+  updateProgress();
+}
+
+function openAdminSettings() {
+  const data = loadRoleData();
+  showOverlay('panel-admin', '⚙️ 管理员设置', `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:11px;color:var(--text3);text-align:center">本设备数据 · 可添加/编辑学员、教练、分配关系</div>
+      <div class="calc-card" style="padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:600">🧑‍🎓 学员 (${data.students.length})</div>
+          <button onclick="addStudent()" class="tb-btn" style="font-size:11px">+ 新增</button>
+        </div>
+        ${data.students.map(s => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--bg3);border-radius:4px;margin-bottom:4px;font-size:11px">
+            <div><strong>${s.name}</strong> · Lv.${s.level} · ${s.xp}XP · ${s.chaptersRead}章</div>
+            <button onclick="deleteStudent('${s.id}')" class="tb-btn" style="font-size:10px;background:var(--red);color:#fff">删除</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="calc-card" style="padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:600">👨‍🏫 教练 (${data.coaches.length})</div>
+          <button onclick="addCoach()" class="tb-btn" style="font-size:11px">+ 新增</button>
+        </div>
+        ${data.coaches.map(c => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--bg3);border-radius:4px;margin-bottom:4px;font-size:11px">
+            <div><strong>${c.name}</strong> · 带 ${c.students.length} 人</div>
+            <button onclick="deleteCoach('${c.id}')" class="tb-btn" style="font-size:10px;background:var(--red);color:#fff">删除</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="calc-card" style="padding:12px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">🔗 分配教练-学员</div>
+        ${data.coaches.map(c => `
+          <div style="margin-bottom:8px">
+            <div style="font-size:11px;font-weight:600">${c.name}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+              ${data.students.map(s => {
+                const assigned = c.students.includes(s.id);
+                return `<button onclick="toggleAssignment('${c.id}','${s.id}')" style="font-size:10px;padding:3px 8px;border-radius:12px;border:1px solid ${assigned?'var(--green)':'var(--border)'};background:${assigned?'var(--green)':'var(--bg3)'};color:${assigned?'#fff':'var(--text2)'};cursor:pointer">${s.name}${assigned?' ✓':''}</button>`;
+              }).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="calc-card" style="padding:12px;border:1px dashed var(--red)">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px;color:var(--red)">⚠️ 数据管理</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button onclick="exportRoleData()" class="tb-btn" style="font-size:11px">📤 导出JSON</button>
+          <button onclick="resetRoleData()" class="tb-btn" style="font-size:11px;background:var(--red);color:#fff">🔄 重置默认</button>
+        </div>
+      </div>
+    </div>
+  `);
+}
+
+function addStudent() {
+  const name = prompt('学员姓名:'); if (!name) return;
+  const data = loadRoleData();
+  const id = 's' + Date.now();
+  data.students.push({ id, name, level:1, xp:0, chaptersRead:0, lastActive:new Date().toISOString().slice(0,10), quizScore:0 });
+  setRoleData(data); openAdminSettings();
+}
+function addCoach() {
+  const name = prompt('教练姓名:'); if (!name) return;
+  const data = loadRoleData();
+  const id = 'c' + Date.now();
+  data.coaches.push({ id, name, students:[], totalXp:0 });
+  setRoleData(data); openAdminSettings();
+}
+function deleteStudent(id) {
+  if (!confirm('确认删除该学员？')) return;
+  const data = loadRoleData();
+  data.students = data.students.filter(s=>s.id!==id);
+  data.coaches.forEach(c=>c.students = c.students.filter(sid=>sid!==id));
+  setRoleData(data); openAdminSettings();
+}
+function deleteCoach(id) {
+  if (!confirm('确认删除该教练？')) return;
+  const data = loadRoleData();
+  data.coaches = data.coaches.filter(c=>c.id!==id);
+  setRoleData(data); openAdminSettings();
+}
+function toggleAssignment(coachId, studentId) {
+  const data = loadRoleData();
+  const coach = data.coaches.find(c=>c.id===coachId);
+  if (!coach) return;
+  const idx = coach.students.indexOf(studentId);
+  if (idx >= 0) coach.students.splice(idx, 1);
+  else coach.students.push(studentId);
+  setRoleData(data); openAdminSettings();
+}
+function exportRoleData() {
+  const data = loadRoleData();
+  const json = JSON.stringify(data, null, 2);
+  navigator.clipboard.writeText(json).then(()=>alert('已复制JSON到剪贴板'));
+}
+function resetRoleData() {
+  if (!confirm('确认重置为默认数据？当前数据将丢失。')) return;
+  localStorage.removeItem(ROLE_DATA_LSK);
+  loadRoleData(); openAdminSettings();
+}
