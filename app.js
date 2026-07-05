@@ -10,8 +10,64 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.6.0';
+const APP_VERSION = 'v3.7.0';
 const APP_DATE = '2026-07-05';
+
+// ─── 全局错误边界（防白屏）─────────────────
+window.addEventListener('error', (e) => {
+  try {
+    console.error('[GlobalError]', e.error || e.message, e.filename, e.lineno);
+    const splash = document.getElementById('splash');
+    if (splash && !splash.querySelector('.err-box')) {
+      const msg = (e.error?.message || e.message || '未知错误').slice(0,200);
+      splash.innerHTML = `<div class="splash-inner err-box">
+        <div style="font-size:48px;margin-bottom:8px">⚠️</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:6px">出错了</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:14px;max-width:300px;font-family:monospace;text-align:left;padding:10px;background:rgba(255,59,48,.06);border-radius:6px">${msg}</div>
+        <button onclick="location.reload()" style="padding:8px 18px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;margin-right:6px">🔄 重新加载</button>
+        <button onclick="localStorage.clear();location.reload()" style="padding:8px 18px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">🧹 清除缓存</button>
+      </div>`;
+      splash.style.display = 'flex';
+    }
+  } catch (_) {}
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('[UnhandledRejection]', e.reason);
+  e.preventDefault?.();
+});
+
+// ─── 安全存储工具（容错+容量检查）─────────────
+function safeGet(key, fallback=null) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw == null) return fallback;
+    return JSON.parse(raw);
+  } catch (e) {
+    console.warn('[safeGet]', key, 'parse failed, returning fallback');
+    return fallback;
+  }
+}
+function safeSet(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (e) {
+    // 容量超限或隐私模式：清理旧缓存重试
+    console.warn('[safeSet]', key, 'failed:', e.message);
+    try {
+      const keys = Object.keys(localStorage);
+      // 清理 streaking记录和临时数据
+      for (const k of keys) {
+        if (k.startsWith('tmp_') || k === '_cache') localStorage.removeItem(k);
+      }
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (e2) {
+      console.error('[safeSet] persistent failure:', key, e2.message);
+      return false;
+    }
+  }
+}
 
 // ─── 5大训练模块 ──────────────────────────
 const TRAIN_MODULES = [
@@ -468,7 +524,99 @@ function unmarkRead(bid,f){const p=getP();if(p[bid]){p[bid]=p[bid].filter(x=>x!=
 function isRead(bid,f){const p=getP();return p[bid]&&p[bid].includes(f);}
 function chProgress(bid){const b=MANIFEST?.books.find(x=>x.id===bid);if(!b||!b.chapters.length)return 0;const p=getP();const d=(p[bid]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;return d/b.chapters.length;}
 function totalP(){const total=MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;if(!total)return 0;let d=0;const p=getP();for(const b of MANIFEST.books)d+=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;return d/total;}
-function updateProgress(){const tp=totalP();const bar=$('heroBar');if(bar)bar.style.width=(tp*100)+'%';const badge=$('progressBadge');if(badge)badge.textContent=Math.round(tp*100)+'%';updateRpgHud();}
+// ─── 学员能力水平系统（取代单纯的读书进度条）───────────
+// 五维加权：阅读25%+训练模块解锁25%+测验20%+连续15%+训练方法掌握15%
+function calcAbilityScore() {
+  const rp = getRP();
+  const p = getP();
+  if (!MANIFEST) return { score: 0, dims: {read:0,modules:0,quiz:0,streak:0,methods:0} };
+  // 1. 阅读进度 (25%)
+  const totalCh = MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0);
+  let read = 0;
+  for (const b of MANIFEST.books) read += (p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;
+  const readPct = totalCh ? (read/totalCh) : 0;
+  // 2. 训练模块解锁 (25%) — 按已访问模块数 / 6
+  const visited = (rp.visitedModules || []).length;
+  const modulePct = Math.min(1, visited / 6);
+  // 3. 测验正确率 (20%)
+  const quizTotal = rp.totalQuizCorrect || 0;
+  const quizPct = Math.min(1, Math.log10(quizTotal + 1) / Math.log10(201)); // 0~200题满
+  // 4. 连续学习 (15%)
+  const streakMap = p._streak || {};
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dayKey = d => d.toISOString().slice(0,10);
+  let streak = 0;
+  for (let i=0;i<365;i++) {
+    const d = new Date(today); d.setDate(today.getDate()-i);
+    if (streakMap[dayKey(d)]) streak++;
+    else if (i===0) continue;
+    else break;
+  }
+  const streakPct = Math.min(1, streak / 100); // 100天封顶
+  // 5. 训练方法掌握 (15%) — 基于等级（≤30级满）
+  const lvlPct = Math.min(1, (rp.level||1) / 30);
+  const score = readPct*25 + modulePct*25 + quizPct*20 + streakPct*15 + lvlPct*15;
+  return {
+    score: Math.round(Math.min(100, Math.max(0, score))),
+    dims: { read: readPct*100, modules: modulePct*100, quiz: quizPct*100, streak: streakPct*100, methods: lvlPct*100 },
+    streak
+  };
+}
+
+// 6个段位
+const ABILITY_LEVELS = [
+  { lv:1, min:0,  max:15, name:'入门预备', emoji:'🌱', color:'#9ca3af', desc:'刚刚开始，专注基础动作' },
+  { lv:2, min:16, max:30, name:'基础建立', emoji:'🌿', color:'#3dd68c', desc:'动作模式逐步形成，不要急' },
+  { lv:3, min:31, max:50, name:'系统训练中', emoji:'🌳', color:'#4f9aff', desc:'进入正循环，开始综合训练' },
+  { lv:4, min:51, max:70, name:'进阶突破', emoji:'⚡', color:'#f59e0b', desc:'挑战新场景，参加实战比赛' },
+  { lv:5, min:71, max:88, name:'高水平', emoji:'🏆', color:'#a855f7', desc:'从优秀到卓越，注重专项短板' },
+  { lv:6, min:89, max:100, name:'大师级', emoji:'👑', color:'#fbbf24', desc:'触类旁通，传道授业' },
+];
+
+function getAbilityLevel(score) {
+  return ABILITY_LEVELS.find(l => score >= l.min && score <= l.max) || ABILITY_LEVELS[0];
+}
+
+function updateProgress() {
+  // 旧的读书进度逻辑：保留作为备份（防止其他代码还在调用）
+  const tp = totalP();
+  // 新逻辑：能力水平
+  const ability = calcAbilityScore();
+  const lv = getAbilityLevel(ability.score);
+  // 首页 heroBar 显示能力成长进度
+  const bar = $('heroBar');
+  if (bar) {
+    bar.style.width = ability.score + '%';
+    bar.style.background = `linear-gradient(90deg, ${lv.color}, ${lv.color}cc)`;
+  }
+  const barGlow = $('heroBarGlow');
+  if (barGlow) barGlow.style.cssText = `background: radial-gradient(circle, ${lv.color}66, transparent 70%);`;
+  // badge 显示等级 + 进度
+  const badge = $('progressBadge');
+  if (badge) {
+    badge.innerHTML = `${lv.emoji} Lv.${lv.lv}`;
+    badge.style.background = lv.color + '22';
+    badge.style.color = lv.color;
+    badge.style.borderColor = lv.color + '44';
+    badge.title = `${lv.name} · 能力分 ${ability.score}/100`;
+  }
+  // heroSub 加能力副标题（如果存在 appendChild 区域）
+  const heroSub = $('heroSub');
+  if (heroSub) {
+    const detail = `能力 ${lv.name} · ${ability.score} 分`;
+    const dim = `阅读${Math.round(ability.dims.read)}%·模块${Math.round(ability.dims.modules)}%·测验${Math.round(ability.dims.quiz)}%`;
+    const exists = document.getElementById('heroAbilitySub');
+    if (exists) exists.textContent = `${detail} · ${dim}`;
+    else {
+      const el = document.createElement('div');
+      el.id = 'heroAbilitySub';
+      el.style.cssText = 'font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4';
+      el.textContent = `${detail} · ${dim}`;
+      heroSub.after(el);
+    }
+  }
+  updateRpgHud();
+}
 
 // ─── 成就系统 ──────────────────────────────────
 const ACHIEVEMENTS={
@@ -736,6 +884,15 @@ function openTrainModule(modId) {
   const mod = TRAIN_MODULES.find(m=>m.id===modId);
   if (!mod) return;
   currentModule = modId;
+  // 记录访问过的训练模块
+  try {
+    const rp = getRP();
+    if (!rp.visitedModules) rp.visitedModules = [];
+    if (!rp.visitedModules.includes(modId)) {
+      rp.visitedModules.push(modId);
+      setRP(rp);
+    }
+  } catch (_) {}
   showView('book');
   $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>${mod.icon} ${mod.title}</h1>
@@ -2024,15 +2181,26 @@ async function searchContent(ql, results, queryOrig) {
 
 /** Try to fetch chapter markdown from local then remote */
 async function fetchChapterContent(bookId, file) {
+  // 取资源来了一道超时：8秒
+  const fetchWithTimeout = (url, ms = 8000) => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+  };
   try {
     const localUrl = 'books/' + bookId + '/' + file;
-    const r1 = await fetch(localUrl);
+    const r1 = await fetchWithTimeout(localUrl);
     if (r1.ok) return await r1.text();
-  } catch (_) { /* ignore */ }
+  } catch (_) { /* ignore local */ }
   try {
-    const r2 = await fetch(RAW + '/books/' + bookId + '/' + file);
+    const fetchWithTimeout = (url, ms = 8000) => {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), ms);
+      return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+    };
+    const r2 = await fetchWithTimeout(RAW + '/books/' + bookId + '/' + file);
     if (r2.ok) return await r2.text();
-  } catch (_) { /* ignore */ }
+  } catch (_) { /* ignore remote */ }
   return null;
 }
 
@@ -2202,7 +2370,7 @@ function loadRoleData() {
   setRoleData(seed);
   return seed;
 }
-function setRoleData(d) { localStorage.setItem(ROLE_DATA_LSK, JSON.stringify(d)); }
+function setRoleData(d) { try { localStorage.setItem(ROLE_DATA_LSK, JSON.stringify(d)); } catch(e) { console.warn('[setRoleData] failed:', e.message); } }
 function getCurrentRole() { try { return JSON.parse(localStorage.getItem(ROLE_LSK)||'null'); } catch { return null; } }
 function setCurrentRole(role, userId) { localStorage.setItem(ROLE_LSK, JSON.stringify({ role, userId, ts:Date.now() })); }
 
@@ -2357,16 +2525,43 @@ function showStudentDashboard() {
   $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>🧑‍🎓 我的成长</h1>
     <div class="vm">学员视角 · 你的训练成长记录</div>`;
+  // 能力水平（5维加权）
+  const ability = calcAbilityScore();
+  const abilLv = getAbilityLevel(ability.score);
+  const dimHtml = (label, val, color) => `
+    <div style="flex:1">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:2px"><span>${label}</span><span>${Math.round(val)}%</span></div>
+      <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(100,val)}%;background:${color};border-radius:3px"></div>
+      </div>
+    </div>`;
   $('contentGrid').innerHTML = `
-    <div class="calc-card" style="grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),rgba(61,214,140,.05));border:2px solid var(--green);padding:16px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="font-size:48px">${r.avatar}</div>
+    <div class="calc-card" style="grid-column:1/-1;padding:16px;background:linear-gradient(135deg,var(--bg2),${abilLv.color}11);border:2px solid ${abilLv.color}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="font-size:42px;line-height:1">${abilLv.emoji}</div>
         <div style="flex:1">
-          <div style="font-size:18px;font-weight:600">Lv.${r.level} · ${r.xp}/${r.xpToNext} XP</div>
-          <div style="height:8px;background:var(--bg3);border-radius:4px;margin-top:6px;overflow:hidden">
-            <div style="height:100%;width:${(r.xp/r.xpToNext)*100}%;background:var(--green)"></div>
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <div style="font-size:14px;color:var(--text3)">能力水平</div>
+            <div style="font-size:22px;font-weight:700;color:${abilLv.color}">Lv.${abilLv.lv} ${abilLv.name}</div>
           </div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">${abilLv.desc} · 能力分 ${ability.score}/100</div>
         </div>
+        <div style="text-align:right">
+          <div style="font-size:9px;color:var(--text3)">下一段位</div>
+          <div style="font-size:13px;font-weight:600">${abilLv.lv<6?ABILITY_LEVELS[abilLv.lv].name:'已封顶 👑'}</div>
+        </div>
+      </div>
+      <div style="position:relative;height:14px;background:var(--bg3);border-radius:7px;overflow:hidden;margin-bottom:8px">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:${ability.score}%;background:linear-gradient(90deg, ${abilLv.color}, ${abilLv.color}cc);transition:width .6s cubic-bezier(.34,1.56,.64,1);border-radius:7px"></div>
+        ${[15,30,50,70,88].map(t => `<div style="position:absolute;left:${t}%;top:-2px;bottom:-2px;width:1px;background:var(--border2);opacity:.5"></div>`).join('')}
+        <div style="position:absolute;right:6px;top:0;bottom:0;display:flex;align-items:center;font-size:10px;color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.3)">${ability.score}</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${dimHtml('📖 阅读', ability.dims.read, '#4f9aff')}
+        ${dimHtml('🏋️ 模块', ability.dims.modules, '#3dd68c')}
+        ${dimHtml('🧪 测验', ability.dims.quiz, '#a855f7')}
+        ${dimHtml('🔥 连学', ability.dims.streak, '#f59e0b')}
+        ${dimHtml('🥋 方法', ability.dims.methods, '#fbbf24')}
       </div>
     </div>
     ${dailyTaskHtml}
@@ -2461,6 +2656,19 @@ function showCoachDashboard(coachId) {
     ${annotated.map(s => {
       const borderColor = s._status === 'urgent' ? 'var(--red)' : s._status === 'warn' ? 'var(--orange)' : 'var(--blue)';
       const bgTint = s._status === 'urgent' ? 'rgba(255,107,107,.05)' : s._status === 'warn' ? 'rgba(255,184,77,.05)' : '';
+      // 能力水平（教练端能直接看到）
+      const sAbility = (() => {
+        // 综合：等级占位 + 章节占比 + 测验表现
+        const totalChForS = 90; // 估算：6书约90章
+        const readPct = Math.min(1, (s.chaptersRead||0) / totalChForS);
+        const quizPct = Math.min(1, Math.log10((s.quizScore||0)+1)/Math.log10(201));
+        const lvlPct = Math.min(1, (s.level||1)/30);
+        const days = s._days || 0;
+        const streakPct = Math.min(1, days <= 7 ? days/7 : (7 - Math.min(7, days-7))/7);
+        const score = readPct*25 + lvlPct*25 + quizPct*20 + streakPct*15 + readPct*15;
+        return Math.round(Math.min(100, Math.max(0, score)));
+      })();
+      const sAbilLv = ABILITY_LEVELS.find(l => sAbility >= l.min && sAbility <= l.max) || ABILITY_LEVELS[0];
       return `
       <div class="calc-card" style="padding:14px;border-left:3px solid ${borderColor};${bgTint?`background:linear-gradient(135deg,var(--bg2),${bgTint})`:''}">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -2469,6 +2677,16 @@ function showCoachDashboard(coachId) {
             <div style="font-size:10px;color:var(--text3)">Lv.${s.level} · ${s.xp} XP · ${s._statusLabel}</div>
           </div>
           <div style="font-size:18px">🧑‍🎓</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:6px;padding:6px 8px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;margin-bottom:4px">
+            <span style="color:var(--text3)">能力水平</span>
+            <span style="font-weight:600;color:${sAbilLv.color}">${sAbilLv.emoji} Lv.${sAbilLv.lv} ${sAbilLv.name} · ${sAbility}/100</span>
+          </div>
+          <div style="position:relative;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:${sAbility}%;background:linear-gradient(90deg,${sAbilLv.color},${sAbilLv.color}cc);border-radius:4px"></div>
+            ${[15,30,50,70,88].map(t => `<div style="position:absolute;left:${t}%;top:-1px;bottom:-1px;width:1px;background:var(--border);opacity:.4"></div>`).join('')}
+          </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11px">
           <div style="background:var(--bg3);padding:6px;border-radius:4px;text-align:center">
@@ -2512,8 +2730,44 @@ function showPrincipalDashboard() {
   $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
     <h1>🏛️ ${data.principal.name} · 总览</h1>
     <div class="vm">校长视角 · 学员与教练的成长总览</div>`;
+  // 校长看所有学员的平均能力
+  const principalAbility = (() => {
+    if (!data.students.length) return {score:0, lv:ABILITY_LEVELS[0]};
+    const totalChForS = 90;
+    const scores = data.students.map(s => {
+      const readPct = Math.min(1, (s.chaptersRead||0) / totalChForS);
+      const quizPct = Math.min(1, Math.log10((s.quizScore||0)+1)/Math.log10(201));
+      const lvlPct = Math.min(1, (s.level||1)/30);
+      const days = Math.floor((Date.now() - new Date(s.lastActive).getTime())/86400000);
+      const streakPct = Math.min(1, days <= 7 ? days/7 : 0);
+      return readPct*25 + lvlPct*25 + quizPct*20 + streakPct*15 + readPct*15;
+    });
+    const avg = scores.reduce((a,b)=>a+b,0) / scores.length;
+    const score = Math.round(Math.min(100, Math.max(0, avg)));
+    return { score, lv: ABILITY_LEVELS.find(l => score >= l.min && score <= l.max) || ABILITY_LEVELS[0] };
+  })();
   $('contentGrid').innerHTML = `
-    <div class="calc-card" style="padding:14px;grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),rgba(255,214,10,.05));border:2px solid var(--gold)">
+    <div class="calc-card" style="padding:14px;grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),${principalAbility.lv.color}11);border:2px solid ${principalAbility.lv.color}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="font-size:42px">${principalAbility.lv.emoji}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <div style="font-size:14px;color:var(--text3)">全平均水平</div>
+            <div style="font-size:22px;font-weight:700;color:${principalAbility.lv.color}">Lv.${principalAbility.lv.lv} ${principalAbility.lv.name}</div>
+          </div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">${principalAbility.lv.desc} · 能力分 ${principalAbility.score}/100</div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);text-align:right">
+          ${totalStudents}名学员<br>${data.coaches.length}名教练
+        </div>
+      </div>
+      <div style="position:relative;height:12px;background:var(--bg3);border-radius:6px;overflow:hidden">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:${principalAbility.score}%;background:linear-gradient(90deg,${principalAbility.lv.color},${principalAbility.lv.color}cc);transition:width .6s"></div>
+        ${[15,30,50,70,88].map(t => `<div style="position:absolute;left:${t}%;top:-1px;bottom:-1px;width:1px;background:var(--border2);opacity:.5"></div>`).join('')}
+        <div style="position:absolute;right:8px;top:0;bottom:0;display:flex;align-items:center;font-size:10px;color:#fff;font-weight:600">${principalAbility.score}</div>
+      </div>
+    </div>
+    <div class="calc-card" style="padding:14px;grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),rgba(255,214,10,.03));border:1px dashed var(--gold)">
       <div style="font-size:13px;font-weight:600;margin-bottom:10px">📊 全局概览</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
         <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--blue)">${totalStudents}</div><div style="font-size:10px;color:var(--text3)">学员</div></div>
@@ -2541,6 +2795,7 @@ function showPrincipalDashboard() {
         <table style="width:100%;font-size:11px;border-collapse:collapse">
           <tr style="background:var(--bg3)">
             <th style="padding:6px;text-align:left">姓名</th>
+            <th style="padding:6px">能力</th>
             <th style="padding:6px">等级</th>
             <th style="padding:6px">XP</th>
             <th style="padding:6px">已读</th>
@@ -2552,8 +2807,24 @@ function showPrincipalDashboard() {
             const coach = data.coaches.find(c=>c.students.includes(s.id));
             const days = Math.floor((Date.now() - new Date(s.lastActive).getTime())/86400000);
             const activeColor = days <= 1 ? 'var(--green)' : days <= 7 ? 'var(--orange)' : 'var(--text3)';
+            // 能力分（学员行内）
+            const totalChForS = 90;
+            const readPct = Math.min(1, (s.chaptersRead||0) / totalChForS);
+            const quizPct = Math.min(1, Math.log10((s.quizScore||0)+1)/Math.log10(201));
+            const lvlPct = Math.min(1, (s.level||1)/30);
+            const streakPct = Math.min(1, days <= 7 ? days/7 : 0);
+            const sScore = Math.round(Math.min(100, Math.max(0, readPct*25+lvlPct*25+quizPct*20+streakPct*15+readPct*15)));
+            const sLvReal = ABILITY_LEVELS.find(l => sScore >= l.min && sScore <= l.max) || ABILITY_LEVELS[0];
             return `<tr style="border-bottom:1px solid var(--border)">
               <td style="padding:6px;font-weight:600">${s.name}</td>
+              <td style="padding:6px">
+                <div style="display:flex;align-items:center;gap:4px">
+                  <span style="font-size:11px;color:${sLvReal.color};font-weight:600">${sLvReal.emoji} Lv.${sLvReal.lv}</span>
+                  <div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;min-width:40px">
+                    <div style="height:100%;width:${sScore}%;background:${sLvReal.color}"></div>
+                  </div>
+                </div>
+              </td>
               <td style="padding:6px;text-align:center">Lv.${s.level}</td>
               <td style="padding:6px;text-align:center;color:var(--blue)">${s.xp}</td>
               <td style="padding:6px;text-align:center">${s.chaptersRead}</td>
