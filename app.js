@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.4.0';
+const APP_VERSION = 'v3.5.0';
 const APP_DATE = '2026-07-05';
 
 // ─── 5大训练模块 ──────────────────────────
@@ -205,8 +205,21 @@ function renderDashboard() {
       <div class="lc-desc">${l.desc}</div>
     </div>`).join('');
 
-  // ── 🎯 训练模块 ──
-  $('moduleSection').innerHTML = TRAIN_MODULES.map(m => {
+  // ── 🎯 教练系统 (仅次于首页) ──
+  $('moduleSection').innerHTML = `
+    <div class="module-card coach-highlight" onclick="openCoach()" style="border-top:3px solid var(--gold);background:linear-gradient(135deg,var(--bg2),rgba(255,214,10,.04))">
+      <div class="mc-icon">🎯</div>
+      <div class="mc-title">教练系统 <span style="font-size:9px;background:var(--gold);color:#000;padding:1px 6px;border-radius:8px;margin-left:4px;font-weight:600">RECOMMEND</span></div>
+      <div class="mc-desc">AI教练辅助 · 训练计划编排 · 动作分析 · 6专家21轮研讨体系</div>
+      <div class="mc-tags">
+        <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">学员评估</span>
+        <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">计划设计</span>
+        <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">课例模板</span>
+        <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">速查手册</span>
+        <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">元淳系统</span>
+      </div>
+      <div class="mc-foot"><span>🏆 6专家 · 21轮研讨</span><span class="mc-arrow">进入教练工作台 →</span></div>
+    </div>` + TRAIN_MODULES.filter(m=>m.id!=='coach').map(m => {
     const colors = {'var(--blue)':'#4f9aff','var(--green)':'#3dd68c','var(--purple)':'#a855f7','var(--orange)':'#f59e0b','var(--red)':'#f06060'};
     const c = colors[m.color]||'#4f9aff';
     return `<div class="module-card" onclick="openTrainModule('${m.id}')" style="border-top:3px solid ${c}">
@@ -292,20 +305,63 @@ function renderTowerEntry() {
 // ─── 侧边栏 ──────────────────────────────
 function renderSidebar() {
   const list = $('bookList');
-  let html = '<div class="side-section side-section-links">';
-  html += `<div class="side-link ${currentModule==='dashboard'?'active':''}" onclick="goHome()"><span class="sl-icon">🏠</span> 训练总览</div>`;
-  html += '</div><div class="side-section"><div class="side-title">📚 我的书塔</div>';
-  if (MANIFEST) {
-    html += MANIFEST.books.filter(b=>TOWER_BOOKS.includes(b.id)).map(b => {
-      const p = chProgress(b.id);
-      return `<div class="b-item ${currentBookId===b.id?'active':''}" data-bid="${b.id}" onclick="goToBook('${b.id}')">
-        <span class="be">${b.emoji}</span><span class="bt">${b.title}</span>
-        <span class="bc">${b.chapters.length}</span><span class="bp" style="width:${Math.round(p*100)}%"></span>
-      </div>`;
-    }).join('');
-  }
+  let html = '';
+  // ── 顶级导航 ──
+  html += '<div class="side-section side-section-links">';
+  html += `<div class="side-link ${currentModule==='dashboard'?'active':''}" onclick="goHome()"><span class="sl-icon">🏠</span> 首页</div>`;
+  html += `<div class="side-link ${currentModule==='coach'?'active':''}" onclick="openCoach()"><span class="sl-icon">🎯</span> 教练系统</div>`;
   html += '</div>';
+
+  // ── 阅读（折叠）──
+  const isReadingActive = currentModule === 'book' || currentBookId;
+  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">📚 阅读</div>`;
+  html += `<div class="side-collapsible" ${isReadingActive?'':'style="display:none"'}>${renderBookListItems()}</div>`;
+  html += '</div>';
+
+  // ── 训练系统（折叠）──
+  const isTrainingActive = ['badminton-tech','strength','psychology','nutrition','competition'].includes(currentModule);
+  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">💪 训练系统</div>`;
+  html += `<div class="side-collapsible" ${isTrainingActive?'':'style="display:none"'}>${renderTrainingItems()}</div>`;
+  html += '</div>';
+
+  // ── 工具（折叠）──
+  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">🛠️ 工具集</div>`;
+  html += `<div class="side-collapsible" style="display:none">${renderToolItems()}</div>`;
+  html += '</div>';
+
   list.innerHTML = html;
+}
+
+function renderBookListItems() {
+  if (!MANIFEST) return '';
+  return MANIFEST.books.filter(b=>TOWER_BOOKS.includes(b.id)).map(b => {
+    const p = chProgress(b.id);
+    return `<div class="b-item ${currentBookId===b.id?'active':''}" data-bid="${b.id}" onclick="goToBook('${b.id}')">
+      <span class="be">${b.emoji}</span><span class="bt">${b.title}</span>
+      <span class="bc">${b.chapters.length}</span><span class="bp" style="width:${Math.round(p*100)}%"></span>
+    </div>`;
+  }).join('');
+}
+
+function renderTrainingItems() {
+  return TRAIN_MODULES.filter(m=>m.id!=='coach').map(m => {
+    return `<div class="side-link sub ${currentModule===m.id?'active':''}" onclick="openTrainModule('${m.id}')"><span class="sl-icon">${m.icon}</span> ${m.title}</div>`;
+  }).join('');
+}
+
+function renderToolItems() {
+  return [
+    `<div class="side-link sub" onclick="openScreening()"><span class="sl-icon">🛡️</span> 损伤筛查</div>`,
+    `<div class="side-link sub" onclick="openCalculators()"><span class="sl-icon">🧮</span> 计算工具</div>`,
+    `<div class="side-link sub" onclick="openDiagnosis()"><span class="sl-icon">🔍</span> 训练诊断</div>`,
+    `<div class="side-link sub" onclick="openWeeklyCheck()"><span class="sl-icon">✅</span> 周检查</div>`,
+    `<div class="side-link sub" onclick="openLevelFinder()"><span class="sl-icon">📊</span> 级别定位</div>`,
+  ].join('');
+}
+
+function toggleSideSection(el) {
+  const section = el.parentElement.querySelector('.side-collapsible');
+  if (section) section.style.display = section.style.display==='none' ? 'block' : 'none';
 }
 
 // ─── 训练模块详情 ────────────────────────
@@ -713,8 +769,79 @@ function openCoach() {
       </div>
     </div>
 
+    <!-- 教练腰带 · 元淳系统融合区 -->
+    <div class="calc-card" style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--blue);border-radius:var(--radius);padding:16px;grid-column:1/-1">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;color:var(--blue)">🎯 教练工作台 · 元淳系统融合</div>
+      <div style="font-size:10px;color:var(--text2);margin-bottom:10px">6专家21轮研讨产出的一体化教练工具，直接在新窗口打开使用</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">
+        <a href="coach/index.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+          <div style="font-size:22px">🏟️</div>
+          <div style="font-size:12px;font-weight:600;margin:4px 0">教练工作台</div>
+          <div style="font-size:9px;color:var(--text3)">总入口 · 所有工具跳转</div>
+        </a>
+        <a href="coach/level-assessment.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+          <div style="font-size:22px">📊</div>
+          <div style="font-size:12px;font-weight:600;margin:4px 0">学员水平评估</div>
+          <div style="font-size:9px;color:var(--text3)">30+题 · 6维度 · 7级结果</div>
+        </a>
+        <a href="coach/coach-guide.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+          <div style="font-size:22px">📚</div>
+          <div style="font-size:12px;font-weight:600;margin:4px 0">教练速成指导书</div>
+          <div style="font-size:9px;color:var(--text3)">13章系统体系</div>
+        </a>
+        <a href="coach/coach-manual-v2.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+          <div style="font-size:22px">⚡</div>
+          <div style="font-size:12px;font-weight:600;margin:4px 0">训练前速查手册</div>
+          <div style="font-size:9px;color:var(--text3)">7-16岁按龄速查</div>
+        </a>
+        <a href="coach/kids-training-program-part1.html" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+          <div style="font-size:22px">🧒</div>
+          <div style="font-size:12px;font-weight:600;margin:4px 0">儿童训练分龄方案</div>
+          <div style="font-size:9px;color:var(--text3)">7-9·9-11·11-13·13-16</div>
+        </a>
+        <a href="coach/coach-manual-v2.html#ch1" target="_blank" class="calc-card" style="text-decoration:none;color:var(--text);padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)">
+          <div style="font-size:22px">📋</div>
+          <div style="font-size:12px;font-weight:600;margin:4px 0">课例模板库</div>
+          <div style="font-size:9px;color:var(--text3)">含课时间接实例</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- 多球训练参数速查 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">🥇 多球训练参数速查</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
+        <strong>启蒙期</strong>（6-9岁）：球速·20个/组 · 间隔·休息15s · 重点·动作模式<br>
+        <strong>基础期</strong>（9-11岁）：30个/组 · 间隔·休息10s · 重点·重复精度<br>
+        <strong>提高期</strong>（11-13岁）：50个/组 · 间隔·休息8s · 重点·变化<br>
+        <strong>强化期</strong>（13-16岁）：80个/组 · 间隔·休息5s · 重点·组合技术
+      </div>
+      <div style="font-size:9px;color:var(--text3);padding:4px 8px;background:var(--bg3);border-radius:4px">💡 年龄越小间休越长，以保证动作质量</div>
+    </div>
+
+    <!-- 动作质量记录表 -->
+    <div class="calc-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">📋 动作质量记录模板</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.7">
+        <div style="background:var(--bg3);border-radius:6px;padding:8px;margin-bottom:6px">
+          <div>📅 训练日期：__________</div>
+          <div>⏱ 总时长：____ 分钟</div>
+          <div>🎯 主要内容：__________________</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin-bottom:6px">
+          <div>🥔 高远球：________球/____ 个</div>
+          <div>🔥 杀球：______球/____ 个</div>
+          <div>🌐 抽球：______球/____ 个</div>
+          <div>💧 控球：______球/____ 个</div>
+        </div>
+        <div>📊 RPE（1-10）：____</div>
+        <div>💪 状态：🟢 黄亮 ____ 🔴 差 ____</div>
+        <div>📝 备注：________________________</div>
+      </div>
+    </div>
+
     <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:10px;color:var(--text3)">
-      🎯 教练板块 · 基于NSCA-CPT科学体系 + 元淳教练系统 · 六专家联合设计 · 21轮研讨
+      🎯 教练板块 · NSCA-CPT科学体系 + 元淳6专家21轮研讨体系融合 · v3.5.0
     </div>`;
   updateProgress();
 }

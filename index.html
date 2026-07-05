@@ -25,8 +25,12 @@
   <!-- Header -->
   <header>
     <div class="h-left">
-      <button class="h-btn" onclick="toggleSidebar()" title="📂 菜单" style="font-size:16px">☰</button>
-      <span class="h-logo" onclick="goHome()">🏸</span>
+      <button class="h-btn ios-press" onclick="toggleSidebar()" title="📂 菜单" style="font-size:18px">☰</button>
+      <button class="h-home-btn ios-press" onclick="goHome()" title="🏠 返回首页">
+        <span class="hh-icon">🏠</span>
+        <span class="hh-text">首页</span>
+      </button>
+      <span class="h-logo ios-press" onclick="goHome()">🏸</span>
       <div class="h-search" onclick="openSearch()">
         <span>🔍</span>
         <span class="h-search-text">搜索训练内容…</span>

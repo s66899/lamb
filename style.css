@@ -510,3 +510,342 @@ article hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
   .panel-stats { width:95vw; }
   .panel-achievement { width:95vw; }
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   📱 iOS Style Layer — 参考 apple.com/os/ios/
+   - SF Pro 字体栈
+   - Spring physics 弹性曲线
+   - Glass morphism 毛玻璃
+   - Press feedback 按压反馈
+   - Smooth slide transitions
+════════════════════════════════════════════════════════════════════════ */
+:root {
+  --ios-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ios-spring-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ios-curve: cubic-bezier(0.4, 0, 0.2, 1);
+  --ios-blur: saturate(180%) blur(20px);
+  --ios-blur-light: saturate(180%) blur(10px);
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --ios-font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+}
+
+* { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+body, button, input, select, textarea {
+  font-family: var(--ios-font);
+}
+
+/* ── 按压反馈：所有按钮 / 卡片 ─────────────────────────── */
+.ios-press {
+  transition: transform 0.18s var(--ios-spring), background 0.2s var(--ios-curve);
+  cursor: pointer;
+}
+.ios-press:active {
+  transform: scale(0.97);
+  transition-duration: 0.08s;
+}
+
+/* ── 主页返回按钮（h-home-btn）───────────────────────── */
+.h-home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px 5px 8px;
+  background: var(--bg3);
+  border: none;
+  border-radius: 18px;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ios-spring);
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.h-home-btn:hover {
+  background: var(--blue);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,113,227,.25);
+}
+.h-home-btn:active {
+  transform: scale(0.95) translateY(0);
+}
+.hh-icon {
+  font-size: 13px;
+  line-height: 1;
+  display: inline-block;
+  transition: transform 0.3s var(--ios-spring);
+}
+.h-home-btn:hover .hh-icon {
+  transform: rotate(-8deg) scale(1.1);
+}
+.hh-text {
+  font-family: var(--ios-font);
+  letter-spacing: 0.3px;
+}
+
+/* ── 玻璃面板 ─────────────────────────── */
+.ios-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: var(--ios-blur);
+  -webkit-backdrop-filter: var(--ios-blur);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+[data-theme="dark"] .ios-glass {
+  background: rgba(28, 28, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Header 玻璃态 ─────────────────────────── */
+header {
+  backdrop-filter: var(--ios-blur-light);
+  -webkit-backdrop-filter: var(--ios-blur-light);
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+[data-theme="dark"] header {
+  background: rgba(28, 28, 30, 0.85) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── 卡片按压效果 ─────────────────────────── */
+.calc-card, .hero-card, .tool-card, .b-item, .side-link, .module-card {
+  transition: transform 0.25s var(--ios-spring), box-shadow 0.25s var(--ios-curve);
+}
+.calc-card:hover, .hero-card:hover, .tool-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.08);
+}
+
+/* ── 页面切换动画 ─────────────────────────── */
+.view-page, .view-dashboard, .view-book, .view-reader {
+  animation: iosSlideIn 0.4s var(--ios-spring-smooth);
+}
+@keyframes iosSlideIn {
+  0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Hero 渐入 stagger ─────────────────────────── */
+.hero-card {
+  animation: iosFadeUp 0.6s var(--ios-spring-smooth) both;
+}
+.hero-card:nth-child(1) { animation-delay: 0.05s; }
+.hero-card:nth-child(2) { animation-delay: 0.12s; }
+.hero-card:nth-child(3) { animation-delay: 0.19s; }
+.hero-card:nth-child(4) { animation-delay: 0.26s; }
+.hero-card:nth-child(5) { animation-delay: 0.33s; }
+.hero-card:nth-child(6) { animation-delay: 0.40s; }
+@keyframes iosFadeUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ── FAB 按下动画 ─────────────────────────── */
+.fab {
+  transition: all 0.3s var(--ios-spring);
+}
+.fab:active {
+  transform: scale(0.92);
+}
+.fab:hover {
+  transform: scale(1.05);
+}
+
+/* ── 模块卡片网格悬停 ─────────────────────────── */
+.module-card {
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.module-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(0,113,227,.04));
+  opacity: 0;
+  transition: opacity 0.3s var(--ios-curve);
+  pointer-events: none;
+}
+.module-card:hover::before { opacity: 1; }
+.module-card:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 16px 40px rgba(0,113,227,.12);
+  border-color: var(--blue);
+}
+.module-card:active { transform: scale(0.98); }
+
+/* ── 侧边栏滑动 ─────────────────────────── */
+.sidebar {
+  transition: transform 0.35s var(--ios-spring-smooth);
+}
+.sidebar.open {
+  box-shadow: 4px 0 24px rgba(0,0,0,.08);
+}
+
+/* ── 按钮（primary / secondary） ─────────────────────────── */
+.tb-btn, button.h-btn, button.btn-primary {
+  transition: all 0.2s var(--ios-spring);
+}
+.tb-btn:active, button.btn-primary:active {
+  transform: scale(0.96);
+  filter: brightness(0.95);
+}
+
+/* ── 输入框聚焦动画 ─────────────────────────── */
+input, select, textarea {
+  transition: border-color 0.2s var(--ios-curve), box-shadow 0.2s var(--ios-curve);
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(0,113,227,.12);
+}
+
+/* ── 滚动条（细线 iOS 风格） ─────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,.15);
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.25); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); }
+
+/* ── 加载骨架脉冲 ─────────────────────────── */
+@keyframes iosPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.ios-pulse { animation: iosPulse 1.6s ease-in-out infinite; }
+
+/* ── 数字跳变（训练统计 / 经验值） ─────────────────────────── */
+.ios-count {
+  display: inline-block;
+  transition: transform 0.3s var(--ios-spring);
+}
+.ios-count.bump { transform: scale(1.15); }
+
+/* ── Splash 渐显 ─────────────────────────── */
+#splash {
+  animation: splashFade 0.5s var(--ios-curve);
+}
+@keyframes splashFade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.splash-inner {
+  animation: splashUp 0.6s var(--ios-spring-smooth);
+}
+@keyframes splashUp {
+  0% { opacity: 0; transform: translateY(12px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── 大标题（iOS 11+ Large Title 风格） ─────────────────────────── */
+.ios-large-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text);
+  margin: 0;
+  padding: 12px 0 4px;
+}
+
+/* ── 章节切换 fade ─────────────────────────── */
+.chapter-card, .hero-stat-card {
+  transition: transform 0.25s var(--ios-spring), background 0.25s var(--ios-curve);
+}
+.chapter-card:hover, .hero-stat-card:hover {
+  transform: translateX(2px);
+  background: var(--bg3);
+}
+
+/* ── 进度条平滑 ─────────────────────────── */
+.bp, .rpg-xp-fill, .splash-bar-fill, .calc-progress-fill {
+  transition: width 0.6s var(--ios-curve);
+}
+
+
+/* ── 折叠侧边栏（iOS 风格） ─────────────────────────── */
+.side-title.collapsible {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 6px;
+  position: relative;
+  transition: color 0.2s var(--ios-curve);
+}
+.side-title.collapsible::after {
+  content: '▾';
+  font-size: 9px;
+  color: var(--text4);
+  transition: transform 0.25s var(--ios-spring);
+  margin-left: auto;
+}
+.side-title.collapsible.collapsed::after {
+  transform: rotate(-90deg);
+}
+.side-title.collapsible:hover {
+  color: var(--blue);
+}
+
+.side-collapsible {
+  overflow: hidden;
+  animation: iosExpand 0.3s var(--ios-spring-smooth);
+  transform-origin: top;
+}
+@keyframes iosExpand {
+  0% { opacity: 0; max-height: 0; transform: scaleY(0.9); }
+  100% { opacity: 1; max-height: 1000px; transform: scaleY(1); }
+}
+
+.side-link.sub {
+  padding-left: 24px;
+  font-size: 11px;
+  color: var(--text2);
+}
+.side-link.sub .sl-icon { font-size: 12px; }
+
+.side-link.active {
+  background: var(--blue);
+  color: #fff !important;
+}
+.side-link.active .sl-icon { filter: brightness(1.5); }
+
+/* ── Hero coach-highlight ─────────────────────────── */
+.module-card.coach-highlight {
+  position: relative;
+  cursor: pointer;
+  border-top: 3px solid var(--gold) !important;
+}
+.module-card.coach-highlight::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 40px; height: 40px;
+  background: radial-gradient(circle at top right, rgba(255,214,10,.18), transparent 70%);
+  pointer-events: none;
+}
+.module-card.coach-highlight:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 18px 48px rgba(255,214,10,.18);
+  border-color: var(--gold);
+}
+
+/* ── iOS Spring Card Press ─────────────────────────── */
+.calc-card[onclick] {
+  cursor: pointer;
+}
+.calc-card[onclick]:active {
+  transform: scale(0.98);
+  transition-duration: 0.06s;
+}
