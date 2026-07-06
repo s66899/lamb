@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.7.4e';
+const APP_VERSION = 'v3.7.4g';
 const APP_DATE = '2026-07-06';
 
 // ─── 全局错误边界（防白屏）─────────────────
