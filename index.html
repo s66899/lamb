@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>🏸 羽毛球系统训练 · NSCA-CPT 科学体系</title>
-<link rel="stylesheet" href="style.css?v=v3.7.4e">
+<link rel="stylesheet" href="style.css?v=v3.7.4f">
 </head>
 <body>
 
@@ -182,8 +182,8 @@
   <button class="fab fab-search ios-press" id="fabSearch" onclick="openSearch()" title="🔍 搜索">🔍</button>
 </div>
 
-<script src="manifest_data.js?v=v3.7.4e"></script>
-<script src="app.js?v=v3.7.4e"></script>
+<script src="manifest_data.js?v=v3.7.4f"></script>
+<script src="app.js?v=v3.7.4f"></script>
 
 <!-- ?? 密码验证层 v3 (2026-07-06) -->
 <div id="pwOverlay" style="display:none;position:fixed;inset:0;z-index:999999;background:#1c1c1e;display:none;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px">
@@ -339,31 +339,32 @@ function renderDevices(data) {
   var online = Object.values(data).filter(function(d) { return d.online && !d.kicked; });
   var offline = Object.values(data).filter(function(d) { return !d.online; });
   var html = '<div style="margin-bottom:10px;display:flex;gap:8px">';
-  html += '<span style="background:#30d158;color:#000;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600">● ' + online.length + ' 在线</span>';
-  html += '<span style="background:#3a3a3c;color:#aeaeb2;padding:2px 10px;border-radius:10px;font-size:11px">○ ' + offline.length + ' 离线</span>';
-  html += '<span style="background:#3a3a3c;color:#aeaeb2;padding:2px 10px;border-radius:10px;font-size:11px">∑ ' + Object.keys(data).length + ' 总</span>';
-  html += '<button onclick="loadDevices()" style="margin-left:auto;background:#0a84ff;color:#fff;border:none;padding:3px 10px;border-radius:8px;font-size:11px;cursor:pointer">↻</button>';
+  html += '<span style="background:#30d158;color:#000;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600">\u25cf ' + online.length + ' \u5728\u7ebf</span>';
+  html += '<span style="background:#3a3a3c;color:#aeaeb2;padding:2px 10px;border-radius:10px;font-size:11px">\u25cb ' + offline.length + ' \u79bb\u7ebf</span>';
+  html += '<span style="background:#3a3a3c;color:#aeaeb2;padding:2px 10px;border-radius:10px;font-size:11px">\u2211 ' + Object.keys(data).length + ' \u603b</span>';
+  html += '<button onclick="loadDevices()" style="margin-left:auto;background:#0a84ff;color:#fff;border:none;padding:3px 10px;border-radius:8px;font-size:11px;cursor:pointer">\u21bb</button>';
   html += '</div>';
 
   if (online.length === 0 && offline.length === 0) {
-    html += '<div style="text-align:center;padding:16px;color:#636366;font-size:13px">暂无访问记录</div>';
+    html += '<div style="text-align:center;padding:16px;color:#636366;font-size:13px">\u6682\u65e0\u8bbf\u95ee\u8bb0\u5f55</div>';
     el.innerHTML = html;
     return;
   }
 
-  // 在线设备
+  // Online devices
   for (var i = 0; i < online.length; i++) {
     var d = online[i];
     var ago = Math.round((now - d.lastSeen) / 1000);
+    var fp = d.fingerprint;
     html += '<div style="background:#3a3a3c;border-radius:10px;padding:10px;margin-bottom:6px;border-left:3px solid #30d158">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center">';
-    html += '<div><div style="font-weight:600;font-size:13px;color:#f5f5f7">📱 ' + (d.browser || '?').slice(0, 40) + '</div>';
-    html += '<div style="font-size:10px;color:#8e8e93;margin-top:2px">' + (d.os || '?') + ' · ' + (d.screen || '?') + ' · ' + ago + 's 前</div></div>';
-    html += '<button onclick="kickDevice('' + d.fingerprint + '')" style="background:#ff453a;color:#fff;border:none;padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer">⚠ 下线</button>';
+    html += '<div><div style="font-weight:600;font-size:13px;color:#f5f5f7">\ud83d\udcf1 ' + (d.browser || '?').slice(0, 40) + '</div>';
+    html += '<div style="font-size:10px;color:#8e8e93;margin-top:2px">' + (d.os || '?') + ' \u00b7 ' + (d.screen || '?') + ' \u00b7 ' + ago + 's \u524d</div></div>';
+    html += '<button onclick=\"kickDevice(\u0027' + fp + '\u0027)\" style="background:#ff453a;color:#fff;border:none;padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer">\u26a0 \u4e0b\u7ebf</button>';
     html += '</div></div>';
   }
 
-  // 离线设备
+  // Offline devices
   for (var j = 0; j < offline.length; j++) {
     var o = offline[j];
     var ago2 = Math.round((now - o.lastSeen) / 1000);
@@ -373,8 +374,8 @@ function renderDevices(data) {
     html += '<div style="background:#2c2c2e;border-radius:8px;padding:8px;margin-bottom:4px;opacity:.5;border-left:3px solid #48484a">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center">';
     html += '<div><div style="font-size:11px;color:#8e8e93">' + (o.browser || '?').slice(0, 30) + '</div>';
-    html += '<div style="font-size:9px;color:#636366">' + ago2 + ' 前</div></div>';
-    html += '<span style="font-size:9px;color:#636366">○</span>';
+    html += '<div style="font-size:9px;color:#636366">' + ago2 + ' \u524d</div></div>';
+    html += '<span style="font-size:9px;color:#636366">\u25cb</span>';
     html += '</div></div>';
   }
 
