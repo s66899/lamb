@@ -18,6 +18,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Node (24 — required since Node 20 was deprecated on runners in 2025-09)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -42,6 +47,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Setup Node (24)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
