@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.7.4a';
+const APP_VERSION = 'v3.7.4c';
 const APP_DATE = '2026-07-06';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -879,15 +879,25 @@ function renderDashboard() {
     </div>
     <div class="principle-footer">这四个原则不是建议，是底线。任何训练安排必须同时满足四条才能执行。</div>`;
 
-  // ── 🏆 训练等级体系 ──
-  $('levelSection').innerHTML = LEVELS.map(l => `
-    <div class="level-card" onclick="openLevelDetail('${l.id}')">
-      <div class="lc-badge">${l.id}</div>
-      <div class="lc-emoji">${l.emoji}</div>
-      <div class="lc-label">${l.label}</div>
-      <div class="lc-time">${l.time}</div>
-      <div class="lc-desc">${l.desc}</div>
-    </div>`).join('');
+  // ── 🏆 训练等级体系（金字塔 v2 安全版，2026-07-06）──
+  // 设计原则：JS 逆序渲染（L7→L0），CSS 正向堆叠，不依赖 column-reverse
+  // 色系使用双主题兼容的 solid gradient，不依赖任何仅在 [data-theme="dark"] 中定义的变量
+  $('levelSection').innerHTML = LEVELS.slice().reverse().map((l, idx) => {
+    // idx 0 = 顶层 L7 窄顶，idx 7 = 底层 L0 宽底
+    const isBase = idx === 7;  // L0 最底层
+    const isApex = idx === 0;  // L7 最顶层
+    // 颜色：底层 L0 绿色顶层 L7 金色，中间 8 级用三色 gradient
+    const tierColors = ['#ffd60a', '#fbbf24', '#f59e0b', '#a855f7', '#7c3aed', '#3b82f6', '#10b981', '#3dd68c'];
+    const color = tierColors[idx] || '#3dd68c';
+    return `<div class="level-pyramid-tier" data-tier="${idx}" style="background:linear-gradient(135deg, ${color}, ${color}cc); width:${50 + idx * 5}%; cursor:pointer" onclick="openLevelDetail('${l.id}')">
+      <div class="lp-emoji">${l.emoji}</div>
+      <div class="lp-info">
+        <div class="lp-label">${l.label}</div>
+        <div class="lp-time">${l.time} · ${l.id}</div>
+        <div class="lp-desc">${l.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
 
   // ── 🎯 教练系统 (仅次于首页) ──
   $('moduleSection').innerHTML = `

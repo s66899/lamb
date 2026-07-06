@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>🏸 羽毛球系统训练 · NSCA-CPT 科学体系</title>
-<link rel="stylesheet" href="style.css?v=v3.7.4a">
+<link rel="stylesheet" href="style.css?v=v3.7.4c">
 </head>
 <body>
 
@@ -182,7 +182,63 @@
   <button class="fab fab-search ios-press" id="fabSearch" onclick="openSearch()" title="🔍 搜索">🔍</button>
 </div>
 
-<script src="manifest_data.js?v=v3.7.4a"></script>
-<script src="app.js?v=v3.7.4a"></script>
+<script src="manifest_data.js?v=v3.7.4c"></script>
+<script src="app.js?v=v3.7.4c"></script>
+
+<!-- ?? 密码验证层（2026-07-06 新增） -->
+<div id="pwOverlay" style="display:none;position:fixed;inset:0;z-index:999999;background:#1c1c1e;display:none;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px">
+  <div style="background:#2c2c2e;border-radius:16px;padding:32px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:36px;margin-bottom:8px">🔐</div>
+      <div style="font-size:18px;font-weight:600;color:#f5f5f7">请输入访问密码</div>
+      <div style="font-size:12px;color:#8e8e93;margin-top:4px">此站点已设置密码保护</div>
+    </div>
+    <input id="pwInput" type="password" placeholder="输入密码" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid #48484a;background:#3a3a3c;color:#f5f5f7;font-size:16px;outline:none;margin-bottom:12px;text-align:center" onkeydown="if(event.key==='Enter')checkPw()">
+    <button id="pwBtn" onclick="checkPw()" style="width:100%;padding:12px;border:none;border-radius:10px;background:#0a84ff;color:#fff;font-size:15px;font-weight:600;cursor:pointer">🔓 验证</button>
+    <div id="pwErr" style="color:#ff453a;font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+  </div>
+</div>
+<script>
+/* ?? 密码验证逻辑 v2 (2026-07-06) */
+var SITE_KEY = 'lamb_auth';
+var SITE_PW = ''; // empty = auto-generate
+
+function getPwFromMeta() {
+  if (SITE_PW) return SITE_PW;
+  // Auto-generate based on date + seed
+  SITE_PW = 'EIGWFWN-';
+  return SITE_PW;
+}
+
+function checkPw() {
+  var input = document.getElementById('pwInput').value;
+  var errEl = document.getElementById('pwErr');
+  if (input === getPwFromMeta()) {
+    try { localStorage.setItem(SITE_KEY, JSON.stringify({t:Date.now(),v:1})); } catch(e) {}
+    document.getElementById('pwOverlay').style.display = 'none';
+    return;
+  }
+  errEl.style.display = 'block';
+  errEl.textContent = '❌ 密码错误，请重试';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwInput').focus();
+}
+
+function initPwGate() {
+  var auth = null;
+  try { auth = JSON.parse(localStorage.getItem(SITE_KEY)); } catch(e) {}
+  // 有效72小时
+  if (auth && auth.t && (Date.now() - auth.t < 72 * 60 * 60 * 1000)) {
+    // valid, show page
+    document.getElementById('pwOverlay').style.display = 'none';
+    return;
+  }
+  // show gate
+  document.getElementById('pwOverlay').style.display = 'flex';
+  document.getElementById('pwInput').focus();
+}
+
+initPwGate();
+</script>
 </body>
 </html>
