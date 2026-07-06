@@ -13,7 +13,8 @@
 每天自动执行四本书的写作任务，每本各写一章。
 
 ### 配置信息
-- **仓库路径**：`D:\openclaw\workspace\worm-gear-lift-platform`
+- **仓库路径（**必须**记对）**：`C:\Users\Lamb\.openclaw\workspace`（**不是** D:，MEMORY.md 早期写错了）
+- **桌面端（备份）路径**：`C:\Users\Lamb\Desktop\knowledge-tower-local-v1\`（一次性打包，不主动同步）
 - **分支**：`book`
 - **触发时间**：每天早上10:00（Asia/Shanghai）
 - **cron ID**：`daily-book-writing-001`
@@ -48,6 +49,26 @@
 ### ⚠️ Cron状态
 - `daily-book-writing-001` → 已停用（2026-06-29），被书游界面维护新cron替代
 - `📚书游界面优化维护`（f9f4e507） → 每日10:00，负责游戏化界面维护+章节补充
+
+### ⚠️ 部署完整性检查（2026-07-06 新增，**强制**）
+- **每次推送后必须验证**部署是否真的上线成功（GH Pages 偶尔 deploy step 失败但没邮件告警，曾经反复踩坑）
+- 验证步骤：
+  1. `git push` 后**至少轮询 2 次** GitHub Actions status（间隔 30-60 秒）
+  2. 用 `https://s66899.github.io/lamb/index.html?v=<current>` 检查 cache-bust 字符串和字节数是否对得上当前 commit
+  3. 如果 deploy 失败，用 **空 commit 触发重跑**：`echo > .trigger; git add .trigger; git commit -m trigger; git push`；推送完再 `rm .trigger` + 再 commit + 再 push 一次
+- **没确认部署成功前不要告诉用户"已完成"**——这是 2026-07-06 用户要求确认的硬规则
+
+### ⚠️ 桌面端规则（2026-07-06）
+- `C:\Users\Lamb\Desktop\knowledge-tower-local-v1\` 是 v1 **一次性打包备份**，**不要在每次改主页时自动同步**
+- 只在用户**明确要求"重新打包桌面端"** 时再更新
+- 同步会引起用户不满（已经因这事被批评过）
+
+### 🚀 v3.7.x 闪屏/黑屏事故复盘（2026-07-06，避免再犯）
+- v3.7.5 金字塔新增 `level-pyramid` CSS 用了 `var(--surface)`，但 `--surface` 只在 `[data-theme="dark"]` 定义 → 浅色模式下透明 → 黑屏
+- v3.7.11 误用 `const $bs = ...` 在第一个 `<script>` 块，然后第二个 `<script>` 块引用 → `$bs is not defined` 报错
+- **教训**：CSS 自定义属性要兼容浅色模式；多 `<script>` 块共享变量必须用 `window.xxx`
+- **教训**：GH Pages `Cache-Control: max-age=600` + 推送后没改 cache-bust = 用户看不到新版本
+- **教训**：每次迭代必须**先**确认 `index.html` 和 `app.js` 末尾没有遗留任何调试代码
 
 ### 📌 版本号与推送流程（2026-07-01新增）
 
