@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>🏸 羽毛球系统训练 · NSCA-CPT 科学体系</title>
-<link rel="stylesheet" href="style.css?v=v3.7.4j">
+<link rel="stylesheet" href="style.css?v=v3.7.4k">
 
 <!-- ═══ 内嵌独立加载层 (v3.7.4j)：即使所有外部脚本失败也能看见明确提示 ═══ -->
 <script>
@@ -246,8 +246,8 @@ document.addEventListener('DOMContentLoaded', function() {
   <button class="fab fab-search ios-press" id="fabSearch" onclick="openSearch()" title="🔍 搜索">🔍</button>
 </div>
 
-<script src="manifest-data-v374j.js" onload="markLoaded('manifest')" onerror="scriptLoadError('manifest')"></script>
-<script src="app-v374j.js" onload="markLoaded('app')" onerror="scriptLoadError('app')"></script>
+<script src="manifest-data-v374k.js" onload="markLoaded('manifest')" onerror="scriptLoadError('manifest')"></script>
+<script src="app-v374k.js" onload="markLoaded('app')" onerror="scriptLoadError('app')"></script>
 
 <!-- ?? 密码验证层 v3 (2026-07-06) -->
 <div id="pwOverlay" style="display:none;position:fixed;inset:0;z-index:999999;background:#1c1c1e;display:none;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px">
@@ -283,7 +283,7 @@ var SITE_KEY = 'lamb_auth';
 var SITE_PW = 'syy';
 var ADMIN_PW = 'lambadmin';
 var TRACKER_URL = 'http://localhost:4689';
-var APP_VERSION = 'v3.7.4j'; // 2026-07-08 02:00 修 Script error（改名破缓存 + script onerror 反馈）
+// APP_VERSION 不在这里声明，由 app-v374k.js 顶层 const 提供（避免与 app 的 const 冲突造成 SyntaxError）
 var TRACKER_DISABLED = false;
 var HEARTBEAT_INTERVAL = null;
 var HEARTBEAT_FAIL_COUNT = 0; // 连续失败计数，达到阈值后降级
@@ -312,6 +312,7 @@ window.addEventListener('unhandledrejection', function(ev) {
   try {
     var scripts = document.querySelectorAll('script[src*="?v="], link[href*="?v="]');
     var mismatched = [];
+    var refVer = (typeof APP_VERSION !== 'undefined') ? APP_VERSION : (typeof window !== 'undefined' && window.APP_VERSION) || '(pending)';
     for (var i = 0; i < scripts.length; i++) {
       var url = scripts[i].src || scripts[i].href || '';
       var m = url.match(/\?v=([vV][\d.]+)/);
@@ -320,9 +321,9 @@ window.addEventListener('unhandledrejection', function(ev) {
       }
     }
     if (mismatched.length > 0) {
-      console.warn('[lamb] CACHE MISMATCH detected:', mismatched.join(', '), '— APP is', APP_VERSION);
+      console.warn('[lamb] CACHE MISMATCH detected:', mismatched.join(', '), '— APP is', refVer);
     } else {
-      console.log('[lamb] cache-bust consistent:', APP_VERSION);
+      console.log('[lamb] cache-bust consistent:', refVer);
     }
   } catch(e) {}
 })();
