@@ -220,8 +220,29 @@ var SITE_KEY = 'lamb_auth';
 var SITE_PW = 'syy';
 var ADMIN_PW = 'lambadmin';
 var TRACKER_URL = 'http://localhost:4689';
+var APP_VERSION = 'v3.7.4h'; // 2026-07-07 稳定性补丁
 var TRACKER_DISABLED = false;
 var HEARTBEAT_INTERVAL = null;
+var HEARTBEAT_FAIL_COUNT = 0; // 连续失败计数，达到阈值后降级
+var HEARTBEAT_RETRY_AFTER = 0; // 下次重试时间戳
+
+// ── 全局错误兜底：让一个错不毁掉整个页面 ──
+window.addEventListener('error', function(ev) {
+  try {
+    var msg = (ev && ev.error && ev.error.message) || ev.message || 'unknown';
+    console.warn('[lamb] caught error:', msg, 'at', ev.filename + ':' + ev.lineno);
+    // 不弹窗、不打断用户，只 console.warn
+    if (ev.error && ev.error.stack) console.warn(ev.error.stack);
+  } catch(e) {}
+});
+window.addEventListener('unhandledrejection', function(ev) {
+  try {
+    var r = ev.reason;
+    var msg = (r && r.message) || String(r);
+    console.warn('[lamb] caught promise rejection:', msg);
+    ev.preventDefault();
+  } catch(e) {}
+});
 
 // ── 设备指纹 ──
 function getFingerprint() {
@@ -238,22 +259,53 @@ function getFingerprint() {
   } catch(e) { return 'fp_' + Date.now(); }
 }
 
-// ── 心跳 ──
+// ── 心跳 (v3.7.4h：失败重试恢复机制) ──
 function sendHeartbeat() {
-  if (TRACKER_DISABLED) return;
+  // 暂时降级中？等够时间再试
+  if (TRACKER_DISABLED && Date.now() < HEARTBEAT_RETRY_AFTER) return;
+  // 重试窗口到了，恢复尝试
+  if (TRACKER_DISABLED && Date.now() >= HEARTBEAT_RETRY_AFTER) {
+    TRACKER_DISABLED = false;
+    HEARTBEAT_FAIL_COUNT = 0;
+    console.log('[lamb] tracker retry: attempting reconnection');
+  }
   try {
     var x = new XMLHttpRequest();
     x.open('POST', TRACKER_URL + '/heartbeat', true);
     x.setRequestHeader('Content-Type', 'application/json');
     x.timeout = 3000;
-    x.onerror = function() { TRACKER_DISABLED = true; if (HEARTBEAT_INTERVAL) { clearInterval(HEARTBEAT_INTERVAL); HEARTBEAT_INTERVAL = null; } };
+    x.onload = function() {
+      if (x.status === 200) {
+        HEARTBEAT_FAIL_COUNT = 0;
+        if (TRACKER_DISABLED) {
+          TRACKER_DISABLED = false;
+          console.log('[lamb] tracker reconnected');
+        }
+      } else {
+        onHeartbeatFail();
+      }
+    };
+    x.onerror = function() { onHeartbeatFail(); };
+    x.ontimeout = function() { onHeartbeatFail(); };
     x.send(JSON.stringify({
       fingerprint: getFingerprint(),
       browser: navigator.userAgent.slice(0, 80),
       os: navigator.platform || '?',
       screen: screen.width + 'x' + screen.height,
     }));
-  } catch(e) { TRACKER_DISABLED = true; }
+  } catch(e) {
+    onHeartbeatFail();
+  }
+}
+
+function onHeartbeatFail() {
+  HEARTBEAT_FAIL_COUNT++;
+  // 3 次连续失败才降级，降级 60 秒后重试
+  if (HEARTBEAT_FAIL_COUNT >= 3 && !TRACKER_DISABLED) {
+    TRACKER_DISABLED = true;
+    HEARTBEAT_RETRY_AFTER = Date.now() + 60000;
+    console.warn('[lamb] tracker disabled, will retry at', new Date(HEARTBEAT_RETRY_AFTER).toLocaleTimeString());
+  }
 }
 
 function startHeartbeat() {
