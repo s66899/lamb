@@ -3,8 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>🏸 羽毛球系统训练 · NSCA-CPT 科学体系</title>
-<link rel="stylesheet" href="style.css?v=v3.7.4i">
+<link rel="stylesheet" href="style.css?v=v3.7.4j">
+
+<!-- ═══ 内嵌独立加载层 (v3.7.4j)：即使所有外部脚本失败也能看见明确提示 ═══ -->
+<script>
+window.LAMB_FATAL = false;
+function showFatal(msg, detail) {
+  var el = document.getElementById('fatalOverlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'fatalOverlay';
+    document.body.appendChild(el);
+  }
+  el.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#1c1c1e;display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:#f5f5f7';
+  el.innerHTML = '<div style="max-width:380px;width:100%;background:#2c2c2e;border-radius:16px;padding:28px;text-align:center">'
+    + '<div style="font-size:48px;margin-bottom:10px">⚠️</div>'
+    + '<div style="font-size:18px;font-weight:700;margin-bottom:8px;color:#ff453a">' + msg + '</div>'
+    + '<div style="font-size:12px;color:#aeaeb2;margin-bottom:18px;line-height:1.5">' + detail + '</div>'
+    + '<button onclick="location.reload(true)" style="display:block;width:100%;padding:12px;margin-bottom:8px;background:#0a84ff;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">🔄 重新加载</button>'
+    + '<button onclick="if(confirm(\'确认清除所有本地数据？\')){localStorage.clear();sessionStorage.clear();location.reload(true);}" style="display:block;width:100%;padding:12px;background:#3a3a3c;color:#f5f5f7;border:1px solid #48484a;border-radius:10px;font-size:13px;cursor:pointer">🧹 清除缓存后重试</button>'
+    + '</div>';
+}
+function scriptLoadError(name) {
+  // 详细的诊断
+  var ua = navigator.userAgent || '?';
+  var online = navigator.onLine ? '✓' : '✗';
+  showFatal(
+    '脚本加载失败：' + name,
+    '网络: ' + online + '<br>UA: ' + ua.slice(0, 60) + '<br><br>可能原因：<br>1. 网络中断<br>2. CDN 跨源问题<br>3. 旧缓存冲突（请"清除缓存后重试"）'
+  );
+}
+
+// 追踪加载进度
+window.__lamb_loaded = window.__lamb_loaded || {};
+function markLoaded(name) { window.__lamb_loaded[name] = Date.now(); }
+
+// 30 秒还没进入主界面且关键脚本未到达 markLoaded → 报错
+function lambCheckReady() {
+  if (window.LAMB_FATAL) return;
+  var appEl = document.getElementById('app');
+  if (window.LAMB_FATAL) return;
+  var appEl = document.getElementById('app');
+  var splashEl = document.getElementById('splash');
+  var pwEl = document.getElementById('pwOverlay');
+  var appVisible = appEl && appEl.style.display !== 'none';
+  var splashVisible = splashEl && splashEl.style.display !== 'none';
+  var pwVisible = pwEl && pwEl.style.display !== 'none';
+  // 还卡在 splash 或者密码层表示没进入应用
+  if (!appVisible && (splashVisible || pwVisible)) {
+    var miss = [];
+    if (!window.__lamb_loaded.manifest) miss.push('清单');
+    if (!window.__lamb_loaded.app) miss.push('应用');
+    if (miss.length > 0) {
+      showFatal('加载超时（30秒）', '未能加载: ' + miss.join('、') + '<br><br>可能原因：<br>1·网络中断或被防火墙拦截<br>2·服务器返回 404（部署未完成）<br>3·浏览器缓存了损坏版本（请用"清除缓存后重试"）');
+    }
+  }
+}
+// 等 DOM 准备好才启动计时器
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(lambCheckReady, 30000);
+});
+</script>
 </head>
 <body>
 
@@ -183,8 +246,8 @@
   <button class="fab fab-search ios-press" id="fabSearch" onclick="openSearch()" title="🔍 搜索">🔍</button>
 </div>
 
-<script src="manifest_data.js?v=v3.7.4i"></script>
-<script src="app.js?v=v3.7.4i"></script>
+<script src="manifest-data-v374j.js" onload="markLoaded('manifest')" onerror="scriptLoadError('manifest')"></script>
+<script src="app-v374j.js" onload="markLoaded('app')" onerror="scriptLoadError('app')"></script>
 
 <!-- ?? 密码验证层 v3 (2026-07-06) -->
 <div id="pwOverlay" style="display:none;position:fixed;inset:0;z-index:999999;background:#1c1c1e;display:none;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px">
@@ -220,7 +283,7 @@ var SITE_KEY = 'lamb_auth';
 var SITE_PW = 'syy';
 var ADMIN_PW = 'lambadmin';
 var TRACKER_URL = 'http://localhost:4689';
-var APP_VERSION = 'v3.7.4i'; // 2026-07-08 修 Script error（cache-bust 强行刷到 v3.7.4i）
+var APP_VERSION = 'v3.7.4j'; // 2026-07-08 02:00 修 Script error（改名破缓存 + script onerror 反馈）
 var TRACKER_DISABLED = false;
 var HEARTBEAT_INTERVAL = null;
 var HEARTBEAT_FAIL_COUNT = 0; // 连续失败计数，达到阈值后降级
