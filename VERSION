@@ -1,5 +1,4 @@
 v3.7.3  (2026-07-06) 🎯 比赛策略模块新增第 11 章「发接发战术体系」：发球三要素（高度/落点/速度）+ 单打 4 种基础发球套路 + 单打发球轮换节奏 + 双打发接发抢攻体系 + 接发预判 4 步法 + 关键分发接发处理 + 训练方法 + 常见错误纠正
-v3.7.4j (2026-07-08) 🛠️ 系统性升级：app.js/manifest_data.js 改名为带版本号路径（app-v374j.js · manifest-data-v374j.js）+ 换名彻底打破所有 cache-bust 缓存关联 + 内嵌 fatal overlay（任何脚本加载失败显示网络诊断、UA、reload/clear-cache 双按钮）+ 30秒加载超时检测 + script 标签 onload/onerror 跟踪 + meta no-cache 头
 v3.7.4i (2026-07-08) 🔧 紧急：修 Script error（index.html 的 manifest_data.js/app.js cache-bust 漏在 v3.7.4g，浏览器拿混合状态版本抛错）+ 加 cache-bust 一致性自检脚本（未来 mismatch 自动报警）
 v3.7.4h (2026-07-07) 🛡️ 稳定性补丁：tracker-server 加守护（uncaughtException/EADDRINUSE 重试/健康检查端点）+ 前端全局 error 兜底（不白屏）+ 心跳 3 次失败降级 + 60s 自动恢复 + GH Pages deploy 自动重试 3 次
 v3.7.4g (2026-07-06) ⚙️ Header 加 ⚙️ 按钮 + workflow cancel-in-progress=true 修部署卡死
