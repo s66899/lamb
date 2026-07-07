@@ -10,8 +10,8 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.7.4g';
-const APP_DATE = '2026-07-06';
+const APP_VERSION = 'v3.7.5';
+const APP_DATE = '2026-07-08';
 
 // ─── 全局错误边界（防白屏）─────────────────
 window.addEventListener('error', (e) => {
@@ -640,23 +640,200 @@ const MODULE_CONTENT = {
   ],
 };
 
+// 📋 v3.7.5 LEVELS data — extended with abilities + drills（每个比重具练什么）
 const LEVELS = [
   { id:'L0', label:'第零级 · 零基础启蒙', time:'0-1个月', emoji:'🌱',
-    desc:'建立正确的神经肌肉控制模式，培养本体感觉和基础运动能力。从零到握拍和基本站位。' },
+    desc:'建立正确的神经肌肉控制模式，培养本体感觉和基础运动能力。从零到握拍和基本站位。',
+    abilities: [
+      { name:'握拍稳定性', weight:35, color:'#0a84ff',
+        drills:[
+          { name:'虎口对位反复', sets:3, reps:'10次/组', freq:'每天' },
+          { name:'正反手切换练习', sets:3, reps:'15次/组', freq:'每天' },
+        ]},
+      { name:'准备姿势', weight:35, color:'#30d158',
+        drills:[
+          { name:'并步+持拍还原', sets:3, reps:'20次/组', freq:'每天' },
+          { name:'重心转换', sets:2, reps:'15次/组', freq:'每天' },
+        ]},
+      { name:'高远挥拍空击', weight:20, color:'#0a84ff',
+        drills:[
+          { name:'无球空挥', sets:2, reps:'30拍/组', freq:'3次/周' },
+          { name:'引拍动作分解', sets:2, reps:'15次/组', freq:'3次/周' },
+        ]},
+      { name:'体能基础', weight:10, color:'#30d158',
+        drills:[
+          { name:'慢跑+米字步', sets:1, reps:'15分/次', freq:'2次/周' },
+          { name:'基础拉伸', sets:1, reps:'10分/次', freq:'每天' },
+        ]},
+    ]},
   { id:'L1', label:'第一级 · 基础建立', time:'1-3个月', emoji:'🌿',
-    desc:'固化基础动作模式，建立关节稳定性和基础力量。高远球、网前小球基本动作定型。' },
+    desc:'固化基础动作模式，建立关节稳定性和基础力量。高远球、网前小球基本动作定型。',
+    abilities: [
+      { name:'握拍变换', weight:20, color:'#0a84ff',
+        drills:[
+          { name:'正反手切换练习', sets:3, reps:'30次/组', freq:'3次/周' },
+          { name:'握拍细节调整', sets:2, reps:'20次/组', freq:'3次/周' },
+        ]},
+      { name:'高远球到位率', weight:35, color:'#0a84ff',
+        drills:[
+          { name:'定点多球高远', sets:4, reps:'20拍/组', freq:'3次/周' },
+          { name:'对拉高远', sets:3, reps:'30拍/组', freq:'2次/周' },
+        ]},
+      { name:'步伐基础', weight:30, color:'#0a84ff',
+        drills:[
+          { name:'米字步+并步', sets:3, reps:'20次/组', freq:'3次/周' },
+          { name:'前后场移动', sets:3, reps:'10次/组', freq:'3次/周' },
+        ]},
+      { name:'体能准备', weight:15, color:'#30d158',
+        drills:[
+          { name:'跳绳+折返跑', sets:1, reps:'30分/次', freq:'2次/周' },
+          { name:'核心激活', sets:3, reps:'45秒/组', freq:'3次/周' },
+        ]},
+    ]},
   { id:'L2', label:'第二级 · 技术入门', time:'3-6个月', emoji:'🌳',
-    desc:'掌握基础击球技术，建立步法连贯性和基本战术意识。反手、步伐开始成型。' },
+    desc:'掌握基础击球技术，建立步法连贯性和基本战术意识。反手、步伐开始成型。',
+    abilities: [
+      { name:'反手技术', weight:25, color:'#0a84ff',
+        drills:[
+          { name:'反手高远对拉', sets:3, reps:'30拍/组', freq:'2次/周' },
+          { name:'反手过渡球', sets:3, reps:'20拍/组', freq:'2次/周' },
+        ]},
+      { name:'网前小球', weight:25, color:'#af52de',
+        drills:[
+          { name:'网前搓球+勾对角', sets:4, reps:'20拍/组', freq:'2次/周' },
+          { name:'网前挑球', sets:3, reps:'15拍/组', freq:'2次/周' },
+        ]},
+      { name:'步伐连贯', weight:30, color:'#0a84ff',
+        drills:[
+          { name:'全场 6 点步伐', sets:3, reps:'6点×3轮', freq:'3次/周' },
+          { name:'四角跑动', sets:3, reps:'4角×3轮', freq:'3次/周' },
+        ]},
+      { name:'体能持续', weight:20, color:'#30d158',
+        drills:[
+          { name:'间歇跑 400m×6', sets:1, reps:'6组/次', freq:'2次/周' },
+          { name:'跳绳双飞', sets:3, reps:'100次/组', freq:'3次/周' },
+        ]},
+    ]},
   { id:'L3', label:'第三级 · 技术熟练', time:'6-12个月', emoji:'🔥',
-    desc:'实现技术自动化，掌握技术变化和简单战术应用。杀球、网前勾对角等进阶技术。' },
+    desc:'实现技术自动化，掌握技术变化和简单战术应用。杀球、网前勾对角等进阶技术。',
+    abilities: [
+      { name:'杀球技术', weight:30, color:'#ff453a',
+        drills:[
+          { name:'原地起跳杀球', sets:3, reps:'15拍/组', freq:'2次/周' },
+          { name:'后退杀球', sets:2, reps:'20拍/组', freq:'1次/周' },
+        ]},
+      { name:'网前勾对角', weight:15, color:'#af52de',
+        drills:[
+          { name:'多球勾对角', sets:3, reps:'20拍/组', freq:'2次/周' },
+          { name:'网前组合', sets:3, reps:'搓勾挑×3', freq:'2次/周' },
+        ]},
+      { name:'步伐自动化', weight:25, color:'#0a84ff',
+        drills:[
+          { name:'米字步计时', sets:3, reps:'30秒/组', freq:'3次/周' },
+          { name:'全场实战跑动', sets:3, reps:'6点/组', freq:'2次/周' },
+        ]},
+      { name:'体能专项', weight:30, color:'#30d158',
+        drills:[
+          { name:'跳绳双飞+折返', sets:1, reps:'20分/次', freq:'2次/周' },
+          { name:'深蹲+弓步', sets:3, reps:'15次/组', freq:'3次/周' },
+        ]},
+    ]},
   { id:'L4', label:'第四级 · 技术精进', time:'1-1.5年', emoji:'💫',
-    desc:'技术精细化打磨，掌握高级技术和战术应用。平抽快挡、多拍对抗。' },
+    desc:'技术精细化打磨，掌握高级技术和战术应用。平抽快挡、多拍对抗。',
+    abilities: [
+      { name:'平抽快挡', weight:30, color:'#ff453a',
+        drills:[
+          { name:'双打平抽对抽', sets:3, reps:'30拍/组', freq:'2次/周' },
+          { name:'网前接杀', sets:3, reps:'20拍/组', freq:'2次/周' },
+        ]},
+      { name:'杀球变线', weight:20, color:'#ff453a',
+        drills:[
+          { name:'后场 3 条线杀球', sets:3, reps:'15拍/组', freq:'2次/周' },
+          { name:'变速杀球', sets:2, reps:'10拍/组', freq:'1次/周' },
+        ]},
+      { name:'步伐+体能整合', weight:30, color:'#0a84ff',
+        drills:[
+          { name:'全场 6 点 + 跳绳', sets:3, reps:'6点+100跳', freq:'2次/周' },
+          { name:'多球连贯跑动', sets:3, reps:'20拍/组', freq:'2次/周' },
+        ]},
+      { name:'战术应用', weight:20, color:'#ffd60a',
+        drills:[
+          { name:'多球战术套路', sets:1, reps:'60分/次', freq:'1次/周' },
+          { name:'录像分析+复盘', sets:1, reps:'30分/次', freq:'1次/周' },
+        ]},
+    ]},
   { id:'L5', label:'第五级 · 战术应用', time:'1.5-2年', emoji:'👑',
-    desc:'建立完整战术体系，提升比赛阅读能力和战术执行。球路组合、节奏变化。' },
+    desc:'建立完整战术体系，提升比赛阅读能力和战术执行。球路组合、节奏变化。',
+    abilities: [
+      { name:'双打配合', weight:30, color:'#ff453a',
+        drills:[
+          { name:'双打轮转站位', sets:1, reps:'90分/次', freq:'2次/周' },
+          { name:'双打进攻组合', sets:3, reps:'20拍/组', freq:'2次/周' },
+        ]},
+      { name:'球路组织', weight:30, color:'#ffd60a',
+        drills:[
+          { name:'战术套路演练', sets:1, reps:'60分/次', freq:'2次/周' },
+          { name:'节奏变化训练', sets:3, reps:'变速×3组', freq:'2次/周' },
+        ]},
+      { name:'杀球节奏', weight:20, color:'#ff453a',
+        drills:[
+          { name:'后场 5 拍组', sets:3, reps:'5拍×3组', freq:'2次/周' },
+          { name:'连续 7 拍杀球', sets:2, reps:'10次/组', freq:'1次/周' },
+        ]},
+      { name:'比赛心理', weight:20, color:'#ffd60a',
+        drills:[
+          { name:'模拟赛 + 复盘', sets:1, reps:'90分/次', freq:'1次/周' },
+          { name:'关键分演练', sets:3, reps:'5分×3局', freq:'1次/周' },
+        ]},
+    ]},
   { id:'L6', label:'第六级 · 准专业', time:'2-2.5年', emoji:'🏆',
-    desc:'全面发展各项能力，适应专业训练强度和比赛准备。心理韧性、体能分配。' },
+    desc:'全面发展各项能力，适应专业训练强度和比赛准备。心理韧性、体能分配。',
+    abilities: [
+      { name:'杀球威力', weight:25, color:'#ff453a',
+        drills:[
+          { name:'后场全力杀球', sets:5, reps:'10拍/组', freq:'3次/周' },
+          { name:'跳杀', sets:3, reps:'8拍/组', freq:'2次/周' },
+        ]},
+      { name:'双打战术', weight:25, color:'#ffd60a',
+        drills:[
+          { name:'双打专项战术', sets:1, reps:'90分/次', freq:'2次/周' },
+          { name:'接发抢攻', sets:3, reps:'20拍/组', freq:'3次/周' },
+        ]},
+      { name:'体能极限', weight:25, color:'#30d158',
+        drills:[
+          { name:'YOYO 测试 + 间歇', sets:1, reps:'45分/次', freq:'2次/周' },
+          { name:'全场体能冲刺', sets:6, reps:'30秒冲刺×6', freq:'2次/周' },
+        ]},
+      { name:'比赛心理强化', weight:25, color:'#ffd60a',
+        drills:[
+          { name:'压力情境模拟', sets:1, reps:'60分/次', freq:'1次/周' },
+          { name:'赛后心理复盘', sets:1, reps:'30分/次', freq:'1次/周' },
+        ]},
+    ]},
   { id:'L7', label:'第七级 · 专业水平', time:'2.5-3年+', emoji:'🐉',
-    desc:'达到专业水平，掌握比赛掌控和心理抗压能力。精英级训练体系。' },
+    desc:'达到专业水平，掌握比赛掌控和心理抗压能力。精英级训练体系。',
+    abilities: [
+      { name:'杀球全角度', weight:20, color:'#ff453a',
+        drills:[
+          { name:'后场 9 点杀球', sets:5, reps:'9点/组', freq:'3次/周' },
+          { name:'专项杀点练习', sets:3, reps:'15拍/组', freq:'3次/周' },
+        ]},
+      { name:'网前极致', weight:15, color:'#af52de',
+        drills:[
+          { name:'网前 4 项全能', sets:4, reps:'搓勾挑拨×5', freq:'2次/周' },
+          { name:'高速网前对抗', sets:3, reps:'30拍/组', freq:'2次/周' },
+        ]},
+      { name:'全场体能', weight:25, color:'#30d158',
+        drills:[
+          { name:'全场 8 点 + 跳绳', sets:3, reps:'8点+150跳', freq:'3次/周' },
+          { name:'间歇冲刺', sets:10, reps:'30秒×10', freq:'3次/周' },
+        ]},
+      { name:'比赛掌控', weight:40, color:'#ffd60a',
+        drills:[
+          { name:'实战 + 录像复盘', sets:1, reps:'90分×2', freq:'2次/周' },
+          { name:'关键分+局点模拟', sets:3, reps:'5局×3组', freq:'2次/周' },
+        ]},
+    ]},
 ];
 
 // ─── 书塔书籍映射（次要入口） ──────────
@@ -1361,18 +1538,66 @@ function renderModuleOnly(modId) {
   updateProgress();
 }
 
-// ─── 级别详情 ────────────────────────────
+// ─── 级别详情 (v3.7.5：权重 + 具体动作 + 5 维雷达) ────────────
 function openLevelDetail(levelId) {
   const lvl = LEVELS.find(l=>l.id===levelId);
   if (!lvl) return;
-  showOverlay('panel-sm', `${lvl.emoji} ${lvl.label}`, `
-    <div style="text-align:center;padding:8px">
-      <div style="font-size:48px;margin-bottom:8px">${lvl.emoji}</div>
-      <div style="font-size:16px;font-weight:600;margin-bottom:4px">${lvl.label}</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:10px">⏱ ${lvl.time}</div>
-      <div style="font-size:13px;line-height:1.6;color:var(--text2)">${lvl.desc}</div>
-      <div style="margin-top:14px;font-size:10px;color:var(--blue)">🔍 使用级别定位器找到你的当前级别</div>
-    </div>`);
+  let abilityHtml = '';
+  if (lvl.abilities && lvl.abilities.length) {
+    abilityHtml = `<div style="text-align:left;margin-top:6px;padding:0 4px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--blue);border-bottom:1px solid var(--border);padding-bottom:6px">📊 本级训练比重 + 具体动作</div>`;
+    lvl.abilities.forEach(ab => {
+      abilityHtml += `<div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;align-items:center">
+          <span style="font-weight:600;color:var(--text)">${ab.name}</span>
+          <span style="color:var(--text3);font-size:11px">占比 ${ab.weight}%</span>
+        </div>
+        <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-bottom:6px">
+          <div style="height:100%;width:${ab.weight}%;background:${ab.color};border-radius:4px;transition:width .4s"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.6">`;
+      ab.drills.forEach(d => {
+        abilityHtml += `<div style="margin-bottom:3px;display:flex;gap:6px"><span style="color:${ab.color}">▸</span><span><strong>${d.name}</strong> · ${d.sets}组 × ${d.reps} · ${d.freq}</span></div>`;
+      });
+      abilityHtml += `</div></div>`;
+    });
+    abilityHtml += `</div>`;
+  }
+  let radarHtml = '';
+  try {
+    const a = (typeof calcAbilityScore === 'function') ? calcAbilityScore() : null;
+    if (a && a.dims) {
+      const dims = [
+        { key:'read', name:'📖 阅读' },
+        { key:'modules', name:'🏋️ 模块' },
+        { key:'quiz', name:'🧪 测验' },
+        { key:'streak', name:'🔥 连续' },
+        { key:'methods', name:'🎓 掌握' },
+      ];
+      radarHtml = `<div style="margin-top:14px;padding:10px;background:var(--bg3);border-radius:10px;text-align:left">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--gold)">🎯 你的当前 5 维能力评分</div>`;
+      dims.forEach(d => {
+        const v = a.dims[d.key] || 0;
+        radarHtml += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <span style="font-size:11px;min-width:65px">${d.name}</span>
+          <div style="flex:1;margin:0 8px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${v}%;background:var(--blue);border-radius:3px"></div>
+          </div>
+          <span style="font-size:11px;color:var(--text3);min-width:30px;text-align:right">${Math.round(v)}%</span>
+        </div>`;
+      });
+      radarHtml += `<div style="text-align:center;font-size:10px;color:var(--text3);margin-top:8px">总分：${a.score}/100</div></div>`;
+    }
+  } catch(e) { /* calc not yet defined, skip radar */ }
+  const html = `<div style="text-align:center;padding:8px 4px">
+    <div style="font-size:48px;margin-bottom:6px">${lvl.emoji}</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:4px">${lvl.label}</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">⏱ ${lvl.time}</div>
+    <div style="font-size:12px;line-height:1.55;color:var(--text2);margin-bottom:14px;text-align:left;padding:0 6px">${lvl.desc}</div>
+    ${abilityHtml}
+    ${radarHtml}
+  </div>`;
+  showOverlay('panel-sm', `${lvl.emoji} ${lvl.label}`, html);
 }
 
 // ─── 工具页面 ────────────────────────────
