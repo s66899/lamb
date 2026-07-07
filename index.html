@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>🏸 羽毛球系统训练 · NSCA-CPT 科学体系</title>
-<link rel="stylesheet" href="style.css?v=v3.7.4i">
+<link rel="stylesheet" href="style.css?v=v3.7.4g">
 </head>
 <body>
 
@@ -183,8 +183,8 @@
   <button class="fab fab-search ios-press" id="fabSearch" onclick="openSearch()" title="🔍 搜索">🔍</button>
 </div>
 
-<script src="manifest_data.js?v=v3.7.4i"></script>
-<script src="app.js?v=v3.7.4i"></script>
+<script src="manifest_data.js?v=v3.7.4g"></script>
+<script src="app.js?v=v3.7.4g"></script>
 
 <!-- ?? 密码验证层 v3 (2026-07-06) -->
 <div id="pwOverlay" style="display:none;position:fixed;inset:0;z-index:999999;background:#1c1c1e;display:none;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px">
@@ -220,7 +220,7 @@ var SITE_KEY = 'lamb_auth';
 var SITE_PW = 'syy';
 var ADMIN_PW = 'lambadmin';
 var TRACKER_URL = 'http://localhost:4689';
-var APP_VERSION = 'v3.7.4i'; // 2026-07-08 修 Script error（cache-bust 强行刷到 v3.7.4i）
+var APP_VERSION = 'v3.7.4h'; // 2026-07-07 稳定性补丁
 var TRACKER_DISABLED = false;
 var HEARTBEAT_INTERVAL = null;
 var HEARTBEAT_FAIL_COUNT = 0; // 连续失败计数，达到阈值后降级
@@ -243,26 +243,6 @@ window.addEventListener('unhandledrejection', function(ev) {
     ev.preventDefault();
   } catch(e) {}
 });
-
-// ── cache-bust 一致性自检 ──
-(function() {
-  try {
-    var scripts = document.querySelectorAll('script[src*="?v="], link[href*="?v="]');
-    var mismatched = [];
-    for (var i = 0; i < scripts.length; i++) {
-      var url = scripts[i].src || scripts[i].href || '';
-      var m = url.match(/\?v=([vV][\d.]+)/);
-      if (m && m[1] !== APP_VERSION) {
-        mismatched.push(m[1] + ' on ' + url.split('/').pop());
-      }
-    }
-    if (mismatched.length > 0) {
-      console.warn('[lamb] CACHE MISMATCH detected:', mismatched.join(', '), '— APP is', APP_VERSION);
-    } else {
-      console.log('[lamb] cache-bust consistent:', APP_VERSION);
-    }
-  } catch(e) {}
-})();
 
 // ── 设备指纹 ──
 function getFingerprint() {
