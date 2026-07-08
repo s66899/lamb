@@ -114,6 +114,15 @@
 - [ ] 当前需继续写下一章（羽毛球ch12、金融ch12、心理学ch11、工程力学ch11）
 - [i] 定时任务cron持续故障，需修复或手动执行
 
+### 🚀 v3.7.6 当前版本（2026-07-08）
+- iOS 灵动效 + a11y:header 羽毛球 logo 轻浮动 (translateY -3px + rotate 1.5° + scale 1.05 复合 3.5s ease-in-out)
+- @media (prefers-reduced-motion: reduce) 关动画用户全部禁用
+- 顶栏色统一 — 现状用 var(--bg2/border/text2) 已跟卡片同套
+- Cache-bust v=v3.7.6 (本地 + live 验证净 50917 bytes 跟本地 style.css 一致)
+- Commit e3f2f63 push 到 book
+- 凌晨 cron 03:02 / 08:02 都报了 "AI service overloaded" 没自动起手 — 9:18 Lamb 问起来才补执行 (这是我的失职)
+- Lesson: cron 设了不等于起手做了,必须有 fail 报警到 main + 白天 Lamb 起床后手动验收
+
 ### 🚀 v3.5.3 当前版本（2026-07-05）
 - 交互式计算器(TDEE/营养素/水合) + 营养/比赛模块补全
 - README.md/VERSION 版本同步 + 临时文件清理

@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.7.6';
+const APP_VERSION = 'v3.7.7';
 const APP_DATE = '2026-07-08';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -640,6 +640,66 @@ const MODULE_CONTENT = {
   ],
 };
 
+// 📋 v3.7.7 STUDENT PROFILE — 个性化问卷 (level + injuries + strengths)
+//   存在 localStorage; openLevelDetail 会 base × profile 修正 = effective weight
+const PROFILE_KEY = 'lamb_student_profile_v1';
+function getProfile() { try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); } catch { return null; } }
+function setProfile(p) { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch(e) { console.warn('[setProfile]', e); } }
+function hasProfile() { return !!getProfile(); }
+
+// 伤病/优势 → 子串匹配 (子串在 ability.name 中则中)
+const INJURY_RULES = [
+  { id:'knee',     label:'🦵 膝',     match:['步伐','体能','弹跳','跳'],         factor:0.70 },
+  { id:'shoulder', label:'💪 肩',     match:['杀球','高远','挥拍'],               factor:0.50 },
+  { id:'wrist',    label:'✋ 腕',     match:['反手','握拍','网前'],               factor:0.60 },
+  { id:'back',     label:'🔙 腰',     match:['杀球','步伐','体能'],               factor:0.40 },
+  { id:'ankle',    label:'🦶 踝',     match:['步伐','体能','跳'],                 factor:0.60 },
+  { id:'elbow',    label:'💢 肘',     match:['反手','握拍','网前'],               factor:0.40 },
+];
+const STRENGTH_RULES = [
+  { id:'endurance', label:'🏃 体能好',   match:['体能'],                 factor:1.20 },
+  { id:'endurance2',label:'🏃 体能好·步伐加成', match:['步伐'],         factor:1.10 },
+  { id:'net',       label:'🎾 网前手感', match:['网前'],                 factor:1.25 },
+  { id:'mental',    label:'🧠 心理稳',   match:['比赛','双打','战术'],  factor:1.15 },
+  { id:'learning',  label:'⚡ 学习快',   match:[],                       factor:1.20, all: true },
+  { id:'left',      label:'🤚 左手优势', match:['反手'],                 factor:1.25 },
+  { id:'power',     label:'💥 力量大',   match:['杀球','高远'],          factor:1.25 },
+];
+
+// 给一组 abilities + profile → 返回带 effective 权重与 marker 的新 array
+function applyProfileToWeights(abilities, profile) {
+  if (!profile) return abilities.map(a => ({ ...a, effective: a.weight, marker: '', original: a.weight }));
+  const injFired = INJURY_RULES.filter(r => profile.injuries && profile.injuries.includes(r.id));
+  const strFired = STRENGTH_RULES.filter(r => profile.strengths && profile.strengths.includes(r.id));
+  const allRules = STRENGTH_RULES.filter(r => r.all && profile.strengths && profile.strengths.includes(r.id));
+  return abilities.map(ab => {
+    let w = ab.weight;
+    let marker = '';
+    // 伤病 (往下调)
+    for (const r of injFired) {
+      if (r.match.length === 0) continue;
+      if (r.match.some(k => ab.name.indexOf(k) >= 0)) {
+        w = w * r.factor;
+        marker = '❄️';
+      }
+    }
+    // 优势 (往上调) — 排除与 “学习快” 同类的
+    for (const r of strFired) {
+      if (r.all) continue;
+      if (r.match.length === 0) continue;
+      if (r.match.some(k => ab.name.indexOf(k) >= 0)) {
+        w = w * r.factor;
+        if (!marker) marker = '🔥';
+      }
+    }
+    // 全级优势 (学习快等) — 不带 marker
+    for (const r of allRules) {
+      w = w * r.factor;
+    }
+    return { ...ab, effective: Math.round(w), marker, original: ab.weight };
+  });
+}
+
 // 📋 v3.7.5 LEVELS data — extended with abilities + drills（每个比重具练什么）
 const LEVELS = [
   { id:'L0', label:'第零级 · 零基础启蒙', time:'0-1个月', emoji:'🌱',
@@ -1074,7 +1134,19 @@ function renderDashboard() {
         <div class="lp-desc">${l.desc}</div>
       </div>
     </div>`;
-  }).join('');
+  }).join('') + `<div id="profileEntry" style="text-align:center;margin-top:14px">
+    <button onclick="openStudentProfile()" class="ios-press" style="background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer">📋 我的个性化训练方案</button>
+    <div id="profileStatus" style="font-size:10px;color:var(--text3);margin-top:4px"></div>
+  </div>`;
+  // v3.7.7: 表明问卷状态
+  try {
+    const p = getProfile();
+    const el = $('profileStatus');
+    if (el) {
+      if (p) el.textContent = '✅ 已根据你的伤病/优势调整 (点上面重填)';
+      else el.textContent = '⏱ 30 秒填一下 · 根据你身体定制每个训练等级的比重';
+    }
+  } catch(e) {}
 
   // ── 🎯 教练系统 (仅次于首页) ──
   $('moduleSection').innerHTML = `
@@ -1542,18 +1614,26 @@ function renderModuleOnly(modId) {
 function openLevelDetail(levelId) {
   const lvl = LEVELS.find(l=>l.id===levelId);
   if (!lvl) return;
+  // v3.7.7: 根据 profile 修正权重
+  const profile = getProfile();
+  const effectiveAbilities = applyProfileToWeights(lvl.abilities || [], profile);
   let abilityHtml = '';
-  if (lvl.abilities && lvl.abilities.length) {
+  if (effectiveAbilities && effectiveAbilities.length) {
+    const profileBadge = profile
+      ? `<div style="font-size:10px;color:var(--text3);margin-top:-2px;margin-bottom:8px">🎯 已根据你的问卷调整 <a onclick="openStudentProfile()" style="color:var(--blue);text-decoration:underline;cursor:pointer">重填</a></div>`
+      : `<div style="font-size:10px;color:var(--text3);margin-top:-2px;margin-bottom:8px">💡 未填写个性化问卷 <a onclick="openStudentProfile()" style="color:var(--blue);text-decoration:underline;cursor:pointer">填一下获得定制方案 →</a></div>`;
     abilityHtml = `<div style="text-align:left;margin-top:6px;padding:0 4px">
-      <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--blue);border-bottom:1px solid var(--border);padding-bottom:6px">📊 本级训练比重 + 具体动作</div>`;
-    lvl.abilities.forEach(ab => {
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:var(--blue);border-bottom:1px solid var(--border);padding-bottom:6px">📊 本级训练比重 + 具体动作</div>${profileBadge}`;
+    effectiveAbilities.forEach(ab => {
+      const marker = ab.marker ? `<span title="${ab.marker === '❄️' ? '伤病减权重' : '优势加权'}">${ab.marker}</span> ` : '';
+      const diff = ab.marker ? `<span style="color:var(--text3);font-size:10px">(原 ${ab.original}%)</span>` : '';
       abilityHtml += `<div style="margin-bottom:14px">
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;align-items:center">
-          <span style="font-weight:600;color:var(--text)">${ab.name}</span>
-          <span style="color:var(--text3);font-size:11px">占比 ${ab.weight}%</span>
+          <span style="font-weight:600;color:var(--text)">${marker}${ab.name}</span>
+          <span style="color:var(--text3);font-size:11px">占比 ${ab.effective}% ${diff}</span>
         </div>
         <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-bottom:6px">
-          <div style="height:100%;width:${ab.weight}%;background:${ab.color};border-radius:4px;transition:width .4s"></div>
+          <div style="height:100%;width:${ab.effective}%;background:${ab.color};border-radius:4px;transition:width .4s"></div>
         </div>
         <div style="font-size:11px;color:var(--text2);line-height:1.6">`;
       ab.drills.forEach(d => {
@@ -1598,6 +1678,119 @@ function openLevelDetail(levelId) {
     ${radarHtml}
   </div>`;
   showOverlay('panel-sm', `${lvl.emoji} ${lvl.label}`, html);
+}
+
+// ─── 学员问卷 v3.7.7 (3 步 · 水平/伤病/优势) ─────────────
+let _profileDraft = { level: null, injuries: [], strengths: [] };
+function openStudentProfile() {
+  // 从 localStorage 恢复初值
+  const cur = getProfile();
+  _profileDraft = cur ? { level: cur.level, injuries: [...(cur.injuries||[])], strengths: [...(cur.strengths||[])] } : { level: null, injuries: [], strengths: [] };
+  showOverlay('panel-md', '📋 我的个性化方案', renderProfileStep1());
+}
+function renderProfileStep1() {
+  const opts = LEVELS.map(l => `<button onclick="_profileDraft.level='${l.id}';showOverlayContent(renderProfileStep2())" class="ios-press" style="display:block;width:100%;text-align:left;background:${_profileDraft.level===l.id?'var(--blue)':'var(--bg3)'};color:${_profileDraft.level===l.id?'#fff':'var(--text)'};border:1px solid ${_profileDraft.level===l.id?'var(--blue)':'var(--border)'};padding:9px 12px;border-radius:8px;margin-bottom:5px;cursor:pointer;font-size:12px">${l.emoji} <strong>${l.id}</strong> · ${l.label} <span style="float:right;font-size:10px;opacity:.7">${l.time}</span></button>`).join('');
+  return `<div style="padding:6px 4px">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">第 1/3 步 · ⏱ 10秒</div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:4px">🎯 你现在是什么水平？</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.5">选一个你实际能稳定打的质量·可重填</div>
+    <div style="max-height:50vh;overflow-y:auto;padding-right:2px">${opts}</div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button onclick="closeProfileOverlay()" class="ios-press" style="flex:1;background:var(--bg3);border:none;padding:9px;border-radius:8px;font-size:12px;cursor:pointer;color:var(--text2)">取消</button>
+      <button onclick="showOverlayContent(renderProfileStep2())" class="ios-press" style="flex:2;background:var(--blue);color:#fff;border:none;padding:9px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer" ${_profileDraft.level?'':'disabled style="flex:2;background:var(--bg3);color:var(--text3);border:none;padding:9px;border-radius:8px;font-size:12px;cursor:not-allowed"'}>下一步 →</button>
+    </div>
+  </div>`;
+}
+function renderProfileStep2() {
+  if (!_profileDraft.level) return renderProfileStep1();
+  const opts = INJURY_RULES.map(r => {
+    const checked = _profileDraft.injuries.includes(r.id);
+    return `<label class="ios-press" style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:${checked?'var(--blue)':'var(--bg3)'};color:${checked?'#fff':'var(--text)'};border-radius:8px;margin-bottom:5px;cursor:pointer">
+      <input type="checkbox" ${checked?'checked':''} onchange="toggleInjury('${r.id}', this.checked)" style="width:16px;height:16px;cursor:pointer">
+      <span style="font-size:13px;flex:1">${r.label}</span>
+      <span style="font-size:10px;opacity:.7">×${r.factor}</span>
+    </label>`;
+  }).join('');
+  return `<div style="padding:6px 4px">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">第 2/3 步 · ⏱ 10秒</div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:4px">🤕 你现在有哪些伤病/不适？</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.5">多选 · 勾上的会下调相关动作比重·可重填</div>
+    <div>${opts}</div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button onclick="showOverlayContent(renderProfileStep1())" class="ios-press" style="flex:1;background:var(--bg3);border:none;padding:9px;border-radius:8px;font-size:12px;cursor:pointer;color:var(--text2)">← 上一步</button>
+      <button onclick="showOverlayContent(renderProfileStep3())" class="ios-press" style="flex:2;background:var(--blue);color:#fff;border:none;padding:9px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">下一步 →</button>
+    </div>
+  </div>`;
+}
+function renderProfileStep3() {
+  const opts = STRENGTH_RULES.map(r => {
+    const checked = _profileDraft.strengths.includes(r.id);
+    return `<label class="ios-press" style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:${checked?'var(--purple)':'var(--bg3)'};color:${checked?'#fff':'var(--text)'};border-radius:8px;margin-bottom:5px;cursor:pointer">
+      <input type="checkbox" ${checked?'checked':''} onchange="toggleStrength('${r.id}', this.checked)" style="width:16px;height:16px;cursor:pointer">
+      <span style="font-size:13px;flex:1">${r.label}</span>
+      <span style="font-size:10px;opacity:.7">${r.all?'全级 +20%':`×${r.factor}`}</span>
+    </label>`;
+  }).join('');
+  return `<div style="padding:6px 4px">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">第 3/3 步 · ⏱ 10秒</div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:4px">💪 你的强项是什么？</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.5">多选 · 勾上的会上调相关动作比重·可重填</div>
+    <div>${opts}</div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button onclick="showOverlayContent(renderProfileStep2())" class="ios-press" style="flex:1;background:var(--bg3);border:none;padding:9px;border-radius:8px;font-size:12px;cursor:pointer;color:var(--text2)">← 上一步</button>
+      <button onclick="submitProfile()" class="ios-press" style="flex:2;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;border:none;padding:9px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">✓ 保存并应用</button>
+    </div>
+  </div>`;
+}
+function toggleInjury(id, on) {
+  const i = _profileDraft.injuries.indexOf(id);
+  if (on && i<0) _profileDraft.injuries.push(id);
+  if (!on && i>=0) _profileDraft.injuries.splice(i,1);
+  showOverlayContent(renderProfileStep2());
+}
+function toggleStrength(id, on) {
+  const i = _profileDraft.strengths.indexOf(id);
+  if (on && i<0) _profileDraft.strengths.push(id);
+  if (!on && i>=0) _profileDraft.strengths.splice(i,1);
+  showOverlayContent(renderProfileStep3());
+}
+function submitProfile() {
+  const p = {
+    level: _profileDraft.level,
+    injuries: _profileDraft.injuries,
+    strengths: _profileDraft.strengths,
+    taken_at: new Date().toISOString(),
+  };
+  setProfile(p);
+  closeProfileOverlay();
+  // 顶栏提示 + 重渲 level pyramid 状态文本
+  try {
+    const el = $('profileStatus');
+    if (el) el.textContent = '✅ 已根据你的伤病/优势调整 (点上面重填)';
+  } catch(e) {}
+  // 轻提示
+  showToast('✅ 已应用个性化方案 · 训练等级比重已调整');
+}
+function closeProfileOverlay() {
+  const ov = document.getElementById('_tmpOverlay');
+  if (ov) ov.remove();
+}
+// showOverlay 创建后定位 body 容器、后续调用可重渲
+function showOverlayContent(body) {
+  const ov = document.getElementById('_tmpOverlay');
+  if (!ov) return;
+  const bd = ov.querySelector('.panel-bd');
+  if (bd) bd.innerHTML = body;
+}
+// 小 toast
+function showToast(text, ms) {
+  try {
+    const t = document.createElement('div');
+    t.textContent = text;
+    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:10px;font-size:12px;z-index:9999999;backdrop-filter:blur(20px);box-shadow:0 8px 24px rgba(0,0,0,.3);animation:iosFadeUp .3s';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), ms || 2200);
+  } catch(e) {}
 }
 
 // ─── 工具页面 ────────────────────────────
