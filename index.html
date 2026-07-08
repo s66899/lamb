@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>🏸 羽毛球系统训练 · NSCA-CPT 科学体系</title>
-<link rel="stylesheet" href="style.css?v=v3.7.7">
+<link rel="stylesheet" href="style.css?v=v3.7.8">
 </head>
 <body>
 
@@ -183,8 +183,8 @@
   <button class="fab fab-search ios-press" id="fabSearch" onclick="openSearch()" title="🔍 搜索">🔍</button>
 </div>
 
-<script src="manifest_data.js?v=v3.7.7"></script>
-<script src="app.js?v=v3.7.7"></script>
+<script src="manifest_data.js?v=v3.7.8"></script>
+<script src="app.js?v=v3.7.8"></script>
 
 <!-- ?? 密码验证层 v3 (2026-07-06) -->
 <div id="pwOverlay" style="display:none;position:fixed;inset:0;z-index:999999;background:#1c1c1e;display:none;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px">
@@ -265,30 +265,32 @@ function startHeartbeat() {
 
 // ── 密码验证 ──
 function checkPw() {
-  var input = document.getElementById('pwInput').value;
-  var errEl = document.getElementById('pwErr');
-  if (input === SITE_PW) {
-    try { localStorage.setItem(SITE_KEY, JSON.stringify({t:Date.now(),v:1})); } catch(e) {}
-    document.getElementById('pwOverlay').style.display = 'none';
-    startHeartbeat();
-    return;
-  }
-  errEl.style.display = 'block';
-  errEl.textContent = '❌ 密码错误，请重试';
-  document.getElementById('pwInput').value = '';
-  document.getElementById('pwInput').focus();
+  try {
+    var input = document.getElementById('pwInput').value;
+    var errEl = document.getElementById('pwErr');
+    if (input === SITE_PW) {
+      // v3.7.8 安全修复：不再写 localStorage 缓存 — 每次刷新都要重新输入
+      try { localStorage.removeItem(SITE_KEY); } catch(e) {}
+      document.getElementById('pwOverlay').style.display = 'none';
+      try { startHeartbeat(); } catch(e) { console.warn('[heartbeat]', e); }
+      return;
+    }
+    errEl.style.display = 'block';
+    errEl.textContent = '❌ 密码错误，请重试';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  } catch(e) { console.warn('[checkPw]', e); }
 }
 
 function initPwGate() {
-  var auth = null;
-  try { auth = JSON.parse(localStorage.getItem(SITE_KEY)); } catch(e) {}
-  if (auth && auth.t && (Date.now() - auth.t < 72 * 60 * 60 * 1000)) {
-    document.getElementById('pwOverlay').style.display = 'none';
-    startHeartbeat();
-    return;
-  }
-  document.getElementById('pwOverlay').style.display = 'flex';
-  document.getElementById('pwInput').focus();
+  try {
+    // v3.7.8 安全修复：启动时主动清掉旧 SITE_KEY 缓存,避免被绕过
+    try { localStorage.removeItem(SITE_KEY); } catch(e) {}
+    var ov = document.getElementById('pwOverlay');
+    if (ov) ov.style.display = 'flex';
+    var inp = document.getElementById('pwInput');
+    if (inp) inp.focus();
+  } catch(e) { console.warn('[initPwGate]', e); }
 }
 
 // ── 管理员面板 ──
