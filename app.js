@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.7.8';
+const APP_VERSION = 'v3.7.9';
 const APP_DATE = '2026-07-08';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -647,6 +647,14 @@ function getProfile() { try { return JSON.parse(localStorage.getItem(PROFILE_KEY
 function setProfile(p) { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch(e) { console.warn('[setProfile]', e); } }
 function hasProfile() { return !!getProfile(); }
 
+// 📝 v3.7.9 STUDENT COMMENTS — 教练评语 (学员看)
+//   学员本地存【收到的】评语 (作者+角色+文本+时间)
+//   教练模拟写评语用同一个 localStorage key供学员能读到
+const COMMENTS_KEY = 'lamb_received_comments_v1';
+function getComments() { try { const r = JSON.parse(localStorage.getItem(COMMENTS_KEY) || '[]'); return Array.isArray(r) ? r : []; } catch { return []; } }
+function addComment(opts) { try { const list = getComments(); list.push({ id: 'c_' + Date.now().toString(36), author: opts.author || '教练', role: opts.role || 'coach', text: opts.text || '', studentId: opts.studentId || 'self', ts: opts.ts || Date.now() }); localStorage.setItem(COMMENTS_KEY, JSON.stringify(list)); return list[list.length - 1]; } catch(e) { console.warn('[addComment]', e); return null; } }
+function deleteComment(id) { try { const list = getComments().filter(c => c.id !== id); localStorage.setItem(COMMENTS_KEY, JSON.stringify(list)); } catch(e) {} }
+
 // 伤病/优势 → 子串匹配 (子串在 ability.name 中则中)
 const INJURY_RULES = [
   { id:'knee',     label:'🦵 膝',     match:['步伐','体能','弹跳','跳'],         factor:0.70 },
@@ -938,7 +946,7 @@ function totalP(){const total=MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters
 function calcAbilityScore() {
   const rp = getRP();
   const p = getP();
-  if (!MANIFEST) return { score: 0, dims: {read:0,modules:0,quiz:0,streak:0,methods:0} };
+  if (!MANIFEST) return { score: 0, dims: {read:0,modules:0,quiz:0,streak:0,methods:0,application:50}, streak:0 };
   // 1. 阅读进度 (25%)
   const totalCh = MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0);
   let read = 0;
@@ -964,12 +972,30 @@ function calcAbilityScore() {
   const streakPct = Math.min(1, streak / 100); // 100天封顶
   // 5. 训练方法掌握 (15%) — 基于等级（≤30级满）
   const lvlPct = Math.min(1, (rp.level||1) / 30);
+  // v3.7.9 — 实战应用 第6维 (10%, 默认 50%起步 — 还没接实战数据)
+  // 报名为 role-data 的 self 学员 查看其他学员 本地评语、profile => 计算全等级平均 (xp 排名) 的归一化
+  let applicationPct = 0.5; // 默认 50%
+  try {
+    const appPct = readApplicationProgress();
+    if (typeof appPct === 'number') applicationPct = Math.min(1, Math.max(0, appPct));
+  } catch(e) {}
+  // 总分保持 5 维权重不变, 第6维独立不参加总分 (避免破坏现有口径)
   const score = readPct*25 + modulePct*25 + quizPct*20 + streakPct*15 + lvlPct*15;
   return {
     score: Math.round(Math.min(100, Math.max(0, score))),
-    dims: { read: readPct*100, modules: modulePct*100, quiz: quizPct*100, streak: streakPct*100, methods: lvlPct*100 },
+    dims: { read: readPct*100, modules: modulePct*100, quiz: quizPct*100, streak: streakPct*100, methods: lvlPct*100, application: applicationPct*100 },
     streak
   };
+}
+
+// v3.7.9 — 计算“实战应用”分数 (0~1)
+// 现实仅提供本地有数据处的 null/fallback，v3.7.10 会接入实战记录
+function readApplicationProgress() {
+  try {
+    const local = JSON.parse(localStorage.getItem('lamb_application_v1') || 'null');
+    if (local && typeof local.score === 'number') return local.score;
+  } catch(e) {}
+  return 0.5;  // 默认 50%
 }
 
 // 6个段位
@@ -1647,26 +1673,31 @@ function openLevelDetail(levelId) {
   try {
     const a = (typeof calcAbilityScore === 'function') ? calcAbilityScore() : null;
     if (a && a.dims) {
+      // v3.7.9: 6 维能力雷达 (読/模块/测验/连续/掌握/实战应用)
       const dims = [
-        { key:'read', name:'📖 阅读' },
-        { key:'modules', name:'🏋️ 模块' },
-        { key:'quiz', name:'🧪 测验' },
-        { key:'streak', name:'🔥 连续' },
-        { key:'methods', name:'🎓 掌握' },
+        { key:'read',       name:'📖 阅读' },
+        { key:'modules',    name:'🏋️ 模块' },
+        { key:'quiz',       name:'🧪 测验' },
+        { key:'streak',     name:'🔥 连续' },
+        { key:'methods',    name:'🎓 掌握' },
+        { key:'application',name:'⚔️ 实战应用' },
       ];
       radarHtml = `<div style="margin-top:14px;padding:10px;background:var(--bg3);border-radius:10px;text-align:left">
-        <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--gold)">🎯 你的当前 5 维能力评分</div>`;
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--gold)">🎯 你的当前 6 维能力评分</div>`;
       dims.forEach(d => {
         const v = a.dims[d.key] || 0;
+        const isSixth = d.key === 'application';
+        const color = isSixth ? 'var(--purple)' : 'var(--blue)';
+        const note = isSixth ? ' <span style="font-size:9px;color:var(--text3)">(新)</span>' : '';
         radarHtml += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-          <span style="font-size:11px;min-width:65px">${d.name}</span>
+          <span style="font-size:11px;min-width:75px">${d.name}${note}</span>
           <div style="flex:1;margin:0 8px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:${v}%;background:var(--blue);border-radius:3px"></div>
+            <div style="height:100%;width:${v}%;background:${color};border-radius:3px"></div>
           </div>
           <span style="font-size:11px;color:var(--text3);min-width:30px;text-align:right">${Math.round(v)}%</span>
         </div>`;
       });
-      radarHtml += `<div style="text-align:center;font-size:10px;color:var(--text3);margin-top:8px">总分：${a.score}/100</div></div>`;
+      radarHtml += `<div style="text-align:center;font-size:10px;color:var(--text3);margin-top:8px">总分：${a.score}/100 (6 维独立雷达,不计分)</div></div>`;
     }
   } catch(e) { /* calc not yet defined, skip radar */ }
   const html = `<div style="text-align:center;padding:8px 4px">
@@ -1686,7 +1717,82 @@ function openStudentProfile() {
   // 从 localStorage 恢复初值
   const cur = getProfile();
   _profileDraft = cur ? { level: cur.level, injuries: [...(cur.injuries||[])], strengths: [...(cur.strengths||[])] } : { level: null, injuries: [], strengths: [] };
-  showOverlay('panel-md', '📋 我的个性化方案', renderProfileStep1());
+  showOverlay('panel-md', '📋 我的个性化方案', renderProfileMain());
+}
+
+// v3.7.9: 主入口 - 问卷 + 评语 二合一
+function renderProfileMain() {
+  const cur = getProfile();
+  const hasProf = !!cur;
+  const comments = getComments();
+  const commentList = comments.length === 0
+    ? '<div style="text-align:center;color:var(--text3);padding:14px;font-size:11px">暂无评语</div>'
+    : comments.map(c => `<div style="background:var(--bg3);border-left:3px solid var(--purple);padding:9px 12px;border-radius:6px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:11px;font-weight:600">${c.role==='coach'?'🎓':'🧑‍🦱'} ${c.author}</span>
+          <span style="font-size:9px;color:var(--text3)">${new Date(c.ts).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'})}</span>
+        </div>
+        <div style="font-size:12px;line-height:1.55;color:var(--text2)">${c.text.replace(/</g,'&lt;')}</div>
+      </div>`).join('');
+  return `<div style="padding:6px 4px">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px">v3.7.9 · 6维 + 评语 ⌽</div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:4px">📋 我的个性化训练方案</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.5">下面是你的 问卷 / 评语 / 模拟教练写评语 三块内容。v3.7.7 你填的问卷 → v3.7.9 串到了实战应用。</div>
+
+    <!-- 问卷状态卡 -->
+    <div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px">${hasProf?'✅ 你已填问卷':'⏱ 还未填问卷'}</div>
+          <div style="font-size:10px;color:var(--text3)">${hasProf?`水平 ${cur.level} · 伤病 ${(cur.injuries||[]).length}项 · 优势 ${(cur.strengths||[]).length}项`:'30秒填一下,根据你身体定制每个训练等级的比重'}</div>
+        </div>
+        <button onclick="showOverlayContent(renderProfileStep1())" class="ios-press" style="background:var(--blue);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">${hasProf?'重填':'填一下'}</button>
+      </div>
+    </div>
+
+    <!-- 教练评语 -->
+    <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;font-weight:600">💬 教练评语 <span style="font-size:10px;color:var(--text3);font-weight:400">${comments.length}条</span></div>
+      <button onclick="showOverlayContent(renderCommentWriter())" class="ios-press" style="background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;border:none;padding:6px 10px;border-radius:7px;font-size:10px;font-weight:600;cursor:pointer">＋ 模拟教练写评语</button>
+    </div>
+    <div>${commentList}</div>
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button onclick="closeProfileOverlay()" class="ios-press" style="flex:1;background:var(--bg3);border:none;padding:9px;border-radius:8px;font-size:12px;cursor:pointer;color:var(--text2)">关闭</button>
+    </div>
+  </div>`;
+}
+
+// v3.7.9: 模拟教练写评语
+function renderCommentWriter() {
+  return `<div style="padding:6px 4px">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px">v3.7.9 · 模拟教练写评语</div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:4px">🎓 写一条评语</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.5">选择作者 (代表是谁写的)+ 写评语 · 点保存后会在你【收到的评语】里看到</div>
+
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">作者</div>
+      <input id="cmAuthor" type="text" value="李教练" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-size:13px;outline:none">
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">评语</div>
+      <textarea id="cmText" rows="5" placeholder="例:近期双打接发质量提升不错,但网前推球仍偏急。建议下一阶段重点跟人配合,多练牌 6/7 点……" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-size:12px;outline:none;resize:vertical;font-family:inherit"></textarea>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="showOverlayContent(renderProfileMain())" class="ios-press" style="flex:1;background:var(--bg3);border:none;padding:9px;border-radius:8px;font-size:12px;cursor:pointer;color:var(--text2)">← 返回</button>
+      <button onclick="submitComment()" class="ios-press" style="flex:2;background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;border:none;padding:9px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">✓ 保存评语</button>
+    </div>
+  </div>`;
+}
+function submitComment() {
+  try {
+    var author = (document.getElementById('cmAuthor').value || '').trim() || '教练';
+    var text = (document.getElementById('cmText').value || '').trim();
+    if (!text) { try { document.getElementById('cmText').focus(); } catch(e) {} return; }
+    addComment({ author, role:'coach', text, studentId:'self' });
+    showToast('✅ 已保存评语');
+    showOverlayContent(renderProfileMain());
+  } catch(e) { console.warn('[submitComment]', e); }
 }
 function renderProfileStep1() {
   const opts = LEVELS.map(l => `<button onclick="_profileDraft.level='${l.id}';showOverlayContent(renderProfileStep2())" class="ios-press" style="display:block;width:100%;text-align:left;background:${_profileDraft.level===l.id?'var(--blue)':'var(--bg3)'};color:${_profileDraft.level===l.id?'#fff':'var(--text)'};border:1px solid ${_profileDraft.level===l.id?'var(--blue)':'var(--border)'};padding:9px 12px;border-radius:8px;margin-bottom:5px;cursor:pointer;font-size:12px">${l.emoji} <strong>${l.id}</strong> · ${l.label} <span style="float:right;font-size:10px;opacity:.7">${l.time}</span></button>`).join('');

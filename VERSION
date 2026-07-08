@@ -2,3 +2,4 @@
 v33.7.6 (2026-07-08) — iOS 灵动效 (header logo 浮动) + prefers-reduced-motion a11y
 v3.7.7 (2026-07-08) — 学员问卷 3 步 (水平/伤病/优势) + 个性化方案;openLevelDetail 读 effective weight,伤病下调优势上调,带 ❄️/🔥 marker
 v3.7.8 (2026-07-08) — 密码安全修复:每次刷新都需重新输入(SITE_KEY 不缓存,启动主动清旧缓存,所有错误路径都防崩溃)
+v3.7.9 (2026-07-08) — 6维能力雷达 (实战应用 application) + 教练评语 (localStorage 写入/读取)
