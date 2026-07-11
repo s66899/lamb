@@ -10,8 +10,8 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.7.9';
-const APP_DATE = '2026-07-08';
+const APP_VERSION = 'v3.8.0';
+const APP_DATE = '2026-07-11';
 
 // ─── 全局错误边界（防白屏）─────────────────
 window.addEventListener('error', (e) => {
@@ -90,7 +90,7 @@ const TRAIN_MODULES = [
     desc:'TDEE计算·营养素分配·训练后恢复时间轴·睡眠优化 — 科学营养恢复体系',
     tags:['蛋白','碳水','脂肪','水合','睡眠','补剂'], docs:12,
     books:[],
-    chapters:['🔥 TDEE每日总能耗','🥩 三大营养素分配','💧 确定水合需求','⏰ 训练后恢复时间线','🍽️ 训练前后营养窗口','🥩 蛋白质摄入策略','💧 电解质平衡','💊 运动补剂速查','🔄 周期化营养','⚖️ 体重管理'] },
+    chapters:['🔥 TDEE每日总能耗','🥩 三大营养素分配','💧 确定水合需求','⏰ 训练后恢复时间线','🍽️ 训练前后营养窗口','🥩 蛋白质摄入策略','💧 电解质平衡','💊 运动补剂速查','🔄 周期化营养','⚖️ 体重管理','🩹 损伤预防与康复营养'] },
   { id:'competition', icon:'🏆', title:'比赛策略', color:'var(--red)',
     desc:'对手分析·战术选择·节奏控制·体能分配 — 从准备到复盘完整比赛流程',
     tags:['对手分析','战术库','节奏','体能分配','复盘','发接发'], docs:15,
@@ -322,6 +322,77 @@ const MODULE_CONTENT = {
       <p>❌ 每日称体重（体水分波动让你焦虑）<br>❌ 节食（掉代谢，掉肌肉，掉表现）<br>❌ 极低碳水（影响训练质量）<br>❌ 快速减重（>1kg/周几乎必然掉肌肉）<br>❌ 只看体重不看体脂（体重不变但体脂可以降）</p>
       <p class='tip'>💡 体重是数字，表现才是真相。3个月后你跑得更快、跳得更高、杀得更狠，体重的几斤浮动根本不重要。</p>
       <hr><p><em>参考文献：ACSM Guidelines for Exercise Testing and Prescription / NSCA 体成分管理</em></p>
+    </div>`,
+    // 11. 损伤预防与康复营养
+    `<div class="reader-module-content">
+      <h2>🩹 损伤预防与康复营养</h2>
+      <p>羽毛球是高强度变向运动，肩、膝、踝、腰是最易损伤的部位。营养不是治疗的全部，但科学的饮食能让预防更有效、康复更快。</p>
+
+      <h3>常见运动损伤分类</h3>
+      <table><tr><th>类型</th><th>代表损伤</th><th>常见动作</th><th>恢复周期</th></tr>
+      <tr><td>急性软组织</td><td>肌肉拉伤、韧带扭伤</td><td>急停跳杀、跨步上网</td><td>1-6 周</td></tr>
+      <tr><td>过用性损伤</td><td>网球肘、肩袖炎、髌腱炎</td><td>重复扣杀、反手高远</td><td>2-12 周</td></tr>
+      <tr><td>关节损伤</td><td>半月板、肩袖、踝关节软骨</td><td>落地扭转、过度伸展</td><td>6 周-6 月</td></tr>
+      <tr><td>应力性</td><td>应力性骨折、骨膜炎</td><td>大运动量+营养不足</td><td>4-12 周</td></tr></table>
+
+      <h3>急性期 RICE → PEACE & LOVE 新原则</h3>
+      <p><strong>传统 RICE</strong>（受伤 0-72 小时）：Rest 休息 + Ice 冰敷（每次 15-20 分钟，间隔 1-2 小时）+ Compression 加压 + Elevation 抬高。<br>
+      <strong>2022 新版 PEACE & LOVE</strong>：Protection 保护 + Elevation 抬高 + Avoid anti-inflammatories 避免消炎药 + Compression 加压 + Education 教育 + Load 负荷管理 + Optimism 乐观 + Vascularisation 早期活动 + Exercise 训练。<br>
+      ⚠️ 新版强调：<strong>急性期避免布洛芬等消炎药</strong>，因为消炎会抑制组织愈合的炎症反应（炎症本身是修复的第一步）。</p>
+
+      <h3>抗炎营养策略</h3>
+      <table><tr><th>营养素</th><th>剂量</th><th>食物来源</th><th>作用</th></tr>
+      <tr><td>Omega-3 (EPA/DHA)</td><td>2-3 g/天</td><td>三文鱼、沙丁鱼、亚麻籽、奇亚籽</td><td>抑制过度炎症</td></tr>
+      <tr><td>维生素 C</td><td>200-500 mg/天</td><td>猕猴桃、草莓、西兰花</td><td>胶原蛋白合成</td></tr>
+      <tr><td>姜黄素</td><td>500-1000 mg/天</td><td>姜黄（搭配黑胡椒↑吸收 20 倍）</td><td>天然抗炎</td></tr>
+      <tr><td>维生素 D</td><td>1000-2000 IU/天</td><td>阳光、蛋黄、强化奶</td><td>骨健康+免疫调节</td></tr>
+      <tr><td>多酚类</td><td>多吃颜色深的蔬果</td><td>蓝莓、绿茶、黑巧克力（85%+）</td><td>抗氧化</td></tr></table>
+      <p><strong>抗炎饮食模式</strong>：地中海饮食或 DASH 饮食已被证明能降低炎症标志物（CRP）20-40%。核心：多吃鱼、蔬果、全谷物、坚果；少吃加工食品、红肉、糖。</p>
+
+      <h3>关节与软骨营养</h3>
+      <p><strong>氨基葡萄糖</strong>：1500 mg/天（硫酸盐形式更优），长期使用（3-6 个月）可能减缓关节退化。<br>
+      <strong>胶原蛋白肽</strong>：10-15 g/天，运动前 1 小时摄入可改善关节舒适度（研究显示 12 周后关节疼痛下降 30-40%）。<br>
+      <strong>MSM（甲基磺酰甲烷）</strong>：1-3 g/天，抗炎+缓解肌肉酸痛。<br>
+      <strong>钙 + 维 D</strong>：1000 mg 钙 + 1000 IU 维 D / 天，预防应力性损伤。</p>
+
+      <h3>肌腱与韧带修复营养</h3>
+      <p>肌腱/韧带主要由 I 型胶原蛋白构成，修复需要：</p>
+      <ul>
+      <li><strong>蛋白质</strong>：1.6-2.2 g/kg/天（高于日常维持量）</li>
+      <li><strong>维生素 C</strong>：胶原蛋白合成的必需辅因子（不能缺）</li>
+      <li><strong>锰 + 锌</strong>：胶原蛋白交联反应必需</li>
+      <li><strong>充足水分</strong>：肌腱含水量 70%，脱水会降低弹性</li>
+      </ul>
+      <p class='tip'>💡 明胶（gelatin）+ 维 C 组合：15 g 明胶 + 50 mg 维 C，运动前 1 小时摄入可提升胶原蛋白合成 40%（Keith Baar 实验室研究）。</p>
+
+      <h3>伤后恢复分阶段营养</h3>
+      <table><tr><th>阶段</th><th>时间</th><th>营养重点</th><th>目标</th></tr>
+      <tr><td>急性期</td><td>0-72 h</td><td>适度蛋白+维C+充足水分，避免高脂高糖</td><td>控制炎症、启动修复</td></tr>
+      <tr><td>亚急性期</td><td>3-21 天</td><td>蛋白提到 2.0 g/kg + 维C 500mg + Omega-3</td><td>加速组织合成</td></tr>
+      <tr><td>重建期</td><td>3-12 周</td><td>恢复正常训练营养 + 胶原蛋白肽</td><td>功能恢复</td></tr>
+      <tr><td>回归期</td><td>12 周+</td><td>周期性营养 + 抗炎饮食</td><td>预防再伤</td></tr></table>
+
+      <h3>羽毛球专项：易伤部位营养重点</h3>
+      <table><tr><th>部位</th><th>高发原因</th><th>营养对策</th></tr>
+      <tr><td>肩袖</td><td>扣杀、抽球反复过头</td><td>Omega-3 + 维C + 胶原蛋白肽</td></tr>
+      <tr><td>肘关节（网球肘）</td><td>反手、挑球离心负荷</td><td>姜黄素 + MSM + 减少致炎食物</td></tr>
+      <tr><td>膝关节</td><td>急停、跨步、起跳落地</td><td>氨基葡萄糖 + 维D + 控制体重</td></tr>
+      <tr><td>踝关节</td><td>侧向移动、落地不稳</td><td>胶原蛋白 + 钙 + 本体感觉训练</td></tr>
+      <tr><td>腰背</td><td>后场击球过度伸展</td><td>核心训练 + 维D + 抗炎饮食</td></tr></table>
+
+      <h3>预防胜于治疗：日常营养习惯</h3>
+      <ul>
+      <li>✅ 每天 5 份以上蔬菜 + 2 份水果（抗氧化物储备）</li>
+      <li>✅ 每周 2-3 次深海鱼（Omega-3 累积）</li>
+      <li>✅ 训练日蛋白不低于 1.6 g/kg，损伤后提到 2.0 g/kg</li>
+      <li>✅ 充足睡眠（修复激素 GH 分泌）</li>
+      <li>✅ 训练前 1 小时明胶+维C（长期效果显著）</li>
+      <li>❌ 避免：训练后立即吃快餐、油炸食品（增加炎症）</li>
+      <li>❌ 避免：长期过量咖啡因（影响钙吸收+睡眠）</li>
+      </ul>
+
+      <p class='tip'>💡 营养是康复的"加速器"，但不能替代医学治疗。严重损伤（韧带断裂、应力性骨折）请先就医，营养是辅助不是替代。</p>
+      <hr><p><em>参考文献：NSCA-CPT 第6版·运动损伤与营养康复 / British Journal of Sports Medicine 2019 营养与运动损伤 / Dubois et al. PEACE & LOVE 2022 / Keith Baar 胶原蛋白与肌腱修复研究 2017</em></p>
     </div>`,
   ],
     competition: [
