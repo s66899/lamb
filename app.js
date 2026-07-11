@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.8.1';
+const APP_VERSION = 'v3.8.2';
 const APP_DATE = '2026-07-11';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -221,7 +221,32 @@ const MODULE_CONTENT = {
       <h3>不同训练类型的营养微调</h3>
       <table><tr><th>训练类型</th><th>训练前</th><th>训练后</th></tr><tr><td>力量训练</td><td>正常碳水+高蛋白</td><td>高蛋白+中碳水</td></tr><tr><td>耐力训练</td><td>高碳水（1-2g/kg）</td><td>高碳水+中蛋白</td></tr><tr><td>高强度间歇</td><td>高碳水+充足水合</td><td>高碳水+蛋白+电解质</td></tr><tr><td>技术训练</td><td>中碳水+正常水合</td><td>正常恢复餐即可</td></tr></table>
       <p class='tip'>💡 空腹训练会加速肌肉分解。即使是晨练，也建议吃一根香蕉或半片面包再训练。</p>
-      <hr><p><em>参考文献：ACSM Joint Position Statement: Nutrition and Athletic Performance, 2016 / NSCA-CPT 运动营养</em></p>
+
+      <h3>5.5 比赛日全天营养时间线</h3>
+      <p>比赛日的营养安排与日常训练不同——既要保证上场时能量充沛，又要避免消化负担影响发挥。下面以一场 <strong>14:00 开始的羽毛球比赛</strong> 为例，按时间顺序给出 7 个关键节点的营养策略：</p>
+      <table><tr><th>时间点</th><th>目标</th><th>推荐食物</th><th>大致量参考</th></tr>
+      <tr><td>起床 09:00</td><td>补水 + 启动代谢</td><td>温水 300ml + 全麦面包 1 片 + 煮蛋 1 个</td><td>约 250 kcal</td></tr>
+      <tr><td>赛前 3h 主餐 11:00</td><td>储备糖原（最关键的一餐）</td><td>燕麦 50g + 鸡胸肉 100g + 蔬菜 200g</td><td>500-700 kcal（碳水 2g/kg）</td></tr>
+      <tr><td>赛前 1h 加餐 13:00</td><td>补充血糖</td><td>香蕉 1 根 + 运动饮料 200ml</td><td>约 200 kcal</td></tr>
+      <tr><td>赛前 30min 顶能量 13:30</td><td>最后一击能量</td><td>半根香蕉 + 温水 100ml</td><td>约 50 kcal</td></tr>
+      <tr><td>比赛中（>60min）</td><td>维持能量 + 补水</td><td>运动饮料（4-6% 碳水）+ 少量清水</td><td>30-60g 碳水/小时 + 150-250ml/15min</td></tr>
+      <tr><td>赛后 30min 黄金窗口 14:45</td><td>启动恢复</td><td>蛋白粉 1 勺（25g）+ 香蕉 1 根 + 巧克力奶 300ml</td><td>25g 蛋白 + 70g 碳水</td></tr>
+      <tr><td>赛后 3h 正餐 17:00</td><td>全面修复</td><td>三文鱼/鸡腿 150g + 糙米 100g + 西兰花 + 橄榄油</td><td>约 600-800 kcal</td></tr>
+      </table>
+      <p><strong>三条比赛日铁律</strong>：</p>
+      <ol><li><strong>赛前 3h 主餐不能省</strong>：这是肌糖原储备的最后一击，不吃=后半场明显掉速</li><li><strong>赛前 30min 只能吃"轻"</strong>：固体食物会让跳杀时胃部不适，最多半根香蕉</li><li><strong>赛后 30min 内必补</strong>：错过这个窗口，肌糖原再合成速率降低 50%</li></ol>
+
+      <h3>5.6 业余球友 5 大营养误区</h3>
+      <p>营养理论都对，但执行起来就出错——这是业余球友最常见的 5 个「知错犯」：</p>
+      <table><tr><th>#</th><th>误区</th><th>为什么错</th><th>正确做法</th></tr>
+      <tr><td>1</td><td><strong>空腹训练更减肥</strong></td><td>空腹有氧时身体 60% 能量来自肌肉蛋白分解，肌肉流失 &gt; 脂肪流失</td><td>晨练前 1 根香蕉或半片面包垫底</td></tr>
+      <tr><td>2</td><td><strong>训练后只喝蛋白粉</strong></td><td>只补蛋白不补碳水 → 肌糖原恢复不足 → 下次训练掉速 20%</td><td>蛋白:碳水 = 1:3，至少 70g 碳水 + 25g 蛋白</td></tr>
+      <tr><td>3</td><td><strong>训练中不喝水省事</strong></td><td>脱水 2% 时体能表现下降 10-20%，注意力也明显下滑</td><td>每 15-20 分钟喝几口（约 150-250ml）</td></tr>
+      <tr><td>4</td><td><strong>赛前不吃饭怕吐</strong></td><td>血糖低 → 头晕乏力 → 上场 20 分钟就腿软</td><td>赛前 3h 主餐 + 赛前 30min 半根香蕉</td></tr>
+      <tr><td>5</td><td><strong>训练后大吃大喝"补回来"</strong></td><td>60 分钟中等强度训练 ≈ 400-500 kcal ≈ 1 个汉堡；吃 1 小时自助餐 &gt; 跑 3 小时</td><td>训练后吃恢复餐（碳水+蛋白），不是庆功宴</td></tr>
+      </table>
+      <p class='tip'>💡 营养不是"额外加分"，是训练的<strong>一部分</strong>。练得好但吃错了，等于练了 80% 扔了 50%。NSCA 原则：<u>先评估身体，再设计训练，再匹配营养</u>——三个环节缺一不可。</p>
+      <hr><p><em>参考文献：ACSM Joint Position Statement: Nutrition and Athletic Performance, 2016 / NSCA-CPT 运动营养 / Burke L. Practical Sports Nutrition (2020)</em></p>
     </div>`,
     // 6. 蛋白质策略
     `<div class="reader-module-content"><h2>🥩 蛋白质摄入策略</h2>
