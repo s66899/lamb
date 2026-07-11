@@ -114,6 +114,37 @@
 - [ ] 当前需继续写下一章（羽毛球ch12、金融ch12、心理学ch11、工程力学ch11）
 - [i] 定时任务cron持续故障，需修复或手动执行
 
+### 🚀 v3.7.9 当前版本（2026-07-08）
+- 6 维能力雷达：加 application 实战应用（紫色 + (新) 标记）
+- 总分仍用 5 维算（原口径不变, 6 维独立雷达不计入总分）
+- application 默认 50%,可从 lamb_application_v1.{score} 读
+- readApplicationProgress 有裁剪 (0~1) + 损坏 JSON fallback 50%
+- 教练评语：openStudentProfile 顶部加 评语区 + 写评语 UI
+- COMMENTS_KEY = lamb_received_comments_v1 (localStorage 存)
+- Commit 509664c push 到 book
+- Live 验证: app.js 267589 bytes + 4 关键字符串命中
+- Lesson: verify 脚本要手动设 MANIFEST=MANIFEST_DATA,因 DOMContentLoaded 不在 vm 中触发
+
+### 🚀 v3.7.8 当前版本（2026-07-08）
+- 密码安全修复：每次刷新都要重新输入（按 Lamb 要求更安全）
+- checkPw 改用 localStorage.removeItem(SITE_KEY) — 不写新缓存
+- initPwGate 主动 removeItem(SITE_KEY) — 清掉旧 72h 缓存避免被绕过
+- 所有错误路径都包 try/catch (localStorage 抛错也不崩)
+- 6 个场景验证全过：脚本 parse 、错密不开启、正确开锁清缓存、刷新重输、错误路径不走崩
+- Commit 2ff75dd push 到 book
+- Live 验证: 20441 bytes + cache-bust v3.7.8 + removeItem 部署成功
+
+原 v3.7.8 计划 (6维能力图 + 教练评语) → 顺延到 v3.7.9
+
+### 🚀 v3.7.7 当前版本（2026-07-08）
+- 学员问卷 3 步 (水平 1 题 + 伤病 6 项 + 优势 6 项 = 13 交互点,30秒填完)
+- localStorage 新增 lamb_student_profile_v1
+- applyProfileToWeights 逻辑: 伤病下调 ×0.4~0.7,优势上调 ×1.1~1.25,全级加成(学习快)不带 marker
+- openLevelDetail 改读 effective weight,带 ❄️(伤)/🔥(强) marker + (原 x%) 文本
+- LEVELS 区域底部加 "📋 我的个性化训练方案" 入口按钮
+- Commit bc12bbe push 到 book
+- Live 验证: 263124 bytes + 4 个关键字符串命中
+
 ### 🚀 v3.7.6 当前版本（2026-07-08）
 - iOS 灵动效 + a11y:header 羽毛球 logo 轻浮动 (translateY -3px + rotate 1.5° + scale 1.05 复合 3.5s ease-in-out)
 - @media (prefers-reduced-motion: reduce) 关动画用户全部禁用

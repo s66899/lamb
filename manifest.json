@@ -6865,7 +6865,7 @@
         {
           "file": "ch01-introduction.md",
           "title": "Introduction",
-          "words": 6816,
+          "words": 9800,
           "h2s": [
             {
               "title": "本章导言",
@@ -6959,11 +6959,36 @@
                   "level": 3
                 }
               ]
+            },
+            {
+              "title": "六、羽毛球专项体能评估速查表（NSCA-CPT 评估先行原则的实践）",
+              "subs": [
+                {
+                  "title": "6.1 NSCA 标准体能测试流程（5 项核心）",
+                  "level": 3
+                },
+                {
+                  "title": "6.2 羽毛球专项测试（3 项加测）",
+                  "level": 3
+                },
+                {
+                  "title": "6.3 自评打分表（10 分钟速查版）",
+                  "level": 3
+                },
+                {
+                  "title": "6.4 评估结果与训练方案对应（弱项 → 训练处方）",
+                  "level": 3
+                },
+                {
+                  "title": "6.5 自测常见误区",
+                  "level": 3
+                }
+              ]
             }
           ]
         }
       ],
-      "totalWords": 6816,
+      "totalWords": 9800,
       "chapterCount": 1
     },
     {
