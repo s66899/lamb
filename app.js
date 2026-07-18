@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.8.4';
+const APP_VERSION = 'v3.8.5';
 const APP_DATE = '2026-07-18';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -1797,31 +1797,70 @@ function openLevelDetail(levelId) {
   try {
     const a = (typeof calcAbilityScore === 'function') ? calcAbilityScore() : null;
     if (a && a.dims) {
-      // v3.7.9: 6 维能力雷达 (読/模块/测验/连续/掌握/实战应用)
-      const dims = [
-        { key:'read',       name:'📖 阅读' },
-        { key:'modules',    name:'🏋️ 模块' },
-        { key:'quiz',       name:'🧪 测验' },
-        { key:'streak',     name:'🔥 连续' },
-        { key:'methods',    name:'🎓 掌握' },
-        { key:'application',name:'⚔️ 实战应用' },
+      // v3.8.5: 6 维能力雷达改 SVG 多边形 (取代水平条形)
+      // 6 维按学习流程顺时针: 阅读→模块→测验(输入)→连续→掌握(过程)→实战应用(输出)
+      const radarDims = [
+        { key:'read',       name:'阅读',  emoji:'📖', angle:-90, color:'#3b82f6' },
+        { key:'modules',    name:'模块',  emoji:'🏋️', angle:-30, color:'#3b82f6' },
+        { key:'quiz',       name:'测验',  emoji:'🧪', angle: 30, color:'#3b82f6' },
+        { key:'streak',     name:'连续',  emoji:'🔥', angle: 90, color:'#3b82f6' },
+        { key:'methods',    name:'掌握',  emoji:'🎓', angle:150, color:'#3b82f6' },
+        { key:'application',name:'实战',  emoji:'⚔️', angle:210, color:'#a855f7' },
       ];
-      radarHtml = `<div style="margin-top:14px;padding:10px;background:var(--bg3);border-radius:10px;text-align:left">
-        <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--gold)">🎯 你的当前 6 维能力评分</div>`;
-      dims.forEach(d => {
-        const v = a.dims[d.key] || 0;
-        const isSixth = d.key === 'application';
-        const color = isSixth ? 'var(--purple)' : 'var(--blue)';
-        const note = isSixth ? ' <span style="font-size:9px;color:var(--text3)">(新)</span>' : '';
-        radarHtml += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-          <span style="font-size:11px;min-width:75px">${d.name}${note}</span>
-          <div style="flex:1;margin:0 8px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:${v}%;background:${color};border-radius:3px"></div>
-          </div>
-          <span style="font-size:11px;color:var(--text3);min-width:30px;text-align:right">${Math.round(v)}%</span>
-        </div>`;
+      const center = 110, maxR = 70;
+      // 6 个顶点的实际位置 (按分数 0~100 缩放)
+      const points = radarDims.map(d => {
+        const v = Math.min(100, Math.max(0, a.dims[d.key] || 0));
+        const r = maxR * v / 100;
+        const rad = d.angle * Math.PI / 180;
+        return {
+          ...d,
+          v,
+          x: center + r * Math.cos(rad),
+          y: center + r * Math.sin(rad),
+          lx: center + (maxR + 16) * Math.cos(rad),
+          ly: center + (maxR + 16) * Math.sin(rad),
+        };
       });
-      radarHtml += `<div style="text-align:center;font-size:10px;color:var(--text3);margin-top:8px">总分：${a.score}/100 (6 维独立雷达,不计分)</div></div>`;
+      const dataPts = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+      // 4 圈背景网格 (25/50/75/100%)
+      const gridPolys = [25, 50, 75, 100].map(pct => {
+        const r = maxR * pct / 100;
+        const pts = radarDims.map(d => {
+          const rad = d.angle * Math.PI / 180;
+          return `${(center + r*Math.cos(rad)).toFixed(1)},${(center + r*Math.sin(rad)).toFixed(1)}`;
+        }).join(' ');
+        return `<polygon points="${pts}" fill="none" stroke="#475569" stroke-width="0.5" opacity="${pct===100?0.7:0.3}"/>`;
+      }).join('');
+      // 6 条轴线
+      const axisLines = radarDims.map(d => {
+        const rad = d.angle * Math.PI / 180;
+        const x2 = center + maxR * Math.cos(rad);
+        const y2 = center + maxR * Math.sin(rad);
+        return `<line x1="${center}" y1="${center}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#475569" stroke-width="0.5" opacity="0.4"/>`;
+      }).join('');
+      // 6 个顶点圆点 + 外围标签 (含数值)
+      const dots = points.map(p => {
+        return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="${p.color}" stroke="var(--bg3)" stroke-width="1"/>
+          <text x="${p.lx.toFixed(1)}" y="${p.ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="var(--text2)">${p.emoji}${Math.round(p.v)}</text>`;
+      }).join('');
+      // 中心显示总分
+      const centerText = `<text x="${center}" y="${center - 4}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--gold)">${a.score}</text>
+        <text x="${center}" y="${center + 9}" text-anchor="middle" font-size="8" fill="var(--text3)">/ 100</text>`;
+      radarHtml = `<div style="margin-top:14px;padding:10px;background:var(--bg3);border-radius:10px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:var(--gold);text-align:left">🎯 6 维能力雷达 <span style="font-size:9px;color:var(--text3);font-weight:400">v3.8.5 SVG 版</span></div>
+        <svg viewBox="0 0 220 230" style="width:100%;max-width:240px;height:auto;display:block;margin:0 auto">
+          ${gridPolys}
+          ${axisLines}
+          <polygon points="${dataPts}" fill="rgba(99,140,255,0.18)" stroke="#3b82f6" stroke-width="1.5" stroke-linejoin="round"/>
+          ${dots}
+          ${centerText}
+        </svg>
+        <div style="text-align:center;font-size:9px;color:var(--text3);margin-top:4px;line-height:1.5">
+          蓝 5 维权重: 阅读25% + 模块25% + 测验20% + 连续15% + 掌握15%<br>
+          紫⚔️实战应用: 独立维度, 默认 50% 起步 (待接入实战数据源)
+        </div>
+      </div>`;
     }
   } catch(e) { /* calc not yet defined, skip radar */ }
   const html = `<div style="text-align:center;padding:8px 4px">
