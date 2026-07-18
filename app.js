@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.8.5';
+const APP_VERSION = 'v3.8.6';
 const APP_DATE = '2026-07-18';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -1797,7 +1797,25 @@ function openLevelDetail(levelId) {
   try {
     const a = (typeof calcAbilityScore === 'function') ? calcAbilityScore() : null;
     if (a && a.dims) {
-      // v3.8.5: 6 维能力雷达改 SVG 多边形 (取代水平条形)
+      // v3.8.6 实用版: 雷达下方加「数据明细」—— 每个维度的原始数、公式、localStorage 来源
+      const _p = getP(), _rp = getRP();
+      const _totalCh = MANIFEST.books.reduce((s,b)=>s+b.chapters.length, 0);
+      const _readCount = MANIFEST.books.reduce((s,b)=>s+(_p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length, 0);
+      const _visitedCount = (_rp.visitedModules || []).length;
+      const _quizCount = _rp.totalQuizCorrect || 0;
+      const _levelCount = _rp.level || 1;
+      let _appRaw = null;
+      try { _appRaw = JSON.parse(localStorage.getItem('lamb_application_v1') || 'null'); } catch(e) {}
+      const _appValid = _appRaw && typeof _appRaw.score === 'number';
+      const _detailRows = [
+        { emoji:'📖', name:'阅读', key:'read',       val:a.dims.read,       raw:`${_readCount}/${_totalCh} 章`,            src:'localStorage["lamb_progress"]',          formula:'已读数 ÷ 总章数 × 100', placeholder:false },
+        { emoji:'🏋️', name:'模块', key:'modules',    val:a.dims.modules,    raw:`${_visitedCount}/6 个模块`,              src:'localStorage["lamb_role_data.visitedModules"]', formula:'访问数 ÷ 6 × 100',       placeholder:false },
+        { emoji:'🧪', name:'测验', key:'quiz',       val:a.dims.quiz,       raw:`${_quizCount} 题对 (满≈200)`,          src:'localStorage["lamb_role_data.totalQuizCorrect"]', formula:'log10(正确+1) ÷ log10(201) × 100', placeholder:false },
+        { emoji:'🔥', name:'连续', key:'streak',     val:a.dims.streak,     raw:`${a.streak} 天 (封顶 100)`,             src:'localStorage["lamb_progress._streak"]',  formula:'连续天数 ÷ 100 × 100',  placeholder:false },
+        { emoji:'🎓', name:'掌握', key:'methods',    val:a.dims.methods,    raw:`${_levelCount}/30 级`,                   src:'localStorage["lamb_role_data.level"]',   formula:'等级 ÷ 30 × 100',       placeholder:false },
+        { emoji:'⚔️', name:'实战', key:'application',val:a.dims.application,raw: _appValid ? `${Math.round(_appRaw.score*100)}% · ${_appRaw.note||'本地存值'}` : '暂无数据·默认 50%', src:'localStorage["lamb_application_v1"]', formula:_appValid?'读取本地值':'无值时取 0.5', placeholder:!_appValid },
+      ];
+      // v3.8.5: 6 维能力雷达改 SVG 多边形 (取代水平条形) | v3.8.6 实用版: 下方加「数据明细」(原始数+公式+localStorage 来源)
       // 6 维按学习流程顺时针: 阅读→模块→测验(输入)→连续→掌握(过程)→实战应用(输出)
       const radarDims = [
         { key:'read',       name:'阅读',  emoji:'📖', angle:-90, color:'#3b82f6' },
@@ -1848,7 +1866,7 @@ function openLevelDetail(levelId) {
       const centerText = `<text x="${center}" y="${center - 4}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--gold)">${a.score}</text>
         <text x="${center}" y="${center + 9}" text-anchor="middle" font-size="8" fill="var(--text3)">/ 100</text>`;
       radarHtml = `<div style="margin-top:14px;padding:10px;background:var(--bg3);border-radius:10px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:var(--gold);text-align:left">🎯 6 维能力雷达 <span style="font-size:9px;color:var(--text3);font-weight:400">v3.8.5 SVG 版</span></div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:var(--gold);text-align:left">🎯 6 维能力雷达 <span style="font-size:9px;color:var(--text3);font-weight:400">v3.8.6 实用版 · 数据全公开</span></div>
         <svg viewBox="0 0 220 230" style="width:100%;max-width:240px;height:auto;display:block;margin:0 auto">
           ${gridPolys}
           ${axisLines}
@@ -1858,7 +1876,40 @@ function openLevelDetail(levelId) {
         </svg>
         <div style="text-align:center;font-size:9px;color:var(--text3);margin-top:4px;line-height:1.5">
           蓝 5 维权重: 阅读25% + 模块25% + 测验20% + 连续15% + 掌握15%<br>
-          紫⚔️实战应用: 独立维度, 默认 50% 起步 (待接入实战数据源)
+          紫⚔️实战应用: 独立维度, 不进总分
+        </div>
+        <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);text-align:left">
+          <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px">📊 各维度数据明细 <span style="font-size:9px;color:var(--text3);font-weight:400">— 数据怎么来的</span></div>
+          ${_detailRows.map(r => {
+            const w = Math.min(100, Math.max(0, r.val));
+            const col = r.placeholder ? 'var(--text3)' : 'var(--blue)';
+            const bgCol = r.placeholder ? 'var(--text3)' : (r.key==='application' ? '#a855f7' : 'var(--blue)');
+            return `<div style="margin-bottom:5px">
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px">
+                <span style="width:46px;flex-shrink:0;color:var(--text)">${r.emoji} ${r.name}</span>
+                <span style="width:34px;flex-shrink:0;font-weight:700;color:${col};text-align:right">${Math.round(r.val)}%</span>
+                <span style="flex:1;height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;min-width:30px">
+                  <span style="display:block;height:100%;width:${w}%;background:${bgCol};border-radius:3px"></span>
+                </span>
+                <span style="flex-shrink:0;color:${r.placeholder?'var(--text3)':'var(--text2)'};font-size:9px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.raw}</span>
+              </div>
+              <div style="font-size:8.5px;color:var(--text3);padding-left:51px;margin-top:1px;line-height:1.45;display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+                <span>公式: <span style="color:var(--text2)">${r.formula}</span></span>
+                <span>·</span>
+                <span>来源: <code style="font-size:8.5px;background:var(--bg2);padding:0 3px;border-radius:2px;font-family:monospace">${r.src}</code></span>
+              </div>
+            </div>`;
+          }).join('')}
+          ${!_appValid ? `<div style="margin-top:7px;padding:6px 8px;background:var(--bg2);border-radius:5px;font-size:9px;color:var(--text3);line-height:1.55">
+            <div style="color:var(--text2);font-weight:600;margin-bottom:3px">⚔️ 实战应用·接入指南</div>
+            当前 <code style="font-size:9px">localStorage["lamb_application_v1"]</code> 暂未存值或格式不对，所以取默认 0.5。<br>
+            <strong style="color:var(--text2)">手动设值</strong> (浏览器控制台 / F12 → Console):
+            <code style="display:block;margin-top:3px;padding:4px 6px;background:var(--bg);border-radius:3px;font-size:9px;line-height:1.5;font-family:monospace;color:var(--text2)">localStorage.setItem('lamb_application_v1', JSON.stringify({score: 0.65, note: '最近 5 场 4 胜 1 负', updatedAt: Date.now()}))</code>
+            <strong style="color:var(--text2)">计划接入</strong>: 比赛成绩 (胜率) + 训练日志 (动作完成率) + 对手评估。
+          </div>` : `<div style="margin-top:7px;padding:5px 8px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:5px;font-size:9px;color:var(--text2);line-height:1.5">
+            ✅ 实战数据已从 localStorage 读取:<br>
+            <code style="font-size:9px;font-family:monospace">${JSON.stringify(_appRaw).slice(0,120)}${JSON.stringify(_appRaw).length>120?'…':''}</code>
+          </div>`}
         </div>
       </div>`;
     }
