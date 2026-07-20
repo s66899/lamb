@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>🏸 羽毛球系统训练 · NSCA-CPT 科学体系</title>
-<link rel="stylesheet" href="style.css?v=v3.8.7">
+<link rel="stylesheet" href="style.css?v=v3.8.8">
 </head>
 <body>
 
@@ -396,6 +396,26 @@ function kickDevice(fingerprint) {
 
 // ── 入口 ──
 initPwGate();
+
+/* ── 主题切换 (深绿 dark) ───────────────────── */
+(function() {
+  const KEY = 'lamb-theme';
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem(KEY, t); } catch(e) {}
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌓';
+  }
+  // 启动时读 localStorage,默认 light
+  let saved = 'light';
+  try { saved = localStorage.getItem(KEY) || 'light'; } catch(e) {}
+  applyTheme(saved);
+  // 暴露全局 toggle
+  window.toggleTheme = function() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  };
+})();
 </script>
 </body>
 </html>
