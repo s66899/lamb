@@ -94,16 +94,18 @@
 }
 
 [data-theme="dark"] {
-  --bg:#1c1c1e; --bg2:#2c2c2e; --bg3:#3a3a3c; --bg4:#48484a;
-  --border:#48484a; --border2:#636366;
-  --text:#f5f5f7; --text2:#d1d1d6; --text3:#aeaeb2; --text4:#8e8e93;
-  --blue:#0a84ff; --blue2:#409cff; --blue3:#0071e3;
-  --green:#30d158; --green2:#248a3d;
-  --orange:#ff9f0a; --red:#ff453a;
-  --purple:#bf5af2; --gold:#ffd60a;
-  --shadow:0 2px 14px rgba(0,0,0,.3);
-  --shadow-sm:0 1px 6px rgba(0,0,0,.15);
-  --shadow-card:0 2px 12px rgba(0,0,0,.2);
+  --bg:#0f1f17;     /* æ·±æ£®æž—ç»¿åº• */
+  --bg2:#1a2e23;
+  --bg3:#243d2f;
+  --bg4:#2f4d3b;
+  --border:#3a5a48; --border2:#4a6e58;
+  --text:#d8e6d8;   /* æµ…ç»¿å­— */
+  --text2:#a8c0a8;
+  --text3:#7a9a7a;
+  --text4:#5a7a5a;
+  --blue:#52b788;
+  --blue2:#74c69d;
+  --blue3:#95d5b2;
 }
 
 /* Dark mode contrast boost for small text/numbers (2026-07-06 fix) */
@@ -1215,11 +1217,11 @@ header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
 }
 .qw-sm { font-size: 12px; padding: 12px 16px; }
 
-/* ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
-   v3.7.6 ¡ª iOS Áé¶¯Ð§ + a11y
-   ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T */
+/* ï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½T
+   v3.7.6 ï¿½ï¿½ iOS ï¿½é¶¯Ð§ + a11y
+   ï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½T */
 
-/* ?? header ÓðÃ«Çò logo Çá¸¡¶¯ ¡ª ¸´ºÏ transform,3 ¸ö motion ¸´ºÏ */
+/* ?? header ï¿½ï¿½Ã«ï¿½ï¿½ logo ï¿½á¸¡ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ transform,3 ï¿½ï¿½ motion ï¿½ï¿½ï¿½ï¿½ */
 @keyframes floatLogo {
   0%, 100% { transform: translateY(0) rotate(0) scale(1); }
   50%      { transform: translateY(-3px) rotate(1.5deg) scale(1.05); }
@@ -1231,7 +1233,7 @@ header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
   animation-play-state: paused;
 }
 
-/* ?? a11y: ¹Ø¶¯»­ÓÃ»§ */
+/* ?? a11y: ï¿½Ø¶ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
