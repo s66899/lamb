@@ -94,18 +94,18 @@
 }
 
 [data-theme="dark"] {
-  --bg:#0f1f17;     /* 深森林绿底 */
-  --bg2:#1a2e23;
-  --bg3:#243d2f;
-  --bg4:#2f4d3b;
+  --bg:#0f1f17; --bg2:#1a2e23; --bg3:#243d2f; --bg4:#2f4d3b;
+  --surface:#1a2e23; --surface2:#243d2f; --surface3:#2f4d3b;
   --border:#3a5a48; --border2:#4a6e58;
-  --text:#d8e6d8;   /* 浅绿字 */
-  --text2:#a8c0a8;
-  --text3:#7a9a7a;
-  --text4:#5a7a5a;
-  --blue:#52b788;
-  --blue2:#74c69d;
-  --blue3:#95d5b2;
+  --text:#d8e6d8; --text2:#a8c0a8; --text3:#7a9a7a; --text4:#5a7a5a;
+  --blue:#52b788; --blue2:#74c69d; --blue3:#95d5b2;
+  --green:#52b788; --green2:#74c69d;
+  --orange:#f97316; --red:#ff6b6b;
+  --purple:#a78bfa; --gold:#fbbf24; --pink:#f472b6; --teal:#5eead4;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.25);
+  --shadow-card:0 8px 32px rgba(0,0,0,.3);
+  --shadow-glow:0 0 30px rgba(82,183,136,.15);
 }
 
 /* Dark mode contrast boost for small text/numbers (2026-07-06 fix) */
@@ -993,8 +993,18 @@ input:focus, select:focus, textarea:focus {
 }
 
 [data-theme="dark"] {
-  --bg:#0a0a0f; --bg2:#12121f; --bg3:#1a1a2e; --bg4:#222240;
-  --border:#282850; --border2:#383868;
+  --bg:#0f1f17; --bg2:#1a2e23; --bg3:#243d2f; --bg4:#2f4d3b;
+  --surface:#1a2e23; --surface2:#243d2f; --surface3:#2f4d3b;
+  --border:#3a5a48; --border2:#4a6e58;
+  --text:#d8e6d8; --text2:#a8c0a8; --text3:#7a9a7a; --text4:#5a7a5a;
+  --blue:#52b788; --blue2:#74c69d; --blue3:#95d5b2;
+  --green:#52b788; --green2:#74c69d;
+  --orange:#f97316; --red:#ff6b6b;
+  --purple:#a78bfa; --gold:#fbbf24; --pink:#f472b6; --teal:#5eead4;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.25);
+  --shadow-card:0 8px 32px rgba(0,0,0,.3);
+  --shadow-glow:0 0 30px rgba(82,183,136,.15);
 }
 
 /* ── 背景层（紫蓝渐变） ─────────────────────────── */
