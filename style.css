@@ -976,11 +976,11 @@ input:focus, select:focus, textarea:focus {
    - 响应式自适应
 ════════════════════════════════════════════════════════════════════════ */
 :root {
-  --bg:#0c0c14; --bg2:#16162a; --bg3:#1e1e3a; --bg4:#282850;
+  --bg:#f5f7f3; --bg2:#16162a; --bg3:#1e1e3a; --bg4:#282850;
   --surface:#16162a; --surface2:#1e1e3a; --surface3:#282850;
   --border:#333366; --border2:#48486a;
-  --text:#f0f0ff; --text2:#9090b0; --text3:#606080; --text4:#484870;
-  --blue:#3b82f6; --blue2:#2563eb; --blue3:#1d4ed8;
+  --text:#1a1d1a; --text2:#9090b0; --text3:#606080; --text4:#484870;
+  --blue:#2d6a4f; --blue2:#52b788; --blue3:#1b4332;
   --green:#22c55e; --orange:#f97316; --red:#ff4466;
   --purple:#8b5cf6; --gold:#fbbf24; --pink:#ec4899; --teal:#14b8a6;
   --radius:14px; --radius-sm:10px; --radius-lg:20px;
