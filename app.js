@@ -1461,6 +1461,17 @@ function toggleSideSection(el) {
 }
 
 // ─── 训练模块详情 ────────────────────────
+// 学员端"开始今日训练"专用：直接跳转到书籍章节
+function startDailyTraining(bookId, chapterIdx) {
+  if (!MANIFEST) return;
+  const book = MANIFEST.books.find(b => b.id === bookId);
+  if (!book) return;
+  currentBookId = bookId;
+  currentModule = 'tower';
+  showView('reader');
+  openChapter(chapterIdx);
+}
+
 function openTrainModule(modId) {
   const mod = TRAIN_MODULES.find(m=>m.id===modId);
   if (!mod) return;
@@ -2940,7 +2951,13 @@ function toggleFocus() { document.body.classList.toggle('focus-mode',!focusMode)
 function increaseFont() { if(fontBase<22){fontBase++;applyFont();} }
 function decreaseFont() { if(fontBase>12){fontBase--;applyFont();} }
 function applyFont() { document.documentElement.style.setProperty('--font-base',fontBase+'px'); localStorage.setItem('bk_font',fontBase); }
-function toggleTheme() { const cur=document.documentElement.getAttribute('data-theme'); document.documentElement.setAttribute('data-theme',cur==='light'?'':'light'); localStorage.setItem('bk_theme',cur==='light'?'':'light'); }
+function toggleTheme() { 
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('bk_theme', next);
+  document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌓';
+}
 function toggleReadMark() { const ch=getCurChapter(); if(!ch)return; if(isRead(currentBookId,ch.file)) unmarkRead(currentBookId,ch.file); else markRead(currentBookId,ch.file); $('readMarkBtn').textContent=isRead(currentBookId,ch.file)?'✅':'📌'; }
 function getCurChapter() { if(!currentBookId||currentChapterIdx<0) return null; const b=MANIFEST?.books.find(x=>x.id===currentBookId); return b?.chapters[currentChapterIdx]||null; }
 function prevChapter() { if(currentChapterIdx>0) openChapter(currentChapterIdx-1); }
@@ -3200,7 +3217,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   bar.style.width='25%';await sleep(150);
   MANIFEST = MANIFEST_DATA;
   bar.style.width='60%';await sleep(120);
-  const theme=localStorage.getItem('bk_theme');if(theme)document.documentElement.setAttribute('data-theme',theme);
+  const theme = localStorage.getItem('bk_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌓';
   const savedFont=localStorage.getItem('bk_font');if(savedFont){fontBase=parseInt(savedFont);document.documentElement.style.setProperty('--font-base',fontBase+'px');}
   bar.style.width='90%';await sleep(200);
   initRP();bar.style.width='100%';await sleep(200);
@@ -3432,7 +3451,7 @@ function showStudentDashboard() {
         <div style="font-size:13px;font-weight:600">${nextChapter.title}</div>
       </div>
       <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:8px">${dailyHint}</div>
-      <button onclick="openTrainModule('${nextBook.id}');setTimeout(()=>openModuleTopic('${nextBook.id}',${nextIdx}),300)" class="tb-btn" style="width:100%;background:var(--gold);color:#000;font-weight:600">▶ 开始今日训练</button>
+      <button onclick="startDailyTraining('${nextBook.id}', ${nextIdx})" class="tb-btn" style="width:100%;background:var(--gold);color:#000;font-weight:600">▶ 开始今日训练</button>
     </div>
   ` : `
     <div class="calc-card" style="grid-column:1/-1;padding:14px;background:linear-gradient(135deg,var(--bg2),rgba(61,214,140,.08));border:2px solid var(--green);text-align:center">

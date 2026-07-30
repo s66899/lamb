@@ -2,7 +2,7 @@
    🏸 羽毛球系统训练 · 纯净风格（Apple-inspired）
    ════════════════════════════════════════════════════════════ */
 
-:root {
+[data-theme="light"] {
   --bg:#f5f7f3; --bg2:#ffffff; --bg3:#e8e8ed; --bg4:#d1d1d6;
   --border:#d2d2d7; --border2:#c7c7cc;
   --text:#1a1d1a; --text2:#6e6e73; --text3:#86868b; --text4:#aeaeb2;
