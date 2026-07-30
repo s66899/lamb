@@ -2523,39 +2523,60 @@ function openCoach() {
   updateProgress();
 }
 
-// ─── 生成训练方案 (v3.8.7: 饼图交互) ────────────────────────
+// ─── 生成训练方案 (v3.8.7: 饼图交互+科学训练算法) ────────────────────────
 function generateCoachPlan() {
   const level = parseInt(document.getElementById('coachLevel')?.value);
   const freq = parseInt(document.getElementById('coachFreq')?.value);
   const time = parseInt(document.getElementById('coachTime')?.value);
   if (isNaN(level) || isNaN(freq)) { return; }
 
-  // 训练类别数据
+  // ========== 科学训练算法：基于NSCA周期化原则 + 羽毛球专项 ==========
+  // 根据级别和频率计算各模块占比
+  const getPct = (base, slope) => Math.max(10, base + slope * level);
+  
+  // 技术训练：初学者占比高，随着级别提升逐渐降低（动作定型后需要更多体能支撑）
+  const techniquePct = Math.round(getPct(55, -5));
+  // 力量训练：级别越高需要更多力量支撑技术输出
+  const strengthPct = Math.round(getPct(12, 3));
+  // 体能训练：专业级需要更强体能
+  const cardioPct = Math.round(getPct(13, 2));
+  // 恢复：保证训练质量
+  const recoveryPct = 100 - techniquePct - strengthPct - cardioPct;
+
+  // 根据频率调整每次训练内容分配
+  const timePerSession = time;
+  const sessionsPerWeek = freq;
+  
+  // 训练类别数据（根据级别动态生成）
   const categories = [
-    { name: '技术训练', pct: Math.max(15, 55 - level * 5), color: '#0a84ff', 
-      drills: [
-        { name: level <= 1 ? '握拍挥拍空击' : level <= 3 ? '高远球对拉' : '杀球连贯', sets: 4, reps: '20拍/组', freq: '3次/周' },
-        { name: level <= 1 ? '基本步伐练习' : level <= 3 ? '网前小球' : '假动作+变速', sets: 3, reps: '15分钟', freq: '2次/周' },
-        { name: level <= 1 ? '发球基础' : level <= 3 ? '反手技术' : '战术组合', sets: 3, reps: '20分钟', freq: '2次/周' },
-      ]},
-    { name: '力量训练', pct: Math.max(10, 15 + level * 3), color: '#30d158',
-      drills: [
-        { name: '核心稳定性', sets: 3, reps: '45秒/组', freq: '2次/周' },
-        { name: level <= 2 ? '徒手深蹲' : '负重深蹲', sets: 3, reps: '12次/组', freq: '2次/周' },
-        { name: level <= 2 ? '弹跳力基础' : '爆发力', sets: 3, reps: '10次/组', freq: '1次/周' },
-      ]},
-    { name: '体能训练', pct: Math.max(10, 15 + level * 2), color: '#ff9f0a',
-      drills: [
-        { name: '间歇跑 400m', sets: 6, reps: '组', freq: '1次/周' },
-        { name: '跳绳双飞', sets: 3, reps: '100次/组', freq: '2次/周' },
-        { name: '折返跑', sets: 4, reps: '10次/组', freq: '1次/周' },
-      ]},
-    { name: '恢复放松', pct: 100 - Math.max(15, 55 - level * 5) - Math.max(10, 15 + level * 3) - Math.max(10, 15 + level * 2), color: '#a855f7',
-      drills: [
-        { name: '全身拉伸', sets: 1, reps: '15分钟', freq: '每天' },
-        { name: '泡沫轴放松', sets: 1, reps: '10分钟', freq: '每次训练后' },
-        { name: '主动恢复', sets: 1, reps: '20分钟', freq: '1次/周' },
-      ]},
+    { 
+      name: '技术训练', 
+      pct: techniquePct, 
+      color: '#0a84ff',
+      timeAlloc: Math.round(timePerSession * techniquePct / 100),
+      drills: getTechniqueDrills(level, sessionsPerWeek, timePerSession)
+    },
+    { 
+      name: '力量训练', 
+      pct: strengthPct, 
+      color: '#30d158',
+      timeAlloc: Math.round(timePerSession * strengthPct / 100),
+      drills: getStrengthDrills(level, sessionsPerWeek, timePerSession)
+    },
+    { 
+      name: '体能训练', 
+      pct: cardioPct, 
+      color: '#ff9f0a',
+      timeAlloc: Math.round(timePerSession * cardioPct / 100),
+      drills: getCardioDrills(level, sessionsPerWeek, timePerSession)
+    },
+    { 
+      name: '恢复放松', 
+      pct: recoveryPct, 
+      color: '#a855f7',
+      timeAlloc: Math.round(timePerSession * recoveryPct / 100),
+      drills: getRecoveryDrills(level, sessionsPerWeek)
+    }
   ];
 
   // 生成饼图 SVG
@@ -2569,14 +2590,16 @@ function generateCoachPlan() {
     const x2 = 50 + 35 * Math.cos(2 * Math.PI * end / 100);
     const y2 = 50 + 35 * Math.sin(2 * Math.PI * end / 100);
     cum = end;
-    return `<path d="M50,50 L${x1},${y1} A35,35 0 ${large},1 ${x2},${y2} Z" fill="${cat.color}" stroke="var(--bg)" stroke-width="1" onclick="event.stopPropagation();showCoachDrills(${i})" style="cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"/>`;
+    return `<path d="M50,50 L${x1},${y1} A35,35 0 ${large},1 ${x2},${y2} Z" fill="${cat.color}" stroke="var(--bg)" stroke-width="1" onclick="event.stopPropagation();toggleCoachDrills(${i})" style="cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"/>`;
   }).join('');
 
   const levelNames = ['零基础','基础','入门','熟练','精进','战术','准专业','专业'];
-  const freqAdvice = freq <= 2 ? '低频率建议技术为主，每次90分钟专项训练' :
-                     freq <= 3 ? '标准频率技术+体能交替，力量每周2次' :
-                     freq <= 4 ? '高频率可采用分化训练：技术/力量/体能循环' :
-                     '超高频率注意疲劳管理，建议每4周减量一周';
+  
+  // 训练建议
+  const freqAdvice = getFrequencyAdvice(freq, level);
+
+  // 保存数据供点击使用
+  window._coachCategories = categories;
 
   document.getElementById('coachResult').innerHTML = `
     <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-top:8px;font-size:11px;line-height:1.6">
@@ -2599,7 +2622,7 @@ function generateCoachPlan() {
         <div style="flex:1;min-width:120px">
           <div style="font-size:10px;font-weight:600;margin-bottom:6px;color:var(--text2)">图例 · 点击查看详情</div>
           ${categories.map((cat, i) => `
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;cursor:pointer;padding:3px 5px;border-radius:4px;transition:background .2s" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'" onclick="showCoachDrills(${i})">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;cursor:pointer;padding:3px 5px;border-radius:4px;transition:background .2s" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'" onclick="toggleCoachDrills(${i})">
               <span style="width:10px;height:10px;border-radius:2px;background:${cat.color};flex-shrink:0"></span>
               <span style="font-size:11px;color:var(--text);flex:1">${cat.name}</span>
               <span style="font-size:10px;color:var(--text3)">${cat.pct}%</span>
@@ -2611,30 +2634,136 @@ function generateCoachPlan() {
       <div id="coachDrillsDetail"></div>
       
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--text2)">${freqAdvice}</div>
-      <div style="margin-top:4px;font-size:9px;color:var(--text3)">💡 每4周重新评估调整比例</div>
-    </div>
-    <script>
-      window._coachCategories = ${JSON.stringify(categories)};
-      window.showCoachDrills = function(idx) {
-        const cat = window._coachCategories[idx];
-        if (!cat) return;
-        const drillsHtml = cat.drills.map(d => 
-          '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg2);border-radius:6px;margin-bottom:4px;border-left:3px solid ' + cat.color + '">' +
-            '<div style="flex:1;font-size:11px"><strong>' + d.name + '</strong></div>' +
-            '<div style="font-size:10px;color:var(--text2)">' + d.sets + '组 × ' + d.reps + ' · ' + d.freq + '</div>' +
-          '</div>'
-        ).join('');
-        document.getElementById('coachDrillsDetail').innerHTML = 
-          '<div style="background:var(--bg2);border-radius:8px;padding:10px;margin-top:8px;border:1px solid var(--border)">' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-              '<div><span style="width:12px;height:12px;border-radius:3px;background:' + cat.color + ';display:inline-block;vertical-align:middle;margin-right:6px"></span><strong>' + cat.name + '</strong> · ' + cat.pct + '%</div>' +
-              '<button onclick="document.getElementById(\"coachDrillsDetail\").innerHTML=\"\"" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px">✕</button>' +
-            '</div>' +
-            '<div style="font-size:10px;color:var(--text2);margin-bottom:6px">针对性训练项目</div>' +
-            drillsHtml +
-          '</div>';
-      };
-    <\/script>`;
+      <div style="margin-top:4px;font-size:9px;color:var(--text3)">💡 每4周重新评估调整比例 · 遵循周期化训练原则</div>
+    </div>`;
+}
+
+// 切换训练详情显示
+function toggleCoachDrills(idx) {
+  const el = document.getElementById('coachDrillsDetail');
+  const cat = window._coachCategories?.[idx];
+  if (!cat) return;
+  
+  // 如果当前显示的就是这个分类，则关闭
+  if (el.dataset.currentIdx == idx && el.innerHTML) {
+    el.innerHTML = '';
+    el.dataset.currentIdx = '';
+    return;
+  }
+  
+  const drillsHtml = cat.drills.map(d => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border-radius:8px;margin-bottom:6px;border-left:3px solid ${cat.color}">
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${d.name}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">${d.sets}组 × ${d.reps} · ${d.freq}</div>
+        ${d.rest ? `<div style="font-size:10px;color:var(--text3);margin-top:2px">组间休息: ${d.rest}</div>` : ''}
+      </div>
+      <div style="font-size:16px">🏸</div>
+    </div>`).join('');
+  
+  el.innerHTML = `
+    <div style="background:var(--bg2);border-radius:10px;padding:12px;margin-top:10px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <span style="width:14px;height:14px;border-radius:4px;background:${cat.color};display:inline-block;vertical-align:middle;margin-right:6px"></span>
+          <span style="font-size:14px;font-weight:700;color:var(--text)">${cat.name}</span>
+          <span style="color:var(--text3);font-size:11px;margin-left:8px">${cat.pct}% · ${cat.timeAlloc}分钟/次</span>
+        </div>
+        <button onclick="this.closest('#coachDrillsDetail') ? this.closest('#coachDrillsDetail').innerHTML = '' : document.getElementById('coachDrillsDetail').innerHTML = ''" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px">✕</button>
+      </div>
+      <div style="font-size:10px;color:var(--text2);margin-bottom:8px">针对性训练项目 · ${cat.drills.length}项</div>
+      ${drillsHtml}
+    </div>`;
+  el.dataset.currentIdx = idx;
+}
+
+// ========== 科学训练动作库（根据级别、频率、时长动态生成）==========
+
+// 技术训练动作
+function getTechniqueDrills(level, freq, time) {
+  const drills = [];
+  const timeForTech = Math.round(time * (55 - level * 5) / 100 * 0.01 * time);
+  
+  if (level <= 1) { // 零基础
+    drills.push({ name: '握拍挥拍空击', sets: 3, reps: '20次', freq: '每次训练', rest: '30秒' });
+    drills.push({ name: '基本站姿与步伐', sets: 2, reps: '15分钟', freq: '每次训练', rest: '1分钟' });
+    drills.push({ name: '无球挥拍练习', sets: 4, reps: '30拍', freq: '3次/周', rest: '1分钟' });
+    if (freq >= 3) drills.push({ name: '发球基础（正手）', sets: 2, reps: '50个', freq: '3次/周', rest: '2分钟' });
+  } else if (level <= 3) { // 入门-熟练
+    drills.push({ name: '高远球对练', sets: 4, reps: '20拍', freq: '3次/周', rest: '1分钟' });
+    drills.push({ name: '网前小球练习', sets: 3, reps: '15分钟', freq: '2次/周', rest: '1分钟' });
+    drills.push({ name: '吊球+上网', sets: 3, reps: '20组', freq: '2次/周', rest: '2分钟' });
+    if (level >= 3) drills.push({ name: '杀球连贯', sets: 3, reps: '15拍', freq: '2次/周', rest: '2分钟' });
+  } else { // 精进以上
+    drills.push({ name: '实战对抗练习', sets: 4, reps: '21分', freq: '2次/周', rest: '5分钟' });
+    drills.push({ name: '多球突击训练', sets: 4, reps: '30拍', freq: '2次/周', rest: '2分钟' });
+    drills.push({ name: '假动作与变速', sets: 3, reps: '20分钟', freq: '2次/周', rest: '1分钟' });
+    drills.push({ name: '战术组合演练', sets: 3, reps: '15组', freq: '1次/周', rest: '3分钟' });
+  }
+  return drills;
+}
+
+// 力量训练动作
+function getStrengthDrills(level, freq, time) {
+  const drills = [];
+  const timeForStrength = Math.round(time * (12 + level * 3) / 100 * 0.01 * time);
+  
+  if (level <= 1) {
+    drills.push({ name: '核心稳定性（平板支撑）', sets: 3, reps: '30秒', freq: '2次/周', rest: '45秒' });
+    drills.push({ name: '徒手深蹲', sets: 3, reps: '15次', freq: '2次/周', rest: '1分钟' });
+    drills.push({ name: '跳箱基础', sets: 3, reps: '10次', freq: '1次/周', rest: '2分钟' });
+  } else if (level <= 3) {
+    drills.push({ name: '负重深蹲', sets: 4, reps: '12次', freq: '2次/周', rest: '2分钟' });
+    drills.push({ name: '核心旋转爆发力', sets: 3, reps: '20次', freq: '2次/周', rest: '1分钟' });
+    drills.push({ name: '哑铃划船', sets: 3, reps: '12次', freq: '2次/周', rest: '1分钟' });
+    drills.push({ name: '弹跳力训练', sets: 3, reps: '10次', freq: '1次/周', rest: '2分钟' });
+  } else {
+    drills.push({ name: '杠铃硬拉', sets: 4, reps: '10次', freq: '2次/周', rest: '3分钟' });
+    drills.push({ name: '爆发力训练（药球）', sets: 4, reps: '12次', freq: '2次/周', rest: '2分钟' });
+    drills.push({ name: '专项力量（挥重拍）', sets: 3, reps: '20次', freq: '2次/周', rest: '1分钟' });
+    drills.push({ name: '单腿蹲跳', sets: 3, reps: '10次/腿', freq: '1次/周', rest: '2分钟' });
+  }
+  return drills;
+}
+
+// 体能训练动作
+function getCardioDrills(level, freq, time) {
+  const drills = [];
+  
+  if (level <= 1) {
+    drills.push({ name: '间歇跑 200m×6', sets: 1, reps: '6组', freq: '2次/周', rest: '2分钟' });
+    drills.push({ name: '跳绳基础', sets: 3, reps: '3分钟', freq: '3次/周', rest: '1分钟' });
+  } else if (level <= 3) {
+    drills.push({ name: '间歇跑 400m×6', sets: 1, reps: '6组', freq: '2次/周', rest: '3分钟' });
+    drills.push({ name: '跳绳双飞', sets: 4, reps: '100次', freq: '2次/周', rest: '1分钟' });
+    drills.push({ name: '折返跑×10', sets: 3, reps: '10次', freq: '1次/周', rest: '2分钟' });
+  } else {
+    drills.push({ name: 'YOYO体测模拟', sets: 2, reps: '20分钟', freq: '2次/周', rest: '5分钟' });
+    drills.push({ name: '冲刺×20m往返', sets: 4, reps: '10组', freq: '2次/周', rest: '1分钟' });
+    drills.push({ name: '跳绳速度耐力', sets: 5, reps: '2分钟', freq: '2次/周', rest: '2分钟' });
+    drills.push({ name: '专项步伐体能', sets: 3, reps: '6点×5轮', freq: '1次/周', rest: '3分钟' });
+  }
+  return drills;
+}
+
+// 恢复放松动作
+function getRecoveryDrills(level, freq) {
+  const drills = [];
+  drills.push({ name: '全身静态拉伸', sets: 1, reps: '15分钟', freq: '每次训练后' });
+  drills.push({ name: '泡沫轴放松', sets: 1, reps: '10分钟', freq: '每次训练后' });
+  if (freq >= 4) {
+    drills.push({ name: '主动恢复（游泳/骑车）', sets: 1, reps: '30分钟', freq: '1次/周' });
+  }
+  drills.push({ name: '睡眠质量优化', sets: 1, reps: '建议7-8小时', freq: '每天' });
+  return drills;
+}
+
+// 频率建议
+function getFrequencyAdvice(freq, level) {
+  if (freq <= 2) return '低频率训练建议：集中技术专项训练，每次90分钟，以技术为主，避免过度消耗。力量和体能可安排在技术训练后的20分钟内。';
+  if (freq <= 3) return '标准频率训练建议：技术+体能交替进行。力量训练每周2次，安排在非技术日。注意训练后的拉伸恢复。';
+  if (freq <= 5) return '高频率训练建议：采用分化训练（技术日/力量日/体能日交替）。每4周安排一周减量恢复，防止过度训练。';
+  return '超高频率训练建议：需要科学周期化安排。建议采用力量→技术→体能→恢复的循环。注意监测疲劳指标，每4周必须减量一周。';
 }
 
 // ═══════════════════════════════════════════════════════════════════
