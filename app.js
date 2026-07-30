@@ -3217,7 +3217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bar.style.width='25%';await sleep(150);
   MANIFEST = MANIFEST_DATA;
   bar.style.width='60%';await sleep(120);
-  const theme = localStorage.getItem('bk_theme') || 'light';
+  const theme = localStorage.getItem('bk_theme') || 'dark';
   document.documentElement.setAttribute('data-theme', theme);
   document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌓';
   const savedFont=localStorage.getItem('bk_font');if(savedFont){fontBase=parseInt(savedFont);document.documentElement.style.setProperty('--font-base',fontBase+'px');}
