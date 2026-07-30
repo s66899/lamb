@@ -10,7 +10,7 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.8.7';
+const APP_VERSION = 'v3.8.9';
 const APP_DATE = '2026-07-18';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -2676,6 +2676,9 @@ function toggleCoachDrills(idx) {
     </div>`;
   el.dataset.currentIdx = idx;
 }
+
+// 暴露到全局（兼容旧调用）
+window.showCoachDrills = toggleCoachDrills;
 
 // ========== 科学训练动作库（根据级别、频率、时长动态生成）==========
 
