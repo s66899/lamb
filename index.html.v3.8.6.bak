@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🏸 羽毛球系统训练 · NSCA-CPT 科学体系</title>
+<link rel="stylesheet" href="style.css?v=v3.8.7">
+</head>
+<body>
+
+<!-- ═══ Splash ═══ -->
+<div id="splash">
+  <div class="splash-inner">
+    <div class="splash-icon">🏸</div>
+    <div class="splash-title">羽毛球系统训练</div>
+    <div class="splash-sub">NSCA-CPT 科学体系 · 融合心理学 · 营养学 · 比赛策略</div>
+    <div style="font-size:10px;color:var(--text3);margin-bottom:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><span>🎯 6大模块</span><span>🩺 功能筛查</span><span>🧮 计算工具</span><span>📚 知识拓展</span></div>
+    <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
+  </div>
+</div>
+
+<!-- ═══ App ═══ -->
+<div id="app" style="display:none">
+
+  <!-- Header -->
+  <header>
+    <div class="h-left">
+      <button class="h-btn ios-press" onclick="toggleSidebar()" title="📂 菜单" style="font-size:18px">☰</button>
+      <button class="h-home-btn ios-press" onclick="goHome()" title="🏠 返回首页">
+        <span class="hh-icon">🏠</span>
+        <span class="hh-text">首页</span>
+      </button>
+      <span class="h-logo ios-press" onclick="goHome()">🏸</span>
+      <div class="h-search" onclick="openSearch()">
+        <span>🔍</span>
+        <span class="h-search-text">搜索训练内容…</span>
+        <kbd>/</kbd>
+      </div>
+    </div>
+    <div class="h-right">
+      <div id="rpgHud"></div>
+      <button class="h-btn" onclick="openStats()" title="📊 训练报告">📈</button>
+      <button class="h-btn" onclick="toggleTheme()" title="🌓 主题切换">🌓</button>
+      <button class="h-btn" onclick="showAdminPanel()" title="⚙️ 设备管理">⚙️</button>
+      <span class="h-badge" id="progressBadge">⬜ 0%</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div id="bookList"></div>
+      <div class="side-section side-section-links">
+        <div class="side-link" onclick="openTrainModule('badminton-tech')"><span class="sl-icon">🏸</span> 羽毛球技术</div>
+        <div class="side-link" onclick="openTrainModule('strength')"><span class="sl-icon">💪</span> 体能训练</div>
+        <div class="side-link" onclick="openTrainModule('psychology')"><span class="sl-icon">🧠</span> 心理训练</div>
+        <div class="side-link" onclick="openTrainModule('nutrition')"><span class="sl-icon">🥗</span> 营养恢复</div>
+        <div class="side-link" onclick="openTrainModule('competition')"><span class="sl-icon">🏆</span> 比赛策略</div>
+        <div class="side-link" onclick="openTrainModule('coach')"><span class="sl-icon">🎯</span> 教练板块</div>
+      </div>
+      <div class="side-section side-section-links">
+        <div class="side-link" onclick="openScreening()"><span class="sl-icon">🩺</span> 功能筛查</div>
+        <div class="side-link" onclick="openCalculators()"><span class="sl-icon">🧮</span> 计算工具</div>
+        <div class="side-link" onclick="openDiagnosis()"><span class="sl-icon">🔍</span> 训练诊断</div>
+        <div class="side-link" onclick="openWeeklyCheck()"><span class="sl-icon">✅</span> 周检查</div>
+        <div class="side-link" onclick="openLevelFinder()"><span class="sl-icon">📊</span> 级别定位</div>
+      </div>
+      <div class="side-section">
+        <div class="side-title">📚 我的书塔</div>
+        <div id="towerList"></div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content" id="content">
+
+      <!-- ═══════ Dashboard ═══════ -->
+      <div id="viewDashboard" class="view-page">
+        <!-- Hero -->
+        <div class="hero">
+          <div class="hero-avatar" onclick="openStats()">🏸</div>
+          <h1 class="hero-title" id="heroTitle">羽毛球系统训练</h1>
+          <div class="hero-level-badge" id="heroLevel">NSCA-CPT · 科学体系</div>
+          <p class="hero-sub" id="heroSub">基于NSCA CSCS最新运动科学，融合心理学·营养学·比赛策略</p>
+          <div class="stat-row" id="statRow">
+            <div class="stat-box"><div class="s-num" id="sModules">5</div><div class="s-label">🎯 训练模块</div></div>
+            <div class="stat-box"><div class="s-num" id="sDocs">0</div><div class="s-label">📖 教学文档</div></div>
+            <div class="stat-box"><div class="s-num" id="sLevels">8</div><div class="s-label">📊 进阶等级</div></div>
+            <div class="stat-box"><div class="s-num" id="sCycle">3yr</div><div class="s-label">📅 发展周期</div></div>
+          </div>
+          <div class="hero-bar"><div class="hero-bar-fill" id="heroBar"></div><div class="hero-bar-glow" id="heroBarGlow"></div></div>
+        </div>
+
+        <!-- ⚡ 核心原则 -->
+        <div id="principlesSection" class="principles-section"></div>
+
+        <!-- 🏆 训练等级 -->
+        <div class="section-divider">
+          <span class="sd-label">🏆 训练等级体系</span>
+          <div class="sd-line"></div>
+        </div>
+        <div id="levelSection" class="levels-grid"></div>
+
+        <!-- 🎯 5大训练模块 -->
+        <div class="section-divider">
+          <span class="sd-label">🎯 训练模块</span>
+          <div class="sd-line"></div>
+        </div>
+        <div id="moduleSection" class="modules-grid"></div>
+
+        <!-- 🛠️ 评估工具 -->
+        <div class="section-divider">
+          <span class="sd-label">🛠️ 评估工具</span>
+          <div class="sd-line"></div>
+        </div>
+        <div id="toolsSection" class="tools-grid"></div>
+
+        <!-- 🧮 快速参考 -->
+        <div class="section-divider">
+          <span class="sd-label">🧮 快速参考</span>
+          <div class="sd-line"></div>
+        </div>
+        <div id="referenceSection" class="ref-cards"></div>
+
+        <!-- 📚 我的书塔 -->
+        <div class="section-divider">
+          <span class="sd-label">📚 我的书塔 · 知识拓展</span>
+          <div class="sd-line"></div>
+        </div>
+        <div id="towerSection" class="tower-entry"></div>
+      </div>
+
+      <!-- ═══════ Module / Content View ═══════ -->
+      <div id="viewBook" style="display:none" class="view-page view-page-back">
+        <div class="view-header" id="bookHeader"></div>
+        <div class="book-stats" id="bookStats"></div>
+        <div id="contentGrid" class="content-grid"></div>
+      </div>
+
+      <!-- ═══════ Reader (for books only) ═══════ -->
+      <div id="viewReader" style="display:none" class="view-page">
+        <div class="reader-toolbar">
+          <button class="tb-btn" onclick="goBack()">◀ 📂</button>
+          <span class="tb-title" id="readerTitle"></span>
+          <span class="tb-pos" id="chapterPos"></span>
+          <div class="tb-group">
+            <button class="tb-btn" onclick="prevChapter()" title="◀ 上一关">◀</button>
+            <button class="tb-btn" onclick="nextChapter()" title="下一关 ▶">▶</button>
+            <button class="tb-btn" onclick="toggleReadMark()" id="readMarkBtn" title="✅ 通关">📌</button>
+            <button class="tb-btn" onclick="toggleTocFn()" title="🗺️ 导航">🗺️</button>
+            <button class="tb-btn" onclick="toggleFocus()" title="🧘 专注">🧘</button>
+            <button class="tb-btn" onclick="toggleQuizPanel()" title="🧪 测试">🧪</button>
+          </div>
+          <div class="tb-group">
+            <button class="tb-btn" onclick="decreaseFont()" title="🔽 缩小">🔽</button>
+            <button class="tb-btn" onclick="increaseFont()" title="🔼 放大">🔼</button>
+          </div>
+        </div>
+        <div class="reader-layout">
+          <div class="reader-toc" id="readerToc">
+            <div class="toc-title">🗺️ 导航</div>
+            <div id="tocList"></div>
+          </div>
+          <div class="reader-main" id="readerMain">
+            <div class="quiz-sidebar" id="quizSidebar" style="display:none">
+              <div class="quiz-title">🧪 测验</div>
+              <div id="quizContent"></div>
+            </div>
+            <div class="reader-content" id="readerContent">
+              <article id="article"></article>
+              <div class="reader-nav" id="readerNav"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- FAB: Home + Top -->
+  <button class="fab fab-home ios-press" id="fabHome" onclick="goHome()" title="🏠 返回首页">🏠</button>
+  <button class="fab fab-top ios-press" id="fab" onclick="scrollToTop()" title="⬆ 回到顶部">⬆</button>
+  <button class="fab fab-search ios-press" id="fabSearch" onclick="openSearch()" title="🔍 搜索">🔍</button>
+</div>
+
+<script src="manifest_data.js?v=v3.8.7"></script>
+<script src="app.js?v=v3.8.7"></script>
+
+<!-- ?? 密码验证层 v3 (2026-07-06) -->
+<div id="pwOverlay" style="display:none;position:fixed;inset:0;z-index:999999;background:#1c1c1e;display:none;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px">
+  <div style="background:#2c2c2e;border-radius:16px;padding:32px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:36px;margin-bottom:8px" id="pwLockIcon">🔐</div>
+      <div style="font-size:18px;font-weight:600;color:#f5f5f7">请输入访问密码</div>
+      <div style="font-size:12px;color:#8e8e93;margin-top:4px">此站点已设置密码保护</div>
+    </div>
+    <input id="pwInput" type="password" placeholder="输入密码" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid #48484a;background:#3a3a3c;color:#f5f5f7;font-size:16px;outline:none;margin-bottom:12px;text-align:center" onkeydown="if(event.key==='Enter')checkPw()">
+    <button id="pwBtn" onclick="checkPw()" style="width:100%;padding:12px;border:none;border-radius:10px;background:#0a84ff;color:#fff;font-size:15px;font-weight:600;cursor:pointer">🔓 验证</button>
+    <div id="pwErr" style="color:#ff453a;font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+    <div style="margin-top:12px;font-size:10px;color:#636366;text-align:center;cursor:pointer" id="adminEntry" onclick="showAdminPanel()">⚙️</div>
+  </div>
+</div>
+
+<!-- ?? 管理员面板 -->
+<div id="adminOverlay" style="display:none;position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:flex-start;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:40px 20px;overflow-y:auto">
+  <div style="background:#2c2c2e;border-radius:16px;padding:24px;width:100%;max-width:500px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:18px;font-weight:600;color:#f5f5f7">⚙️ 设备管理</div>
+      <button onclick="closeAdmin()" style="background:none;border:none;color:#8e8e93;font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <input id="adminPwInput" type="password" placeholder="管理员密码" style="width:100%;padding:10px;border-radius:10px;border:1px solid #48484a;background:#3a3a3c;color:#f5f5f7;font-size:14px;outline:none;margin-bottom:10px;text-align:center">
+    <button onclick="loginAdmin()" style="width:100%;padding:10px;border:none;border-radius:10px;background:#ff9f0a;color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:16px">🔑 登录管理后台</button>
+    <div id="adminContent" style="font-size:13px;color:#aeaeb2"></div>
+  </div>
+</div>
+
+<script>
+/* ?? 密码 + 设备管理 v3 (2026-07-06) */
+var SITE_KEY = 'lamb_auth';
+var SITE_PW = 'syy';
+var ADMIN_PW = 'lambadmin';
+var TRACKER_URL = 'http://localhost:4689';
+var TRACKER_DISABLED = false;
+var HEARTBEAT_INTERVAL = null;
+
+// ── 设备指纹 ──
+function getFingerprint() {
+  try {
+    var fp = localStorage.getItem('lamb_fp');
+    if (fp) return fp;
+    var nav = navigator;
+    var raw = (nav.userAgent||'') + (nav.language||'') + screen.width + 'x' + screen.height + (nav.hardwareConcurrency||0);
+    var h = 0;
+    for (var i = 0; i < raw.length; i++) { h = ((h << 5) - h) + raw.charCodeAt(i); h |= 0; }
+    fp = 'fp_' + Math.abs(h).toString(36) + '_' + Date.now().toString(36);
+    try { localStorage.setItem('lamb_fp', fp); } catch(e) {}
+    return fp;
+  } catch(e) { return 'fp_' + Date.now(); }
+}
+
+// ── 心跳 ──
+function sendHeartbeat() {
+  if (TRACKER_DISABLED) return;
+  try {
+    var x = new XMLHttpRequest();
+    x.open('POST', TRACKER_URL + '/heartbeat', true);
+    x.setRequestHeader('Content-Type', 'application/json');
+    x.timeout = 3000;
+    x.onerror = function() { TRACKER_DISABLED = true; if (HEARTBEAT_INTERVAL) { clearInterval(HEARTBEAT_INTERVAL); HEARTBEAT_INTERVAL = null; } };
+    x.send(JSON.stringify({
+      fingerprint: getFingerprint(),
+      browser: navigator.userAgent.slice(0, 80),
+      os: navigator.platform || '?',
+      screen: screen.width + 'x' + screen.height,
+    }));
+  } catch(e) { TRACKER_DISABLED = true; }
+}
+
+function startHeartbeat() {
+  TRACKER_DISABLED = false;
+  sendHeartbeat();
+  if (HEARTBEAT_INTERVAL) clearInterval(HEARTBEAT_INTERVAL);
+  HEARTBEAT_INTERVAL = setInterval(sendHeartbeat, 30000);
+}
+
+// ── 密码验证 ──
+function checkPw() {
+  try {
+    var input = document.getElementById('pwInput').value;
+    var errEl = document.getElementById('pwErr');
+    if (input === SITE_PW) {
+      // v3.7.8 安全修复：不再写 localStorage 缓存 — 每次刷新都要重新输入
+      try { localStorage.removeItem(SITE_KEY); } catch(e) {}
+      document.getElementById('pwOverlay').style.display = 'none';
+      try { startHeartbeat(); } catch(e) { console.warn('[heartbeat]', e); }
+      return;
+    }
+    errEl.style.display = 'block';
+    errEl.textContent = '❌ 密码错误，请重试';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  } catch(e) { console.warn('[checkPw]', e); }
+}
+
+function initPwGate() {
+  try {
+    // v3.7.8 安全修复：启动时主动清掉旧 SITE_KEY 缓存,避免被绕过
+    try { localStorage.removeItem(SITE_KEY); } catch(e) {}
+    var ov = document.getElementById('pwOverlay');
+    if (ov) ov.style.display = 'flex';
+    var inp = document.getElementById('pwInput');
+    if (inp) inp.focus();
+  } catch(e) { console.warn('[initPwGate]', e); }
+}
+
+// ── 管理员面板 ──
+function showAdminPanel() {
+  document.getElementById('adminPwInput').value = '';
+  document.getElementById('adminContent').innerHTML = '<div style="text-align:center;color:#636366;padding:20px">请输入管理员密码</div>';
+  document.getElementById('adminOverlay').style.display = 'flex';
+  document.getElementById('adminPwInput').focus();
+}
+
+function closeAdmin() {
+  document.getElementById('adminOverlay').style.display = 'none';
+}
+
+function loginAdmin() {
+  var pw = document.getElementById('adminPwInput').value;
+  if (pw !== ADMIN_PW) {
+    document.getElementById('adminContent').innerHTML = '<div style="color:#ff453a;text-align:center;padding:8px">❌ 密码错误</div>';
+    return;
+  }
+  loadDevices();
+}
+
+function loadDevices() {
+  var el = document.getElementById('adminContent');
+  el.innerHTML = '<div style="text-align:center;color:#636366;padding:10px">正在加载...</div>';
+  var x = new XMLHttpRequest();
+  x.open('GET', TRACKER_URL + '/devices?pw=' + encodeURIComponent(ADMIN_PW), true);
+  x.timeout = 5000;
+  x.onload = function() {
+    if (x.status === 200) {
+      try {
+        var data = JSON.parse(x.responseText);
+        renderDevices(data);
+      } catch(e) { el.innerHTML = '<div style="color:#ff453a">数据解析失败</div>'; }
+    } else {
+      el.innerHTML = '<div style="color:#ff453a;padding:10px;text-align:center">❌ 服务器未可用<br><span style="font-size:11px;color:#636366">确保本地追踪服务器已启动</span></div>';
+    }
+  };
+  x.onerror = function() {
+    el.innerHTML = '<div style="color:#ff453a;padding:10px;text-align:center">❌ 连接失败<br><span style="font-size:11px;color:#636366">本地服务器不可访问</span></div>';
+  };
+  x.send();
+}
+
+function renderDevices(data) {
+  var el = document.getElementById('adminContent');
+  var now = Date.now();
+  var online = Object.values(data).filter(function(d) { return d.online && !d.kicked; });
+  var offline = Object.values(data).filter(function(d) { return !d.online; });
+  var html = '<div style="margin-bottom:10px;display:flex;gap:8px">';
+  html += '<span style="background:#30d158;color:#000;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600">\u25cf ' + online.length + ' \u5728\u7ebf</span>';
+  html += '<span style="background:#3a3a3c;color:#aeaeb2;padding:2px 10px;border-radius:10px;font-size:11px">\u25cb ' + offline.length + ' \u79bb\u7ebf</span>';
+  html += '<span style="background:#3a3a3c;color:#aeaeb2;padding:2px 10px;border-radius:10px;font-size:11px">\u2211 ' + Object.keys(data).length + ' \u603b</span>';
+  html += '<button onclick="loadDevices()" style="margin-left:auto;background:#0a84ff;color:#fff;border:none;padding:3px 10px;border-radius:8px;font-size:11px;cursor:pointer">\u21bb</button>';
+  html += '</div>';
+
+  if (online.length === 0 && offline.length === 0) {
+    html += '<div style="text-align:center;padding:16px;color:#636366;font-size:13px">\u6682\u65e0\u8bbf\u95ee\u8bb0\u5f55</div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  // Online devices
+  for (var i = 0; i < online.length; i++) {
+    var d = online[i];
+    var ago = Math.round((now - d.lastSeen) / 1000);
+    var fp = d.fingerprint;
+    html += '<div style="background:#3a3a3c;border-radius:10px;padding:10px;margin-bottom:6px;border-left:3px solid #30d158">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+    html += '<div><div style="font-weight:600;font-size:13px;color:#f5f5f7">\ud83d\udcf1 ' + (d.browser || '?').slice(0, 40) + '</div>';
+    html += '<div style="font-size:10px;color:#8e8e93;margin-top:2px">' + (d.os || '?') + ' \u00b7 ' + (d.screen || '?') + ' \u00b7 ' + ago + 's \u524d</div></div>';
+    html += '<button onclick=\"kickDevice(\u0027' + fp + '\u0027)\" style="background:#ff453a;color:#fff;border:none;padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer">\u26a0 \u4e0b\u7ebf</button>';
+    html += '</div></div>';
+  }
+
+  // Offline devices
+  for (var j = 0; j < offline.length; j++) {
+    var o = offline[j];
+    var ago2 = Math.round((now - o.lastSeen) / 1000);
+    if (ago2 > 86400) ago2 = Math.round(ago2 / 86400) + 'd';
+    else if (ago2 > 3600) ago2 = Math.round(ago2 / 3600) + 'h';
+    else ago2 = ago2 + 's';
+    html += '<div style="background:#2c2c2e;border-radius:8px;padding:8px;margin-bottom:4px;opacity:.5;border-left:3px solid #48484a">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+    html += '<div><div style="font-size:11px;color:#8e8e93">' + (o.browser || '?').slice(0, 30) + '</div>';
+    html += '<div style="font-size:9px;color:#636366">' + ago2 + ' \u524d</div></div>';
+    html += '<span style="font-size:9px;color:#636366">\u25cb</span>';
+    html += '</div></div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function kickDevice(fingerprint) {
+  var x = new XMLHttpRequest();
+  x.open('POST', TRACKER_URL + '/kick', true);
+  x.setRequestHeader('Content-Type', 'application/json');
+  x.timeout = 3000;
+  x.onload = function() { loadDevices(); };
+  x.send(JSON.stringify({ pw: ADMIN_PW, fingerprint: fingerprint }));
+}
+
+// ── 入口 ──
+initPwGate();
+</script>
+</body>
+</html>
