@@ -1784,26 +1784,80 @@ function openLevelDetail(levelId) {
       ? `<div style="font-size:10px;color:var(--text3);margin-top:-2px;margin-bottom:8px">🎯 已根据你的问卷调整 <a onclick="openStudentProfile()" style="color:var(--blue);text-decoration:underline;cursor:pointer">重填</a></div>`
       : `<div style="font-size:10px;color:var(--text3);margin-top:-2px;margin-bottom:8px">💡 未填写个性化问卷 <a onclick="openStudentProfile()" style="color:var(--blue);text-decoration:underline;cursor:pointer">填一下获得定制方案 →</a></div>`;
     abilityHtml = `<div style="text-align:left;margin-top:6px;padding:0 4px">
-      <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:var(--blue);border-bottom:1px solid var(--border);padding-bottom:6px">📊 本级训练比重 + 具体动作</div>${profileBadge}`;
-    effectiveAbilities.forEach(ab => {
-      const marker = ab.marker ? `<span title="${ab.marker === '❄️' ? '伤病减权重' : '优势加权'}">${ab.marker}</span> ` : '';
-      const diff = ab.marker ? `<span style="color:var(--text3);font-size:10px">(原 ${ab.original}%)</span>` : '';
-      abilityHtml += `<div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;align-items:center">
-          <span style="font-weight:600;color:var(--text)">${marker}${ab.name}</span>
-          <span style="color:var(--text3);font-size:11px">占比 ${ab.effective}% ${diff}</span>
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:var(--blue);border-bottom:1px solid var(--border);padding-bottom:6px">📊 点击饼图各部分查看训练项目</div>${profileBadge}
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:12px">
+        <div style="position:relative;width:160px;height:160px;cursor:pointer" onclick="toggleAbilityDetail()">
+          <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg)">
+            ${(function(){
+              let cum = 0, paths = '';
+              effectiveAbilities.forEach((ab, i) => {
+                const start = cum, end = cum + ab.effective;
+                const large = end - start > 50 ? 1 : 0;
+                const x1 = 50 + 40 * Math.cos(2 * Math.PI * start / 100);
+                const y1 = 50 + 40 * Math.sin(2 * Math.PI * start / 100);
+                const x2 = 50 + 40 * Math.cos(2 * Math.PI * end / 100);
+                const y2 = 50 + 40 * Math.sin(2 * Math.PI * end / 100);
+                paths += `<path d="M50,50 L${x1},${y1} A40,40 0 ${large},1 ${x2},${y2} Z" fill="${ab.color}" stroke="var(--bg)" stroke-width="1" onclick="event.stopPropagation();showAbilityDrills('${ab.name}', ${i})"/>`;
+                cum = end;
+              });
+              return paths;
+            })()}
+          </svg>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none">
+            <div style="font-size:11px;color:var(--text3)">点击查看</div>
+            <div style="font-size:18px;font-weight:700;color:var(--text)">${effectiveAbilities.length}</div>
+            <div style="font-size:10px;color:var(--text3)">项训练</div>
+          </div>
         </div>
-        <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-bottom:6px">
-          <div style="height:100%;width:${ab.effective}%;background:${ab.color};border-radius:4px;transition:width .4s"></div>
+        <div style="flex:1;min-width:140px">
+          <div style="font-size:11px;font-weight:600;margin-bottom:6px;color:var(--text2)">图例</div>
+          ${effectiveAbilities.map(ab => {
+            const marker = ab.marker ? `<span title="${ab.marker === '❄️' ? '伤病减权重' : '优势加权'}">${ab.marker}</span> ` : '';
+            return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;cursor:pointer;padding:4px;border-radius:4px;transition:background .2s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'" onclick="showAbilityDrills('${ab.name}', ${effectiveAbilities.findIndex(x=>x.name===ab.name)})">
+              <span style="width:12px;height:12px;border-radius:3px;background:${ab.color};flex-shrink:0"></span>
+              <span style="font-size:11px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${marker}${ab.name}</span>
+              <span style="font-size:10px;color:var(--text3)">${ab.effective}%</span>
+            </div>`;
+          }).join('')}
         </div>
-        <div style="font-size:11px;color:var(--text2);line-height:1.6">`;
-      ab.drills.forEach(d => {
-        abilityHtml += `<div style="margin-bottom:3px;display:flex;gap:6px"><span style="color:${ab.color}">▸</span><span><strong>${d.name}</strong> · ${d.sets}组 × ${d.reps} · ${d.freq}</span></div>`;
-      });
-      abilityHtml += `</div></div>`;
-    });
+      </div>
+      <div id="abilityDrillDetail"></div>`;
     abilityHtml += `</div>`;
   }
+  // v3.8.7: 饼图点击显示训练项目
+  let _currentAbilities = effectiveAbilities;
+  window.showAbilityDrills = function(name, idx) {
+    const ab = _currentAbilities[idx];
+    if (!ab || !ab.drills) return;
+    const marker = ab.marker ? `<span title="${ab.marker === '❄️' ? '伤病减权重' : '优势加权'}">${ab.marker}</span> ` : '';
+    const diff = ab.marker ? `<span style="color:var(--text3);font-size:10px">(原 ${ab.original}%)</span>` : '';
+    const drillsHtml = ab.drills.map(d => `
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border-radius:8px;margin-bottom:6px;border-left:3px solid ${ab.color}">
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:600;color:var(--text)">${d.name}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">${d.sets}组 × ${d.reps} · ${d.freq}</div>
+        </div>
+        <div style="font-size:18px">🏸</div>
+      </div>`).join('');
+    document.getElementById('abilityDrillDetail').innerHTML = `
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;margin-top:12px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div>
+            <span style="width:14px;height:14px;border-radius:4px;background:${ab.color};display:inline-block;vertical-align:middle;margin-right:6px"></span>
+            <span style="font-size:14px;font-weight:700;color:var(--text)">${marker}${ab.name}</span>
+            <span style="color:var(--text3);font-size:11px;margin-left:6px">${ab.effective}% ${diff}</span>
+          </div>
+          <button onclick="document.getElementById('abilityDrillDetail').innerHTML=''" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px">✕</button>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px">针对性训练项目 · 点击可关闭</div>
+        ${drillsHtml}
+      </div>`;
+  };
+  window.toggleAbilityDetail = function() {
+    const el = document.getElementById('abilityDrillDetail');
+    if (el.innerHTML) { el.innerHTML = ''; }
+    else if (_currentAbilities.length > 0) { showAbilityDrills(_currentAbilities[0].name, 0); }
+  };
   let radarHtml = '';
   try {
     const a = (typeof calcAbilityScore === 'function') ? calcAbilityScore() : null;
@@ -2469,43 +2523,118 @@ function openCoach() {
   updateProgress();
 }
 
-// ─── 生成训练方案 ────────────────────────
+// ─── 生成训练方案 (v3.8.7: 饼图交互) ────────────────────────
 function generateCoachPlan() {
   const level = parseInt(document.getElementById('coachLevel')?.value);
   const freq = parseInt(document.getElementById('coachFreq')?.value);
   const time = parseInt(document.getElementById('coachTime')?.value);
   if (isNaN(level) || isNaN(freq)) { return; }
 
-  const techniquePct = Math.max(15, 55 - level * 5);
-  const strengthPct = Math.max(10, 15 + level * 3);
-  const cardioPct = Math.max(10, 15 + level * 2);
-  const recovery = 100 - techniquePct - strengthPct - cardioPct;
+  // 训练类别数据
+  const categories = [
+    { name: '技术训练', pct: Math.max(15, 55 - level * 5), color: '#0a84ff', 
+      drills: [
+        { name: level <= 1 ? '握拍挥拍空击' : level <= 3 ? '高远球对拉' : '杀球连贯', sets: 4, reps: '20拍/组', freq: '3次/周' },
+        { name: level <= 1 ? '基本步伐练习' : level <= 3 ? '网前小球' : '假动作+变速', sets: 3, reps: '15分钟', freq: '2次/周' },
+        { name: level <= 1 ? '发球基础' : level <= 3 ? '反手技术' : '战术组合', sets: 3, reps: '20分钟', freq: '2次/周' },
+      ]},
+    { name: '力量训练', pct: Math.max(10, 15 + level * 3), color: '#30d158',
+      drills: [
+        { name: '核心稳定性', sets: 3, reps: '45秒/组', freq: '2次/周' },
+        { name: level <= 2 ? '徒手深蹲' : '负重深蹲', sets: 3, reps: '12次/组', freq: '2次/周' },
+        { name: level <= 2 ? '弹跳力基础' : '爆发力', sets: 3, reps: '10次/组', freq: '1次/周' },
+      ]},
+    { name: '体能训练', pct: Math.max(10, 15 + level * 2), color: '#ff9f0a',
+      drills: [
+        { name: '间歇跑 400m', sets: 6, reps: '组', freq: '1次/周' },
+        { name: '跳绳双飞', sets: 3, reps: '100次/组', freq: '2次/周' },
+        { name: '折返跑', sets: 4, reps: '10次/组', freq: '1次/周' },
+      ]},
+    { name: '恢复放松', pct: 100 - Math.max(15, 55 - level * 5) - Math.max(10, 15 + level * 3) - Math.max(10, 15 + level * 2), color: '#a855f7',
+      drills: [
+        { name: '全身拉伸', sets: 1, reps: '15分钟', freq: '每天' },
+        { name: '泡沫轴放松', sets: 1, reps: '10分钟', freq: '每次训练后' },
+        { name: '主动恢复', sets: 1, reps: '20分钟', freq: '1次/周' },
+      ]},
+  ];
 
+  // 生成饼图 SVG
+  let cum = 0;
+  const piePaths = categories.map((cat, i) => {
+    const start = cum;
+    const end = cum + cat.pct;
+    const large = end - start > 50 ? 1 : 0;
+    const x1 = 50 + 35 * Math.cos(2 * Math.PI * start / 100);
+    const y1 = 50 + 35 * Math.sin(2 * Math.PI * start / 100);
+    const x2 = 50 + 35 * Math.cos(2 * Math.PI * end / 100);
+    const y2 = 50 + 35 * Math.sin(2 * Math.PI * end / 100);
+    cum = end;
+    return `<path d="M50,50 L${x1},${y1} A35,35 0 ${large},1 ${x2},${y2} Z" fill="${cat.color}" stroke="var(--bg)" stroke-width="1" onclick="event.stopPropagation();showCoachDrills(${i})" style="cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"/>`;
+  }).join('');
+
+  const levelNames = ['零基础','基础','入门','熟练','精进','战术','准专业','专业'];
   const freqAdvice = freq <= 2 ? '低频率建议技术为主，每次90分钟专项训练' :
                      freq <= 3 ? '标准频率技术+体能交替，力量每周2次' :
                      freq <= 4 ? '高频率可采用分化训练：技术/力量/体能循环' :
                      '超高频率注意疲劳管理，建议每4周减量一周';
 
-  const levelNames = ['零基础','基础','入门','熟练','精进','战术','准专业','专业'];
-
   document.getElementById('coachResult').innerHTML = `
-    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;margin-top:4px;font-size:11px;line-height:1.6">
-      <div style="font-weight:600;margin-bottom:4px;color:var(--gold)">🎯 ${levelNames[level] || '自定义'} · 每周${freq}次 · 每次${time}分钟</div>
-      <div style="height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;display:flex;margin-bottom:6px">
-        <div style="width:${techniquePct}%;background:var(--blue);height:3px" title="技术${techniquePct}%"></div>
-        <div style="width:${strengthPct}%;background:var(--green);height:3px" title="力量${strengthPct}%"></div>
-        <div style="width:${cardioPct}%;background:var(--orange);height:3px" title="体能${cardioPct}%"></div>
-        <div style="width:${recovery}%;background:var(--purple);height:3px" title="恢复${recovery}%"></div>
+    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-top:8px;font-size:11px;line-height:1.6">
+      <div style="font-weight:600;margin-bottom:8px;color:var(--gold)">🎯 ${levelNames[level] || '自定义'} · 每周${freq}次 · 每次${time}分钟</div>
+      
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;margin-bottom:10px">
+        <!-- 饼图 -->
+        <div style="position:relative;width:120px;height:120px;flex-shrink:0">
+          <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg)">
+            ${piePaths}
+          </svg>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none">
+            <div style="font-size:9px;color:var(--text3)">点击</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text)">${categories.length}</div>
+            <div style="font-size:8px;color:var(--text3)">类</div>
+          </div>
+        </div>
+        
+        <!-- 图例 -->
+        <div style="flex:1;min-width:120px">
+          <div style="font-size:10px;font-weight:600;margin-bottom:6px;color:var(--text2)">图例 · 点击查看详情</div>
+          ${categories.map((cat, i) => `
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;cursor:pointer;padding:3px 5px;border-radius:4px;transition:background .2s" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'" onclick="showCoachDrills(${i})">
+              <span style="width:10px;height:10px;border-radius:2px;background:${cat.color};flex-shrink:0"></span>
+              <span style="font-size:11px;color:var(--text);flex:1">${cat.name}</span>
+              <span style="font-size:10px;color:var(--text3)">${cat.pct}%</span>
+            </div>
+          `).join('')}
+        </div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:9px;color:var(--text2)">
-        <span style="color:var(--blue)">● 技术${techniquePct}%</span>
-        <span style="color:var(--green)">● 力量${strengthPct}%</span>
-        <span style="color:var(--orange)">● 体能${cardioPct}%</span>
-        <span style="color:var(--purple)">● 恢复${recovery}%</span>
-      </div>
-      <div style="margin-top:6px;font-size:10px;color:var(--text2)">${freqAdvice}</div>
+      
+      <div id="coachDrillsDetail"></div>
+      
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--text2)">${freqAdvice}</div>
       <div style="margin-top:4px;font-size:9px;color:var(--text3)">💡 每4周重新评估调整比例</div>
-    </div>`;
+    </div>
+    <script>
+      window._coachCategories = ${JSON.stringify(categories)};
+      window.showCoachDrills = function(idx) {
+        const cat = window._coachCategories[idx];
+        if (!cat) return;
+        const drillsHtml = cat.drills.map(d => 
+          '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg2);border-radius:6px;margin-bottom:4px;border-left:3px solid ' + cat.color + '">' +
+            '<div style="flex:1;font-size:11px"><strong>' + d.name + '</strong></div>' +
+            '<div style="font-size:10px;color:var(--text2)">' + d.sets + '组 × ' + d.reps + ' · ' + d.freq + '</div>' +
+          '</div>'
+        ).join('');
+        document.getElementById('coachDrillsDetail').innerHTML = 
+          '<div style="background:var(--bg2);border-radius:8px;padding:10px;margin-top:8px;border:1px solid var(--border)">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+              '<div><span style="width:12px;height:12px;border-radius:3px;background:' + cat.color + ';display:inline-block;vertical-align:middle;margin-right:6px"></span><strong>' + cat.name + '</strong> · ' + cat.pct + '%</div>' +
+              '<button onclick="document.getElementById(\"coachDrillsDetail\").innerHTML=\"\"" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px">✕</button>' +
+            '</div>' +
+            '<div style="font-size:10px;color:var(--text2);margin-bottom:6px">针对性训练项目</div>' +
+            drillsHtml +
+          '</div>';
+      };
+    <\/script>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════
