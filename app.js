@@ -3744,20 +3744,24 @@ function initBadmintonCursor() {
   }
 }
 
-// 羽毛球击球动画 (2026-07-18)
+// 羽毛球击球动画 (2026-07-18) - 简化版
 function playHitAnimation(e) {
   // 只有开启羽毛球拍光标时才显示击球动画
   if (!document.body.classList.contains('badminton-cursor')) return;
   
+  // 防止动画堆积
+  const existing = document.querySelector('.badminton-hit');
+  if (existing) existing.remove();
+  
   const hit = document.createElement('div');
   hit.className = 'badminton-hit';
-  hit.innerHTML = '<div class="shuttle"></div>🏸';
+  hit.innerHTML = '🏸';
   
   // 获取点击位置
   const x = e.clientX || e.pageX;
   const y = e.clientY || e.pageY;
-  hit.style.left = (x - 20) + 'px';
-  hit.style.top = (y - 30) + 'px';
+  hit.style.left = (x - 16) + 'px';
+  hit.style.top = (y - 16) + 'px';
   
   document.body.appendChild(hit);
   
@@ -3769,15 +3773,12 @@ function playHitAnimation(e) {
 function initHitAnimation() {
   if (!document.body.classList.contains('badminton-cursor')) return;
   
-  const selectors = ['a', 'button', '.clickable', '.ios-press', '.h-btn', '.b-item', '.bs-item', '.module-card', '.tool-card', '[onclick]'];
-  
+  // 使用捕获阶段处理所有点击
   document.addEventListener('click', function(e) {
-    const target = e.target;
-    const isClickable = selectors.some(sel => target.closest(sel));
-    if (isClickable) {
-      playHitAnimation(e);
-    }
+    playHitAnimation(e);
   }, true);
+  
+  console.log('[羽毛球] 击球动画已启用');
 }
 function toggleReadMark() { const ch=getCurChapter(); if(!ch)return; if(isRead(currentBookId,ch.file)) unmarkRead(currentBookId,ch.file); else markRead(currentBookId,ch.file); $('readMarkBtn').textContent=isRead(currentBookId,ch.file)?'✅':'📌'; }
 function getCurChapter() { if(!currentBookId||currentChapterIdx<0) return null; const b=MANIFEST?.books.find(x=>x.id===currentBookId); return b?.chapters[currentChapterIdx]||null; }
