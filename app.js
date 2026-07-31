@@ -12,7 +12,7 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.9.3';
+const APP_VERSION = 'v3.10.0';
 const APP_DATE = '2026-08-01';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -79,8 +79,8 @@ const TRAIN_MODULES = [
     books:['badminton'],
     chapters:['基础握拍与准备姿势','正手高远球技术','反手技术体系','网前小球技术','步伐体系','杀球与扣杀','平抽快挡','综合训练','常见错误纠正','比赛心理'] },
   { id:'strength', icon:'💪', title:'体能训练', color:'var(--green)',
-    desc:'关节稳定·代谢适应·间歇训练·周期安排 — 科学力量与体能训练体系',
-    tags:['肩关节','膝关节','核心力量','代谢','间歇','周期'], docs:18,
+    desc:'NSCA-CPT · 体适能 · 中考高考 · 年龄分层训练库 + 疲劳度自检 + 周期化负荷调整',
+    tags:['肩关节','膝关节','核心力量','代谢','间歇','周期','恢复'], docs:18,
     books:['nsca-cpt'],
     chapters:['训练哲学','运动解剖','基础力量','爆发力训练','敏捷性','柔韧性','核心训练','周期化训练','损伤预防','恢复策略'] },
   { id:'psychology', icon:'🧠', title:'心理训练', color:'var(--purple)',
@@ -105,6 +105,215 @@ const TRAIN_MODULES = [
 ];
 
 // ─── 模块内联内容（营养/比赛等无 book 映射的模块） ──
+// ===== 体能训练库：4 个年龄段 × 训练目标 矩阵 =====
+// 来源：NSCA-CPT 周期化原则 + 体适能体系 + 中考体育 + 高考体育
+// 结构：每个 segment 含 goals（力量/爆发/耐力/综合 等），每个 goal 含 phases（基础期/强化期/专项期/恢复期）
+const STRENGTH_PROGRAMS = {
+  'adult-full': {
+    label: '成人·全面体能', icon: '💪', age: '18-45 岁', source: 'NSCA-CPT',
+    summary: '力量·爆发力·耐力·柔韧·核心 全面均衡，适用于业余爱好者与综合提升',
+    weekly: 3, intensityBase: 70,
+    goals: {
+      power:   { label: '爆发力', color: '#ff9f0a', items: ['抓举 5×3','高翻 4×3','跳箱 4×6','药球掷远 4×8','短冲刺 30m×6'] },
+      strength:{ label: '最大力量', color: '#0a84ff', items: ['深蹲 5×5 @85%','硬拉 5×3','卧推 5×5','罗马尼亚硬拉 3×8','引体向上 4×8'] },
+      endurance:{ label: '肌肉耐力', color: '#30d158', items: ['战绳 4×30s','壶铃摇摆 5×15','波比跳 4×12','划船机 2000m','循环训练 20min'] },
+      core:    { label: '核心稳定', color: '#a855f7', items: ['平板支撑 3×60s','死虫 3×12','鸟狗 3×12','农夫行走 4×30m','侧桥 3×45s'] }
+    },
+    recovery: { rest: '48h/肌群', sleep: '7-9h', hydration: '35ml/kg/天', protein: '1.6-2.0g/kg/天' }
+  },
+  'adult-specific': {
+    label: '成人·专项体能', icon: '🎯', age: '18-45 岁', source: 'NSCA-CSCS',
+    summary: '针对单一板块（速度/力量/耐力）深耕，周期化分明，含专项评估',
+    weekly: 4, intensityBase: 80,
+    goals: {
+      speed:   { label: '速度专攻', color: '#ff453a', items: ['加速跑 10×30m','冲刺间歇 6×60m','变向跑 5×20m','反应起跑 8×10m','增强式训练 4×8'] },
+      hypertrophy:{ label: '肌肥大', color: '#0a84ff', items: ['深蹲 4×10 @70%','卧推 4×10','罗马尼亚硬拉 4×10','哑铃推举 3×12','腿弯举 3×12'] },
+      peak:    { label: '峰值力量', color: '#ff9f0a', items: ['深蹲 6×2 @90%','硬拉 5×2','推举 5×2','抓举 5×2','颈后深蹲 4×2'] },
+      aerobic: { label: '有氧基础', color: '#30d158', items: ['LSD 慢跑 60min','节奏跑 4×8min','法特莱克 40min','骑行 90min Z2','游泳 1500m'] }
+    },
+    recovery: { rest: '72h/肌群', sleep: '8-9h', hydration: '40ml/kg/天', protein: '1.8-2.2g/kg/天' }
+  },
+  'mid-school': {
+    label: '中考体育·初三年级', icon: '📚', age: '14-16 岁', source: '中考体育标准',
+    summary: '围绕 1000/800m + 跳绳/实心球 + 立定跳远 + 选考项 训练',
+    weekly: 4, intensityBase: 65,
+    goals: {
+      endurance:{ label: '耐力跑', color: '#30d158', items: ['1000m 计时×4','800m 间歇×6','变速跑 400m×8','越野跑 25min','跳绳 3min×4'] },
+      jump:     { label: '下肢爆发', color: '#ff9f0a', items: ['立定跳远 6×3','收腹跳 4×10','蛙跳 3×8','单脚跳 4×6','跳深 4×6'] },
+      strength: { label: '全身力量', color: '#0a84ff', items: ['自重深蹲 4×15','俯卧撑 4×12','平板支撑 3×60s','仰卧起坐 4×20','俄罗斯转体 4×20'] },
+      throw:    { label: '投掷专项', color: '#a855f7', items: ['实心球掷远 6×3','铅球姿势练习 5×5','药球前抛 5×5','挥臂练习 4×8','核心抗旋 3×10'] }
+    },
+    recovery: { rest: '24-48h', sleep: '8-10h', hydration: '30ml/kg/天', protein: '1.2-1.5g/kg/天' }
+  },
+  'high-school': {
+    label: '高考体育·专项生', icon: '🏅', age: '16-19 岁', source: '高考体育标准',
+    summary: '100m/立定跳远/铅球/800m 四项达标 + 专项强化（径赛/田赛二选一）',
+    weekly: 5, intensityBase: 75,
+    goals: {
+      sprint:   { label: '短跑专项', color: '#ff453a', items: ['起跑 30m×6','加速跑 60m×4','弯道跑 4×120m','行进间跑 3×30m','阻力跑 4×40m'] },
+      jump2:    { label: '跳跃专项', color: '#ff9f0a', items: ['立定三级跳 5×3','跳远全程 6×3','跨步跳 4×8','挺身跳 4×6','单足跳 4×6'] },
+      throw2:  { label: '投掷专项', color: '#a855f7', items: ['铅球滑步 6×3','铅球旋转 5×3','杠铃抓举 4×3','卧推 4×5','旋转爆发 5×5'] },
+      endur2: { label: '中长跑', color: '#30d158', items: ['1500m 计时×3','间歇跑 400m×10','节奏跑 3×1200m','法特莱克 30min','登山跑 25min'] }
+    },
+    recovery: { rest: '48-72h/肌群', sleep: '9h+', hydration: '35ml/kg/天', protein: '1.6-2.0g/kg/天' }
+  }
+};
+
+// ===== 疲劳度自检 + 恢复追踪（数据驱动周期调整） =====
+const FATIGUE_KEY = 'bk_fatigue_v1';
+const CYCLE_KEY   = 'bk_cycle_v1';
+
+// 疲劳自检 4 维（参考 NSCA RPE + 主观恢复量表）
+const FATIGUE_DIMS = [
+  { id: 'sleep',  label: '睡眠质量', desc: '过去 3 天平均睡眠小时与深度' },
+  { id: 'muscle', label: '肌肉酸痛', desc: '训练后 24-48h 酸痛/僵硬感' },
+  { id: 'mood',   label: '情绪/动力', desc: '训练意愿与日常专注度' },
+  { id: 'energy', label: '能量水平', desc: '日常精力与训练表现' }
+];
+// 每维 1-10 分（10 = 极佳 / 1 = 极差），总平均 → 状态灯
+function classifyFatigue(avg) {
+  if (avg >= 8) return { code: 'green',  label: '绿·良好',  advice: '可按计划推进，可尝试突破训练' };
+  if (avg >= 6) return { code: 'yellow', label: '黄·可控',  advice: '维持当前强度，重视睡眠与拉伸' };
+  if (avg >= 4) return { code: 'orange', label: '橙·警戒',  advice: '降低强度 20%，加一次主动恢复' };
+  return          { code: 'red',    label: '红·危险',  advice: '强制休息 1-2 天，复查原因（睡眠/疾病）' };
+}
+
+function getFatigueLog() { try { return JSON.parse(localStorage.getItem(FATIGUE_KEY) || '[]'); } catch { return []; } }
+function setFatigueLog(arr) { try { localStorage.setItem(FATIGUE_KEY, JSON.stringify(arr)); } catch {} }
+
+// 7 天滑动平均（按 ISO 日期去重，每日取最后一次）
+function fatigue7dAvg() {
+  const log = getFatigueLog();
+  const byDay = {};
+  for (const r of log) (byDay[r.date] = byDay[r.date] || []).push(r);
+  const days = Object.keys(byDay).sort().slice(-7);
+  if (!days.length) return null;
+  const avg = days.reduce((s, d) => s + byDay[d].reduce((a, r) => a + (r.score || 0), 0) / byDay[d].length, 0) / days.length;
+  return { avg: Math.round(avg * 10) / 10, days: days.length, latest: byDay[days[days.length - 1]] };
+}
+
+// 周期调整算法：基于 7 天疲劳均值 → 下周训练负荷调整
+function computeCycleAdjust(segmentKey) {
+  const prog = STRENGTH_PROGRAMS[segmentKey];
+  if (!prog) return null;
+  const f = fatigue7dAvg();
+  const baseWeekly = prog.weekly;
+  const baseIntensity = prog.intensityBase;
+  if (!f) {
+    return { segment: prog.label, weekly: baseWeekly, intensity: baseIntensity, note: '尚无疲劳数据，先按基线推进。记录 3 天后再评估。' };
+  }
+  let weekly = baseWeekly, intensity = baseIntensity, note = '';
+  if (f.avg >= 8)        { weekly = baseWeekly + 1; intensity = Math.min(95, baseIntensity + 5); note = '状态极佳：+1 练次，强度上浮 5%'; }
+  else if (f.avg >= 6)   { weekly = baseWeekly;     intensity = baseIntensity;              note = '状态稳定：按基线推进'; }
+  else if (f.avg >= 4)   { weekly = Math.max(2, baseWeekly - 1); intensity = Math.max(50, baseIntensity - 15); note = '累积疲劳：-1 练次，强度下调 15%'; }
+  else                   { weekly = Math.max(1, baseWeekly - 2); intensity = Math.max(40, baseIntensity - 25); note = '过劳信号：-2 练次，强度下调 25%，优先恢复'; }
+  return { segment: prog.label, weekly, intensity, avg: f.avg, note };
+}
+
+// 写入疲劳记录
+function recordFatigue(scores) {
+  const avg = Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10;
+  const log = getFatigueLog();
+  const today = new Date().toISOString().slice(0, 10);
+  log.push({ date: today, ts: Date.now(), scores, score: avg });
+  // 仅保留 60 天
+  setFatigueLog(log.slice(-180));
+  return { avg, status: classifyFatigue(avg) };
+}
+
+// 打开疲劳自检面板
+function openFatigueCheck() {
+  const inputs = FATIGUE_DIMS.map((d, i) =>
+    `<div style="margin:10px 0"><label style="font-size:12px;color:var(--text2)">${d.label} <span style="color:var(--text3);font-size:10px">${d.desc}</span></label>
+     <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+       <input type="range" min="1" max="10" value="7" id="fq_${d.id}" style="flex:1">
+       <span id="fv_${d.id}" style="font-size:12px;color:var(--text);min-width:24px;text-align:right">7</span>
+     </div></div>`).join('');
+  showOverlay('panel', '🩺 疲劳度自检（RPE 量表）',
+    `<div style="font-size:11px;color:var(--text3);margin-bottom:10px">基于 NSCA 主观恢复量表 · 1=极差 / 10=极佳 · 建议每天训练前记录</div>
+     ${inputs}
+     <div style="display:flex;gap:8px;margin-top:14px">
+       <button class="h-btn" style="flex:1;background:var(--green);color:#fff" onclick="submitFatigueCheck()">✅ 提交并保存</button>
+       <button class="h-btn" onclick="this.closest('.overlay').remove()">取消</button>
+     </div>`);
+  // 绑定滑块联动
+  FATIGUE_DIMS.forEach(d => {
+    const el = document.getElementById('fq_' + d.id);
+    const out = document.getElementById('fv_' + d.id);
+    if (el && out) el.addEventListener('input', () => out.textContent = el.value);
+  });
+}
+
+function submitFatigueCheck() {
+  const scores = FATIGUE_DIMS.map(d => parseInt(document.getElementById('fq_' + d.id)?.value) || 5);
+  const { avg, status } = recordFatigue(scores);
+  document.querySelector('.overlay .panel')?.parentElement?.remove();
+  showOverlay('panel', '🩺 评估结果',
+    `<div style="text-align:center;padding:10px 0">
+       <div style="font-size:42px;font-weight:700;color:var(--${status.code === 'red' ? 'red' : status.code === 'orange' ? 'orange' : status.code === 'yellow' ? 'yellow' : 'green'})">${avg}</div>
+       <div style="font-size:13px;font-weight:600;margin:4px 0">${status.label}</div>
+       <div style="font-size:11px;color:var(--text2);margin:8px 20px">${status.advice}</div>
+     </div>
+     <div style="display:flex;gap:8px;margin-top:12px">
+       <button class="h-btn" style="flex:1" onclick="openCyclePlanner()">📅 查看本周周期调整</button>
+       <button class="h-btn" onclick="this.closest('.overlay').remove()">关闭</button>
+     </div>`);
+}
+
+// 周期规划器：基于所选训练库 + 疲劳数据给出下周建议
+let _selectedSegment = localStorage.getItem('bk_segment') || 'adult-full';
+function setSegment(key) { _selectedSegment = key; localStorage.setItem('bk_segment', key); renderCyclePlan(); }
+function openCyclePlanner() {
+  const segPicker = Object.entries(STRENGTH_PROGRAMS).map(([k, p]) =>
+    `<button class="h-btn" style="flex:1;${_selectedSegment === k ? 'background:var(--green);color:#fff' : ''}" onclick="setSegment('${k}')">${p.icon} ${p.label}</button>`).join('');
+  showOverlay('panel panel-wide', '📅 周期化训练规划器',
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${segPicker}</div>
+     <div id="cyclePlanBody"></div>
+     <div style="display:flex;gap:8px;margin-top:12px">
+       <button class="h-btn" onclick="openFatigueCheck()">🩺 立即疲劳自检</button>
+       <button class="h-btn" onclick="this.closest('.overlay').remove()">关闭</button>
+     </div>`);
+  renderCyclePlan();
+}
+
+function renderCyclePlan() {
+  const body = document.getElementById('cyclePlanBody');
+  if (!body) return;
+  const prog = STRENGTH_PROGRAMS[_selectedSegment];
+  if (!prog) return;
+  const adj = computeCycleAdjust(_selectedSegment);
+  const f = fatigue7dAvg();
+  const goalGrid = Object.entries(prog.goals).map(([k, g]) =>
+    `<div style="background:var(--bg3);padding:10px;border-radius:8px;border-left:3px solid ${g.color}">
+       <div style="font-size:12px;font-weight:600;color:${g.color}">${g.label}</div>
+       <div style="font-size:11px;color:var(--text2);margin-top:4px">${g.items.slice(0,3).join(' · ')}</div>
+       <div style="font-size:10px;color:var(--text3);margin-top:2px">+${g.items.length - 3} 项</div>
+     </div>`).join('');
+  const recovery = prog.recovery;
+  body.innerHTML = `
+    <div style="background:var(--bg3);padding:12px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${prog.icon} ${prog.label} <span style="font-size:10px;color:var(--text3)">${prog.age} · 来源 ${prog.source}</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">${prog.summary}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px;font-size:11px">
+        <div>😴 睡眠：${recovery.sleep}</div><div>💧 水合：${recovery.hydration}</div>
+        <div>🥩 蛋白：${recovery.protein}</div><div>⏱️ 休息：${recovery.rest}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin:8px 0 6px">🎯 训练目标库</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">${goalGrid}</div>
+    <div style="background:var(--bg2);padding:12px;border-radius:8px;border:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px">📈 下周训练负荷调整</div>
+      ${f ? `<div style="font-size:11px;color:var(--text2);margin-bottom:6px">近 7 天疲劳均值：<strong>${f.avg}</strong> / 10（${f.days} 天记录）</div>` : '<div style="font-size:11px;color:var(--text3);margin-bottom:6px">尚无疲劳数据</div>'}
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:12px">
+        <div>📅 每周练次：<strong>${adj.weekly}</strong> 次</div>
+        <div>🔥 强度基线：<strong>${adj.intensity}%</strong> 1RM</div>
+      </div>
+      <div style="font-size:11px;color:var(--green);margin-top:8px">💡 ${adj.note}</div>
+    </div>`;
+}
+
+// 体能模块入口重写：打开时跳到周期规划器（保留原 book 章节作为深入阅读）
+function openStrengthHub() { openCyclePlanner(); }
 const MODULE_CONTENT = {
   nutrition: [
     // 1. TDEE
@@ -1495,7 +1704,8 @@ function openTrainModule(modId) {
     <div class="bs-item"><span class="bs-num">${mod.chapters.length}</span><span class="bs-label">📖 训练主题</span></div>
     <div class="bs-item"><span class="bs-num">${mod.tags.length}</span><span class="bs-label">🏷️ 核心标签</span></div>
     <div class="bs-item"><span class="bs-num">${mod.docs}</span><span class="bs-label">📚 教学文档</span></div>
-    ${(modId==='nutrition'||modId==='competition') ? `<div class="bs-item" style="cursor:pointer;background:var(--bg3);border-radius:6px;padding:4px 8px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><span class="bs-num">🛠️</span><span class="bs-label">交互工具</span></div>` : ''}`;
+    ${(modId==='nutrition'||modId==='competition') ? `<div class="bs-item" style="cursor:pointer;background:var(--bg3);border-radius:6px;padding:4px 8px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><span class="bs-num">🛠️</span><span class="bs-label">交互工具</span></div>` : ''}
+    ${modId==='strength' ? `<div class="bs-item" style="cursor:pointer;background:var(--green);color:#fff;border-radius:6px;padding:4px 8px" onclick="openStrengthHub()"><span class="bs-num">🩺</span><span class="bs-label">疲劳/周期</span></div>` : ''}`;
   const toolBtn = (modId==='nutrition'||modId==='competition') ? `<div class="calc-card" style="grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),var(--bg3));border:2px solid ${mod.color};border-radius:var(--radius);padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><div style="font-size:32px">${modId==='nutrition'?'🍎':'🏆'}</div><div style="flex:1"><div style="font-size:14px;font-weight:600;color:${mod.color}">${modId==='nutrition'?'营养交互工具集':'比赛交互工具集'}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">${modId==='nutrition'?'餐食计算器·出汗率计算·补剂时间表':'赛前清单·对手弱点·赛后自评'}</div></div><div style="font-size:18px">→</div></div>` : '';
   $('contentGrid').innerHTML = toolBtn + mod.chapters.map((title, i) => `
     <div class="chapter-card fade-in" onclick="openModuleTopic('${mod.id}',${i})">
@@ -4006,7 +4216,27 @@ function findFirstMatchInArticle(root, query) {
 }
 
 // ─── Sidebar ──────────────────────────────────
-function toggleSidebar(show){if(show===undefined)show=!sidebarOpen;$('sidebar').classList.toggle('closed',!show);sidebarOpen=show;}
+// 抽屉式侧栏：在 ≤1023px 设备上打开时显示全屏遮罩，点击遮罩可关闭侧栏
+function getSidebarBackdrop() {
+  let bd = document.getElementById('sidebarBackdrop');
+  if (!bd) {
+    bd = document.createElement('div');
+    bd.id = 'sidebarBackdrop';
+    bd.className = 'sidebar-backdrop hidden';
+    bd.setAttribute('aria-hidden', 'true');
+    bd.addEventListener('click', () => toggleSidebar(false));
+    document.body.appendChild(bd);
+  }
+  return bd;
+}
+function toggleSidebar(show){
+  if(show===undefined) show=!sidebarOpen;
+  $('sidebar').classList.toggle('closed',!show);
+  sidebarOpen=show;
+  // 仅在抽屉模式（≤1023px）下显示遮罩
+  const bd = getSidebarBackdrop();
+  if (bd) bd.classList.toggle('hidden', !show || window.innerWidth > 1023);
+}
 let sidebarOpen=true;
 
 // 通用关闭弹窗函数

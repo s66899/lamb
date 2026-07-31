@@ -602,6 +602,15 @@ article .search-anchor {
   .stat-row { gap:4px; }
   .stat-box { min-width:60px; padding:5px 10px; }
   .stat-box .s-num { font-size:14px; }
+  /* 抽屉打开时的全屏遮罩（点遮罩关闭侧栏） */
+  .sidebar-backdrop {
+    display:block; position:fixed; inset:0; z-index:40;
+    background:rgba(0,0,0,.35);
+    backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px);
+    animation:backdropIn .2s ease;
+  }
+  .sidebar-backdrop.hidden { display:none; }
+  @keyframes backdropIn { from { opacity:0; } to { opacity:1; } }
 }
 
 /* ── 手机 (≤480px) ── */
