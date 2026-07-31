@@ -3744,41 +3744,31 @@ function initBadmintonCursor() {
   }
 }
 
-// 羽毛球击球动画 (2026-07-18) - 简化版
+// 羽毛球击球动画 (2026-07-18) - 直接注入式
 function playHitAnimation(e) {
-  // 只有开启羽毛球拍光标时才显示击球动画
   if (!document.body.classList.contains('badminton-cursor')) return;
-  
-  // 防止动画堆积
-  const existing = document.querySelector('.badminton-hit');
-  if (existing) existing.remove();
   
   const hit = document.createElement('div');
-  hit.className = 'badminton-hit';
-  hit.innerHTML = '🏸';
-  
-  // 获取点击位置
-  const x = e.clientX || e.pageX;
-  const y = e.clientY || e.pageY;
-  hit.style.left = (x - 16) + 'px';
-  hit.style.top = (y - 16) + 'px';
-  
+  hit.id = 'hit-anim';
+  hit.style.cssText = 'position:fixed;pointer-events:none;z-index:99999;font-size:28px;left:' + (e.clientX-16) + 'px;top:' + (e.clientY-16) + 'px;animation:hitPop 0.3s ease-out forwards';
+  hit.textContent = '🏸';
   document.body.appendChild(hit);
-  
-  // 动画结束后移除元素
-  setTimeout(() => hit.remove(), 350);
+  setTimeout(() => hit.remove(), 300);
 }
 
-// 为可点击元素添加击球动画事件
+// 注入动画关键帧
+if (!document.getElementById('hit-anim-style')) {
+  const style = document.createElement('style');
+  style.id = 'hit-anim-style';
+  style.textContent = '@keyframes hitPop {0%{transform:scale(0.5);opacity:1}50%{transform:scale(1.3);opacity:1}100%{transform:scale(1) translateY(-30px);opacity:0}}';
+  document.head.appendChild(style);
+}
+
 function initHitAnimation() {
-  if (!document.body.classList.contains('badminton-cursor')) return;
-  
-  // 使用捕获阶段处理所有点击
-  document.addEventListener('click', function(e) {
-    playHitAnimation(e);
-  }, true);
-  
-  console.log('[羽毛球] 击球动画已启用');
+  if (document.body.classList.contains('badminton-cursor')) {
+    document.addEventListener('click', playHitAnimation, true);
+    console.log('[羽毛球] 击球动画已启用');
+  }
 }
 function toggleReadMark() { const ch=getCurChapter(); if(!ch)return; if(isRead(currentBookId,ch.file)) unmarkRead(currentBookId,ch.file); else markRead(currentBookId,ch.file); $('readMarkBtn').textContent=isRead(currentBookId,ch.file)?'✅':'📌'; }
 function getCurChapter() { if(!currentBookId||currentChapterIdx<0) return null; const b=MANIFEST?.books.find(x=>x.id===currentBookId); return b?.chapters[currentChapterIdx]||null; }
