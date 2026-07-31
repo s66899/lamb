@@ -159,6 +159,86 @@ const STRENGTH_PROGRAMS = {
   }
 };
 
+// ===== 心理训练库：周期化心理调适 =====
+const PSYCHOLOGY_PROGRAMS = {
+  'competition-prep': {
+    label: '赛前心理准备', icon: '🎯', age: '全年龄', source: '运动心理学',
+    summary: '赛前焦虑调控 · 自信心建立 · 比赛流程可视化 · 注意力聚焦',
+    weekly: 2, intensityBase: 60,
+    goals: {
+      anxiety: { label: '焦虑调控', color: '#bf5af2', items: ['呼吸放松 5min×3/日','渐进式肌肉放松','正念冥想 10min','焦虑记录日记'] },
+      confidence: { label: '自信建立', color: '#ffd60a', items: ['成功画面重现','自我暗示训练','优势清单回顾','信心口号背诵'] },
+      focus: { label: '注意力聚焦', color: '#0a84ff', items: ['专注当下练习','外部聚焦训练','抗干扰练习','比赛流程可视化'] },
+      routine: { label: '比赛routine', color: '#30d158', items: ['热身routine','赛前仪式','得分庆祝','失误恢复'] }
+    },
+    recovery: { rest: '每日', sleep: '8h+', mental: '避免赛前过度社交', protein: '均衡饮食' }
+  },
+  'stress-management': {
+    label: '日常压力管理', icon: '🧠', age: '全年龄', source: '运动心理学',
+    summary: '训练/生活压力识别 · 情绪调节技巧 · 恢复性心理练习',
+    weekly: 3, intensityBase: 50,
+    goals: {
+      stress: { label: '压力识别', color: '#ff9f0a', items: ['压力源清单','身体信号觉察','压力等级自评','触发因素记录'] },
+      emotion: { label: '情绪调节', color: '#ff453a', items: ['情绪ABC模型','认知重评','情绪表达练习','情绪日记'] },
+      recovery: { label: '心理恢复', color: '#30d158', items: ['冥想放松','自然接触','兴趣爱好时间','社交支持'] },
+      growth: { label: '心理成长', color: '#a855f7', items: ['成长型思维','失败重构','积极自我对话','感恩练习'] }
+    },
+    recovery: { rest: '每日30min', sleep: '7-8h', mental: '定期心理休息日', protein: 'Omega-3补充' }
+  },
+  'team dynamics': {
+    label: '团队心理建设', icon: '👥', age: '青少年+成人', source: '团队心理学',
+    summary: '团队凝聚力 · 沟通技巧 · 冲突处理 · 领导力培养',
+    weekly: 1, intensityBase: 40,
+    goals: {
+      cohesion: { label: '团队凝聚', color: '#52b788', items: ['团队目标设定','共同挑战活动','成员认可仪式','团队故事建立'] },
+      communication: { label: '有效沟通', color: '#0a84ff', items: ['积极倾听练习','非暴力沟通','反馈技巧','公开表达'] },
+      conflict: { label: '冲突处理', color: '#ff9f0a', items: ['冲突识别','利益分析','双赢策略','情感修复'] },
+      leadership: { label: '领导力', color: '#ffd60a', items: ['领袖榜样学习','决策练习','责任承担','激励他人'] }
+    },
+    recovery: { rest: '每周1天', sleep: '7-9h', mental: '团队建设活动', protein: '均衡饮食' }
+  }
+};
+
+// ===== 营养模块：周期化营养策略 =====
+const NUTRITION_PROGRAMS = {
+  'competition-cycle': {
+    label: '比赛周期营养', icon: '🏆', age: '全年龄', source: 'NSCA运动营养',
+    summary: '赛前减脂 · 比赛周饮食 · 赛后恢复 · 补剂策略',
+    weekly: 7, intensityBase: 70,
+    goals: {
+      load: { label: '碳水加载', color: '#ffd60a', items: ['赛前3天高碳水','肝糖原超补偿','比赛日早餐','赛中补给'] },
+      hydrate: { label: '水合管理', color: '#0a84ff', items: ['赛前水合评估','比赛间歇补水','赛后脱水恢复','电解质补充'] },
+      recovery: { label: '赛后恢复', color: '#30d158', items: ['赛后30min窗口','蛋白质补充','碳水+蛋白比例','抗炎食物'] },
+      supplement: { label: '补剂策略', color: '#a855f7', items: ['咖啡因 timing','β-丙氨酸','肌酸','维生素D'] }
+    },
+    recovery: { rest: '赛后完全休息', sleep: '8h+', hydration: '3L+/天', protein: '2.0-2.4g/kg' }
+  },
+  'fat-loss': {
+    label: '减脂周期', icon: '📉', age: '18-45岁', source: 'NSCA运动营养',
+    summary: '热量赤字 · 蛋白质保护 · 训练表现维持 · 代谢保护',
+    weekly: 7, intensityBase: 75,
+    goals: {
+      calorie: { label: '热量控制', color: '#ff453a', items: ['每日赤字300-500','间歇性禁食','欺骗餐安排','热量循环'] },
+      protein: { label: '蛋白质保护', color: '#0a84ff', items: ['2.0-2.4g/kg摄入','每餐蛋白','亮氨酸优化','蛋白时间分布'] },
+      train: { label: '训练配合', color: '#30d158', items: ['力量训练优先','HIIT控制','训练后有氧','活动量增加'] },
+      metabolism: { label: '代谢保护', color: '#ff9f0a', items: ['定期热量重置','甲状腺支持','睡眠优化','压力管理'] }
+    },
+    recovery: { rest: '1-2天/周', sleep: '7-8h', hydration: '40ml/kg/天', protein: '2.2g/kg' }
+  },
+  'muscle-gain': {
+    label: '增肌周期', icon: '💪', age: '18-45岁', source: 'NSCA运动营养',
+    summary: '热量盈余 · 渐进负荷 · 合成代谢 · 恢复优化',
+    weekly: 5, intensityBase: 80,
+    goals: {
+      surplus: { label: '热量盈余', color: '#ffd60a', items: ['每日盈余200-300','碳水循环','训练日高碳','休息日适中'] },
+      anabolic: { label: '合成代谢', color: '#0a84ff', items: ['每餐蛋白25-40g','必需氨基酸','肌酸5g/日','胰岛素敏感度'] },
+      training: { label: '训练营养', color: '#30d158', items: ['训练前低碳高脂','训练中补水','训练后快碳+蛋白','练后餐 timing'] },
+      sleep: { label: '恢复优化', color: '#a855f7', items: ['睡眠8h+','生长激素高峰','褪黑素支持','睡前蛋白'] }
+    },
+    recovery: { rest: '1-2天/周', sleep: '8-9h', hydration: '35ml/kg/天', protein: '1.8-2.2g/kg' }
+  }
+};
+
 // ===== 疲劳度自检 + 恢复追踪（数据驱动周期调整） =====
 const FATIGUE_KEY = 'bk_fatigue_v1';
 const CYCLE_KEY   = 'bk_cycle_v1';
@@ -314,6 +394,77 @@ function renderCyclePlan() {
 
 // 体能模块入口重写：打开时跳到周期规划器（保留原 book 章节作为深入阅读）
 function openStrengthHub() { openCyclePlanner(); }
+
+// 心理训练周期规划器
+let _selectedPsych = localStorage.getItem('bk_psych_segment') || 'competition-prep';
+function setPsychSegment(key) { _selectedPsych = key; localStorage.setItem('bk_psych_segment', key); renderPsychPlan(); }
+function openPsychHub() {
+  const segPicker = Object.entries(PSYCHOLOGY_PROGRAMS).map(([k, p]) =>
+    `<button class="h-btn" style="flex:1;${_selectedPsych === k ? 'background:var(--purple);color:#fff' : ''}" onclick="setPsychSegment('${k}')">${p.icon} ${p.label}</button>`).join('');
+  showOverlay('panel panel-wide', '🧠 心理训练规划器',
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${segPicker}</div>
+     <div id="psychPlanBody"></div>`);
+  renderPsychPlan();
+}
+function renderPsychPlan() {
+  const body = document.getElementById('psychPlanBody');
+  if (!body) return;
+  const prog = PSYCHOLOGY_PROGRAMS[_selectedPsych];
+  if (!prog) return;
+  const goalGrid = Object.entries(prog.goals).map(([k, g]) =>
+    `<div style="background:var(--bg3);padding:10px;border-radius:8px;border-left:3px solid ${g.color}">
+       <div style="font-size:12px;font-weight:600;color:${g.color}">${g.label}</div>
+       <div style="font-size:11px;color:var(--text2);margin-top:4px">${g.items.slice(0,3).join(' · ')}</div>
+       <div style="font-size:10px;color:var(--text3);margin-top:2px">+${g.items.length - 3} 项</div>
+    </div>`).join('');
+  const r = prog.recovery;
+  body.innerHTML = `
+    <div style="background:var(--bg3);padding:12px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${prog.icon} ${prog.label} <span style="font-size:10px;color:var(--text3)">${prog.age} · 来源 ${prog.source}</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">${prog.summary}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px;font-size:11px">
+        <div>😴 睡眠：${r.sleep}</div><div>🧘 心理：${r.mental || '正常'}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin:8px 0 6px">🎯 心理训练目标库</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${goalGrid}</div>`;
+}
+
+// 营养周期规划器
+let _selectedNutr = localStorage.getItem('bk_nutr_segment') || 'competition-cycle';
+function setNutrSegment(key) { _selectedNutr = key; localStorage.setItem('bk_nutr_segment', key); renderNutrPlan(); }
+function openNutrHub() {
+  const segPicker = Object.entries(NUTRITION_PROGRAMS).map(([k, p]) =>
+    `<button class="h-btn" style="flex:1;${_selectedNutr === k ? 'background:var(--orange);color:#fff' : ''}" onclick="setNutrSegment('${k}')">${p.icon} ${p.label}</button>`).join('');
+  showOverlay('panel panel-wide', '🍎 营养规划器',
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${segPicker}</div>
+     <div id="nutrPlanBody"></div>`);
+  renderNutrPlan();
+}
+function renderNutrPlan() {
+  const body = document.getElementById('nutrPlanBody');
+  if (!body) return;
+  const prog = NUTRITION_PROGRAMS[_selectedNutr];
+  if (!prog) return;
+  const goalGrid = Object.entries(prog.goals).map(([k, g]) =>
+    `<div style="background:var(--bg3);padding:10px;border-radius:8px;border-left:3px solid ${g.color}">
+       <div style="font-size:12px;font-weight:600;color:${g.color}">${g.label}</div>
+       <div style="font-size:11px;color:var(--text2);margin-top:4px">${g.items.slice(0,3).join(' · ')}</div>
+       <div style="font-size:10px;color:var(--text3);margin-top:2px">+${g.items.length - 3} 项</div>
+    </div>`).join('');
+  const r = prog.recovery;
+  body.innerHTML = `
+    <div style="background:var(--bg3);padding:12px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${prog.icon} ${prog.label} <span style="font-size:10px;color:var(--text3)">${prog.age} · 来源 ${prog.source}</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">${prog.summary}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px;font-size:11px">
+        <div>💧 水合：${r.hydration}</div><div>🥩 蛋白：${r.protein}</div>
+        <div>😴 睡眠：${r.sleep}</div><div>⏱️ 休息：${r.rest}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin:8px 0 6px">🎯 营养策略目标库</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${goalGrid}</div>`;
+}
 const MODULE_CONTENT = {
   nutrition: [
     // 1. TDEE
@@ -1705,7 +1856,9 @@ function openTrainModule(modId) {
     <div class="bs-item"><span class="bs-num">${mod.tags.length}</span><span class="bs-label">🏷️ 核心标签</span></div>
     <div class="bs-item"><span class="bs-num">${mod.docs}</span><span class="bs-label">📚 教学文档</span></div>
     ${(modId==='nutrition'||modId==='competition') ? `<div class="bs-item" style="cursor:pointer;background:var(--bg3);border-radius:6px;padding:4px 8px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><span class="bs-num">🛠️</span><span class="bs-label">交互工具</span></div>` : ''}
-    ${modId==='strength' ? `<div class="bs-item" style="cursor:pointer;background:var(--green);color:#fff;border-radius:6px;padding:4px 8px" onclick="openStrengthHub()"><span class="bs-num">🩺</span><span class="bs-label">疲劳/周期</span></div>` : ''}`;
+    ${modId==='strength' ? `<div class="bs-item" style="cursor:pointer;background:var(--green);color:#fff;border-radius:6px;padding:4px 8px" onclick="openStrengthHub()"><span class="bs-num">🩺</span><span class="bs-label">疲劳/周期</span></div>` : ''}
+    ${modId==='psychology' ? `<div class="bs-item" style="cursor:pointer;background:var(--purple);color:#fff;border-radius:6px;padding:4px 8px" onclick="openPsychHub()"><span class="bs-num">🧠</span><span class="bs-label">心理规划</span></div>` : ''}
+    ${modId==='nutrition' ? `<div class="bs-item" style="cursor:pointer;background:var(--orange);color:#fff;border-radius:6px;padding:4px 8px" onclick="openNutrHub()"><span class="bs-num">🍎</span><span class="bs-label">营养规划</span></div>` : ''}`;
   const toolBtn = (modId==='nutrition'||modId==='competition') ? `<div class="calc-card" style="grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),var(--bg3));border:2px solid ${mod.color};border-radius:var(--radius);padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><div style="font-size:32px">${modId==='nutrition'?'🍎':'🏆'}</div><div style="flex:1"><div style="font-size:14px;font-weight:600;color:${mod.color}">${modId==='nutrition'?'营养交互工具集':'比赛交互工具集'}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">${modId==='nutrition'?'餐食计算器·出汗率计算·补剂时间表':'赛前清单·对手弱点·赛后自评'}</div></div><div style="font-size:18px">→</div></div>` : '';
   $('contentGrid').innerHTML = toolBtn + mod.chapters.map((title, i) => `
     <div class="chapter-card fade-in" onclick="openModuleTopic('${mod.id}',${i})">
