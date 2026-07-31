@@ -2180,99 +2180,279 @@ function showToast(text, ms) {
   } catch(e) {}
 }
 
-// ─── 工具页面 ────────────────────────────
-function openScreening() {
+// ─── 交互式损伤筛查 v2.0 ────────────────────────────
+// 损伤部位数据
+const injuryBodyParts = {
+  shoulder: {
+    name: '肩部', icon: '💪', color: '#0a84ff',
+    questions: [
+      { id: 'pain', text: '肩部是否有疼痛？', options: [{v:0,t:'无疼痛'},{v:1,t:'轻微酸痛'},{v:2,t:'明显疼痛'},{v:3,t:'严重疼痛'}], type: 'select' },
+      { id: 'raise', text: '能否举手过头？', options: [{v:0,t:'完全没问题'},{v:1,t:'能举但受限'},{v:2,t:'只能举到肩部'},{v:3,t:'完全举不起来'}], type: 'select' },
+      { id: 'serve', text: '发球/杀球时肩部感觉？', options: [{v:0,t:'正常发力'},{v:1,t:'轻微不适'},{v:2,t:'明显酸软'},{v:3,t:'无法发力'}], type: 'select' },
+      { id: 'sound', text: '肩部是否有弹响/摩擦声？', options: [{v:0,t:'无'},{v:1,t:'偶尔有'},{v:2,t:'经常有'},{v:3,t:'每次活动都有'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '肩袖炎', symptoms: '举手过顶疼痛+夜间痛醒', severity: '中', solution: '① 弹力带外旋训练 ② 肩部保暖 ③ 暂停过头动作 ④ 每周2次理疗' },
+      { name: '肱二头肌腱炎', symptoms: '屈臂时肩前疼痛', severity: '轻', solution: '① 减轻训练量 ② 冰敷 ③ 伸展肱二头肌' },
+      { name: '肩关节不稳', symptoms: '举手时肩部"脱落感"', severity: '重', solution: '① 立刻就医 ② 停止扣杀 ③ 强化肩袖深层肌' }
+    ]
+  },
+  wrist: {
+    name: '腕部', icon: '🤲', color: '#30d158',
+    questions: [
+      { id: 'pain', text: '腕部是否有疼痛？', options: [{v:0,t:'无疼痛'},{v:1,t:'轻微酸痛'},{v:2,t:'明显疼痛'},{v:3,t:'剧痛'}], type: 'select' },
+      { id: 'grip', text: '握拍时疼痛程度？', options: [{v:0,t:'正常'},{v:1,t:'轻微不适'},{v:2,t:'明显疼痛'},{v:3,t:'无法握拍'}], type: 'select' },
+      { id: 'twist', text: '手腕扭转是否受限？', options: [{v:0,t:'完全正常'},{v:1,t:'轻微受限'},{v:2,t:'明显受限'},{v:3,t:'无法扭转'}], type: 'select' },
+      { id: 'swelling', text: '腕部是否肿胀？', options: [{v:0,t:'无'},{v:1,t:'轻微'},{v:2,t:'明显肿胀'},{v:3,t:'严重肿胀'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '网球肘(肱骨外上髁炎)', symptoms: '握拍+反手击球时腕部外侧疼痛', severity: '中', solution: '① 停止握拍发力 ② 前臂拉伸 ③ 护具固定 ④ 必要时就医' },
+      { name: '腕管综合征', symptoms: '手指麻木+夜间加重', severity: '重', solution: '① 就医检查 ② 减少手腕屈伸 ③ 营养神经' },
+      { name: '三角纤维软骨损伤', symptoms: '手腕小指侧疼痛+扭毛巾无力', severity: '中', solution: '① 护腕固定 ② 避免手腕翻转 ③ 康复训练' }
+    ]
+  },
+  waist: {
+    name: '腰部', icon: '🧘', color: '#ff9f0a',
+    questions: [
+      { id: 'pain', text: '腰部是否有疼痛？', options: [{v:0,t:'无疼痛'},{v:1,t:'轻微酸痛'},{v:2,t:'明显疼痛'},{v:3,t:'剧痛难忍'}], type: 'select' },
+      { id: 'bend', text: '弯腰是否受限？', options: [{v:0,t:'完全正常'},{v:1,t:'轻微受限'},{v:2,t:'明显受限'},{v:3,t:'无法弯腰'}], type: 'select' },
+      { id: 'twist', text: '腰部扭转是否疼痛？', options: [{v:0,t:'无'},{v:1,t:'轻微'},{v:2,t:'明显疼痛'},{v:3,t:'无法扭转'}], type: 'select' },
+      { id: 'leg', text: '是否有腿麻/放射痛？', options: [{v:0,t:'无'},{v:1,t:'偶尔'},{v:2,t:'经常'},{v:3,t:'持续麻木'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '腰肌劳损', symptoms: '久坐+弯腰酸痛+晨起僵硬', severity: '轻', solution: '① 核心训练 ② 避免久坐 ③ 热敷 ④ 拉伸髂腰肌' },
+      { name: '腰椎间盘突出', symptoms: '腰疼+腿麻+咳嗽加重', severity: '重', solution: '① 立刻就医 ② 避免弯腰搬重物 ③ 睡硬板床' },
+      { name: '急性腰扭伤', symptoms: '突然疼痛+活动受限', severity: '中', solution: '① 立刻冰敷 ② 卧床休息 ③ 48小时后热敷' }
+    ]
+  },
+  knee: {
+    name: '膝盖', icon: '🦵', color: '#ff453a',
+    questions: [
+      { id: 'pain', text: '膝盖是否有疼痛？', options: [{v:0,t:'无疼痛'},{v:1,t:'轻微酸痛'},{v:2,t:'明显疼痛'},{v:3,t:'剧痛'}], type: 'select' },
+      { id: 'stair', text: '上下楼梯感觉？', options: [{v:0,t:'完全正常'},{v:1,t:'轻微不适'},{v:2,t:'明显疼痛'},{v:3,t:'无法上下楼'}], type: 'select' },
+      { id: 'squat', text: '深蹲时膝盖感觉？', options: [{v:0,t:'正常'},{v:1,t:'轻微不适'},{v:2,t:'明显疼痛'},{v:3,t:'无法深蹲'}], type: 'select' },
+      { id: 'swelling', text: '膝盖是否肿胀/积液？', options: [{v:0,t:'无'},{v:1,t:'轻微'},{v:2,t:'明显肿胀'},{v:3,t:'严重肿胀'}], type: 'select' },
+      { id: 'sound', text: '膝盖活动时有弹响？', options: [{v:0,t:'无'},{v:1,t:'偶尔'},{v:2,t:'经常'},{v:3,t:'每次活动都有'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '髌腱炎(跳跃膝)', symptoms: '膝盖下方疼痛+跳跃加重', severity: '中', solution: '① 停止跳跃 ② 冰敷 ③ 强化股四头肌 ④ 佩戴髌腱带' },
+      { name: '半月板损伤', symptoms: '膝盖卡住+肿胀+活动受限', severity: '重', solution: '① 就医检查 ② 避免深蹲 ③ 康复训练 ④ 严重需手术' },
+      { name: '髂胫束综合征', symptoms: '膝盖外侧疼痛+跑步加重', severity: '中', solution: '① 停止跑步 ② 泡沫轴放松 ③ 侧卧抬腿强化' },
+      { name: '前交叉韧带损伤', symptoms: '膝盖"错位"感+肿胀', severity: '重', solution: '① 立刻就医 ② RICE原则 ③ 手术+康复' }
+    ]
+  },
+  ankle: {
+    name: '脚踝', icon: '🦶', color: '#bf5af2',
+    questions: [
+      { id: 'pain', text: '脚踝是否有疼痛？', options: [{v:0,t:'无疼痛'},{v:1,t:'轻微酸痛'},{v:2,t:'明显疼痛'},{v:3,t:'剧痛'}], type: 'select' },
+      { id: 'twist', text: '是否容易崴脚？', options: [{v:0,t:'从不'},{v:1,t:'偶尔'},{v:2,t:'经常'},{v:3,t:'反复崴脚'}], type: 'select' },
+      { id: 'stable', text: '单腿站立是否稳定？', options: [{v:0,t:'非常稳定'},{v:1,t:'轻微晃动'},{v:2,t:'明显不稳'},{v:3,t:'无法站立'}], type: 'select' },
+      { id: 'swelling', text: '脚踝是否肿胀？', options: [{v:0,t:'无'},{v:1,t:'轻微'},{v:2,t:'明显肿胀'},{v:3,t:'严重肿胀'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '踝关节扭伤', symptoms: '崴脚+肿胀+疼痛', severity: '中', solution: '① RICE原则 ② 护踝固定 ③ 康复训练 ④ 3周内避免运动' },
+      { name: '慢性踝关节不稳', symptoms: '反复崴脚+"打软腿"', severity: '中', solution: '① 本体感觉训练 ② 平衡板训练 ③ 强化腓骨肌 ④ 护踝' },
+      { name: '跟腱炎', symptoms: '脚后跟疼痛+晨起僵硬', severity: '中', solution: '① 停止跑跳 ② 拉伸小腿 ③ 冰敷 ④ 避免赤脚' }
+    ]
+  },
+  muscle: {
+    name: '肌肉', icon: '💪', color: '#64d2ff',
+    questions: [
+      { id: 'soreness', text: '肌肉酸痛程度？', options: [{v:0,t:'无'},{v:1,t:'轻微(24h内消失)'},{v:2,t:'明显(48h消失)'},{v:3,t:'严重(>3天)'}], type: 'select' },
+      { id: 'cramp', text: '是否经常抽筋？', options: [{v:0,t:'从不'},{v:1,t:'偶尔'},{v:2,t:'经常'},{v:3,t:'每次运动都抽筋'}], type: 'select' },
+      { id: 'tight', text: '肌肉是否经常紧绷？', options: [{v:0,t:'否'},{v:1,t:'轻微'},{v:2,t:'明显'},{v:3,t:'严重紧绷'}], type: 'select' },
+      { id: 'tear', text: '是否有肌肉撕裂感？', options: [{v:0,t:'无'},{v:1,t:'轻微拉伤'},{v:2,t:'中度拉伤'},{v:3,t:'严重撕裂'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '肌肉拉伤', symptoms: '发力时突然剧痛+"被踢"感', severity: '中', solution: '① 立刻停止 ② 冰敷 ③ 加压包扎 ④ 72小时后热敷+拉伸' },
+      { name: '延迟性肌肉酸痛(DOMS)', symptoms: '训练后24-48h酸痛', severity: '轻', solution: '① 轻度活动 ② 泡沫轴放松 ③ 补充电解质 ④ 等待自愈' },
+      { name: '肌肉痉挛', symptoms: '突发抽筋+剧烈疼痛', severity: '轻', solution: '① 拉伸痉挛肌群 ② 补充盐水 ③ 按摩 ④ 热敷' }
+    ]
+  }
+};
+
+// 打开损伤筛查
+function openInjuryScreening() {
   showView('book');
-  currentModule = 'screening';
+  currentModule = 'injury-screening';
   navStack.push({view:'dashboard'});
-  historyPush('screening', {});
+  historyPush('injury-screening', {});
+  
   $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
-    <h1>🩺 羽毛球专项功能筛查</h1>
-    <div class="vm">BSFS v1.0 · 6个测试 · 10分钟完成 · 每月重测</div>`;
+    <h1>🩹 损伤筛查系统</h1>
+    <div class="vm">交互式 · 6部位 · 智能诊断</div>`;
   $('bookStats').innerHTML = '';
+  
+  // 显示身体部位选择
+  const bodyPartsHtml = Object.entries(injuryBodyParts).map(([key, part]) => `
+    <div onclick="selectInjuryPart('${key}')" style="cursor:pointer;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s" onmouseover="this.style.borderColor='${part.color}'" onmouseout="this.style.borderColor='var(--border)'">
+      <span style="font-size:28px">${part.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:600;color:var(--text)">${part.name}</div>
+        <div style="font-size:11px;color:var(--text2)">${part.commonInjuries.length}种常见损伤</div>
+      </div>
+      <span style="color:var(--text3);font-size:18px">›</span>
+    </div>`).join('');
+  
   $('contentGrid').innerHTML = `
-    <div style="grid-column:1/-1;background:var(--bg3);border-radius:var(--radius);padding:16px 18px;margin-bottom:6px">
-      <div style="font-size:13px;font-weight:500;margin-bottom:6px">🎯 为什么做功能筛查？</div>
-      <div style="font-size:11px;color:var(--text2);line-height:1.6">识别身体薄弱环节，预防运动损伤，制定个性化训练计划。这个筛查专门为羽毛球运动设计，比通用筛查更有效。</div>
+    <div style="grid-column:1/-1;background:linear-gradient(135deg,var(--bg3),var(--bg2));border-radius:var(--radius);padding:20px;margin-bottom:12px;text-align:center">
+      <div style="font-size:22px;margin-bottom:8px">🏸 羽毛球损伤全面筛查</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6">选择身体部位，回答几个简单问题<br>生成个性化损伤清单和解决方案</div>
     </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">1️⃣ 动态平衡测试</span>
-        <span style="font-size:9px;color:var(--text3)">Y-Balance</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        单腿站立，双手叉腰，另一腿分别向前/后内/后外三个方向伸展，记录最大距离(cm)，计算：(前方+后内+后外)÷(3×腿长)×100
-      </div>
-      <div class="score-standard"><span>>90%</span><span>80-90%</span><span>70-80%</span><span>≤70%</span></div>
-      <div class="score-desc"><span>3分·步法稳定</span><span>2分·基本稳定</span><span>1分·需加强</span><span>0分·不稳定</span></div>
-    </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">2️⃣ 单腿跳跃测试</span>
-        <span style="font-size:9px;color:var(--text3)">Single-Leg Hop</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        单腿站立向前跳跃，测量跳距(cm)÷腿长，每侧3次取最佳
-      </div>
-      <div class="score-standard"><span>>1.5</span><span>1.3-1.5</span><span>1.1-1.3</span><span><1.1</span></div>
-      <div class="score-desc"><span>3分·起跳有力</span><span>2分·正常</span><span>1分·需加强</span><span>0分·弱</span></div>
-    </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">3️⃣ 侧向移动测试</span>
-        <span style="font-size:9px;color:var(--text3)">Lateral Shuffle</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        双脚并拢站在线旁，侧向跳跃过线再跳回，30秒总次数×2（换算每分钟）
-      </div>
-      <div class="score-standard"><span>>80次/分钟</span><span>60-80</span><span>40-60</span><span><40</span></div>
-      <div class="score-desc"><span>3分·移动快</span><span>2分·正常</span><span>1分·需加强</span><span>0分·慢</span></div>
-    </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">4️⃣ 肩关节稳定性</span>
-        <span style="font-size:9px;color:var(--text3)">Shoulder Stability</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        双手举过头顶保持平衡，另一人轻推手臂，观察稳定性
-      </div>
-      <div class="score-standard"><span>完全稳定</span><span>轻微晃动</span><span>明显不稳</span></div>
-      <div class="score-desc"><span>3分·击球稳定</span><span>2分·基本稳定</span><span>1分·需肩袖强化</span></div>
-    </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">5️⃣ 核心耐力测试</span>
-        <span style="font-size:9px;color:var(--text3)">Side Bridge</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        侧桥姿势保持，身体成直线，双侧都测取较差值
-      </div>
-      <div class="score-standard"><span>>60秒</span><span>45-60秒</span><span>30-45秒</span><span><30秒</span></div>
-      <div class="score-desc"><span>3分·核心稳定</span><span>2分·正常</span><span>1分·需加强</span><span>0分·差</span></div>
-    </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">6️⃣ 髋关节灵活性</span>
-        <span style="font-size:9px;color:var(--text3)">Hip Flexion Test</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        仰卧桌边，一腿抱向胸口，另一腿自然下垂，观察大腿能否接触桌面
-      </div>
-      <div class="score-standard"><span>正常</span><span>轻度紧张</span><span>明显紧张</span></div>
-      <div class="score-desc"><span>3分·步幅大</span><span>2分·正常</span><span>1分·需拉伸</span></div>
-    </div>
-
-    <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:10px;color:var(--text3)">
-      🛡️ 预防性训练：平衡差→单腿站立 · 肩不稳→弹力带外旋 · 核心差→侧桥 · 髋紧→拉伸
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+      ${bodyPartsHtml}
     </div>`;
 }
 
+// 选择损伤部位
+function selectInjuryPart(partKey) {
+  const part = injuryBodyParts[partKey];
+  if (!part) return;
+  
+  window._currentInjuryPart = partKey;
+  window._injuryAnswers = {};
+  
+  const questionsHtml = part.questions.map((q, idx) => `
+    <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;border-left:3px solid ${part.color}">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">${idx+1}. ${q.text}</div>
+      <select id="injury_q_${q.id}" onchange="saveInjuryAnswer('${q.id}', this.value)" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px">
+        <option value="">请选择...</option>
+        ${q.options.map(o => `<option value="${o.v}">${o.t}</option>`).join('')}
+      </select>
+    </div>`).join('');
+  
+  $('contentGrid').innerHTML = `
+    <div style="grid-column:1/-1">
+      <div onclick="openInjuryScreening()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:var(--bg2);border-radius:20px;margin-bottom:12px;cursor:pointer;font-size:12px;color:var(--text2)">
+        <span>‹</span> 返回部位选择
+      </div>
+      <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:32px">${part.icon}</span>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">${part.name}损伤筛查</div>
+          <div style="font-size:11px;color:var(--text2)">请如实回答以下问题</div>
+        </div>
+      </div>
+      ${questionsHtml}
+      <button onclick="generateInjuryReport()" style="width:100%;padding:14px;background:${part.color};color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px">
+        📋 生成损伤报告
+      </button>
+    </div>`;
+}
+
+// 保存答案
+function saveInjuryAnswer(qId, value) {
+  window._injuryAnswers[qId] = parseInt(value) || 0;
+}
+
+// 生成损伤报告
+function generateInjuryReport() {
+  const partKey = window._currentInjuryPart;
+  const part = injuryBodyParts[partKey];
+  const answers = window._injuryAnswers || {};
+  
+  // 计算总分
+  let totalScore = 0;
+  let answeredCount = 0;
+  Object.values(answers).forEach(v => {
+    totalScore += v;
+    answeredCount++;
+  });
+  
+  if (answeredCount < 2) {
+    alert('请至少回答2个问题以便生成报告');
+    return;
+  }
+  
+  // 计算风险等级
+  const maxScore = answeredCount * 3;
+  const riskLevel = totalScore / maxScore;
+  let riskText, riskColor, riskAdvice;
+  
+  if (riskLevel < 0.25) {
+    riskText = '低风险'; riskColor = '#30d158'; riskAdvice = '继续保持良好的训练习惯，注意热身和拉伸';
+  } else if (riskLevel < 0.5) {
+    riskText = '中等风险'; riskColor = '#ff9f0a'; riskAdvice = '需要注意训练强度，加强相关部位的力量和灵活性训练';
+  } else if (riskLevel < 0.75) {
+    riskText = '较高风险'; riskColor = '#ff7500'; riskAdvice = '建议减少训练强度，及时进行康复训练，必要时就医';
+  } else {
+    riskText = '高风险'; riskColor = '#ff453a'; riskAdvice = '强烈建议立即停止训练，就医检查，遵医嘱进行康复';
+  }
+  
+  // 根据得分推荐相关损伤
+  const relevantInjuries = part.commonInjuries.filter((inj, idx) => {
+    // 根据答案相关性展示
+    if (answers.pain >= 2 && idx < 2) return true;
+    if (answers.pain >= 1 && idx < 3) return true;
+    return idx === 0;
+  });
+  
+  // 构建报告HTML
+  const injuriesHtml = relevantInjuries.map(inj => `
+    <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;border-left:3px solid ${inj.severity==='重'?'#ff453a':inj.severity==='中'?'#ff9f0a':'#30d158'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:14px;font-weight:600;color:var(--text)">${inj.name}</span>
+        <span style="font-size:11px;padding:3px 8px;border-radius:12px;background:${inj.severity==='重'?'#ff453a22':inj.severity==='中'?'#ff9f0a22':'#30d15822'};color:${inj.severity==='重'?'#ff453a':inj.severity==='中'?'#ff9f0a':'#30d158'}">${inj.severity}度</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">📍 症状: ${inj.symptoms}</div>
+      <div style="font-size:12px;color:var(--blue);background:var(--bg3);padding:10px;border-radius:8px">💡 ${inj.solution}</div>
+    </div>`).join('');
+  
+  const reportHtml = `
+    <div style="padding:20px;max-height:80vh;overflow-y:auto">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:40px;margin-bottom:10px">${part.icon}</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text)">${part.name}损伤评估报告</div>
+      </div>
+      
+      <div style="background:linear-gradient(135deg,${riskColor}22,${riskColor}11);border:2px solid ${riskColor};border-radius:12px;padding:16px;text-align:center;margin-bottom:16px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px">综合风险等级</div>
+        <div style="font-size:28px;font-weight:700;color:${riskColor}">${riskText}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px">${riskAdvice}</div>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;text-align:center">
+        <div style="background:var(--bg2);border-radius:8px;padding:10px">
+          <div style="font-size:20px;font-weight:700;color:var(--text)">${answeredCount}</div>
+          <div style="font-size:10px;color:var(--text2)">回答问题</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:8px;padding:10px">
+          <div style="font-size:20px;font-weight:700;color:${riskColor}">${Math.round(riskLevel*100)}%</div>
+          <div style="font-size:10px;color:var(--text2)">风险指数</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:8px;padding:10px">
+          <div style="font-size:20px;font-weight:700;color:var(--text)">${relevantInjuries.length}</div>
+          <div style="font-size:10px;color:var(--text2)">相关损伤</div>
+        </div>
+      </div>
+      
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px">📋 可能的相关损伤及建议</div>
+      ${injuriesHtml}
+      
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-top:16px;border:1px dashed var(--border)">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">🛡️ 预防建议</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8">
+          • 每次训练前充分热身（10-15分钟）<br>
+          • 训练后进行针对性拉伸<br>
+          • 加强相关部位的力量训练<br>
+          • 注意训练强度，循序渐进<br>
+          • 如有不适及时停止并冰敷<br>
+          • 严重疼痛建议就医检查
+        </div>
+      </div>
+      
+      <button onclick="document.getElementById('overlay').remove()" style="width:100%;padding:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;margin-top:16px;cursor:pointer">关闭报告</button>
+    </div>`;
+  
+  showOverlay('panel-lg', '📋 损伤筛查报告', reportHtml);
+}
+
+// 旧版功能筛查（兼容调用新系统）
+function openScreening() {
+  openInjuryScreening();
+}
+
+// ─── 工具页面 ────────────────────────────
 function openCalculators() {
 showView("book");
 currentModule="calculators";
@@ -3638,9 +3818,41 @@ var a=parseInt((document.getElementById("tdeeAge")||{}).value)||25;
 var act=parseFloat((document.getElementById("tdeeActivity")||{}).value)||1.55;
 var bmr=g==="male"?10*w+6.25*h-5*a+5:10*w+6.25*h-5*a-161;
 var tdee=Math.round(bmr*act);
-var r=document.getElementById("tdeeResult");
-if(r) r.innerHTML="BMR:"+Math.round(bmr)+"kcal | TDEE:"+tdee+"kcal/天";
+
+// 弹窗展示结果
+var advice = act < 1.4 ? '你活动量较小，建议增加运动' : act < 1.6 ? '你活动量适中，保持目前的运动习惯' : '你活动量很大，注意补充营养';
+showOverlay('panel-sm', '🔥 TDEE 计算结果', `
+  <div style="text-align:center;padding:10px">
+    <div style="font-size:14px;color:var(--text2);margin-bottom:8px">你的基础代谢</div>
+    <div style="font-size:36px;font-weight:700;color:var(--blue)">${Math.round(bmr)}</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px">千卡/天</div>
+    <div style="background:var(--bg2);border-radius:12px;padding:16px;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">每日总消耗(TDEE)</div>
+      <div style="font-size:28px;font-weight:700;color:var(--green)">${tdee}</div>
+      <div style="font-size:11px;color:var(--text3)">千卡/天</div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);text-align:left;line-height:1.8">
+      <strong>📋 通俗解读：</strong><br>
+      • 你每天躺着不动会消耗 <strong>${Math.round(bmr)}</strong> 千卡<br>
+      • 加上日常活动后大约 <strong>${tdee}</strong> 千卡<br>
+      • ${advice}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px;text-align:center">
+      <div style="background:var(--bg2);border-radius:8px;padding:10px">
+        <div style="font-size:11px;color:var(--text2)">减脂</div>
+        <div style="font-size:16px;font-weight:600;color:var(--red)">${tdee-400}</div>
+        <div style="font-size:10px;color:var(--text3)">千卡/天</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:8px;padding:10px">
+        <div style="font-size:11px;color:var(--text2)">增肌</div>
+        <div style="font-size:16px;font-weight:600;color:var(--green)">${tdee+300}</div>
+        <div style="font-size:10px;color:var(--text3)">千卡/天</div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('overlay').remove()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
+  </div>`);
 }
+
 function calcMacro(){
 var w=parseFloat((document.getElementById("macroWeight")||{}).value)||70;
 var g=(document.getElementById("macroGoal")||{}).value||"maintain";
@@ -3651,17 +3863,79 @@ var protein=Math.round(pMult[g]*w);
 var fat=Math.round(0.8*w);
 var cal=tdee+calAdj[g];
 var carb=Math.round((cal-protein*4-fat*9)/4);
-var r=document.getElementById("macroResult");
-if(r) r.innerHTML="蛋白"+protein+"g 脂肪"+fat+"g 碳水"+carb+"g 总计"+cal+"kcal";
+
+// 弹窗展示结果
+var goalText = {maintain:'维持体重',gain:'增肌',lose:'减脂'}[g];
+var goalAdvice = {maintain:'保持现有饮食，注意营养均衡',gain:'要多吃才能长肌肉，建议增加500大卡',lose:'要控制饮食，建议减少400大卡'}[g];
+showOverlay('panel-sm', '🥩 营养素计算结果', `
+  <div style="text-align:center;padding:10px">
+    <div style="font-size:14px;color:var(--text2);margin-bottom:12px">目标：${goalText}</div>
+    <div style="background:linear-gradient(135deg,var(--green),var(--blue));border-radius:12px;padding:20px;margin-bottom:16px">
+      <div style="font-size:12px;color:rgba(255,255,255,0.8)">每日总热量</div>
+      <div style="font-size:32px;font-weight:700;color:#fff">${cal}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.7)">千卡</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+      <div style="background:var(--bg2);border-radius:10px;padding:12px">
+        <div style="font-size:20px;font-weight:700;color:var(--green)">${protein}g</div>
+        <div style="font-size:10px;color:var(--text2)">蛋白质</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:12px">
+        <div style="font-size:20px;font-weight:700;color:var(--gold)">${carb}g</div>
+        <div style="font-size:10px;color:var(--text2)">碳水</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:12px">
+        <div style="font-size:20px;font-weight:700;color:var(--red)">${fat}g</div>
+        <div style="font-size:10px;color:var(--text2)">脂肪</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);text-align:left;line-height:1.8;background:var(--bg2);border-radius:10px;padding:12px">
+      <strong>📋 通俗解读：</strong><br>
+      • 蛋白质 <strong>${protein}g</strong> = 约${Math.round(protein/30)}个鸡蛋的蛋白量<br>
+      • 碳水 <strong>${carb}g</strong> = 约${Math.round(carb/60)}碗米饭<br>
+      • 脂肪 <strong>${fat}g</strong> = 约${Math.round(fat/9)}勺油<br>
+      <br>
+      <strong>建议：</strong>${goalAdvice}
+    </div>
+    <button onclick="document.getElementById('overlay').remove()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
+  </div>`);
 }
+
 function calcWater(){
 var w=parseFloat((document.getElementById("waterWeight")||{}).value)||70;
 var t=parseInt((document.getElementById("waterTrain")||{}).value)||60;
 var temp=parseFloat((document.getElementById("waterTemp")||{}).value)||1;
 var daily=Math.round(w*33*temp);
 var train=Math.round(t*12);
-var r=document.getElementById("waterResult");
-if(r) r.innerHTML="日常"+daily+"ml + 训练"+train+"ml = "+Math.round((daily+train)/10)/100+"L";
+var total=Math.round(daily+train);
+
+// 弹窗展示结果
+var bottles = Math.round(total / 550);
+showOverlay('panel-sm', '💧 饮水计算结果', `
+  <div style="text-align:center;padding:10px">
+    <div style="font-size:40px;margin-bottom:8px">💧</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:4px">每日建议饮水量</div>
+    <div style="font-size:36px;font-weight:700;color:var(--blue)">${total}</div>
+    <div style="font-size:14px;color:var(--text3);margin-bottom:16px">毫升（约${(total/1000).toFixed(1)}升）</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px">
+      <div style="background:var(--bg2);border-radius:10px;padding:12px">
+        <div style="font-size:11px;color:var(--text2)">日常饮水</div>
+        <div style="font-size:18px;font-weight:600;color:var(--text)">${daily}ml</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:12px">
+        <div style="font-size:11px;color:var(--text2)">训练补充</div>
+        <div style="font-size:18px;font-weight:600;color:var(--text)">+${train}ml</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);text-align:left;line-height:1.8;background:var(--bg2);border-radius:10px;padding:12px">
+      <strong>📋 通俗解读：</strong><br>
+      • 约等于 <strong>${bottles}</strong> 瓶550ml矿泉水<br>
+      • 建议分${Math.min(8, Math.ceil(total/500))}次喝完，不要一次喝太多<br>
+      • 训练中每15-20分钟补充${Math.round(t/60*250)}ml水<br>
+      ${temp > 1 ? '• 高温天气记得多补充水分！' : ''}
+    </div>
+    <button onclick="document.getElementById('overlay').remove()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
+  </div>`);
 }
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
