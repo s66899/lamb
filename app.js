@@ -12,7 +12,7 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.9.1';
+const APP_VERSION = 'v3.9.2';
 const APP_DATE = '2026-07-18';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -2441,7 +2441,7 @@ function generateInjuryReport() {
         </div>
       </div>
       
-      <button onclick="document.getElementById('overlay').remove()" style="width:100%;padding:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;margin-top:16px;cursor:pointer">关闭报告</button>
+      <button onclick="closeOverlayPopup(this)" style="width:100%;padding:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;margin-top:16px;cursor:pointer">关闭报告</button>
     </div>`;
   
   showOverlay('panel-lg', '📋 损伤筛查报告', reportHtml);
@@ -2570,7 +2570,7 @@ updateProgress();
         </div>
       </div>
       
-      <button onclick="document.getElementById('overlay').remove()" style="width:100%;margin-top:10px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">关闭</button>
+      <button onclick="closeOverlayPopup(this)" style="width:100%;margin-top:10px;padding:10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">关闭</button>
     </div>`);
 }
 
@@ -3865,6 +3865,12 @@ function findFirstMatchInArticle(root, query) {
 function toggleSidebar(show){if(show===undefined)show=!sidebarOpen;$('sidebar').classList.toggle('closed',!show);sidebarOpen=show;}
 let sidebarOpen=true;
 
+// 通用关闭弹窗函数
+function closeOverlayPopup(btn) {
+  var overlay = btn.closest('.overlay');
+  if (overlay) overlay.remove();
+}
+
 // ─── Overlay ──────────────────────────────────
 function showOverlay(cls,title,body){const overlay=document.createElement('div');overlay.className='overlay';overlay.id='_tmpOverlay';overlay.onclick=function(e){if(e.target===this)this.remove();};overlay.innerHTML=`<div class="${cls}" onclick="event.stopPropagation()"><div class="panel-hd"><span>${title}</span><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-bd">${body}</div></div>`;document.body.appendChild(overlay);}
 
@@ -3961,7 +3967,7 @@ showOverlay('panel-sm', '🔥 TDEE 计算结果', `
         <div style="font-size:10px;color:var(--text3)">千卡/天</div>
       </div>
     </div>
-    <button onclick="document.getElementById('overlay').remove()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
+    <button onclick="closeOverlayPopup(this)" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
   </div>`);
 }
 
@@ -4009,7 +4015,7 @@ showOverlay('panel-sm', '🥩 营养素计算结果', `
       <br>
       <strong>建议：</strong>${goalAdvice}
     </div>
-    <button onclick="document.getElementById('overlay').remove()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
+    <button onclick="closeOverlayPopup(this)" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
   </div>`);
 }
 
@@ -4046,7 +4052,7 @@ showOverlay('panel-sm', '💧 饮水计算结果', `
       • 训练中每15-20分钟补充${Math.round(t/60*250)}ml水<br>
       ${temp > 1 ? '• 高温天气记得多补充水分！' : ''}
     </div>
-    <button onclick="document.getElementById('overlay').remove()" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
+    <button onclick="closeOverlayPopup(this)" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
   </div>`);
 }
 
