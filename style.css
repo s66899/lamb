@@ -547,6 +547,33 @@ article hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
 .sr-b { font-size:10px; font-weight:500; color:var(--blue); }
 .sr-p { font-size:11px; color:var(--text2); }
 .sr-p em { color:var(--text); font-style:normal; font-weight:600; }
+.sr-m { font-size:10px; color:var(--text3); margin-top:2px; font-family:monospace; }
+
+/* 读者端搜索关键词高亮 + 锚点动画 */
+article .search-hl {
+  background: rgba(255, 213, 79, 0.45);
+  color: var(--text);
+  font-style: normal;
+  font-weight: 600;
+  padding: 0 2px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.35);
+}
+[data-theme="dark"] article .search-hl {
+  background: rgba(255, 213, 79, 0.28);
+  color: #fff8dc;
+  box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.5);
+}
+article .search-anchor {
+  animation: searchAnchorPulse 1.2s ease-out 3;
+  scroll-margin-top: 60px;
+  position: relative;
+}
+@keyframes searchAnchorPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.55); background: rgba(255, 193, 7, 0.12); }
+  50%  { box-shadow: 0 0 0 6px rgba(255, 193, 7, 0); background: rgba(255, 193, 7, 0.06); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); background: transparent; }
+}
 
 /* ═══════════════════════════════════════
    Responsive：平板 + 手机 + 桌面 三端

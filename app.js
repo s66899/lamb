@@ -8,9 +8,11 @@ let currentModule = 'dashboard';
 let currentBookId = null;
 let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
+// 待定位的搜索匹配：{ bookId, file, line, query } — 章节渲染完后跳转并高亮
+let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.8.9';
+const APP_VERSION = 'v3.9.0';
 const APP_DATE = '2026-07-18';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -3194,6 +3196,10 @@ async function renderChapter() {
   if (md) {
     $('article').innerHTML = mdParse(md) + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
     makeCollapsible(); setupQuiz(ch); markStreak();
+    // 搜索跳转：定位到匹配行并高亮关键词
+    if (pendingSearchJump && pendingSearchJump.bookId === currentBookId && pendingSearchJump.file === ch.file) {
+      applySearchJump();
+    }
   } else {
     $('article').innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">❌ 加载失败</div>`;
   }
@@ -3412,7 +3418,9 @@ function renderSearchResults(results, queryOrig) {
   const re = new RegExp('(' + escaped + ')', 'gi');
   $('searchResults').innerHTML = results.map(r => {
     const highlighted = r.preview.replace(re, '<em>$1</em>');
-    return `<div class="sr-item" onclick="this.closest('.overlay').remove();goSearchResult('${r.book.id}','${r.ch.file}')">
+    // 内容匹配才传 line，标题/H2 匹配则传空，由读者端用 query 全文高亮
+    const lineAttr = r.line ? r.line : '';
+    return `<div class="sr-item" onclick="this.closest('.overlay').remove();goSearchResult('${r.book.id}','${r.ch.file}',${lineAttr ? r.line : 'null'},'${escapeRegex(queryOrig).replace(/'/g, "\\'")}')">
       <div class="sr-b">${r.book.emoji} ${r.book.title} · ${r.ch.title}</div>
       <div class="sr-p">${highlighted}</div>
       ${r.line ? '<div class="sr-m">第' + r.line + '行</div>' : ''}
@@ -3440,7 +3448,126 @@ async function doSearch(query) {
 
   renderSearchResults(results, query);
 }
-function goSearchResult(bid,file){goToBook(bid);const b=MANIFEST.books.find(x=>x.id===bid);const idx=b?.chapters.findIndex(c=>c.file===file);if(idx>=0)setTimeout(()=>openChapter(idx),300);}
+function goSearchResult(bid,file,line,query){pendingSearchJump={bookId:bid,file:file,line:line||0,query:query||''};goToBook(bid);const b=MANIFEST.books.find(x=>x.id===bid);const idx=b?.chapters.findIndex(c=>c.file===file);if(idx>=0)setTimeout(()=>openChapter(idx),300);}
+
+/** 在章节渲染完成后定位搜索匹配：滚动到匹配行 + 高亮关键词 + 镉定标记 */
+function applySearchJump() {
+  const jump = pendingSearchJump;
+  if (!jump) return;
+  const article = $('article');
+  if (!article) return;
+  // 先清除上次的高亮与镉定
+  article.querySelectorAll('.search-hl,.search-anchor').forEach(el => {
+    const parent = el.parentNode;
+    if (!parent) return;
+    if (el.classList.contains('search-anchor')) {
+      el.classList.remove('search-anchor');
+    } else {
+      // 还原文本节点
+      parent.replaceChild(document.createTextNode(el.textContent), el);
+      parent.normalize();
+    }
+  });
+  // 镉定指定行：如果有 line，则找到第 N 个段落（近似对应 markdown 行）
+  let anchorEl = null;
+  if (jump.line > 0) {
+    const blocks = article.querySelectorAll('p,li,h2,h3,h4,pre,blockquote,table');
+    if (blocks.length) {
+      // 按比例近似跳转（markdown 行 → HTML 块）
+      const idx = Math.min(blocks.length - 1, Math.max(0, Math.floor((jump.line - 1) * blocks.length / Math.max(jump.line + 5, 30))));
+      anchorEl = blocks[idx];
+    }
+  }
+  // 如果没有 line 或没找到镉定，则高亮第一个出现位置所在的祖先块
+  if (!anchorEl && jump.query) {
+    const first = findFirstMatchInArticle(article, jump.query);
+    if (first) anchorEl = first.closest('p,li,h2,h3,h4,pre,blockquote,table,article') || article;
+  }
+  // 在正文中高亮所有匹配关键词
+  if (jump.query) {
+    const safe = jump.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (safe) {
+      const re = new RegExp(safe, 'gi');
+      walkTextNodes(article, (text) => {
+        re.lastIndex = 0;
+        if (!re.test(text)) return null;
+        re.lastIndex = 0;
+        const frag = document.createDocumentFragment();
+        let last = 0;
+        let m;
+        while ((m = re.exec(text)) !== null) {
+          if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+          const em = document.createElement('em');
+          em.className = 'search-hl';
+          em.textContent = m[0];
+          frag.appendChild(em);
+          last = m.index + m[0].length;
+          if (m[0].length === 0) re.lastIndex++;
+        }
+        if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+        return frag;
+      });
+    }
+  }
+  // 定位滚动：镉定元素出现在视口上方 20% 处
+  if (anchorEl) {
+    anchorEl.classList.add('search-anchor');
+    requestAnimationFrame(() => {
+      const content = $('content');
+      if (!content) return;
+      const rect = anchorEl.getBoundingClientRect();
+      const containerRect = content.getBoundingClientRect();
+      const offset = rect.top - containerRect.top + content.scrollTop - content.clientHeight * 0.2;
+      content.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+      // 4秒后移除镉定动画
+      setTimeout(() => anchorEl && anchorEl.classList.remove('search-anchor'), 4000);
+    });
+  }
+  pendingSearchJump = null;
+}
+
+/** 遍历 article 内的文本节点（不进 script/style） */
+function walkTextNodes(root, cb) {
+  const skip = new Set(['SCRIPT', 'STYLE']);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      let p = node.parentNode;
+      while (p && p !== root) {
+        if (p.nodeType === 1 && (skip.has(p.tagName) || p.classList.contains('search-hl'))) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        p = p.parentNode;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  let n;
+  const replacements = [];
+  while ((n = walker.nextNode())) replacements.push(n);
+  for (const node of replacements) {
+    const result = cb(node.nodeValue);
+    if (result && node.parentNode) {
+      node.parentNode.replaceChild(result, node);
+    }
+  }
+}
+
+/** 在 article 中查找首个匹配文本的节点 */
+function findFirstMatchInArticle(root, query) {
+  if (!query) return null;
+  const safe = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (!safe) return null;
+  const re = new RegExp(safe, 'i');
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      re.lastIndex = 0;
+      return re.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  return walker.nextNode();
+}
 
 // ─── Sidebar ──────────────────────────────────
 function toggleSidebar(show){if(show===undefined)show=!sidebarOpen;$('sidebar').classList.toggle('closed',!show);sidebarOpen=show;}
