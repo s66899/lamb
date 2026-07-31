@@ -12,7 +12,7 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.11.0';
+const APP_VERSION = 'v3.12.0';
 const APP_DATE = '2026-08-01';
 
 // ─── 全局错误边界（防白屏）─────────────────
