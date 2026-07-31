@@ -3624,6 +3624,26 @@ let _srSelIdx = -1;
 let _srLastQuery = '';
 let _srDebounceTimer = null;
 
+// 📜 v3.9.3 搜索历史：去重 + 最新置顶 + 最多 8 条，关闭弹窗后保留
+const SEARCH_HISTORY_KEY = 'lamb_search_history_v1';
+const SEARCH_HISTORY_MAX = 8;
+function getSearchHistory() {
+  const arr = safeGet(SEARCH_HISTORY_KEY, []);
+  return Array.isArray(arr) ? arr : [];
+}
+function addSearchHistory(q) {
+  if (!q || !q.trim()) return;
+  q = q.trim();
+  const arr = getSearchHistory().filter(x => x !== q);
+  arr.unshift(q);
+  if (arr.length > SEARCH_HISTORY_MAX) arr.length = SEARCH_HISTORY_MAX;
+  safeSet(SEARCH_HISTORY_KEY, arr);
+}
+function clearSearchHistory() {
+  safeSet(SEARCH_HISTORY_KEY, []);
+  renderSearchHistory();
+}
+
 /** 防抖搜索：输入即查，避免每个按键都跑全文搜索 */
 function scheduleSearch(input) {
   clearTimeout(_srDebounceTimer);
@@ -3668,8 +3688,32 @@ function openSearch() {
   _srSelIdx = -1;
   const overlay = document.createElement('div');
   overlay.className='overlay';overlay.onclick=function(e){if(e.target===this)this.remove();};
-  overlay.innerHTML=`<div class="panel panel-search" onclick="event.stopPropagation()"><div class="panel-hd"><input type="text" id="searchInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none" placeholder="🔍 搜索训练内容·知识书塔 · ↑↓ 选 · ↵ 跳转" autofocus oninput="scheduleSearch(this)" onkeydown="handleSearchKey(event,this)"><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-meta" id="searchMeta" style="font-size:11px;color:var(--text3);padding:4px 12px;text-align:right">⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭</div><div class="panel-bd" id="searchResults"><div class="search-hint">⌨️ 输入 → 自动搜索<br><span style="opacity:0.6;font-size:11px">试搜：发球 / 杀球 / 营养 / 战术</span></div></div></div>`;
+  overlay.innerHTML=`<div class="panel panel-search" onclick="event.stopPropagation()"><div class="panel-hd"><input type="text" id="searchInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none" placeholder="🔍 搜索训练内容·知识书塔 · ↑↓ 选 · ↵ 跳转" autofocus oninput="scheduleSearch(this)" onkeydown="handleSearchKey(event,this)"><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-meta" id="searchMeta" style="font-size:11px;color:var(--text3);padding:4px 12px;text-align:right">⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭</div><div class="panel-bd" id="searchResults">${renderSearchHistoryHTML()}</div></div>`;
   document.body.appendChild(overlay);setTimeout(()=>document.getElementById('searchInput')?.focus(),100);
+}
+
+/** 渲染搜索历史面板 HTML（空历史时回退到原提示） */
+function renderSearchHistoryHTML() {
+  const hist = getSearchHistory();
+  if (!hist.length) {
+    return '<div class="search-hint">⌨️ 输入 → 自动搜索<br><span style="opacity:0.6;font-size:11px">试搜：发球 / 杀球 / 营养 / 战术</span></div>';
+  }
+  const items = hist.map((q, i) => `<a class="sr-sugg sr-hist" data-hist-q="${escapeAttr(q)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.histQ;scheduleSearch(i);i.focus();">🔁 ${escapeHTML(q)}</a>`).join(' ');
+  return `<div class="search-hint" style="text-align:left;padding:14px 12px 8px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--text3);font-weight:600">📜 最近搜索</span><a onclick="clearSearchHistory()" style="font-size:10px;color:var(--text3);cursor:pointer;opacity:0.7">🗑️ 清空</a></div><div style="line-height:1.8">${items}</div><div style="margin-top:8px;font-size:10px;color:var(--text3);opacity:0.7">⌨️ 输入关键字开始搜索</div></div>`;
+}
+
+/** 把搜索历史区域重渲染（点击"清空"后调用） */
+function renderSearchHistory() {
+  const box = document.getElementById('searchResults');
+  if (box) box.innerHTML = renderSearchHistoryHTML();
+}
+
+/** 转义 HTML 防止 XSS（搜索历史来自用户输入） */
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) {
+  return escapeHTML(s);
 }
 
 const MAX_RESULTS = 30;
@@ -3777,11 +3821,13 @@ function renderSearchResults(results, queryOrig) {
 async function doSearch(query) {
   query = query.trim();
   if (!query) {
-    $('searchResults').innerHTML = '<div class="search-hint">⌨️ 输入 → 自动搜索<br><span style="opacity:0.6;font-size:11px">试搜：发球 / 杀球 / 营养 / 战术</span></div>';
+    $('searchResults').innerHTML = renderSearchHistoryHTML();
     const meta = document.getElementById('searchMeta');
     if (meta) meta.textContent = '⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭';
     return;
   }
+  // 📜 记录到搜索历史（去重 + 最新置顶）
+  addSearchHistory(query);
   $('searchResults').innerHTML = '<div class="search-hint">⏳ 搜索中…</div>';
   const ql = query.toLowerCase();
   const results = [];
