@@ -12,7 +12,7 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.10.0';
+const APP_VERSION = 'v3.11.0';
 const APP_DATE = '2026-08-01';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -3729,6 +3729,56 @@ function toggleTheme() {
   localStorage.setItem('bk_theme', next);
   document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌓';
 }
+// 羽毛球拍光标切换 (2026-07-18)
+function toggleBadmintonCursor() {
+  const body = document.body;
+  const enabled = body.classList.toggle('badminton-cursor');
+  localStorage.setItem('bk_badminton_cursor', enabled);
+  return enabled;
+}
+function initBadmintonCursor() {
+  const enabled = localStorage.getItem('bk_badminton_cursor') === 'true';
+  if (enabled) {
+    document.body.classList.add('badminton-cursor');
+    initHitAnimation(); // 初始化击球动画
+  }
+}
+
+// 羽毛球击球动画 (2026-07-18)
+function playHitAnimation(e) {
+  // 只有开启羽毛球拍光标时才显示击球动画
+  if (!document.body.classList.contains('badminton-cursor')) return;
+  
+  const hit = document.createElement('div');
+  hit.className = 'badminton-hit';
+  hit.innerHTML = '<div class="shuttle"></div>🏸';
+  
+  // 获取点击位置
+  const x = e.clientX || e.pageX;
+  const y = e.clientY || e.pageY;
+  hit.style.left = (x - 20) + 'px';
+  hit.style.top = (y - 30) + 'px';
+  
+  document.body.appendChild(hit);
+  
+  // 动画结束后移除元素
+  setTimeout(() => hit.remove(), 350);
+}
+
+// 为可点击元素添加击球动画事件
+function initHitAnimation() {
+  if (!document.body.classList.contains('badminton-cursor')) return;
+  
+  const selectors = ['a', 'button', '.clickable', '.ios-press', '.h-btn', '.b-item', '.bs-item', '.module-card', '.tool-card', '[onclick]'];
+  
+  document.addEventListener('click', function(e) {
+    const target = e.target;
+    const isClickable = selectors.some(sel => target.closest(sel));
+    if (isClickable) {
+      playHitAnimation(e);
+    }
+  }, true);
+}
 function toggleReadMark() { const ch=getCurChapter(); if(!ch)return; if(isRead(currentBookId,ch.file)) unmarkRead(currentBookId,ch.file); else markRead(currentBookId,ch.file); $('readMarkBtn').textContent=isRead(currentBookId,ch.file)?'✅':'📌'; }
 function getCurChapter() { if(!currentBookId||currentChapterIdx<0) return null; const b=MANIFEST?.books.find(x=>x.id===currentBookId); return b?.chapters[currentChapterIdx]||null; }
 function prevChapter() { if(currentChapterIdx>0) openChapter(currentChapterIdx-1); }
@@ -4288,7 +4338,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌓';
   const savedFont=localStorage.getItem('bk_font');if(savedFont){fontBase=parseInt(savedFont);document.documentElement.style.setProperty('--font-base',fontBase+'px');}
   bar.style.width='90%';await sleep(200);
-  initRP();bar.style.width='100%';await sleep(200);
+  initRP();
+  initBadmintonCursor(); // 初始化羽毛球拍光标
+  bar.style.width='100%';await sleep(200);
   $('splash').style.display='none';$('app').style.display='block';
   renderDashboard();updateProgress();
   $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);});
@@ -4944,10 +4996,21 @@ function showPrincipalDashboard() {
 }
 
 function openAdminSettings() {
+  const cursorEnabled = document.body.classList.contains('badminton-cursor');
   const data = loadRoleData();
   showOverlay('panel-admin', '⚙️ 管理员设置', `
     <div style="display:flex;flex-direction:column;gap:12px">
       <div style="font-size:11px;color:var(--text3);text-align:center">本设备数据 · 可添加/编辑学员、教练、分配关系</div>
+      
+      <!-- 羽毛球拍光标设置 -->
+      <div class="calc-card" style="padding:12px;background:linear-gradient(135deg,var(--bg2),rgba(82,183,136,0.08));border:1px solid var(--green)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:13px;font-weight:600">🏸 羽毛球拍光标</div>
+          <button onclick="const en=toggleBadmintonCursor();this.textContent=en?'✅ 已开启':'⚪ 关闭';this.style.background=en?'var(--green)':'var(--bg3)';this.style.color=en?'#fff':'var(--text)'" class="tb-btn" style="font-size:11px;background:${cursorEnabled?'var(--green)':'var(--bg3)'};color:${cursorEnabled?'#fff':'var(--text)'}">${cursorEnabled?'✅ 已开启':'⚪ 关闭'}</button>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px">将鼠标光标替换为羽毛球拍样式</div>
+      </div>
+      
       <div class="calc-card" style="padding:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <div style="font-size:13px;font-weight:600">🧑‍🎓 学员 (${data.students.length})</div>
