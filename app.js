@@ -12,7 +12,7 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.9.0';
+const APP_VERSION = 'v3.9.1';
 const APP_DATE = '2026-07-18';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -2463,15 +2463,127 @@ document.getElementById("bookStats").innerHTML="";
 document.getElementById("contentGrid").innerHTML="<div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--blue)\">🔥 TDEE</div><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px\"><label>性别<select id=\"tdeeGender\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=male>男</option><option value=female>女</option></select></label><label>体重(kg)<input id=\"tdeeWeight\" type=number value=70 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>身高(cm)<input id=\"tdeeHeight\" type=number value=175 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>年龄<input id=\"tdeeAge\" type=number value=25 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>活动<select id=\"tdeeActivity\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=1.2>久坐</option><option value=1.375>轻度</option><option value=1.55 selected>中度</option><option value=1.725>高度</option><option value=1.9>极高</option></select></label></div><button onclick=\"calcTDEE()\" class=\"qw-btn\" style=\"background:var(--blue);color:#fff;border:none;width:100%\">🔥 计算 TDEE</button><div id=\"tdeeResult\" style=\"margin-top:8px;font-size:12px\"></div></div><div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--green)\">🥩 营养素</div><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px\"><label>体重<input id=\"macroWeight\" type=number value=70 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>目标<select id=\"macroGoal\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=maintain>维持</option><option value=gain>增肌</option><option value=lose>减脂</option></select></label><label>TDEE<input id=\"macroTDEE\" type=number value=2500 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label></div><button onclick=\"calcMacro()\" class=\"qw-btn\" style=\"background:var(--green);color:#fff;border:none;width:100%\">🥩 计算营养素</button><div id=\"macroResult\" style=\"margin-top:8px;font-size:12px\"></div></div><div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--blue)\">💧 水合</div><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px\"><label>体重<input id=\"waterWeight\" type=number value=70 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>训练(分钟)<input id=\"waterTrain\" type=number value=60 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>温度<select id=\"waterTemp\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=1>常温</option><option value=1.2>&gt;30°C</option></select></label></div><button onclick=\"calcWater()\" class=\"qw-btn\" style=\"background:var(--blue);color:#fff;border:none;width:100%\">💧 计算水合</button><div id=\"waterResult\" style=\"margin-top:8px;font-size:12px\"></div></div><div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--gold)\">⏰ 恢复时间线</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:var(--text2)\"><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--blue)\">0-30分</strong><br>快速碳水1-1.2g/kg+蛋白0.3-0.4g/kg</div><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--blue)\">30分-2h</strong><br>正餐(碳水+蛋白+蔬菜)</div><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--blue)\">2h-睡前</strong><br>泡沫轴10-15分钟</div><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--gold)\">睡眠7-9h</strong><br>⭐ 组织修复</div></div></div>";
 updateProgress();
 }function openDiagnosis() {
-  showOverlay('panel-sm', '🔍 训练问题诊断', `
-    <div class="diag-list">
-      <div class="diag-item"><strong style="color:var(--text)">动作标准但没进步</strong><br><span style="color:var(--text2);font-size:11px">→ 检查训练量/恢复/变式</span></div>
-      <div class="diag-item"><strong style="color:var(--text)">动作越练越差</strong><br><span style="color:var(--text2);font-size:11px">→ 疲劳累积/加量太快</span></div>
-      <div class="diag-item"><strong style="color:var(--text)">训练中某个部位痛</strong><br><span style="color:var(--text2);font-size:11px">→ 刺痛=停 · 酸胀=正常</span></div>
-      <div class="diag-item"><strong style="color:var(--text)">能完成但"使不上劲"</strong><br><span style="color:var(--text2);font-size:11px">→ 检查动力链顺序</span></div>
-      <div class="diag-item"><strong style="color:var(--text)">体能跟不上技术训练</strong><br><span style="color:var(--text2);font-size:11px">→ 加强基础体能/代谢适应</span></div>
-      <div class="diag-item"><strong style="color:var(--text)">比赛时技术变形</strong><br><span style="color:var(--text2);font-size:11px">→ 压力适应训练/模拟比赛</span></div>
+  showOverlay('panel-lg', '🔍 训练问题诊断', `
+    <div style="padding:10px;max-height:70vh;overflow-y:auto">
+      <div style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:16px">点击问题查看详细解决方案</div>
+      
+      <div onclick="toggleDiagnosisDetail(0)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">动作标准但没进步</strong>
+          <span id="diag_icon_0" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_0" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">可能原因：</strong><br>
+          • 训练强度不够/周期太长<br>
+          • 恢复不足导致适应<br>
+          • 技术动作已定型但缺乏比赛检验<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 用VBT等工具检测是否真的没进步<br>
+          ② 尝试新的训练变式（重量/次数/节奏）<br>
+          ③ 加入比赛场景训练
+
+        </div>
+      </div>
+      
+      <div onclick="toggleDiagnosisDetail(1)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">动作越练越差</strong>
+          <span id="diag_icon_1" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_1" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">可能原因：</strong><br>
+          • 疲劳累积（神经疲劳/肌肉疲劳）<br>
+          • 加量太快，没有循序渐进<br>
+          • 睡眠/营养不足<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 连续休息2-3天<br>
+          ② 检查睡眠是否7-9小时<br>
+          ③ 下次训练减量30%
+        </div>
+      </div>
+      
+      <div onclick="toggleDiagnosisDetail(2)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">训练中某个部位痛</strong>
+          <span id="diag_icon_2" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_2" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">判断方法：</strong><br>
+          • 刺痛 = 立刻停止，可能严重损伤<br>
+          • 酸胀 = 正常乳酸堆积，可继续<br>
+          • 锐痛 = 停止，冷敷<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 刺痛立即停止，冰敷<br>
+          ② 48小时内冰敷，之后热敷<br>
+          ③ 严重就就医
+        </div>
+      </div>
+      
+      <div onclick="toggleDiagnosisDetail(3)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">能完成但"使不上劲"</strong>
+          <span id="diag_icon_3" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_3" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">可能原因：</strong><br>
+          • 动力链断裂（力传导不畅）<br>
+          • 核心不稳导致力量泄漏<br>
+          • 肌张力不平衡<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 检查动作流畅度<br>
+          ② 加强核心训练<br>
+          ③ 从慢动作开始重建动力链
+        </div>
+      </div>
+      
+      <div onclick="toggleDiagnosisDetail(4)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">体能跟不上技术训练</strong>
+          <span id="diag_icon_4" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_4" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">可能原因：</strong><br>
+          • 有氧基础薄弱<br>
+          • 糖原储备不足<br>
+          • 训练模式单一<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 增加有氧训练（跑步/跳绳）<br>
+          ② 训练前补足碳水<br>
+          ③ 尝试间歇训练
+        </div>
+      </div>
+      
+      <div onclick="toggleDiagnosisDetail(5)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">比赛时技术变形</strong>
+          <span id="diag_icon_5" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_5" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">可能原因：</strong><br>
+          • 心理压力导致动作僵硬<br>
+          • 对手打乱节奏<br>
+          • 体能下降后技术变形<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 模拟比赛场景训练<br>
+          ② 简化技术在压力下使用<br>
+          ③ 增强体能延长技术保持时间
+        </div>
+      </div>
+      
+      <button onclick="document.getElementById('overlay').remove()" style="width:100%;margin-top:10px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">关闭</button>
     </div>`);
+}
+
+function toggleDiagnosisDetail(idx) {
+  var detail = document.getElementById('diag_detail_' + idx);
+  var icon = document.getElementById('diag_icon_' + idx);
+  if (detail.style.display === 'none') {
+    detail.style.display = 'block';
+    icon.innerHTML = 'ˇ';
+  } else {
+    detail.style.display = 'none';
+    icon.innerHTML = '›';
+  }
 }
 
 function openWeeklyCheck() {
