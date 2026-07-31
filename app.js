@@ -2159,13 +2159,15 @@ function submitProfile() {
   showToast('✅ 已应用个性化方案 · 训练等级比重已调整');
 }
 function closeProfileOverlay() {
-  const ov = document.getElementById('_tmpOverlay');
-  if (ov) ov.remove();
+  // 关闭所有当前可见的 overlay（包括角色/profile 系列）
+  document.querySelectorAll('.overlay').forEach(o => o.remove());
 }
 // showOverlay 创建后定位 body 容器、后续调用可重渲
+// 注意：showOverlayContent 现在直接对最新一个 .overlay 生效（已移除共享 _tmpOverlay id）
 function showOverlayContent(body) {
-  const ov = document.getElementById('_tmpOverlay');
-  if (!ov) return;
+  const ovs = document.querySelectorAll('.overlay');
+  if (!ovs.length) return;
+  const ov = ovs[ovs.length - 1]; // 最新一个
   const bd = ov.querySelector('.panel-bd');
   if (bd) bd.innerHTML = body;
 }
@@ -3520,7 +3522,7 @@ function toggleTheme() {
 function toggleReadMark() { const ch=getCurChapter(); if(!ch)return; if(isRead(currentBookId,ch.file)) unmarkRead(currentBookId,ch.file); else markRead(currentBookId,ch.file); $('readMarkBtn').textContent=isRead(currentBookId,ch.file)?'✅':'📌'; }
 function getCurChapter() { if(!currentBookId||currentChapterIdx<0) return null; const b=MANIFEST?.books.find(x=>x.id===currentBookId); return b?.chapters[currentChapterIdx]||null; }
 function prevChapter() { if(currentChapterIdx>0) openChapter(currentChapterIdx-1); }
-function nextChapter() { const b=MANIFEST?.books.find(x=>x.id===currentBookId); if(b&currentChapterIdx<b.chapters.length-1) openChapter(currentChapterIdx+1); }
+function nextChapter() { const b=MANIFEST?.books.find(x=>x.id===currentBookId); if(b && currentChapterIdx<b.chapters.length-1) openChapter(currentChapterIdx+1); }
 function makeCollapsible() { $$('article h2, article h3').forEach(el=>{el.addEventListener('click',()=>el.classList.toggle('collapsed'));}); }
 function markStreak() { const p=getP(); if(!p._streak) p._streak={}; const t=new Date().toISOString().slice(0,10); if(!p._streak[t]){p._streak[t]=true;setP(p);} }
 
@@ -3569,8 +3571,6 @@ function showView(v) {
 function goHome() {
   // 关闭所有可能打开的 overlay
   document.querySelectorAll('.overlay').forEach(o => o.remove());
-  // 关闭可能的浮层
-  document.querySelectorAll('._tmpOverlay').forEach(o => o.remove());
   // 重置状态
   currentBookId = null;
   currentChapterIdx = -1;
@@ -3928,16 +3928,22 @@ function closeOverlayPopup(btn) {
 }
 
 // ─── Overlay ──────────────────────────────────
-function showOverlay(cls,title,body){const overlay=document.createElement('div');overlay.className='overlay';overlay.id='_tmpOverlay';overlay.onclick=function(e){if(e.target===this)this.remove();};overlay.innerHTML=`<div class="${cls}" onclick="event.stopPropagation()"><div class="panel-hd"><span>${title}</span><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-bd">${body}</div></div>`;document.body.appendChild(overlay);}
+// 每次创建独立 id（避免 _tmpOverlay 重复导致旧 overlay 泄漏）
+let _overlaySeq = 0;
+function nextOverlayId() { return `_overlay_${++_overlaySeq}`; }
+function showOverlay(cls,title,body){const overlay=document.createElement('div');overlay.className='overlay';overlay.id=nextOverlayId();overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label',title||'弹窗');overlay.onclick=function(e){if(e.target===this)this.remove();};overlay.innerHTML=`<div class="${cls}" onclick="event.stopPropagation()"><div class="panel-hd"><span>${title}</span><button class="h-btn" onclick="this.closest('.overlay').remove()" aria-label="关闭">✕</button></div><div class="panel-bd">${body}</div></div>`;document.body.appendChild(overlay);return overlay;}
 
 // ─── 教练系统内嵌 iframe 加载 ────────
 function openCoachInline(url, title) {
   // 移除已有 overlay
-  const existing = document.getElementById('_tmpOverlay');
+  const existing = document.querySelector('.overlay.coach-inline-overlay');
   if (existing) existing.remove();
   const overlay = document.createElement('div');
   overlay.className = 'overlay coach-inline-overlay';
-  overlay.id = '_tmpOverlay';
+  overlay.id = nextOverlayId();
+  overlay.setAttribute('role','dialog');
+  overlay.setAttribute('aria-modal','true');
+  overlay.setAttribute('aria-label', title || '教练系统');
   overlay.onclick = function(e) { if (e.target === this) this.remove(); };
   overlay.innerHTML = `<div class="coach-inline-wrap" onclick="event.stopPropagation()">
     <div class="panel-hd coach-inline-hd">
@@ -4178,7 +4184,7 @@ function selectRole(role) {
   const data = loadRoleData();
   if (role === 'student') {
     setCurrentRole('student', 'self');
-    document.getElementById('_tmpOverlay')?.remove();
+    document.querySelectorAll('.overlay').forEach(o => o.remove());
     showStudentDashboard();
   } else if (role === 'coach') {
     showOverlay('panel-coach-pick', '👨‍🏫 选择教练身份', `
@@ -4196,14 +4202,14 @@ function selectRole(role) {
     `);
   } else if (role === 'principal') {
     setCurrentRole('principal', data.principal.id);
-    document.getElementById('_tmpOverlay')?.remove();
+    document.querySelectorAll('.overlay').forEach(o => o.remove());
     showPrincipalDashboard();
   }
 }
 
 function pickCoach(coachId) {
   setCurrentRole('coach', coachId);
-  document.getElementById('_tmpOverlay')?.remove();
+  document.querySelectorAll('.overlay').forEach(o => o.remove());
   showCoachDashboard(coachId);
 }
 
