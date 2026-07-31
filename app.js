@@ -4663,3 +4663,61 @@ function resetRoleData() {
   localStorage.removeItem(ROLE_DATA_LSK);
   loadRoleData(); openAdminSettings();
 }
+
+// ─── 全局键盘快捷键 ──────────────────────────────────────
+// Esc/Backspace 关闭弹窗 · Ctrl+K 打开搜索 · ←/→ 章节翻页 · Home 回首页
+function isTypingTarget(el) {
+  if (!el) return false;
+  const tag = (el.tagName || '').toLowerCase();
+  return tag === 'input' || tag === 'textarea' || el.isContentEditable;
+}
+
+function closeTopOverlay() {
+  const overlays = document.querySelectorAll('.overlay');
+  if (!overlays.length) return false;
+  // 关闭最顶层（最后添加的）
+  overlays[overlays.length - 1].remove();
+  return true;
+}
+
+document.addEventListener('keydown', (e) => {
+  // 让 input/textarea/contenteditable 内的按键不触发全局快捷键
+  if (isTypingTarget(e.target)) {
+    // 例外：Esc 仍可关闭弹窗
+    if (e.key === 'Escape') closeTopOverlay();
+    return;
+  }
+
+  // Esc → 关闭最顶层弹窗；如无弹窗则尝试返回上一页
+  if (e.key === 'Escape') {
+    if (closeTopOverlay()) { e.preventDefault(); return; }
+    if (typeof navStack !== 'undefined' && navStack.length) {
+      e.preventDefault(); goBack();
+    }
+    return;
+  }
+
+  // Ctrl/Cmd + K → 打开搜索
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+    e.preventDefault();
+    if (typeof openSearch === 'function') openSearch();
+    return;
+  }
+
+  // Home 键 → 回首页（与右下角 Home FAB 等价）
+  if (e.key === 'Home' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    if (typeof goHome === 'function') goHome();
+    return;
+  }
+
+  // ← / → 章节翻页（仅在阅读器视图）
+  const inReader = currentBookId && currentChapterIdx >= 0;
+  if (inReader && typeof prevChapter === 'function' && typeof nextChapter === 'function') {
+    if (e.key === 'ArrowLeft' && currentChapterIdx > 0) {
+      e.preventDefault(); prevChapter();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault(); nextChapter();
+    }
+  }
+});
