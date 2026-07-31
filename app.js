@@ -3619,10 +3619,56 @@ function goBack() {
   }
 }
 
+// 搜索面板当前选中项索引（用于键盘 ↑↓ 导航）
+let _srSelIdx = -1;
+let _srLastQuery = '';
+let _srDebounceTimer = null;
+
+/** 防抖搜索：输入即查，避免每个按键都跑全文搜索 */
+function scheduleSearch(input) {
+  clearTimeout(_srDebounceTimer);
+  const q = input.value.trim();
+  _srLastQuery = q;
+  _srDebounceTimer = setTimeout(() => {
+    if (_srLastQuery === q) doSearch(q);
+  }, 250);
+}
+
+/** 处理搜索面板内的键盘事件（↑↓ 导航，Enter 跳转） */
+function handleSearchKey(e, input) {
+  const items = document.querySelectorAll('.sr-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (!items.length) return;
+    _srSelIdx = Math.min(items.length - 1, _srSelIdx + 1);
+    updateSelHighlight(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!items.length) return;
+    _srSelIdx = Math.max(0, _srSelIdx - 1);
+    updateSelHighlight(items);
+  } else if (e.key === 'Enter') {
+    // 优先跳转选中项；无选中则执行搜索
+    if (_srSelIdx >= 0 && items[_srSelIdx]) {
+      e.preventDefault();
+      items[_srSelIdx].click();
+    }
+  }
+}
+
+/** 更新选中项视觉态，并滚入视图 */
+function updateSelHighlight(items) {
+  items.forEach((el, i) => el.classList.toggle('active', i === _srSelIdx));
+  if (_srSelIdx >= 0 && items[_srSelIdx]) {
+    items[_srSelIdx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+
 function openSearch() {
+  _srSelIdx = -1;
   const overlay = document.createElement('div');
   overlay.className='overlay';overlay.onclick=function(e){if(e.target===this)this.remove();};
-  overlay.innerHTML=`<div class="panel panel-search" onclick="event.stopPropagation()"><div class="panel-hd"><input type="text" id="searchInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none" placeholder="🔍 搜索训练内容·知识书塔 · ↵ 搜索" autofocus onkeydown="if(event.key==='Enter')doSearch(this.value)"><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-bd" id="searchResults"><div class="search-hint">⌨️ 输入 → ↵ 搜索</div></div></div>`;
+  overlay.innerHTML=`<div class="panel panel-search" onclick="event.stopPropagation()"><div class="panel-hd"><input type="text" id="searchInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none" placeholder="🔍 搜索训练内容·知识书塔 · ↑↓ 选 · ↵ 跳转" autofocus oninput="scheduleSearch(this)" onkeydown="handleSearchKey(event,this)"><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-meta" id="searchMeta" style="font-size:11px;color:var(--text3);padding:4px 12px;text-align:right">⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭</div><div class="panel-bd" id="searchResults"><div class="search-hint">⌨️ 输入 → 自动搜索<br><span style="opacity:0.6;font-size:11px">试搜：发球 / 杀球 / 营养 / 战术</span></div></div></div>`;
   document.body.appendChild(overlay);setTimeout(()=>document.getElementById('searchInput')?.focus(),100);
 }
 
@@ -3700,14 +3746,22 @@ async function fetchChapterContent(bookId, file) {
   return null;
 }
 
+/** 常见搜索建议（无结果时给出） */
+const SEARCH_SUGGESTIONS = ['发球', '杀球', '接发', '营养', '战术', '体能', '训练计划', '损伤', '柔韧', '心理'];
+
 /** Render search results into the DOM */
 function renderSearchResults(results, queryOrig) {
+  _srSelIdx = -1;
+  const meta = document.getElementById('searchMeta');
   if (!results.length) {
-    $('searchResults').innerHTML = '<div class="search-hint">😅 未找到匹配内容</div>';
+    const sugg = SEARCH_SUGGESTIONS.filter(s => !queryOrig || !s.includes(queryOrig)).slice(0, 4).map(s => `<a class="sr-sugg" onclick="var i=document.getElementById('searchInput');i.value='${s}';scheduleSearch(i);i.focus();">${s}</a>`).join(' · ');
+    $('searchResults').innerHTML = `<div class="search-hint">😅 未找到「<strong>${queryOrig}</strong>」<br><span style="opacity:0.7;font-size:11px">试试这些：</span><br><div style="margin-top:6px">${sugg}</div></div>`;
+    if (meta) meta.textContent = '0 条结果';
     return;
   }
   const escaped = escapeRegex(queryOrig);
   const re = new RegExp('(' + escaped + ')', 'gi');
+  if (meta) meta.textContent = `${results.length} 条结果（↑↓ 选择 · ↵ 跳转）`;
   $('searchResults').innerHTML = results.map(r => {
     const highlighted = r.preview.replace(re, '<em>$1</em>');
     // 内容匹配才传 line，标题/H2 匹配则传空，由读者端用 query 全文高亮
@@ -3723,7 +3777,9 @@ function renderSearchResults(results, queryOrig) {
 async function doSearch(query) {
   query = query.trim();
   if (!query) {
-    $('searchResults').innerHTML = '<div class="search-hint">⌨️ 输入 → ↵ 搜索</div>';
+    $('searchResults').innerHTML = '<div class="search-hint">⌨️ 输入 → 自动搜索<br><span style="opacity:0.6;font-size:11px">试搜：发球 / 杀球 / 营养 / 战术</span></div>';
+    const meta = document.getElementById('searchMeta');
+    if (meta) meta.textContent = '⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭';
     return;
   }
   $('searchResults').innerHTML = '<div class="search-hint">⏳ 搜索中…</div>';
