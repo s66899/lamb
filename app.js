@@ -12,8 +12,8 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.9.2';
-const APP_DATE = '2026-07-18';
+const APP_VERSION = 'v3.9.3';
+const APP_DATE = '2026-08-01';
 
 // ─── 全局错误边界（防白屏）─────────────────
 window.addEventListener('error', (e) => {
@@ -3722,6 +3722,31 @@ const RE_SPECIAL = /[.*+?^${}()|[\]\\]/g;
 /** Escape special regex characters in a query string */
 function escapeRegex(s) { return s.replace(RE_SPECIAL, '\\$&'); }
 
+/** 计算搜索结果的相关度分数（越大越相关）
+ *  - 章节标题完全匹配：+100
+ *  - 章节标题包含：+50（开头再 +10）
+ *  - H2 标题完全匹配：+40
+ *  - H2 标题包含：+20（开头再 +10）
+ *  - 正文行匹配：+5（词频再加权，最高 +15）
+ */
+function scoreSearchResult(r, ql, contentHits) {
+  let score = 0;
+  const t = r.ch.title.toLowerCase();
+  if (t === ql) score += 100;
+  else if (t.includes(ql)) { score += 50; if (t.startsWith(ql)) score += 10; }
+  const preview = (r.preview || '').toLowerCase();
+  if (preview.startsWith('📌 ')) {
+    const h2 = preview.slice(2).trim();
+    if (h2 === ql) score += 40;
+    else if (h2.includes(ql)) { score += 20; if (h2.startsWith(ql)) score += 10; }
+  }
+  if (r.line > 0) {
+    const hits = contentHits[r.ch.file] || 0;
+    score += 5 + Math.min(10, hits);
+  }
+  return score;
+}
+
 /** Search chapter titles and H2 headings (no network needed, fast) */
 function searchMetadata(ql, results) {
   for (const book of MANIFEST.books) {
@@ -3753,12 +3778,20 @@ async function searchContent(ql, results, queryOrig) {
       const md = await fetchChapterContent(book.id, ch.file);
       if (!md) continue;
       const lines = md.split('\n');
-      for (let i = 0; i < lines.length && results.length < MAX_RESULTS; i++) {
-        if (lines[i].toLowerCase().includes(ql) && !lines[i].startsWith('#')) {
-          const p = lines[i].length > 100 ? lines[i].slice(0, 100) + '…' : lines[i];
-          results.push({ book, ch, preview: p, line: i + 1 });
-          break;
+      let firstMatchLine = -1;
+      let totalHits = 0;
+      for (let i = 0; i < lines.length; i++) {
+        const ln = lines[i].toLowerCase();
+        if (ln.startsWith('#')) continue;
+        if (ln.includes(ql)) {
+          totalHits++;
+          if (firstMatchLine < 0) firstMatchLine = i + 1;
         }
+      }
+      if (firstMatchLine > 0) {
+        const raw = lines[firstMatchLine - 1];
+        const p = raw.length > 100 ? raw.slice(0, 100) + '…' : raw;
+        results.push({ book, ch, preview: p, line: firstMatchLine, hits: totalHits });
       }
     }
     if (results.length >= MAX_RESULTS) break;
@@ -3805,15 +3838,16 @@ function renderSearchResults(results, queryOrig) {
   }
   const escaped = escapeRegex(queryOrig);
   const re = new RegExp('(' + escaped + ')', 'gi');
-  if (meta) meta.textContent = `${results.length} 条结果（↑↓ 选择 · ↵ 跳转）`;
+  if (meta) meta.textContent = `${results.length} 条结果（按相关度 · ↑↓ 选 · ↵ 跳转）`;
   $('searchResults').innerHTML = results.map(r => {
     const highlighted = r.preview.replace(re, '<em>$1</em>');
     // 内容匹配才传 line，标题/H2 匹配则传空，由读者端用 query 全文高亮
     const lineAttr = r.line ? r.line : '';
+    const meta2 = (r.line ? '<span class="sr-m">第' + r.line + '行</span>' : '') + (r.hits > 1 ? '<span class="sr-hits">命中 ' + r.hits + ' 次</span>' : '');
     return `<div class="sr-item" onclick="this.closest('.overlay').remove();goSearchResult('${r.book.id}','${r.ch.file}',${lineAttr ? r.line : 'null'},'${escapeRegex(queryOrig).replace(/'/g, "\\'")}')">
       <div class="sr-b">${r.book.emoji} ${r.book.title} · ${r.ch.title}</div>
       <div class="sr-p">${highlighted}</div>
-      ${r.line ? '<div class="sr-m">第' + r.line + '行</div>' : ''}
+      ${meta2 ? `<div class="sr-meta-row">${meta2}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -3839,6 +3873,14 @@ async function doSearch(query) {
   if (results.length < MAX_RESULTS) {
     await searchContent(ql, results, query);
   }
+
+  // 🎯 v3.9.3 按相关度排序：标题完全匹配 > 标题包含 > H2 匹配 > 正文匹配（词频加权）
+  const contentHits = {};
+  for (const r of results) {
+    if (r.hits && r.ch) contentHits[r.ch.file] = r.hits;
+  }
+  results.forEach(r => { r._score = scoreSearchResult(r, ql, contentHits); });
+  results.sort((a, b) => b._score - a._score);
 
   renderSearchResults(results, query);
 }

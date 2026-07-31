@@ -549,6 +549,8 @@ article hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
 .sr-p { font-size:11px; color:var(--text2); }
 .sr-p em { color:var(--text); font-style:normal; font-weight:600; }
 .sr-m { font-size:10px; color:var(--text3); margin-top:2px; font-family:monospace; }
+.sr-meta-row { display:flex; gap:8px; align-items:center; margin-top:2px; flex-wrap:wrap; }
+.sr-hits { font-size:10px; color:var(--orange); background:rgba(255,159,10,0.12); padding:1px 6px; border-radius:99px; font-family:monospace; }
 .sr-sugg { display:inline-block; margin:0 4px 4px 0; padding:3px 10px; border-radius:99px; background:var(--bg3); color:var(--blue); font-size:11px; cursor:pointer; transition:all .15s ease; }
 .sr-sugg:hover { background:var(--blue); color:#fff; }
 .sr-hist { background:transparent; border:1px dashed var(--border); }
