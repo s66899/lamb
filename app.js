@@ -2177,7 +2177,38 @@ function renderModuleInline(mod, topicIdx) {
   $('article').innerHTML = html;
   $('content').scrollTo({top:0,behavior:'smooth'});
   updateProgress();
+  // 进度条归零：新章节从 0 开始
+  const _rpFill = $('rpFill'); const _rpThumb = $('rpThumb'); const _rpBar = $('readProgress');
+  if (_rpFill) _rpFill.style.width = '0%';
+  if (_rpThumb) _rpThumb.style.left = '0%';
+  if (_rpBar) _rpBar.classList.remove('show');
+  // 与 openChapter 对齐：内联模块同样按节计数（不污染 books 进度），首次阅读给 XP + toast
+  const _isNewModuleRead = markModuleRead(mod.id, topicIdx);
+  if (_isNewModuleRead) {
+    showToast(`✅ 已读完《${mod.title}》第 ${topicIdx+1} 节 · +XP 10`, 2400);
+    const pos = document.getElementById('chapterPos');
+    if (pos) {
+      pos.classList.remove('pulse-read');
+      void pos.offsetWidth;
+      pos.classList.add('pulse-read');
+      setTimeout(() => pos.classList.remove('pulse-read'), 1400);
+    }
+  }
   historyPush('module-inline', {moduleId: mod.id, topicIdx: topicIdx});
+}
+
+// 模块内联阅读计数（仅在 rpgData 里累加，不动 books 进度，因为 MODULE_CONTENT 不是真实书籍）
+function markModuleRead(modId, idx) {
+  const r = getRP();
+  if (!r.moduleRead) r.moduleRead = {};
+  const key = `${modId}::${idx}`;
+  if (r.moduleRead[key]) return false;
+  r.moduleRead[key] = Date.now();
+  r.totalRead = (r.totalRead || 0) + 1;
+  setRP(r);
+  addXP(10, '📖');
+  checkAchievements();
+  return true;
 }
 
 // ─── 营养交互工具集 ────────
