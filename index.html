@@ -198,6 +198,14 @@
   <button class="fab fab-home ios-press" id="fabHome" onclick="goHome()" title="🏠 返回首页">🏠</button>
   <button class="fab fab-top ios-press" id="fab" onclick="scrollToTop()" title="⬆ 回到顶部">⬆</button>
   <button class="fab fab-search ios-press" id="fabSearch" onclick="openSearch()" title="🔍 搜索">🔍</button>
+  <!-- 📊 v3.14.2 阅读进度条：底部细长条，拖拽跳转任意位置 -->
+  <div class="read-progress" id="readProgress" aria-label="阅读进度">
+    <div class="rp-track" id="rpTrack">
+      <div class="rp-fill" id="rpFill"></div>
+      <div class="rp-thumb" id="rpThumb"></div>
+    </div>
+    <div class="rp-bubble" id="rpBubble">0%</div>
+  </div>
 </div>
 
 <script src="manifest_data.js?v=v3.8.6"></script>

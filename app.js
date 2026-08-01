@@ -12,7 +12,7 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.14.1';
+const APP_VERSION = 'v3.14.2';
 const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -4705,7 +4705,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   bar.style.width='100%';await sleep(200);
   $('splash').style.display='none';$('app').style.display='block';
   renderDashboard();updateProgress();
-  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);});
+  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);updateReadProgress();});
+  _rpInitDrag(); // v3.14.2 阅读进度条拖拽初始化
   if(window.innerWidth<=768)toggleSidebar(false);
   setTimeout(checkAchievements,2000);
 });
@@ -4852,6 +4853,63 @@ showOverlay('panel-sm', '💧 饮水计算结果', `
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function scrollToTop(){$('content').scrollTo({top:0,behavior:'smooth'});}
+
+// ─── v3.14.2 阅读进度条（拖拽跳转） ─────────────────
+function updateReadProgress() {
+  const c = $('content');
+  const bar = $('readProgress');
+  if (!c || !bar) return;
+  const scrollTop = c.scrollTop;
+  const max = c.scrollHeight - c.clientHeight;
+  const pct = max > 0 ? Math.min(100, Math.max(0, Math.round((scrollTop / max) * 100))) : 0;
+  const fill = $('rpFill');
+  const thumb = $('rpThumb');
+  if (fill) fill.style.width = pct + '%';
+  if (thumb) thumb.style.left = pct + '%';
+  bar.classList.toggle('show', max > 60 && (pct > 1 || max > 200));
+}
+
+let _rpDragging = false;
+function _rpSetFromX(clientX) {
+  const track = $('rpTrack');
+  const c = $('content');
+  if (!track || !c) return;
+  const rect = track.getBoundingClientRect();
+  const pct = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
+  const max = c.scrollHeight - c.clientHeight;
+  c.scrollTop = (pct / 100) * max;
+  const fill = $('rpFill');
+  const thumb = $('rpThumb');
+  const bubble = $('rpBubble');
+  if (fill) fill.style.width = pct + '%';
+  if (thumb) thumb.style.left = pct + '%';
+  if (bubble) { bubble.textContent = Math.round(pct) + '%'; bubble.classList.add('show'); }
+}
+function _rpInitDrag() {
+  const track = $('rpTrack');
+  const bar = $('readProgress');
+  const bubble = $('rpBubble');
+  if (!track || !bar) return;
+  track.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    _rpDragging = true;
+    bar.setPointerCapture?.(e.pointerId);
+    _rpSetFromX(e.clientX);
+    if (bubble) bubble.classList.add('show');
+  });
+  bar.addEventListener('pointermove', (e) => {
+    if (!_rpDragging) return;
+    _rpSetFromX(e.clientX);
+  });
+  const stop = () => {
+    if (!_rpDragging) return;
+    _rpDragging = false;
+    setTimeout(() => bubble?.classList.remove('show'), 600);
+  };
+  bar.addEventListener('pointerup', stop);
+  bar.addEventListener('pointercancel', stop);
+  track.addEventListener('touchstart', (e) => { if (e.touches[0]) _rpSetFromX(e.touches[0].clientX); }, {passive: true});
+}
 
 
 
