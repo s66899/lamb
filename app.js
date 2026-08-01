@@ -12,8 +12,8 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.13.0';
-const APP_DATE = '2026-08-01';
+const APP_VERSION = 'v3.14.1';
+const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
 window.addEventListener('error', (e) => {
@@ -1487,7 +1487,7 @@ const TOWER_BOOKS = ['badminton','finance','psychology','engineering-mechanics',
 // ═══════════════════════════════════════════════════════════════════
 const RP_KEY = 'lamb_rpg_data';
 function getRP() { try { return JSON.parse(localStorage.getItem(RP_KEY)||'{}'); } catch { return {}; } }
-function setRP(r) { localStorage.setItem(RP_KEY, JSON.stringify(r)); }
+function setRP(r) { safeSet(RP_KEY, r); }
 function getDefaultRP() { return { level:1, xp:0, xpToNext:100, achievements:{}, quests:{}, totalRead:0, totalQuizCorrect:0, avatar:'🧙' }; }
 function initRP() { let r=getRP(); if(!r.level){r=getDefaultRP();setRP(r);} r.xpToNext=getXpForLevel(r.level); return r; }
 function getXpForLevel(lvl) { return Math.floor(50*Math.pow(1.2,lvl-1)); }
@@ -1510,7 +1510,7 @@ function updateRpgHud(){const r=initRP(),h=$('rpgHud');if(!h)return;const pct=r.
 // ─── 进度系统 ──────────────────────────────────
 const PK='bk_prog';
 function getP(){try{return JSON.parse(localStorage.getItem(PK)||'{}');}catch{return {};}}
-function setP(p){localStorage.setItem(PK,JSON.stringify(p));}
+function setP(p){safeSet(PK,p);}
 function markRead(bid,f){const p=getP();if(!p[bid])p[bid]=[];if(!p[bid].includes(f)){p[bid].push(f);setP(p);const r=getRP();if(!r.level){setRP(getDefaultRP());}r.totalRead=(r.totalRead||0)+1;setRP(r);addXP(10,'📖');checkAchievements();}updateProgress();}
 function unmarkRead(bid,f){const p=getP();if(p[bid]){p[bid]=p[bid].filter(x=>x!==f);setP(p);}updateProgress();}
 function isRead(bid,f){const p=getP();return p[bid]&&p[bid].includes(f);}
