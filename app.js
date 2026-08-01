@@ -4115,7 +4115,21 @@ async function renderChapter() {
     } catch(e2) {}
   }
   if (md) {
-    $('article').innerHTML = mdParse(md) + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
+    // 文章末尾「下一节」CTA：把"读完→下一章"路径从"滚顶→点按钮"压成"滚底→点按钮"
+    // 与首页完成态「重读最后一节」对称；最后一节不显示（顶部 nextChapter 也会 disabled）
+    const _isLast = currentChapterIdx >= book.chapters.length - 1;
+    const _nextCh = _isLast ? null : book.chapters[currentChapterIdx + 1];
+    const _nextCta = (!_isLast && _nextCh) ? `
+      <div class="next-ch-cta" onclick="nextChapter()" role="button" tabindex="0"
+           aria-label="进入下一节 ${escapeAttr(_nextCh.title || '')}"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();nextChapter();}">
+        <div class="nc-label">下一节 · 第 ${currentChapterIdx + 2} 节</div>
+        <div class="nc-title">${escapeHTML(_nextCh.title || '')}</div>
+        <div class="nc-arrow">▶ 继续阅读</div>
+      </div>` : '';
+    $('article').innerHTML = mdParse(md)
+      + _nextCta
+      + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
     makeCollapsible(); setupQuiz(ch); markStreak();
     // 自动标记已读：用户实际看到正文即视为完成（markRead 内部已对已读章节短路，不会重复加 XP/弹成就）
     const _isNewRead = markRead(currentBookId, ch.file);

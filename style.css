@@ -366,6 +366,37 @@ header {
 .mc-badge-done { font-size:9px; background:var(--green); color:#fff; padding:1px 6px; border-radius:8px; margin-left:4px; font-weight:600; vertical-align:1px; }
 .module-complete { opacity:.95; }
 .module-complete .mc-icon { filter:drop-shadow(0 0 6px rgba(52,199,89,.25)); }
+
+/* ── 阅读器文章末尾「下一节」CTA (v3.14.5) ── 滚底→点按钮，省去滚顶
+   克制：solid 色块 + 左侧 accent border，无渐变；用 token --surface/--blue/--radius；无 emoji 图标，文字箭头 → 即可。*/
+.next-ch-cta {
+  margin-top:48px;
+  padding:18px 20px;
+  border-radius:var(--radius);
+  background:var(--surface2);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-left:4px solid var(--blue);
+  cursor:pointer;
+  text-align:left;
+  box-shadow:var(--shadow-sm, 0 2px 8px rgba(0,0,0,.06));
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.next-ch-cta:hover { border-color:var(--blue); transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.08); }
+.next-ch-cta:active { transform:translateY(0); }
+.next-ch-cta:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+.next-ch-cta .nc-label { font-size:10px; color:var(--text3); letter-spacing:.5px; margin-bottom:4px; font-weight:500; text-transform:uppercase; }
+.next-ch-cta .nc-title { font-size:16px; font-weight:600; margin-bottom:6px; line-height:1.35; word-break:break-word; color:var(--text); }
+.next-ch-cta .nc-arrow { font-size:12px; font-weight:600; color:var(--blue); display:inline-flex; align-items:center; }
+.next-ch-cta .nc-arrow::after { content:'\00a0→'; transition:transform .2s ease; display:inline-block; }
+.next-ch-cta:hover .nc-arrow::after { transform:translateX(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .next-ch-cta, .next-ch-cta:hover, .next-ch-cta:active, .next-ch-cta .nc-arrow::after { transition:none; transform:none; }
+}
+@media (max-width:480px) {
+  .next-ch-cta { padding:14px 16px; }
+  .next-ch-cta .nc-title { font-size:14px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .mc-cta, .mc-cta:hover, .mc-cta:active { transition:none; transform:none; }
 }
