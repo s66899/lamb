@@ -12,7 +12,7 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.14.3';
+const APP_VERSION = 'v3.14.4';
 const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -1865,7 +1865,21 @@ function renderDashboard() {
       }
       const isComplete = pct >= 100;
       if (isComplete) {
-        nextActionHTML = `<button class="mc-cta mc-cta-done" onclick="event.stopPropagation();openTrainModule('${m.id}')" aria-label="回顾已完成模块">✅ 已完成 · 回顾</button>`;
+        // 🔄 完成态对称闭环：给一个「重读最后一节」的具体去处，避免完成态用户只剩「回顾」空按钮
+        let lastTarget = null;
+        for (const bid of m.books) {
+          const book = MANIFEST.books.find(x => x.id === bid);
+          if (!book) continue;
+          const lastIdx = book.chapters.length - 1;
+          if (lastIdx >= 0) lastTarget = { bookId: bid, chIdx: lastIdx, title: (book.chapters[lastIdx].title || ('第' + (lastIdx+1) + '节')) };
+        }
+        if (lastTarget) {
+          const titleRaw = lastTarget.title || ('第 ' + (lastTarget.chIdx+1) + ' 节');
+          const titleShort = titleRaw.length > 14 ? (titleRaw.slice(0, 13) + '…') : titleRaw;
+          nextActionHTML = `<button class="mc-cta mc-cta-done" onclick="event.stopPropagation();openModuleChapterById('${m.id}','${lastTarget.bookId}',${lastTarget.chIdx})" aria-label="重读最后一节">🔄 重读最后一节 · ${escapeHTML(titleShort)}</button>`;
+        } else {
+          nextActionHTML = `<button class="mc-cta mc-cta-done" onclick="event.stopPropagation();openTrainModule('${m.id}')" aria-label="回顾已完成模块">✅ 已完成 · 回顾</button>`;
+        }
       } else if (nextTarget) {
         const titleRaw = nextTarget.title || ('第 ' + (nextTarget.chIdx+1) + ' 节');
         const titleShort = titleRaw.length > 14 ? (titleRaw.slice(0, 13) + '…') : titleRaw;
