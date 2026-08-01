@@ -1522,6 +1522,74 @@ function _flushReadSeconds() {
   readStartTs = 0;
   lastTickTs = 0;
 }
+
+// ─── 本周阅读目标（产品优化迭代 2026-08-02 新增）──
+// ISO 周键（YYYY-Www），跨周自然滚动，永不污染旧周
+function _isoWeekKey(d) {
+  d = d || new Date();
+  // 拷贝到本周一 00:00（ISO 周从周一开始）
+  const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = (dt.getUTCDay() + 6) % 7; // 周一=0
+  dt.setUTCDate(dt.getUTCDate() - day);
+  const year = dt.getUTCFullYear();
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Day = (jan4.getUTCDay() + 6) % 7;
+  jan4.setUTCDate(jan4.getUTCDate() - jan4Day);
+  const weekNo = Math.floor((dt - jan4) / (7 * 24 * 3600 * 1000)) + 1;
+  return `${year}-W${String(weekNo).padStart(2, '0')}`;
+}
+function _getWeekReadSec() {
+  const wk = safeGet('bk_read_week', {});
+  return wk[_isoWeekKey()] || 0;
+}
+function _addWeekReadSec(delta) {
+  if (!delta || delta <= 0) return;
+  const wk = safeGet('bk_read_week', {});
+  const k = _isoWeekKey();
+  wk[k] = (wk[k] || 0) + delta;
+  // 只保留近 8 周，防 localStorage 无限增长
+  const keys = Object.keys(wk).sort().reverse();
+  if (keys.length > 8) {
+    for (let i = 8; i < keys.length; i++) delete wk[keys[i]];
+  }
+  safeSet('bk_read_week', wk);
+}
+// 触发累加 + 实时刷新阅读器顶部目标条（在 _tickReadSeconds 节流后调用）
+function _tickWeekGoal() {
+  // 单独维护一个"已计入本周桶"的秒数，避免 _flushReadSeconds 清零后重复加
+  if (typeof _weekBucketDelta === 'undefined') _weekBucketDelta = 0;
+  // 计算本次应累加 delta：当前 readSecThisChapter 减去上次已累计
+  if (typeof _weekBucketBase === 'undefined') _weekBucketBase = 0;
+  const pending = readSecThisChapter - _weekBucketBase;
+  if (pending > 0) {
+    _addWeekReadSec(pending);
+    _weekBucketBase = readSecThisChapter;
+  }
+  _renderReadGoalBar();
+}
+function _renderReadGoalBar() {
+  const bar = document.getElementById('readGoalBar');
+  if (!bar) return;
+  const sec = _getWeekReadSec();
+  // 默认目标 30 分钟/周；用户可在 console：localStorage.setItem('bk_read_goal_min', 60)
+  const goalMin = parseInt(safeGet('bk_read_goal_min', 30), 10) || 30;
+  const goalSec = goalMin * 60;
+  const pct = Math.min(100, Math.round((sec / goalSec) * 100));
+  const cur = Math.floor(sec / 60);
+  const isDone = pct >= 100;
+  // 颜色：未达 60% 蓝，达 100% 金
+  const color = isDone ? 'var(--gold)' : (pct >= 60 ? 'var(--green)' : 'var(--blue)');
+  const leftLabel = isDone
+    ? `✅ 本周阅读目标已完成`
+    : `📈 本周已读 ${cur} 分钟 · 目标 ${goalMin} 分钟`;
+  bar.innerHTML = `
+    <div class="rgb-row" role="status" aria-live="polite" aria-label="${leftLabel}">
+      <span class="rgb-label">${leftLabel}</span>
+      <span class="rgb-pct" style="color:${color}">${pct}%</span>
+    </div>
+    <div class="rgb-track"><div class="rgb-fill" style="width:${pct}%;background:${color}"></div></div>
+  `;
+}
 function getXpForLevel(lvl) { return Math.floor(50*Math.pow(1.2,lvl-1)); }
 function calcLevel(xpTotal) {
   let lvl=1, needed=50;
@@ -4149,6 +4217,9 @@ function openChapter(idx) {
   // v3.14.5 阅读时长：进入章节时打点（用作当前章节驻留秒数的基准）
   readStartTs = Date.now();
   lastTickTs = Date.now();
+  // 2026-08-02 新增：进入章节时初始化本周目标条基准
+  _weekBucketBase = 0;
+  _renderReadGoalBar();
 }
 
 async function renderChapter() {
@@ -4954,7 +5025,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bar.style.width='100%';await sleep(200);
   $('splash').style.display='none';$('app').style.display='block';
   renderDashboard();updateProgress();
-  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);updateReadProgress();_tickReadSeconds();_tocScrollTick();});
+  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);updateReadProgress();_tickReadSeconds();_tickWeekGoal();_tocScrollTick();});
   _rpInitDrag(); // v3.14.2 阅读进度条拖拽初始化
   if(window.innerWidth<=768)toggleSidebar(false);
   setTimeout(checkAchievements,2000);

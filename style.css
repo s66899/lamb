@@ -480,6 +480,29 @@ header {
   padding:5px 0 8px; border-bottom:1px solid var(--border);
   margin-bottom:10px; flex-wrap:wrap;
 }
+
+/* ── 📈 本周阅读目标进度条（2026-08-02 产品优化迭代）── */
+.read-goal-bar {
+  margin:-4px 0 10px;
+  padding:6px 10px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+}
+.rgb-row {
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:10px; color:var(--text3);
+  margin-bottom:4px;
+}
+.rgb-label { font-weight:500; }
+.rgb-pct { font-weight:700; font-size:11px; }
+.rgb-track {
+  height:4px; background:var(--bg3); border-radius:3px; overflow:hidden;
+}
+.rgb-fill {
+  height:100%; border-radius:3px;
+  transition:width .4s ease;
+}
 .tb-btn {
   background:var(--bg2); border:1px solid var(--border);
   border-radius:6px; padding:3px 8px;
