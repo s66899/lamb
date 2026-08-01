@@ -1829,14 +1829,33 @@ function renderDashboard() {
         <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">教练系统</span>
       </div>
       <div class="mc-foot"><span>🏆 6专家 · 21轮研讨</span><span class="mc-arrow">进入教练工作台 →</span></div>
-    </div>` + TRAIN_MODULES.filter(m=>m.id!=='coach').map(m => {
+    }</div>` + TRAIN_MODULES.filter(m=>m.id!=='coach').map(m => {
     const colors = {'var(--blue)':'#4f9aff','var(--green)':'#3dd68c','var(--purple)':'#a855f7','var(--orange)':'#f59e0b','var(--red)':'#f06060'};
     const c = colors[m.color]||'#4f9aff';
+    // 计算模块进度：累加映射书籍下已完成章节数 / 该模块声明的章节数
+    const total = m.chapters.length || m.docs || 0;
+    let done = 0;
+    if (m.books && m.books.length && typeof MANIFEST !== 'undefined' && MANIFEST) {
+      const p = (typeof getP === 'function') ? getP() : {};
+      for (const bid of m.books) {
+        const book = MANIFEST.books.find(x => x.id === bid);
+        if (!book) continue;
+        const readFiles = (p[bid] || []);
+        done += book.chapters.filter(ch => readFiles.includes(ch.file)).length;
+      }
+    }
+    const pct = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
+    const progressHTML = total ? `
+      <div class="mc-progress" aria-label="模块完成度 ${pct}%">
+        <div class="mc-progress-bar"><div class="mc-progress-fill" style="width:${pct}%;background:${c}"></div></div>
+        <div class="mc-progress-meta"><span>${done}/${total} 节</span><span style="color:${c};font-weight:600">${pct}%</span></div>
+      </div>` : '';
     return `<div class="module-card" onclick="openTrainModule('${m.id}')" style="border-top:3px solid ${c}">
       <div class="mc-icon">${m.icon}</div>
       <div class="mc-title">${m.title}</div>
       <div class="mc-desc">${m.desc}</div>
       <div class="mc-tags">${m.tags.map(t=>`<span class="mc-tag" style="border-color:${c}20;color:${c}">${t}</span>`).join('')}</div>
+      ${progressHTML}
       <div class="mc-foot"><span>📖 ${m.docs} 教学文档</span><span class="mc-arrow">查看详情 →</span></div>
     </div>`;
   }).join('');

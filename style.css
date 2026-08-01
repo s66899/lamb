@@ -352,6 +352,10 @@ header {
 .mc-desc { font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:6px; }
 .mc-tags { display:flex; gap:3px; flex-wrap:wrap; margin-bottom:4px; }
 .mc-tag { font-size:9px; padding:0 6px; border-radius:4px; background:var(--bg3); color:var(--text3); line-height:1.6; }
+.mc-progress { margin:6px 0 4px; }
+.mc-progress-bar { height:4px; background:var(--bg3); border-radius:2px; overflow:hidden; }
+.mc-progress-fill { height:100%; border-radius:2px; transition:width .4s ease; }
+.mc-progress-meta { display:flex; justify-content:space-between; font-size:10px; color:var(--text3); margin-top:3px; }
 .mc-foot { display:flex; justify-content:space-between; font-size:10px; color:var(--text3); }
 
 /* ═══ 工具卡片 ═══ */
