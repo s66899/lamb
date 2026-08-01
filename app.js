@@ -10,9 +10,13 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 // 待定位的搜索匹配：{ bookId, file, line, query } — 章节渲染完后跳转并高亮
 let pendingSearchJump = null;
+// v3.14.5 阅读时长追踪：进入章节时打点，scroll 监听里节流刷新，切换/离开时累加进 RP.totalReadSeconds
+let readStartTs = 0;        // 当前章节首次进入时间戳
+let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新）
+let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"秒数
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.14.4';
+const APP_VERSION = 'v3.14.5';
 const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -1488,8 +1492,36 @@ const TOWER_BOOKS = ['badminton','finance','psychology','engineering-mechanics',
 const RP_KEY = 'lamb_rpg_data';
 function getRP() { try { return JSON.parse(localStorage.getItem(RP_KEY)||'{}'); } catch { return {}; } }
 function setRP(r) { safeSet(RP_KEY, r); }
-function getDefaultRP() { return { level:1, xp:0, xpToNext:100, achievements:{}, quests:{}, totalRead:0, totalQuizCorrect:0, avatar:'🧙' }; }
+function getDefaultRP() { return { level:1, xp:0, xpToNext:100, achievements:{}, quests:{}, totalRead:0, totalQuizCorrect:0, avatar:'🧙', totalReadSeconds:0 }; }
 function initRP() { let r=getRP(); if(!r.level){r=getDefaultRP();setRP(r);} r.xpToNext=getXpForLevel(r.level); return r; }
+// v3.14.5 阅读时长：累加当前章节已驻留秒数进 RP（在页面可见时才计），供切章/离开时调用
+function _tickReadSeconds() {
+  if (!readStartTs) return 0;
+  // 页面不可见时不计（后台 tab 静默时段）
+  if (typeof document !== 'undefined' && document.hidden) return 0;
+  const now = Date.now();
+  if (now - lastTickTs < 800) return 0; // 节流：少于 0.8s 不动
+  const delta = Math.min(5, Math.floor((now - lastTickTs) / 1000)); // 单次最多 5s，防呆防挂机
+  if (delta > 0) {
+    readSecThisChapter += delta;
+    lastTickTs = now;
+  }
+  return readSecThisChapter;
+}
+// v3.14.5 阅读时长：切换章节/离开阅读器时，把当前章节驻留秒数持久化到 RP.totalReadSeconds
+function _flushReadSeconds() {
+  _tickReadSeconds();
+  if (readSecThisChapter > 0) {
+    try {
+      const r = getRP();
+      r.totalReadSeconds = (r.totalReadSeconds || 0) + readSecThisChapter;
+      setRP(r);
+    } catch (_) {}
+  }
+  readSecThisChapter = 0;
+  readStartTs = 0;
+  lastTickTs = 0;
+}
 function getXpForLevel(lvl) { return Math.floor(50*Math.pow(1.2,lvl-1)); }
 function calcLevel(xpTotal) {
   let lvl=1, needed=50;
@@ -1640,6 +1672,9 @@ const ACHIEVEMENTS={
   quiz_guru:{icon:'🎯',name:'测验宗师',desc:'答对200道',check:(r)=>r.totalQuizCorrect>=200},
   full_book:{icon:'🎉',name:'完成一本书',desc:'读完一本书全部章节',check:(r)=>checkAnyBookComplete()},
   all_books:{icon:'👑',name:'六艺精通',desc:'六本书全部完成',check:(r)=>checkAllBooksComplete()},
+  // v3.14.5 阅读时长：累计阅读满 30 分钟解锁
+  focused_30min:{icon:'⏱️',name:'专注读者',desc:'累计阅读满 30 分钟',check:(r)=>(r.totalReadSeconds||0)>=1800},
+  focused_3hr:{icon:'🕰️',name:'沉浸学者',desc:'累计阅读满 3 小时',check:(r)=>(r.totalReadSeconds||0)>=10800},
 };
 function getTotalChapters(){return MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;}
 function checkAnyBookComplete(){if(!MANIFEST)return false;const p=getP();for(const b of MANIFEST.books){const d=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;if(d>=b.chapters.length)return true;}return false;}
@@ -1655,7 +1690,7 @@ function getDailyQuests(){return[{id:'daily_read',icon:'📖',name:'每日阅读
 function openQuests(){const r=getRP();if(!r.quests)r.quests={};const qs=getDailyQuests();let h='<div class="quest-list">';for(const q of qs){const done=r.quests[q.id];h+=`<div class="quest-item ${done?'completed':''}"><div class="qi-icon">${q.icon}</div><div class="qi-info"><div class="qi-name">${q.name}</div><div class="qi-desc">${q.desc}</div><div class="qi-reward">🎁 ${q.reward}</div></div>${done?'✅':''}</div>`;}h+='</div>';showOverlay('panel-quest','📋 每日任务',h);}
 
 // ─── Stats ──────────────────────────────
-function openStats(){const tp=totalP();const totalCh=MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;const p=getP();let totalRead=0;for(const b of MANIFEST.books)totalRead+=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;const r=initRP();const achCount=Object.values(r.achievements||{}).filter(v=>v).length;const content=`<div class="stats-grid"><div class="stat-card"><div class="sc-num">${totalRead}</div><div class="sc-label">✅ 已通关</div></div><div class="stat-card"><div class="sc-num">${totalCh-totalRead}</div><div class="sc-label">📖 未读</div></div><div class="stat-card"><div class="sc-num">${MANIFEST.books.length}</div><div class="sc-label">📚 书塔</div></div><div class="stat-card"><div class="sc-num">${Math.round(tp*100)}%</div><div class="sc-label">📊 总进度</div></div></div><div style="text-align:center;margin:14px 0"><span style="font-size:36px">${r.avatar}</span><div style="font-size:14px;font-weight:600;margin:4px 0">Lv.${r.level} · 🧪 ${r.xp}/${r.xpToNext} XP</div><div style="font-size:11px;color:var(--text2)">🏆 ${achCount} 成就 · 🧪 ${r.totalQuizCorrect||0} 测验</div></div>`;showOverlay('panel-stats','📊 训练报告',content);}
+function openStats(){const tp=totalP();const totalCh=MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;const p=getP();let totalRead=0;for(const b of MANIFEST.books)totalRead+=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;const r=initRP();const achCount=Object.values(r.achievements||{}).filter(v=>v).length;const content=`<div class="stats-grid"><div class="stat-card"><div class="sc-num">${totalRead}</div><div class="sc-label">✅ 已通关</div></div><div class="stat-card"><div class="sc-num">${totalCh-totalRead}</div><div class="sc-label">📖 未读</div></div><div class="stat-card"><div class="sc-num">${MANIFEST.books.length}</div><div class="sc-label">📚 书塔</div></div><div class="stat-card"><div class="sc-num">${Math.round(tp*100)}%</div><div class="sc-label">📊 总进度</div></div></div><div style="text-align:center;margin:14px 0"><span style="font-size:36px">${r.avatar}</span><div style="font-size:14px;font-weight:600;margin:4px 0">Lv.${r.level} · 🧪 ${r.xp}/${r.xpToNext} XP</div><div style="font-size:11px;color:var(--text2)">🏆 ${achCount} 成就 · 🧪 ${r.totalQuizCorrect||0} 测验 · ⏱️ 累计阅读 ${Math.floor((r.totalReadSeconds||0)/60)} 分钟</div></div>`;showOverlay('panel-stats','📊 训练报告',content);}
 
 // ═══════════════════════════════════════════════════════════════════
 //  🏠 Dashboard 首页渲染（对标参考站风格）
@@ -4103,12 +4138,17 @@ function openChapter(idx) {
       navStack.push({view:'book', bookId:currentBookId});
     }
   }
+  // v3.14.5 阅读时长追踪：离开/切换前一节时，先把上一节已驻留秒数累加进 RP（避免重入清零）
+  _flushReadSeconds();
   currentChapterIdx = idx;
   showView('reader');
   renderChapter();
   historyPush('reader', {bookId: currentBookId, chapterIdx: idx});
   // 记录"最近阅读"位置（首页继续阅读入口用），用 safeSet 防丢
   safeSet('bk_last_read', { bookId: currentBookId, chapterIdx: idx, ts: Date.now() });
+  // v3.14.5 阅读时长：进入章节时打点（用作当前章节驻留秒数的基准）
+  readStartTs = Date.now();
+  lastTickTs = Date.now();
 }
 
 async function renderChapter() {
@@ -4165,8 +4205,11 @@ async function renderChapter() {
     // 自动标记已读：用户实际看到正文即视为完成（markRead 内部已对已读章节短路，不会重复加 XP/弹成就）
     const _isNewRead = markRead(currentBookId, ch.file);
     if (_isNewRead) {
+      // v3.14.5 阅读时长：带出本章驻留分钟数，让用户「看到」自己真读了多久
+      _tickReadSeconds();
+      const mins = readSecThisChapter >= 30 ? `${Math.max(1, Math.round(readSecThisChapter / 60))} 分钟` : `${readSecThisChapter}s`;
       // 首次读完本节：轻 toast + 顶栏位置微脉冲，让用户「看到」系统收到了
-      showToast(`✅ 已读完《${book.title || currentBookId}》第 ${currentChapterIdx+1} 节 · +XP 10`, 2400);
+      showToast(`✅ 读了 ${mins} · 《${book.title || currentBookId}》第 ${currentChapterIdx+1} 节 完成 · +XP 10`, 2800);
       const pos = document.getElementById('chapterPos');
       if (pos) {
         pos.classList.remove('pulse-read'); // 重置可重启动画
@@ -4860,7 +4903,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bar.style.width='100%';await sleep(200);
   $('splash').style.display='none';$('app').style.display='block';
   renderDashboard();updateProgress();
-  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);updateReadProgress();});
+  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);updateReadProgress();_tickReadSeconds();});
   _rpInitDrag(); // v3.14.2 阅读进度条拖拽初始化
   if(window.innerWidth<=768)toggleSidebar(false);
   setTimeout(checkAchievements,2000);
