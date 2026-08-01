@@ -1850,12 +1850,38 @@ function renderDashboard() {
         <div class="mc-progress-bar"><div class="mc-progress-fill" style="width:${pct}%;background:${c}"></div></div>
         <div class="mc-progress-meta"><span>${done}/${total} 节</span><span style="color:${c};font-weight:600">${pct}%</span></div>
       </div>` : '';
-    return `<div class="module-card" onclick="openTrainModule('${m.id}')" style="border-top:3px solid ${c}">
+    // 计算"继续下一节"按钮：找该模块映射书籍里的第一个未读章节
+    let nextActionHTML = '';
+    if (m.books && m.books.length && typeof MANIFEST !== 'undefined' && MANIFEST && total) {
+      const prog = (typeof getP === 'function') ? getP() : {};
+      let nextTarget = null; // { bookId, chIdx, title }
+      // 优先：模块内第一本未完成书的第一个未读章节
+      for (const bid of m.books) {
+        const book = MANIFEST.books.find(x => x.id === bid);
+        if (!book) continue;
+        const read = prog[bid] || [];
+        const idx = book.chapters.findIndex(ch => !read.includes(ch.file));
+        if (idx >= 0) { nextTarget = { bookId: bid, chIdx: idx, title: (book.chapters[idx].title || ('第' + (idx+1) + '节')) }; break; }
+      }
+      const isComplete = pct >= 100;
+      if (isComplete) {
+        nextActionHTML = `<button class="mc-cta mc-cta-done" onclick="event.stopPropagation();openTrainModule('${m.id}')" aria-label="回顾已完成模块">✅ 已完成 · 回顾</button>`;
+      } else if (nextTarget) {
+        const titleRaw = nextTarget.title || ('第 ' + (nextTarget.chIdx+1) + ' 节');
+        const titleShort = titleRaw.length > 14 ? (titleRaw.slice(0, 13) + '…') : titleRaw;
+        // 直接调 openModuleChapterById，跳过 topic 模运算的取模路径
+        nextActionHTML = `<button class="mc-cta" style="--cta:${c}" onclick="event.stopPropagation();openModuleChapterById('${m.id}','${nextTarget.bookId}',${nextTarget.chIdx})" aria-label="继续第 ${nextTarget.chIdx+1} 节">▶ 继续第 ${nextTarget.chIdx+1} 节 · ${escapeHTML(titleShort)}</button>`;
+      } else {
+        nextActionHTML = `<button class="mc-cta mc-cta-start" style="--cta:${c}" onclick="event.stopPropagation();openModuleTopic('${m.id}',0)" aria-label="开始第 1 节">🚀 开始第 1 节</button>`;
+      }
+    }
+    return `<div class="module-card ${pct>=100?'module-complete':''}" onclick="openTrainModule('${m.id}')" style="border-top:3px solid ${c}">
       <div class="mc-icon">${m.icon}</div>
-      <div class="mc-title">${m.title}</div>
+      <div class="mc-title">${m.title}${pct>=100?' <span class="mc-badge-done">已完成</span>':''}</div>
       <div class="mc-desc">${m.desc}</div>
       <div class="mc-tags">${m.tags.map(t=>`<span class="mc-tag" style="border-color:${c}20;color:${c}">${t}</span>`).join('')}</div>
       ${progressHTML}
+      ${nextActionHTML}
       <div class="mc-foot"><span>📖 ${m.docs} 教学文档</span><span class="mc-arrow">查看详情 →</span></div>
     </div>`;
   }).join('');
@@ -2046,6 +2072,24 @@ function openTrainModule(modId) {
 }
 
 // ─── 模块主题（跳转到对应书籍章节） ──────
+// v3.14.3 — 凭 bookId+chIdx 精准跳转，绕过 topicIdx 取模路径（首页"继续下一节"按钮使用）
+function openModuleChapterById(modId, bookId, chIdx) {
+  const mod = TRAIN_MODULES.find(m => m.id === modId);
+  if (!mod || !MANIFEST) return;
+  const book = MANIFEST.books.find(b => b.id === bookId);
+  if (!book || !book.chapters[chIdx]) return;
+  // 记录模块访问（行为与 openModuleTopic 一致）
+  try {
+    const rp = getRP();
+    if (!rp.visitedModules) rp.visitedModules = [];
+    if (!rp.visitedModules.includes(modId)) { rp.visitedModules.push(modId); setRP(rp); }
+  } catch (_) {}
+  navStack.push({ view: 'module', moduleId: modId });
+  currentBookId = bookId;
+  currentModule = 'tower';
+  openChapter(chIdx);
+}
+
 function openModuleTopic(modId, topicIdx) {
   const mod = TRAIN_MODULES.find(m=>m.id===modId);
   if (!mod || !MANIFEST) return;

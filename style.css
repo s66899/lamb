@@ -357,6 +357,18 @@ header {
 .mc-progress-fill { height:100%; border-radius:2px; transition:width .4s ease; }
 .mc-progress-meta { display:flex; justify-content:space-between; font-size:10px; color:var(--text3); margin-top:3px; }
 .mc-foot { display:flex; justify-content:space-between; font-size:10px; color:var(--text3); }
+/* v3.14.3 — 模块卡行动按钮（"继续下一节"/"开始"/"回顾"） */
+.mc-cta { display:block; width:100%; margin:6px 0 4px; padding:6px 10px; border:none; border-radius:6px; background:var(--cta); color:#fff; font-size:11px; font-weight:600; cursor:pointer; text-align:left; transition:opacity .15s ease, transform .15s ease; line-height:1.4; }
+.mc-cta:hover { opacity:.88; transform:translateY(-1px); }
+.mc-cta:active { transform:translateY(0); }
+.mc-cta-done { background:var(--green); opacity:.85; }
+.mc-cta-start { background:var(--cta); }
+.mc-badge-done { font-size:9px; background:var(--green); color:#fff; padding:1px 6px; border-radius:8px; margin-left:4px; font-weight:600; vertical-align:1px; }
+.module-complete { opacity:.95; }
+.module-complete .mc-icon { filter:drop-shadow(0 0 6px rgba(52,199,89,.25)); }
+@media (prefers-reduced-motion: reduce) {
+  .mc-cta, .mc-cta:hover, .mc-cta:active { transition:none; transform:none; }
+}
 
 /* ═══ 工具卡片 ═══ */
 .tools-grid {
