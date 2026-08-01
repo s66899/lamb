@@ -12,7 +12,7 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.14.2';
+const APP_VERSION = 'v3.14.3';
 const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -4103,6 +4103,8 @@ async function renderChapter() {
   if (md) {
     $('article').innerHTML = mdParse(md) + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
     makeCollapsible(); setupQuiz(ch); markStreak();
+    // 自动标记已读：用户实际看到正文即视为完成（markRead 内部已对已读章节短路，不会重复加 XP/弹成就）
+    markRead(currentBookId, ch.file);
     // 搜索跳转：定位到匹配行并高亮关键词
     if (pendingSearchJump && pendingSearchJump.bookId === currentBookId && pendingSearchJump.file === ch.file) {
       applySearchJump();
