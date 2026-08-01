@@ -1756,6 +1756,10 @@ const ACHIEVEMENTS={
   // v3.14.5 阅读时长：累计阅读满 30 分钟解锁
   focused_30min:{icon:'⏱️',name:'专注读者',desc:'累计阅读满 30 分钟',check:(r)=>(r.totalReadSeconds||0)>=1800},
   focused_3hr:{icon:'🕰️',name:'沉浸学者',desc:'累计阅读满 3 小时',check:(r)=>(r.totalReadSeconds||0)>=10800},
+  // v3.14.6 测验连击：达到连击里程碑解锁
+  streak_5:{icon:'🔥',name:'小试牛刀',desc:'测验达成 5 连击',check:(r)=>(r.bestQuizStreak||0)>=5},
+  streak_10:{icon:'🔥',name:'势如破竹',desc:'测验达成 10 连击',check:(r)=>(r.bestQuizStreak||0)>=10},
+  streak_20:{icon:'🌋',name:'连击大师',desc:'测验达成 20 连击',check:(r)=>(r.bestQuizStreak||0)>=20},
 };
 function getTotalChapters(){return MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;}
 function checkAnyBookComplete(){if(!MANIFEST)return false;const p=getP();for(const b of MANIFEST.books){const d=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;if(d>=b.chapters.length)return true;}return false;}
@@ -1833,7 +1837,7 @@ function openQuests(){
 }
 
 // ─── Stats ──────────────────────────────
-function openStats(){const tp=totalP();const totalCh=MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;const p=getP();let totalRead=0;for(const b of MANIFEST.books)totalRead+=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;const r=initRP();const achCount=Object.values(r.achievements||{}).filter(v=>v).length;const content=`<div class="stats-grid"><div class="stat-card"><div class="sc-num">${totalRead}</div><div class="sc-label">✅ 已通关</div></div><div class="stat-card"><div class="sc-num">${totalCh-totalRead}</div><div class="sc-label">📖 未读</div></div><div class="stat-card"><div class="sc-num">${MANIFEST.books.length}</div><div class="sc-label">📚 书塔</div></div><div class="stat-card"><div class="sc-num">${Math.round(tp*100)}%</div><div class="sc-label">📊 总进度</div></div></div><div style="text-align:center;margin:14px 0"><span style="font-size:36px">${r.avatar}</span><div style="font-size:14px;font-weight:600;margin:4px 0">Lv.${r.level} · 🧪 ${r.xp}/${r.xpToNext} XP</div><div style="font-size:11px;color:var(--text2)">🏆 ${achCount} 成就 · 🧪 ${r.totalQuizCorrect||0} 测验 · ⏱️ 累计阅读 ${Math.floor((r.totalReadSeconds||0)/60)} 分钟</div></div>`;showOverlay('panel-stats','📊 训练报告',content);}
+function openStats(){const tp=totalP();const totalCh=MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;const p=getP();let totalRead=0;for(const b of MANIFEST.books)totalRead+=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;const r=initRP();const achCount=Object.values(r.achievements||{}).filter(v=>v).length;const content=`<div class="stats-grid"><div class="stat-card"><div class="sc-num">${totalRead}</div><div class="sc-label">✅ 已通关</div></div><div class="stat-card"><div class="sc-num">${totalCh-totalRead}</div><div class="sc-label">📖 未读</div></div><div class="stat-card"><div class="sc-num">${MANIFEST.books.length}</div><div class="sc-label">📚 书塔</div></div><div class="stat-card"><div class="sc-num">${Math.round(tp*100)}%</div><div class="sc-label">📊 总进度</div></div></div><div style="text-align:center;margin:14px 0"><span style="font-size:36px">${r.avatar}</span><div style="font-size:14px;font-weight:600;margin:4px 0">Lv.${r.level} · 🧪 ${r.xp}/${r.xpToNext} XP</div><div style="font-size:11px;color:var(--text2)">🏆 ${achCount} 成就 · 🧪 ${r.totalQuizCorrect||0} 测验 · 🔥 最高连击 ${r.bestQuizStreak||0} · ⏱️ 累计阅读 ${Math.floor((r.totalReadSeconds||0)/60)} 分钟</div></div>`;showOverlay('panel-stats','📊 训练报告',content);}
 
 // ═══════════════════════════════════════════════════════════════════
 //  🏠 Dashboard 首页渲染（对标参考站风格）
@@ -4283,6 +4287,8 @@ function openChapter(idx) {
   }
   // v3.14.5 阅读时长追踪：离开/切换前一节时，先把上一节已驻留秒数累加进 RP（避免重入清零）
   _flushReadSeconds();
+  // v3.14.6 测验连击：切章时把本节最佳连击刷回 RP，避免下一节从旧 best 开始
+  _flushQuizStreak();
   currentChapterIdx = idx;
   showView('reader');
   renderChapter();
@@ -4557,8 +4563,63 @@ let quizItems=[], fontBase=15, focusMode=false, tocBtnState=true, studyQuestions
 function setupQuiz(ch) { quizItems=[]; const h2s=ch.h2s||[]; if(!h2s.length){$('quizContent').innerHTML='<div style="font-size:10px;color:var(--text3);text-align:center;padding:12px">🤷 无测试点</div>';return;} const n=Math.min(3,h2s.length); const picked=[...h2s].sort(()=>Math.random()-.5).slice(0,n); quizItems=picked.map(h=>({q:`「${h.title}」主要讲什么？`,a:h.title,options:shuffle([h.title,...getRandomH2s(ch,h,3)])})); renderQuizSidebar(); }
 function getRandomH2s(ch,exclude,count){const others=(ch.h2s||[]).filter(h=>h.title!==exclude.title);return[...others].sort(()=>Math.random()-.5).slice(0,count).map(h=>h.title);}
 function shuffle(arr){return[...arr].sort(()=>Math.random()-.5);}
-function renderQuizSidebar(){$('quizContent').innerHTML=quizItems.map((item,qi)=>`<div class="quiz-card" id="qc-${qi}"><div class="qc-q">${item.q}</div>${item.options.map((o,oi)=>`<button class="qc-btn" onclick="checkQuiz(${qi},${oi})" id="qcb-${qi}-${oi}">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}<div class="qc-result" id="qcr-${qi}"></div></div>`).join('');$('quizSidebar').style.display='block';}
-function checkQuiz(qi,oi){const item=quizItems[qi];const correctIdx=item.options.indexOf(item.a);const correct=oi===correctIdx;for(let i=0;i<item.options.length;i++){const btn=$(`qcb-${qi}-${i}`);if(btn){btn.disabled=true;btn.classList.add(i===correctIdx?'correct':i===oi&&!correct?'wrong':'');}}const r=$(`qcr-${qi}`);if(r)r.textContent=correct?'✅ 正确！':`❌ 答案是 ${item.a}`;if(correct){const rp=getRP();rp.totalQuizCorrect=(rp.totalQuizCorrect||0)+1;_incDailyQuiz();setRP(rp);addXP(5,'🧪');checkAchievements();}}
+// ─── Quiz 连击 Streak 系统 ───────────────────────
+// 当前会话连击数（每答对一题 +1，答错归 0 或刷新章节归 0）
+let quizStreak = 0;
+let quizBestSession = 0;
+function renderQuizSidebar(){
+  // 顶部连击状态条：让用户实时看到「连击 X」+「最佳 Y」
+  const streakHtml = `<div id="quizStreakBar" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;margin-bottom:8px;background:var(--bg3);border-radius:6px;font-size:11px">
+    <span style="color:var(--text2)">🔥 当前连击 <strong id="qsCur" style="color:var(--orange);font-size:14px">${quizStreak}</strong></span>
+    <span style="color:var(--text3)">⭐ 最佳 <strong id="qsBest" style="color:var(--gold)">${Math.max(quizStreak, quizBestSession)}</strong></span>
+  </div>`;
+  $('quizContent').innerHTML = streakHtml + quizItems.map((item,qi)=>`<div class="quiz-card" id="qc-${qi}"><div class="qc-q">${item.q}</div>${item.options.map((o,oi)=>`<button class="qc-btn" onclick="checkQuiz(${qi},${oi})" id="qcb-${qi}-${oi}">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}<div class="qc-result" id="qcr-${qi}"></div></div>`).join('');
+  $('quizSidebar').style.display='block';
+}
+function _updateStreakBar(){
+  const cur=$('qsCur'); if(cur) cur.textContent=quizStreak;
+  const best=$('qsBest'); if(best) best.textContent=Math.max(quizStreak, quizBestSession);
+}
+function checkQuiz(qi,oi){
+  const item=quizItems[qi];const correctIdx=item.options.indexOf(item.a);const correct=oi===correctIdx;
+  for(let i=0;i<item.options.length;i++){const btn=$(`qcb-${qi}-${i}`);if(btn){btn.disabled=true;btn.classList.add(i===correctIdx?'correct':i===oi&&!correct?'wrong':'');}}
+  const r=$(`qcr-${qi}`);if(r)r.textContent=correct?'✅ 正确！':`❌ 答案是 ${item.a}`;
+  if(correct){
+    quizStreak += 1;
+    if (quizStreak > quizBestSession) quizBestSession = quizStreak;
+    const rp=getRP();
+    rp.totalQuizCorrect=(rp.totalQuizCorrect||0)+1;
+    rp.bestQuizStreak = Math.max(rp.bestQuizStreak || 0, quizStreak);
+    _incDailyQuiz();
+    setRP(rp);
+    addXP(5,'🧪');
+    // 连击里程碑奖励：5/10/15 给额外 XP + toast 反馈，让用户感受到「越连越爽」
+    const milestones = { 5: 15, 10: 40, 15: 80, 20: 150 };
+    if (milestones[quizStreak]) {
+      addXP(milestones[quizStreak], `🔥 ${quizStreak}连击`);
+      showToast(`🔥 ${quizStreak} 连击！+${milestones[quizStreak]} XP 奖励`, 2200);
+    } else if (quizStreak >= 3) {
+      showToast(`🔥 ${quizStreak} 连击 · 继续！`, 1200);
+    }
+    _updateStreakBar();
+    checkAchievements();
+  } else {
+    // 答错：streak 归零，给温和提示而不是负反馈
+    if (quizStreak >= 3) showToast(`💔 连击中断（${quizStreak}）· 下一题重新开始`, 1500);
+    quizStreak = 0;
+    _updateStreakBar();
+  }
+}
+// 切章/离开阅读器时把本节 best 连击刷回 RP（避免下次进入看到旧值）
+function _flushQuizStreak() {
+  try {
+    const rp = getRP();
+    rp.bestQuizStreak = Math.max(rp.bestQuizStreak || 0, quizBestSession);
+    setRP(rp);
+  } catch (_) {}
+  quizStreak = 0;
+  quizBestSession = 0;
+}
 function openFullQuiz(){const b=MANIFEST?.books.find(x=>x.id===currentBookId);const ch=b?.chapters[currentChapterIdx];if(!ch)return;const h2s=ch.h2s||[];if(!h2s.length){alert('本章暂无测试点');return;}}
 function toggleQuizPanel(){const qs=$('quizSidebar');if(qs)qs.style.display=qs.style.display==='none'?'block':'none';}
 
