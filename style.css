@@ -500,11 +500,25 @@ header {
 }
 .toc-title { font-size:9px; color:var(--text4); margin-bottom:4px; }
 .toc-item {
-  padding:3px 6px; cursor:pointer; border-radius:4px;
+  padding:4px 6px; cursor:pointer; border-radius:5px;
   color:var(--text2); transition:all .15s ease;
-  font-size:10px;
+  font-size:10px; line-height:1.35;
+  display:flex; align-items:flex-start; gap:6px;
+  border-left:2px solid transparent;
 }
 .toc-item:hover { background:var(--bg3); color:var(--blue); }
+.toc-item .toc-num {
+  flex:0 0 auto; font-size:9px; font-weight:600;
+  color:var(--text4); font-family:ui-monospace,SF Mono,Menlo,monospace;
+  padding-top:1px; min-width:14px;
+}
+.toc-item .toc-text { flex:1 1 auto; min-width:0; word-break:break-word; }
+.toc-item.toc-active {
+  background:rgba(0,122,255,.10);
+  color:var(--blue); font-weight:600;
+  border-left-color:var(--blue);
+}
+.toc-item.toc-active .toc-num { color:var(--blue); }
 
 .reader-main { display:flex; gap:10px; flex:1; min-width:0; }
 .reader-content { flex:1; min-width:0; }

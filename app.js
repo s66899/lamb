@@ -4233,9 +4233,60 @@ async function renderChapter() {
 function buildToc(ch) {
   const list = $('tocList');
   const h2s = ch.h2s || [];
-  list.innerHTML = h2s.length ? h2s.map((h,i)=>`<div class="toc-item toc-h2" onclick="scrollToToc(${i})">${h.title}</div>`).join('') : '<div style="font-size:10px;color:var(--text3)">无子章节</div>';
+  if (!h2s.length) { list.innerHTML = '<div style="font-size:10px;color:var(--text3)">无子章节</div>'; return; }
+  list.innerHTML = h2s.map((h,i)=>{
+    // 序号补 0：让长章节的子目录条目一眼可数（02/12 比 2/12 在密集列表里更易扫）
+    const num = String(i + 1).padStart(2, '0');
+    return `<div class="toc-item toc-h2" data-toc-idx="${i}" onclick="scrollToToc(${i})"><span class="toc-num">${num}</span><span class="toc-text">${escapeHTML(h.title)}</span></div>`;
+  }).join('');
+  // 渲染完后立即按当前滚动位置点亮对应条目（用户从外部跳进章节时也能命中）
+  requestAnimationFrame(updateTocActive);
 }
 function scrollToToc(idx) { const h=$$('article h2'); if(h[idx]) h[idx].scrollIntoView({behavior:'smooth',block:'start'}); closeMobileToc(); }
+// 阅读滚动时联动侧边目录：用 IntersectionObserver 找出当前可见的第一条 h2，高亮对应 TOC 条目
+// 滚动节流由 IO 自带（不重复 fire），比 scroll 事件 + 计算距离更准也更省
+let _tocIO = null;
+let _tocScrollPending = false;
+// scroll 节流：rAF 合并多次滚动事件，避免长章节快速滚动时反复重算
+function _tocScrollTick() {
+  if (_tocScrollPending) return;
+  _tocScrollPending = true;
+  requestAnimationFrame(() => {
+    _tocScrollPending = false;
+    updateTocActive();
+  });
+}
+function updateTocActive() {
+  const list = $('tocList');
+  if (!list) return;
+  const h2s = $$('article h2');
+  if (!h2s.length) return;
+  // 顶部安全区：viewport 上 25% 处作为"当前阅读锚点"（避免被 sticky 顶栏盖住）
+  const anchorY = window.innerHeight * 0.25;
+  let activeIdx = 0;
+  for (let i = 0; i < h2s.length; i++) {
+    const r = h2s[i].getBoundingClientRect();
+    if (r.top - anchorY <= 0) activeIdx = i;
+    else break;
+  }
+  // 同步高亮（用 class 切换比改 textContent 触发更少重排）
+  const items = list.querySelectorAll('.toc-item');
+  items.forEach((el, i) => el.classList.toggle('toc-active', i === activeIdx));
+  // 自动滚到可见区：仅当活动条目被遮挡时（长章节翻到后面再回来很有用）
+  const activeEl = items[activeIdx];
+  if (activeEl) {
+    const tocBox = list.parentElement?.getBoundingClientRect();
+    if (tocBox) {
+      const elTop = activeEl.offsetTop;
+      const elBottom = elTop + activeEl.offsetHeight;
+      const visTop = list.scrollTop;
+      const visBottom = visTop + tocBox.height;
+      if (elTop < visTop || elBottom > visBottom) {
+        list.scrollTo({ top: elTop - 8, behavior: 'smooth' });
+      }
+    }
+  }
+}
 function toggleTocFn() {
   const toc = $('readerToc');
   const isMobile = window.innerWidth <= 480;
@@ -4903,7 +4954,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bar.style.width='100%';await sleep(200);
   $('splash').style.display='none';$('app').style.display='block';
   renderDashboard();updateProgress();
-  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);updateReadProgress();_tickReadSeconds();});
+  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);updateReadProgress();_tickReadSeconds();_tocScrollTick();});
   _rpInitDrag(); // v3.14.2 阅读进度条拖拽初始化
   if(window.innerWidth<=768)toggleSidebar(false);
   setTimeout(checkAchievements,2000);
