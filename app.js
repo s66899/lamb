@@ -1574,20 +1574,33 @@ function _renderReadGoalBar() {
   // 默认目标 30 分钟/周；用户可在 console：localStorage.setItem('bk_read_goal_min', 60)
   const goalMin = parseInt(safeGet('bk_read_goal_min', 30), 10) || 30;
   const goalSec = goalMin * 60;
-  const pct = Math.min(100, Math.round((sec / goalSec) * 100));
   const cur = Math.floor(sec / 60);
-  const isDone = pct >= 100;
-  // 颜色：未达 60% 蓝，达 100% 金
-  const color = isDone ? 'var(--gold)' : (pct >= 60 ? 'var(--green)' : 'var(--blue)');
-  const leftLabel = isDone
-    ? `✅ 本周阅读目标已完成`
-    : `📈 本周已读 ${cur} 分钟 · 目标 ${goalMin} 分钟`;
+  // 不再硬截断 100%：保留真实进度，让超额用户看到自己超越目标多少
+  const pctRaw = goalSec > 0 ? (sec / goalSec) * 100 : 0;
+  const pctDisplay = Math.round(pctRaw);
+  const isDone = pctRaw >= 100;
+  // 颜色：未达 60% 蓝，达 100% 金，超额 120% 加紫红强调
+  let color, label;
+  if (pctRaw >= 120) {
+    color = '#a855f7'; // 紫：超额达人
+    const overMin = Math.floor(sec / 60) - goalMin;
+    label = `🚀 超越目标 ${overMin} 分钟 · 太卷了！`;
+  } else if (isDone) {
+    color = 'var(--gold)';
+    label = `✅ 本周阅读目标已完成`;
+  } else if (pctRaw >= 60) {
+    color = 'var(--green)';
+    label = `📈 本周已读 ${cur} 分钟 · 目标 ${goalMin} 分钟`;
+  } else {
+    color = 'var(--blue)';
+    label = `📈 本周已读 ${cur} 分钟 · 目标 ${goalMin} 分钟`;
+  }
   bar.innerHTML = `
-    <div class="rgb-row" role="status" aria-live="polite" aria-label="${leftLabel}">
-      <span class="rgb-label">${leftLabel}</span>
-      <span class="rgb-pct" style="color:${color}">${pct}%</span>
+    <div class="rgb-row" role="status" aria-live="polite" aria-label="${label}">
+      <span class="rgb-label">${label}</span>
+      <span class="rgb-pct" style="color:${color}">${pctDisplay}%</span>
     </div>
-    <div class="rgb-track"><div class="rgb-fill" style="width:${pct}%;background:${color}"></div></div>
+    <div class="rgb-track"><div class="rgb-fill" style="width:${Math.min(100, pctDisplay)}%;background:${color}"></div></div>
   `;
 }
 function getXpForLevel(lvl) { return Math.floor(50*Math.pow(1.2,lvl-1)); }
