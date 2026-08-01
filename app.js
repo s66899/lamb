@@ -1661,6 +1661,67 @@ function openStats(){const tp=totalP();const totalCh=MANIFEST?MANIFEST.books.red
 //  🏠 Dashboard 首页渲染（对标参考站风格）
 // ═══════════════════════════════════════════════════════════════════
 
+// 渲染首页"继续阅读"入口卡片。如无最近阅读记录则不渲染。
+function renderContinueReading() {
+  const sec = $('principlesSection');
+  if (!sec) return;
+  // 移除旧条目（重渲染时）
+  const old = document.getElementById('continueReadingSection');
+  if (old) old.remove();
+
+  const last = safeGet('bk_last_read');
+  if (!last || !last.bookId || typeof last.chapterIdx !== 'number') return;
+  // MANIFEST 尚未就绪时跳过
+  const books = (typeof MANIFEST !== 'undefined' && MANIFEST && MANIFEST.books) ? MANIFEST.books : null;
+  if (!books) return;
+  const book = books.find(b => b.id === last.bookId);
+  if (!book || !book.chapters[last.chapterIdx]) return;
+  const ch = book.chapters[last.chapterIdx];
+  const total = book.chapters.length;
+  const idx = Math.max(0, Math.min(last.chapterIdx, total - 1));
+  const pct = Math.round(((idx + 1) / total) * 100);
+  // 时间格式化
+  let timeLabel = '';
+  if (last.ts) {
+    const diff = Date.now() - last.ts;
+    const min = Math.floor(diff / 60000);
+    if (min < 1) timeLabel = '刚刚';
+    else if (min < 60) timeLabel = `${min} 分钟前`;
+    else if (min < 60 * 24) timeLabel = `${Math.floor(min / 60)} 小时前`;
+    else timeLabel = `${Math.floor(min / 1440)} 天前`;
+  }
+  const html = `
+    <div id="continueReadingSection" class="continue-reading">
+      <div class="section-divider"><span class="sd-label">📖 继续阅读</span><div class="sd-line"></div></div>
+      <div class="cr-card ios-press" onclick="resumeLastRead()" role="button" tabindex="0" aria-label="继续阅读 ${escapeAttr(book.title)} 第 ${idx + 1} 节">
+        <div class="cr-icon">📚</div>
+        <div class="cr-body">
+          <div class="cr-book">${escapeHTML(book.title || book.id)}</div>
+          <div class="cr-chapter">第 ${idx + 1}/${total} 节 · ${escapeHTML(ch.title || '')}</div>
+          <div class="cr-bar"><div class="cr-bar-fill" style="width:${pct}%"></div></div>
+          <div class="cr-meta">
+            <span>${pct}% · ${timeLabel || '继续上次的进度'}</span>
+            <span class="cr-arrow">继续 →</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  sec.insertAdjacentHTML('beforebegin', html);
+}
+
+// 点击"继续阅读"卡片：跳转到上次记录的章节
+function resumeLastRead() {
+  const last = safeGet('bk_last_read');
+  if (!last || !last.bookId) return;
+  const books = (typeof MANIFEST !== 'undefined' && MANIFEST && MANIFEST.books) ? MANIFEST.books : null;
+  if (!books) return;
+  const book = books.find(b => b.id === last.bookId);
+  if (!book || !book.chapters[last.chapterIdx]) return;
+  // 设置当前书与章节并跳转
+  currentBookId = last.bookId;
+  openChapter(last.chapterIdx);
+}
+
 function renderDashboard() {
   currentModule = 'dashboard';
   showView('dashboard');
@@ -1684,6 +1745,9 @@ function renderDashboard() {
     const existing = document.getElementById('heroVersion');
     if (existing) existing.textContent = `${APP_VERSION} · ${APP_DATE}`;
   }
+
+  // ── 📖 继续阅读（如有最近阅读记录） ──
+  renderContinueReading();
 
   // ── ⚡ 核心原则 ──
   $('principlesSection').innerHTML = `
@@ -3933,6 +3997,8 @@ function openChapter(idx) {
   showView('reader');
   renderChapter();
   historyPush('reader', {bookId: currentBookId, chapterIdx: idx});
+  // 记录"最近阅读"位置（首页继续阅读入口用），用 safeSet 防丢
+  safeSet('bk_last_read', { bookId: currentBookId, chapterIdx: idx, ts: Date.now() });
 }
 
 async function renderChapter() {

@@ -1393,3 +1393,49 @@ header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
   }
   .h-logo, .splash-icon { animation: none !important; }
 }
+
+/* 📖 首页继续阅读卡片 (v3.14.1) — 双主题兼容 */
+.continue-reading { margin: 4px 0 10px; }
+.cr-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--surface), var(--surface2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 12px);
+  border-left: 4px solid var(--blue);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm, 0 1px 6px rgba(0,0,0,.04));
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.cr-card:hover, .cr-card:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow, 0 4px 24px rgba(0,0,0,.10));
+  outline: none;
+}
+.cr-icon {
+  font-size: 32px; line-height: 1; flex-shrink: 0;
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(45,106,79,.18);
+}
+.cr-body { flex: 1; min-width: 0; }
+.cr-book { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.cr-chapter { font-size: 12px; color: var(--text2); margin-bottom: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cr-bar { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; margin-bottom: 4px; }
+.cr-bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--green));
+  border-radius: 2px; transition: width .4s ease; }
+.cr-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; color: var(--text3);
+}
+.cr-arrow { color: var(--blue); font-weight: 600; font-size: 11px; }
+
+@media (max-width: 480px) {
+  .cr-card { padding: 12px 14px; gap: 10px; }
+  .cr-icon { width: 40px; height: 40px; font-size: 26px; border-radius: 10px; }
+  .cr-book { font-size: 12px; }
+  .cr-chapter { font-size: 11px; }
+}
