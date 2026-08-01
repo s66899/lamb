@@ -169,8 +169,9 @@
             <button class="tb-btn" onclick="toggleQuizPanel()" title="🧪 测试">🧪</button>
           </div>
           <div class="tb-group">
-            <button class="tb-btn" onclick="decreaseFont()" title="🔽 缩小">🔽</button>
-            <button class="tb-btn" onclick="increaseFont()" title="🔼 放大">🔼</button>
+            <button class="tb-btn" id="fontMinBtn" onclick="decreaseFont()" title="🔽 缩小 (当前 ${fontBase}px)">🔽</button>
+            <button class="tb-btn" id="fontResetBtn" onclick="resetFont()" title="🔄 重置为默认 15px" style="font-size:11px">A</button>
+            <button class="tb-btn" id="fontMaxBtn" onclick="increaseFont()" title="🔼 放大 (当前 ${fontBase}px)">🔼</button>
           </div>
         </div>
         <div id="readGoalBar" class="read-goal-bar" aria-live="polite"></div>

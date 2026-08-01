@@ -4404,9 +4404,37 @@ function closeMobileToc() {
   }
 }
 function toggleFocus() { document.body.classList.toggle('focus-mode',!focusMode); focusMode=!focusMode; }
-function increaseFont() { if(fontBase<22){fontBase++;applyFont();} }
-function decreaseFont() { if(fontBase>12){fontBase--;applyFont();} }
-function applyFont() { document.documentElement.style.setProperty('--font-base',fontBase+'px'); localStorage.setItem('bk_font',fontBase); }
+const FONT_MIN = 12, FONT_MAX = 22, FONT_DEFAULT = 15;
+function increaseFont() {
+  if (fontBase < FONT_MAX) { fontBase++; applyFont(); showToast(`🔼 字号 ${fontBase}px`); }
+  else showToast(`已达最大字号 ${FONT_MAX}px`);
+  _updateFontBtnState();
+}
+function decreaseFont() {
+  if (fontBase > FONT_MIN) { fontBase--; applyFont(); showToast(`🔽 字号 ${fontBase}px`); }
+  else showToast(`已达最小字号 ${FONT_MIN}px`);
+  _updateFontBtnState();
+}
+function resetFont() {
+  if (fontBase === FONT_DEFAULT) { showToast(`已是默认字号 ${FONT_DEFAULT}px`); return; }
+  fontBase = FONT_DEFAULT;
+  applyFont();
+  showToast(`🔄 字号已重置为默认 ${FONT_DEFAULT}px`);
+  _updateFontBtnState();
+}
+function applyFont() {
+  document.documentElement.style.setProperty('--font-base', fontBase+'px');
+  localStorage.setItem('bk_font', fontBase);
+  document.dispatchEvent(new CustomEvent('fontchange', { detail: { size: fontBase } }));
+}
+function _updateFontBtnState() {
+  const min = document.getElementById('fontMinBtn');
+  const max = document.getElementById('fontMaxBtn');
+  const reset = document.getElementById('fontResetBtn');
+  if (min) min.style.opacity = fontBase <= FONT_MIN ? '0.4' : '1';
+  if (max) max.style.opacity = fontBase >= FONT_MAX ? '0.4' : '1';
+  if (reset) reset.style.opacity = fontBase === FONT_DEFAULT ? '0.4' : '1';
+}
 function toggleTheme() { 
   const cur = document.documentElement.getAttribute('data-theme');
   const next = cur === 'dark' ? 'light' : 'dark';
@@ -5032,6 +5060,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.documentElement.setAttribute('data-theme', theme);
   document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌓';
   const savedFont=localStorage.getItem('bk_font');if(savedFont){fontBase=parseInt(savedFont);document.documentElement.style.setProperty('--font-base',fontBase+'px');}
+  setTimeout(_updateFontBtnState, 300); // 让工具栏 DOM 就绪后再同步按钮状态
   bar.style.width='90%';await sleep(200);
   initRP();
   initBadmintonCursor(); // 初始化羽毛球拍光标
