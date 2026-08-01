@@ -12,7 +12,7 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.12.0';
+const APP_VERSION = 'v3.13.0';
 const APP_DATE = '2026-08-01';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -3898,8 +3898,39 @@ function buildToc(ch) {
   const h2s = ch.h2s || [];
   list.innerHTML = h2s.length ? h2s.map((h,i)=>`<div class="toc-item toc-h2" onclick="scrollToToc(${i})">${h.title}</div>`).join('') : '<div style="font-size:10px;color:var(--text3)">无子章节</div>';
 }
-function scrollToToc(idx) { const h=$$('article h2'); if(h[idx]) h[idx].scrollIntoView({behavior:'smooth',block:'start'}); }
-function toggleTocFn() { $('readerToc').style.display=$('readerToc').style.display==='none'?'block':'none'; }
+function scrollToToc(idx) { const h=$$('article h2'); if(h[idx]) h[idx].scrollIntoView({behavior:'smooth',block:'start'}); closeMobileToc(); }
+function toggleTocFn() {
+  const toc = $('readerToc');
+  const isMobile = window.innerWidth <= 480;
+  if (isMobile) {
+    const isOpen = toc.classList.toggle('mobile-drawer', true) && toc.classList.contains('mobile-drawer');
+    // 抽屉模式：用 class 切换显示
+    const opened = toc.classList.toggle('open');
+    let bd = document.querySelector('.reader-toc.mobile-backdrop');
+    if (opened) {
+      if (!bd) {
+        bd = document.createElement('div');
+        bd.className = 'reader-toc mobile-backdrop';
+        bd.addEventListener('click', closeMobileToc);
+        document.body.appendChild(bd);
+      }
+      requestAnimationFrame(() => bd.classList.add('show'));
+    } else {
+      closeMobileToc();
+    }
+  } else {
+    toc.style.display = toc.style.display === 'none' ? 'block' : 'none';
+  }
+}
+function closeMobileToc() {
+  const toc = $('readerToc');
+  if (toc) toc.classList.remove('open');
+  const bd = document.querySelector('.reader-toc.mobile-backdrop');
+  if (bd) {
+    bd.classList.remove('show');
+    setTimeout(() => bd.remove(), 250);
+  }
+}
 function toggleFocus() { document.body.classList.toggle('focus-mode',!focusMode); focusMode=!focusMode; }
 function increaseFont() { if(fontBase<22){fontBase++;applyFont();} }
 function decreaseFont() { if(fontBase>12){fontBase--;applyFont();} }

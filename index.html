@@ -3,8 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>🏸 羽毛球系统训练 · NSCA-CPT 科学体系</title>
-<link rel="stylesheet" href="style.css?v=v3.11.0">
+<meta name="theme-color" content="#3a7d5c">
+<meta name="description" content="基于 NSCA-CPT / CSCS 科学体系的羽毛球系统训练平台：6 大模块（技术·体能·心理·营养·比赛·教练）·6 维能力雷达·训练诊断·计算工具·知识书塔。">
+<meta name="keywords" content="羽毛球训练,NSCA-CPT,体能,心理训练,营养恢复,比赛策略,教练系统,周期化训练,雷达图,TDEE">
+<meta name="author" content="Lamb">
+<meta name="robots" content="index,follow">
+<meta name="format-detection" content="telephone=no">
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="🏸 羽毛球系统训练">
+<meta property="og:title" content="🏸 羽毛球系统训练 · NSCA-CPT 科学体系">
+<meta property="og:description" content="融合心理学·营养学·比赛策略的系统训练平台。6 大模块·6 维能力雷达·训练诊断·计算工具">
+<meta property="og:url" content="https://s66899.github.io/lamb/">
+<meta property="og:locale" content="zh_CN">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="🏸 羽毛球系统训练 · NSCA-CPT 科学体系">
+<meta name="twitter:description" content="融合心理学·营养学·比赛策略的系统训练平台。6 大模块·6 维能力雷达·训练诊断·计算工具">
+<link rel="canonical" href="https://s66899.github.io/lamb/">
+<link rel="stylesheet" href="style.css?v=v3.13.0">
 </head>
 <body>
 
@@ -23,47 +40,47 @@
 <div id="app" style="display:none">
 
   <!-- Header -->
-  <header>
+  <header role="banner">
     <div class="h-left">
-      <button class="h-btn ios-press" onclick="toggleSidebar()" title="📂 菜单" style="font-size:18px">☰</button>
-      <button class="h-home-btn ios-press" onclick="goHome()" title="🏠 返回首页">
-        <span class="hh-icon">🏠</span>
+      <button class="h-btn ios-press" onclick="toggleSidebar()" title="📂 菜单" aria-label="打开菜单">☰</button>
+      <button class="h-home-btn ios-press" onclick="goHome()" title="🏠 返回首页" aria-label="返回首页">
+        <span class="hh-icon" aria-hidden="true">🏠</span>
         <span class="hh-text">首页</span>
       </button>
-      <span class="h-logo ios-press" onclick="goHome()">🏸</span>
-      <div class="h-search" onclick="openSearch()">
-        <span>🔍</span>
+      <span class="h-logo ios-press" onclick="goHome()" role="button" tabindex="0" aria-label="返回首页">🏸</span>
+      <div class="h-search" onclick="openSearch()" role="button" tabindex="0" aria-label="搜索训练内容">
+        <span aria-hidden="true">🔍</span>
         <span class="h-search-text">搜索训练内容…</span>
-        <kbd>/</kbd>
+        <kbd aria-hidden="true">/</kbd>
       </div>
     </div>
     <div class="h-right">
-      <div id="rpgHud"></div>
-      <button class="h-btn" onclick="openStats()" title="📊 训练报告">📈</button>
-      <button class="h-btn" id="themeBtn" onclick="toggleTheme()" title="🌓 主题切换">🌓</button>
-      <button class="h-btn" onclick="showAdminPanel()" title="⚙️ 设备管理">⚙️</button>
-      <span class="h-badge" id="progressBadge">⬜ 0%</span>
+      <div id="rpgHud" aria-live="polite"></div>
+      <button class="h-btn" onclick="openStats()" title="📊 训练报告" aria-label="训练报告">📈</button>
+      <button class="h-btn" id="themeBtn" onclick="toggleTheme()" title="🌓 主题切换" aria-label="主题切换">🌓</button>
+      <button class="h-btn" onclick="showAdminPanel()" title="⚙️ 设备管理" aria-label="设备管理">⚙️</button>
+      <span class="h-badge" id="progressBadge" aria-live="polite">⬜ 0%</span>
     </div>
   </header>
 
   <div class="layout">
     <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="主导航">
       <div id="bookList"></div>
       <div class="side-section side-section-links">
-        <div class="side-link" onclick="openTrainModule('badminton-tech')"><span class="sl-icon">🏸</span> 羽毛球技术</div>
-        <div class="side-link" onclick="openTrainModule('strength')"><span class="sl-icon">💪</span> 体能训练</div>
-        <div class="side-link" onclick="openTrainModule('psychology')"><span class="sl-icon">🧠</span> 心理训练</div>
-        <div class="side-link" onclick="openTrainModule('nutrition')"><span class="sl-icon">🥗</span> 营养恢复</div>
-        <div class="side-link" onclick="openTrainModule('competition')"><span class="sl-icon">🏆</span> 比赛策略</div>
-        <div class="side-link" onclick="openTrainModule('coach')"><span class="sl-icon">🎯</span> 教练板块</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openTrainModule('badminton-tech')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTrainModule('badminton-tech')}"><span class="sl-icon" aria-hidden="true">🏸</span> 羽毛球技术</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openTrainModule('strength')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTrainModule('strength')}"><span class="sl-icon" aria-hidden="true">💪</span> 体能训练</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openTrainModule('psychology')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTrainModule('psychology')}"><span class="sl-icon" aria-hidden="true">🧠</span> 心理训练</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openTrainModule('nutrition')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTrainModule('nutrition')}"><span class="sl-icon" aria-hidden="true">🥗</span> 营养恢复</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openTrainModule('competition')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTrainModule('competition')}"><span class="sl-icon" aria-hidden="true">🏆</span> 比赛策略</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openTrainModule('coach')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTrainModule('coach')}"><span class="sl-icon" aria-hidden="true">🎯</span> 教练板块</div>
       </div>
       <div class="side-section side-section-links">
-        <div class="side-link" onclick="openScreening()"><span class="sl-icon">🩺</span> 功能筛查</div>
-        <div class="side-link" onclick="openCalculators()"><span class="sl-icon">🧮</span> 计算工具</div>
-        <div class="side-link" onclick="openDiagnosis()"><span class="sl-icon">🔍</span> 训练诊断</div>
-        <div class="side-link" onclick="openWeeklyCheck()"><span class="sl-icon">✅</span> 周检查</div>
-        <div class="side-link" onclick="openLevelFinder()"><span class="sl-icon">📊</span> 级别定位</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openScreening()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openScreening()}"><span class="sl-icon" aria-hidden="true">🩺</span> 功能筛查</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openCalculators()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCalculators()}"><span class="sl-icon" aria-hidden="true">🧮</span> 计算工具</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openDiagnosis()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDiagnosis()}"><span class="sl-icon" aria-hidden="true">🔍</span> 训练诊断</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openWeeklyCheck()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openWeeklyCheck()}"><span class="sl-icon" aria-hidden="true">✅</span> 周检查</div>
+        <div class="side-link" role="button" tabindex="0" onclick="openLevelFinder()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLevelFinder()}"><span class="sl-icon" aria-hidden="true">📊</span> 级别定位</div>
       </div>
       <div class="side-section">
         <div class="side-title">📚 我的书塔</div>

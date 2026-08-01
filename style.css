@@ -695,10 +695,6 @@ article .search-anchor {
   .tool-card { padding:10px; }
   .tc-icon { font-size:18px; }
   .calc-card { padding:14px; }
-  .reader-toc { display:none!important; }
-  .reader-main { flex-direction:column; }
-  .quiz-sidebar { width:100%; }
-  .reader-layout { flex-direction:column; }
   .reader-toolbar { gap:2px; }
   .tb-title { font-size:10px; }
   .tb-btn { font-size:9px; padding:2px 6px; }
@@ -715,6 +711,53 @@ article .search-anchor {
   .panel-sm { width:95vw; }
   .panel-stats { width:95vw; }
   .panel-achievement { width:95vw; }
+
+  /* 手机端：阅读器目录改为底部抽屉（之前 display:none 直接禁用了导航） */
+  .reader-toc.mobile-drawer {
+    display: block !important;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-height: 65vh;
+    z-index: 60;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 24px rgba(0,0,0,.18);
+    transform: translateY(100%);
+    transition: transform .28s var(--ios-spring, cubic-bezier(.34,1.56,.64,1));
+    padding: 14px 16px 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .reader-toc.mobile-drawer.open { transform: translateY(0); }
+  .reader-toc.mobile-drawer .toc-title {
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .reader-toc.mobile-drawer .toc-title::after {
+    content: '✕';
+    font-size: 16px;
+    color: var(--text3);
+    cursor: pointer;
+  }
+  .reader-toc.mobile-drawer .toc-item {
+    font-size: 13px;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .reader-toc.mobile-backdrop {
+    display: block;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.4);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+  }
+  .reader-toc.mobile-backdrop.show { opacity: 1; pointer-events: auto; }
 }
 
 /* ════════════════════════════════════════════════════════════════════════
