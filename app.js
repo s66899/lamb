@@ -2356,11 +2356,37 @@ function openLevelDetail(levelId) {
 }
 
 // ─── 学员问卷 v3.7.7 (3 步 · 水平/伤病/优势) ─────────────
-let _profileDraft = { level: null, injuries: [], strengths: [] };
+// v3.13.1: 草稿持久化 — 填到一半刷新/误关不再丢失
+const PROFILE_DRAFT_KEY = 'lamb_student_profile_draft_v1';
+function loadProfileDraft() {
+  try {
+    const raw = localStorage.getItem(PROFILE_DRAFT_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    if (!d || typeof d !== 'object') return null;
+    return {
+      level: d.level || null,
+      injuries: Array.isArray(d.injuries) ? d.injuries : [],
+      strengths: Array.isArray(d.strengths) ? d.strengths : [],
+    };
+  } catch { return null; }
+}
+function saveProfileDraft() {
+  try { localStorage.setItem(PROFILE_DRAFT_KEY, JSON.stringify(_profileDraft)); } catch {}
+}
+function clearProfileDraft() {
+  try { localStorage.removeItem(PROFILE_DRAFT_KEY); } catch {}
+}
+let _profileDraft = loadProfileDraft() || { level: null, injuries: [], strengths: [] };
 function openStudentProfile() {
-  // 从 localStorage 恢复初值
-  const cur = getProfile();
-  _profileDraft = cur ? { level: cur.level, injuries: [...(cur.injuries||[])], strengths: [...(cur.strengths||[])] } : { level: null, injuries: [], strengths: [] };
+  // 优先恢复未提交的草稿；没有草稿时再用已保存的 profile 兜底
+  const draft = loadProfileDraft();
+  if (draft && (draft.level || draft.injuries.length || draft.strengths.length)) {
+    _profileDraft = draft;
+  } else {
+    const cur = getProfile();
+    _profileDraft = cur ? { level: cur.level, injuries: [...(cur.injuries||[])], strengths: [...(cur.strengths||[])] } : { level: null, injuries: [], strengths: [] };
+  }
   showOverlay('panel-md', '📋 我的个性化方案', renderProfileMain());
 }
 
@@ -2496,12 +2522,14 @@ function toggleInjury(id, on) {
   const i = _profileDraft.injuries.indexOf(id);
   if (on && i<0) _profileDraft.injuries.push(id);
   if (!on && i>=0) _profileDraft.injuries.splice(i,1);
+  saveProfileDraft();
   showOverlayContent(renderProfileStep2());
 }
 function toggleStrength(id, on) {
   const i = _profileDraft.strengths.indexOf(id);
   if (on && i<0) _profileDraft.strengths.push(id);
   if (!on && i>=0) _profileDraft.strengths.splice(i,1);
+  saveProfileDraft();
   showOverlayContent(renderProfileStep3());
 }
 function submitProfile() {
@@ -2512,6 +2540,7 @@ function submitProfile() {
     taken_at: new Date().toISOString(),
   };
   setProfile(p);
+  clearProfileDraft(); // v3.13.1: 提交后清草稿，避免下次误以为没保存
   closeProfileOverlay();
   // 顶栏提示 + 重渲 level pyramid 状态文本
   try {
