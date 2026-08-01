@@ -1511,7 +1511,7 @@ function updateRpgHud(){const r=initRP(),h=$('rpgHud');if(!h)return;const pct=r.
 const PK='bk_prog';
 function getP(){try{return JSON.parse(localStorage.getItem(PK)||'{}');}catch{return {};}}
 function setP(p){safeSet(PK,p);}
-function markRead(bid,f){const p=getP();if(!p[bid])p[bid]=[];if(!p[bid].includes(f)){p[bid].push(f);setP(p);const r=getRP();if(!r.level){setRP(getDefaultRP());}r.totalRead=(r.totalRead||0)+1;setRP(r);addXP(10,'📖');checkAchievements();}updateProgress();}
+function markRead(bid,f){const p=getP();if(!p[bid])p[bid]=[];const isNew=!p[bid].includes(f);if(isNew){p[bid].push(f);setP(p);const r=getRP();if(!r.level){setRP(getDefaultRP());}r.totalRead=(r.totalRead||0)+1;setRP(r);addXP(10,'📖');checkAchievements();}updateProgress();return isNew;}
 function unmarkRead(bid,f){const p=getP();if(p[bid]){p[bid]=p[bid].filter(x=>x!==f);setP(p);}updateProgress();}
 function isRead(bid,f){const p=getP();return p[bid]&&p[bid].includes(f);}
 function chProgress(bid){const b=MANIFEST?.books.find(x=>x.id===bid);if(!b||!b.chapters.length)return 0;const p=getP();const d=(p[bid]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;return d/b.chapters.length;}
@@ -4104,7 +4104,19 @@ async function renderChapter() {
     $('article').innerHTML = mdParse(md) + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
     makeCollapsible(); setupQuiz(ch); markStreak();
     // 自动标记已读：用户实际看到正文即视为完成（markRead 内部已对已读章节短路，不会重复加 XP/弹成就）
-    markRead(currentBookId, ch.file);
+    const _isNewRead = markRead(currentBookId, ch.file);
+    if (_isNewRead) {
+      // 首次读完本节：轻 toast + 顶栏位置微脉冲，让用户「看到」系统收到了
+      showToast(`✅ 已读完《${book.title || currentBookId}》第 ${currentChapterIdx+1} 节 · +XP 10`, 2400);
+      const pos = document.getElementById('chapterPos');
+      if (pos) {
+        pos.classList.remove('pulse-read'); // 重置可重启动画
+        // 强制 reflow，确保 class 重新挂载时浏览器重新跑一次动画
+        void pos.offsetWidth;
+        pos.classList.add('pulse-read');
+        setTimeout(() => pos.classList.remove('pulse-read'), 1400);
+      }
+    }
     // 搜索跳转：定位到匹配行并高亮关键词
     if (pendingSearchJump && pendingSearchJump.bookId === currentBookId && pendingSearchJump.file === ch.file) {
       applySearchJump();

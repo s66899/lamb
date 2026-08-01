@@ -958,6 +958,21 @@ header {
   100% { opacity: 1; transform: translateY(0); }
 }
 
+/* ── 章节已读微脉冲（让用户「看到」系统收到读完信号）── */
+@keyframes pulseRead {
+  0%   { transform: scale(1);    color: var(--text4); }
+  35%  { transform: scale(1.18); color: var(--green); text-shadow: 0 0 12px rgba(48,209,88,.55); }
+  70%  { transform: scale(1.04); color: var(--green); }
+  100% { transform: scale(1);    color: var(--text4); text-shadow: none; }
+}
+.tb-pos.pulse-read {
+  display: inline-block;
+  animation: pulseRead 1.2s var(--ios-spring, ease) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-pos.pulse-read { animation: none; }
+}
+
 /* ── FAB 按下动画 ─────────────────────────── */
 .fab {
   transition: all 0.3s var(--ios-spring);
