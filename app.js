@@ -1767,8 +1767,70 @@ function openAchievements(){const r=getRP();if(!r.achievements)r.achievements={}
 // ─── 每日任务 ──────────────────────────────
 const $=id=>document.getElementById(id);
 const $$=s=>document.querySelectorAll(s);
-function getDailyQuests(){return[{id:'daily_read',icon:'📖',name:'每日阅读',desc:'读一章',check:(r)=>true,reward:'+20 XP'},{id:'daily_quiz',icon:'🧪',name:'测验',desc:'答对3题',check:(r)=>(r.totalQuizCorrect||0)>=3}];}
-function openQuests(){const r=getRP();if(!r.quests)r.quests={};const qs=getDailyQuests();let h='<div class="quest-list">';for(const q of qs){const done=r.quests[q.id];h+=`<div class="quest-item ${done?'completed':''}"><div class="qi-icon">${q.icon}</div><div class="qi-info"><div class="qi-name">${q.name}</div><div class="qi-desc">${q.desc}</div><div class="qi-reward">🎁 ${q.reward}</div></div>${done?'✅':''}</div>`;}h+='</div>';showOverlay('panel-quest','📋 每日任务',h);}
+// 今日答对计数（每日任务 daily_quiz 用真实今日累计判定）
+function _incDailyQuiz() {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const dk = safeGet('bk_daily_quiz', {});
+    dk[today] = (dk[today] || 0) + 1;
+    safeSet('bk_daily_quiz', dk);
+  } catch (_) {}
+}
+function _getTodayReadFlag() {
+  return safeGet('bk_today_read') === new Date().toISOString().slice(0, 10);
+}
+function _getTodayQuizCorrect() {
+  const today = new Date().toISOString().slice(0, 10);
+  const dk = safeGet('bk_daily_quiz', {});
+  return dk[today] || 0;
+}
+function _getTodayReadSec() {
+  const wk = safeGet('bk_read_week', {});
+  const k = (typeof _isoWeekKey === 'function') ? _isoWeekKey() : '';
+  const flushed = wk[k] || 0;
+  const live = (typeof readSecThisChapter !== 'undefined') ? readSecThisChapter : 0;
+  return flushed + live;
+}
+function getDailyQuests(){
+  const todayRead = _getTodayReadFlag();
+  const todayQuiz = _getTodayQuizCorrect();
+  const todaySec = _getTodayReadSec();
+  const quests = [
+    {id:'daily_read', icon:'📖', name:'每日阅读', desc:'读一章', progress: todayRead ? '1/1' : '0/1', reward:'+20 XP', done: todayRead},
+    {id:'daily_quiz', icon:'🧪', name:'测验打卡', desc:'今日答对 3 题', progress: Math.min(3, todayQuiz) + '/3', reward:'+15 XP', done: todayQuiz >= 3},
+    {id:'daily_streak_min', icon:'⏱️', name:'今日专注', desc:'累计阅读 ≥ 5 分钟', progress: Math.min(5, Math.floor(todaySec/60)) + '/5 分', reward:'+10 XP', done: todaySec >= 300},
+  ];
+  return quests;
+}
+function openQuests(){
+  const r=getRP();if(!r.quests)r.quests={};
+  const qs=getDailyQuests();
+  const today=new Date().toISOString().slice(0,10);
+  const lastQuestDay=safeGet('bk_quests_day');
+  if(lastQuestDay && lastQuestDay!==today){r.quests={};setRP(r);}
+  safeSet('bk_quests_day', today);
+  const completedCount=qs.filter(function(q){return q.done;}).length;
+  let h='<div class="quest-list">';
+  for(let i=0;i<qs.length;i++){
+    const q=qs[i];
+    const done=q.done;
+    const row='<div class="quest-item '+(done?'completed':'')+'">'
+      +'<div class="qi-icon">'+q.icon+'</div>'
+      +'<div class="qi-info">'
+        +'<div class="qi-name">'+q.name+' <span style="float:right;font-size:10px;color:'+(done?'var(--green)':'var(--text3)')+';font-weight:600">'+q.progress+'</span></div>'
+        +'<div class="qi-desc">'+q.desc+'</div>'
+        +'<div class="qi-reward">🎁 '+q.reward+(done?' · ✅ 已完成':' · ⏳ 待完成')+'</div>'
+      +'</div></div>';
+    h+=row;
+  }
+  h+='</div>';
+  if(completedCount===qs.length){
+    h+='<div style="margin-top:14px;padding:10px;background:var(--bg3);border-radius:8px;text-align:center;font-size:12px;color:var(--green)">🎉 今日三任务全部完成！坚持就是胜利。</div>';
+  } else {
+    h+='<div style="margin-top:10px;font-size:11px;color:var(--text3);text-align:center">📅 '+today+' · '+completedCount+'/'+qs.length+' 完成</div>';
+  }
+  showOverlay('panel-quest','📋 每日任务',h);
+}
 
 // ─── Stats ──────────────────────────────
 function openStats(){const tp=totalP();const totalCh=MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;const p=getP();let totalRead=0;for(const b of MANIFEST.books)totalRead+=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;const r=initRP();const achCount=Object.values(r.achievements||{}).filter(v=>v).length;const content=`<div class="stats-grid"><div class="stat-card"><div class="sc-num">${totalRead}</div><div class="sc-label">✅ 已通关</div></div><div class="stat-card"><div class="sc-num">${totalCh-totalRead}</div><div class="sc-label">📖 未读</div></div><div class="stat-card"><div class="sc-num">${MANIFEST.books.length}</div><div class="sc-label">📚 书塔</div></div><div class="stat-card"><div class="sc-num">${Math.round(tp*100)}%</div><div class="sc-label">📊 总进度</div></div></div><div style="text-align:center;margin:14px 0"><span style="font-size:36px">${r.avatar}</span><div style="font-size:14px;font-weight:600;margin:4px 0">Lv.${r.level} · 🧪 ${r.xp}/${r.xpToNext} XP</div><div style="font-size:11px;color:var(--text2)">🏆 ${achCount} 成就 · 🧪 ${r.totalQuizCorrect||0} 测验 · ⏱️ 累计阅读 ${Math.floor((r.totalReadSeconds||0)/60)} 分钟</div></div>`;showOverlay('panel-stats','📊 训练报告',content);}
@@ -4496,7 +4558,7 @@ function setupQuiz(ch) { quizItems=[]; const h2s=ch.h2s||[]; if(!h2s.length){$('
 function getRandomH2s(ch,exclude,count){const others=(ch.h2s||[]).filter(h=>h.title!==exclude.title);return[...others].sort(()=>Math.random()-.5).slice(0,count).map(h=>h.title);}
 function shuffle(arr){return[...arr].sort(()=>Math.random()-.5);}
 function renderQuizSidebar(){$('quizContent').innerHTML=quizItems.map((item,qi)=>`<div class="quiz-card" id="qc-${qi}"><div class="qc-q">${item.q}</div>${item.options.map((o,oi)=>`<button class="qc-btn" onclick="checkQuiz(${qi},${oi})" id="qcb-${qi}-${oi}">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}<div class="qc-result" id="qcr-${qi}"></div></div>`).join('');$('quizSidebar').style.display='block';}
-function checkQuiz(qi,oi){const item=quizItems[qi];const correctIdx=item.options.indexOf(item.a);const correct=oi===correctIdx;for(let i=0;i<item.options.length;i++){const btn=$(`qcb-${qi}-${i}`);if(btn){btn.disabled=true;btn.classList.add(i===correctIdx?'correct':i===oi&&!correct?'wrong':'');}}const r=$(`qcr-${qi}`);if(r)r.textContent=correct?'✅ 正确！':`❌ 答案是 ${item.a}`;if(correct){const rp=getRP();rp.totalQuizCorrect=(rp.totalQuizCorrect||0)+1;setRP(rp);addXP(5,'🧪');checkAchievements();}}
+function checkQuiz(qi,oi){const item=quizItems[qi];const correctIdx=item.options.indexOf(item.a);const correct=oi===correctIdx;for(let i=0;i<item.options.length;i++){const btn=$(`qcb-${qi}-${i}`);if(btn){btn.disabled=true;btn.classList.add(i===correctIdx?'correct':i===oi&&!correct?'wrong':'');}}const r=$(`qcr-${qi}`);if(r)r.textContent=correct?'✅ 正确！':`❌ 答案是 ${item.a}`;if(correct){const rp=getRP();rp.totalQuizCorrect=(rp.totalQuizCorrect||0)+1;_incDailyQuiz();setRP(rp);addXP(5,'🧪');checkAchievements();}}
 function openFullQuiz(){const b=MANIFEST?.books.find(x=>x.id===currentBookId);const ch=b?.chapters[currentChapterIdx];if(!ch)return;const h2s=ch.h2s||[];if(!h2s.length){alert('本章暂无测试点');return;}}
 function toggleQuizPanel(){const qs=$('quizSidebar');if(qs)qs.style.display=qs.style.display==='none'?'block':'none';}
 
