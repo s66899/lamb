@@ -102,6 +102,10 @@ const TRAIN_MODULES = [
     desc:'AI教练辅助 · 训练计划编排 · 动作分析指导 · 个性化周期规划',
     tags:['AI教练','训练计划','动作分析','周期规划','数据追踪'], docs:12,
     chapters:['训练计划设计原则','周期性训练编排','动作质量评估体系','训练负荷调控','个性化方案制定','技术诊断方法论','比赛录像分析','训练日志与复盘','运动员心理辅导','智能教练工具'] },
+  { id:'personal', icon:'👤', title:'个人专项', color:'var(--blue)',
+    desc:'自定义训练计划 · 专项目标设定 · 个性化周期管理',
+    tags:['自定义','个人','专项','目标','计划'], docs:0,
+    chapters:['我的训练计划'] },
 ];
 
 // ─── 模块内联内容（营养/比赛等无 book 映射的模块） ──
@@ -238,6 +242,26 @@ const NUTRITION_PROGRAMS = {
     recovery: { rest: '1-2天/周', sleep: '8-9h', hydration: '35ml/kg/天', protein: '1.8-2.2g/kg' }
   }
 };
+
+// ===== 个人专项计划（用户自定义） =====
+const PERSONAL_KEY = 'bk_personal_programs_v1';
+function getPersonalPrograms() {
+  try { return JSON.parse(localStorage.getItem(PERSONAL_KEY) || '[]'); } catch { return []; }
+}
+function savePersonalPrograms(arr) {
+  localStorage.setItem(PERSONAL_KEY, JSON.stringify(arr));
+}
+// 默认示例计划
+const DEFAULT_PERSONAL = [
+  { id: 'my-shuttle', name: '我的羽毛球专项', icon: '🏸', desc: '结合步法+技术+体能的系统训练',
+    goals: [
+      { label: '步法训练', color: '#0a84ff', items: ['全场四点跑','杀上网','吊上网','防守反击'] },
+      { label: '技术打磨', color: '#30d158', items: ['高远球','吊球','杀球','搓球','推球'] },
+      { label: '体能储备', color: '#ff9f0a', items: ['跳绳3000','折返跑','核心稳定性','冲刺训练'] }
+    ],
+    recovery: { rest: '每周1天', sleep: '8h', hydration: '2L/天' }
+  }
+];
 
 // ===== 疲劳度自检 + 恢复追踪（数据驱动周期调整） =====
 const FATIGUE_KEY = 'bk_fatigue_v1';
@@ -464,6 +488,71 @@ function renderNutrPlan() {
     </div>
     <div style="font-size:12px;font-weight:600;margin:8px 0 6px">🎯 营养策略目标库</div>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${goalGrid}</div>`;
+}
+
+// ===== 个人专项计划规划器 =====
+let _selectedPersonal = localStorage.getItem('bk_personal_segment') || '';
+function openPersonalHub() {
+  const list = getPersonalPrograms();
+  const progs = list.length ? list : DEFAULT_PERSONAL;
+  // 初始化选中第一个
+  if (!_selectedPersonal || !progs.find(p=>p.id===_selectedPersonal)) {
+    _selectedPersonal = progs[0]?.id || '';
+  }
+  const segPicker = progs.map(p =>
+    `<button class="h-btn" style="flex:1;${_selectedPersonal === p.id ? 'background:var(--blue);color:#fff' : ''}" onclick="setPersonalSegment('${p.id}')">${p.icon} ${p.name}</button>`).join('');
+  showOverlay('panel panel-wide', '👤 个人专项计划',
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${segPicker}</div>
+     <button class="h-btn" style="width:100%;margin-bottom:10px;background:var(--bg3)" onclick="addNewPersonalPlan()">➕ 创建新计划</button>
+     <div id="personalPlanBody"></div>`);
+  renderPersonalPlan();
+}
+function setPersonalSegment(key) { _selectedPersonal = key; localStorage.setItem('bk_personal_segment', key); renderPersonalPlan(); }
+function renderPersonalPlan() {
+  const body = document.getElementById('personalPlanBody');
+  if (!body) return;
+  const list = getPersonalPrograms();
+  const progs = list.length ? list : DEFAULT_PERSONAL;
+  const prog = progs.find(p=>p.id===_selectedPersonal);
+  if (!prog) { body.innerHTML = '<div style="text-align:center;color:var(--text2)">暂无计划，请创建</div>'; return; }
+  const goalGrid = (prog.goals||[]).map(g =>
+    `<div style="background:var(--bg3);padding:10px;border-radius:8px;border-left:3px solid ${g.color||'var(--blue)'}">
+       <div style="font-size:12px;font-weight:600;color:${g.color||'var(--blue)'}">${g.label}</div>
+       <div style="font-size:11px;color:var(--text2);margin-top:4px">${(g.items||[]).slice(0,3).join(' · ')}</div>
+       <div style="font-size:10px;color:var(--text3);margin-top:2px">+${(g.items||[]).length - 3} 项</div>
+    </div>`).join('');
+  const r = prog.recovery||{};
+  body.innerHTML = `
+    <div style="background:var(--bg3);padding:12px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${prog.icon||'📋'} ${prog.name}</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">${prog.desc||''}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px;font-size:11px">
+        <div>😴 睡眠：${r.sleep||'--'}</div><div>⏱️ 休息：${r.rest||'--'}</div>
+        <div>💧 水合：${r.hydration||'--'}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin:8px 0 6px">🎯 训练目标库</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${goalGrid}</div>`;
+}
+function addNewPersonalPlan() {
+  const name = prompt('计划名称（如：我的乒乓球专项）');
+  if (!name) return;
+  const icon = prompt('图标（ emoji，如 🏓）', '🎯') || '🎯';
+  const desc = prompt('计划描述', '自定义训练计划') || '自定义训练计划';
+  const newPlan = {
+    id: 'custom-' + Date.now(),
+    name, icon, desc,
+    goals: [
+      { label: '基础训练', color: '#0a84ff', items: ['内容1','内容2','内容3'] }
+    ],
+    recovery: { rest: '每周1天', sleep: '8h' }
+  };
+  const list = getPersonalPrograms();
+  list.push(newPlan);
+  savePersonalPrograms(list);
+  _selectedPersonal = newPlan.id;
+  localStorage.setItem('bk_personal_segment', _selectedPersonal);
+  openPersonalHub(); // 刷新
 }
 const MODULE_CONTENT = {
   nutrition: [
@@ -1858,7 +1947,8 @@ function openTrainModule(modId) {
     ${(modId==='nutrition'||modId==='competition') ? `<div class="bs-item" style="cursor:pointer;background:var(--bg3);border-radius:6px;padding:4px 8px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><span class="bs-num">🛠️</span><span class="bs-label">交互工具</span></div>` : ''}
     ${modId==='strength' ? `<div class="bs-item" style="cursor:pointer;background:var(--green);color:#fff;border-radius:6px;padding:4px 8px" onclick="openStrengthHub()"><span class="bs-num">🩺</span><span class="bs-label">疲劳/周期</span></div>` : ''}
     ${modId==='psychology' ? `<div class="bs-item" style="cursor:pointer;background:var(--purple);color:#fff;border-radius:6px;padding:4px 8px" onclick="openPsychHub()"><span class="bs-num">🧠</span><span class="bs-label">心理规划</span></div>` : ''}
-    ${modId==='nutrition' ? `<div class="bs-item" style="cursor:pointer;background:var(--orange);color:#fff;border-radius:6px;padding:4px 8px" onclick="openNutrHub()"><span class="bs-num">🍎</span><span class="bs-label">营养规划</span></div>` : ''}`;
+    ${modId==='nutrition' ? `<div class="bs-item" style="cursor:pointer;background:var(--orange);color:#fff;border-radius:6px;padding:4px 8px" onclick="openNutrHub()"><span class="bs-num">🍎</span><span class="bs-label">营养规划</span></div>` : ''}
+    ${modId==='personal' ? `<div class="bs-item" style="cursor:pointer;background:var(--blue);color:#fff;border-radius:6px;padding:4px 8px" onclick="openPersonalHub()"><span class="bs-num">👤</span><span class="bs-label">个人计划</span></div>` : ''}`;
   const toolBtn = (modId==='nutrition'||modId==='competition') ? `<div class="calc-card" style="grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),var(--bg3));border:2px solid ${mod.color};border-radius:var(--radius);padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><div style="font-size:32px">${modId==='nutrition'?'🍎':'🏆'}</div><div style="flex:1"><div style="font-size:14px;font-weight:600;color:${mod.color}">${modId==='nutrition'?'营养交互工具集':'比赛交互工具集'}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">${modId==='nutrition'?'餐食计算器·出汗率计算·补剂时间表':'赛前清单·对手弱点·赛后自评'}</div></div><div style="font-size:18px">→</div></div>` : '';
   $('contentGrid').innerHTML = toolBtn + mod.chapters.map((title, i) => `
     <div class="chapter-card fade-in" onclick="openModuleTopic('${mod.id}',${i})">
