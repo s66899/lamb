@@ -4988,13 +4988,16 @@ function loadRoleData() {
     const stored = JSON.parse(localStorage.getItem(ROLE_DATA_LSK));
     if (stored && stored.students && stored.coaches) return stored;
   } catch(e) {}
+  // 🐏 以"今天"为锚点动态生成最后活跃日期 — 避免硬编码 2026-07 后所有学员看上去都是 N 天未动
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysAgo = (n) => { const d = new Date(today); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
   const seed = {
     students: [
-      { id:'s1', name:'小明', level:3, xp:245, chaptersRead:12, lastActive:'2026-07-05', quizScore:8 },
-      { id:'s2', name:'小红', level:5, xp:480, chaptersRead:28, lastActive:'2026-07-04', quizScore:15 },
-      { id:'s3', name:'小华', level:2, xp:120, chaptersRead:5, lastActive:'2026-07-03', quizScore:3 },
-      { id:'s4', name:'小芳', level:4, xp:360, chaptersRead:18, lastActive:'2026-07-02', quizScore:10 },
-      { id:'s5', name:'小军', level:1, xp:50, chaptersRead:2, lastActive:'2026-06-30', quizScore:1 },
+      { id:'s1', name:'小明', level:3, xp:245, chaptersRead:12, lastActive:daysAgo(0), quizScore:8 },
+      { id:'s2', name:'小红', level:5, xp:480, chaptersRead:28, lastActive:daysAgo(1), quizScore:15 },
+      { id:'s3', name:'小华', level:2, xp:120, chaptersRead:5,  lastActive:daysAgo(2), quizScore:3 },
+      { id:'s4', name:'小芳', level:4, xp:360, chaptersRead:18, lastActive:daysAgo(5), quizScore:10 },
+      { id:'s5', name:'小军', level:1, xp:50,  chaptersRead:2,  lastActive:daysAgo(12), quizScore:1 },
     ],
     coaches: [
       { id:'c1', name:'李教练', students:['s1','s2'], totalXp:1200 },
