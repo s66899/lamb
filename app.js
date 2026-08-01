@@ -1720,6 +1720,8 @@ function resumeLastRead() {
   // 设置当前书与章节并跳转
   currentBookId = last.bookId;
   openChapter(last.chapterIdx);
+  // 跳转后给出视觉反馈，让用户明确感知"接上了之前的进度"
+  setTimeout(() => showToast(`📖 已回到《${book.title || book.id}》第 ${last.chapterIdx + 1} 节`, 2400), 80);
 }
 
 function renderDashboard() {
