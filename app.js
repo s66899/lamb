@@ -4530,8 +4530,27 @@ function renderSearchResults(results, queryOrig) {
   _srSelIdx = -1;
   const meta = document.getElementById('searchMeta');
   if (!results.length) {
-    const sugg = SEARCH_SUGGESTIONS.filter(s => !queryOrig || !s.includes(queryOrig)).slice(0, 4).map(s => `<a class="sr-sugg" onclick="var i=document.getElementById('searchInput');i.value='${s}';scheduleSearch(i);i.focus();">${s}</a>`).join(' · ');
-    $('searchResults').innerHTML = `<div class="search-hint">😅 未找到「<strong>${queryOrig}</strong>」<br><span style="opacity:0.7;font-size:11px">试试这些：</span><br><div style="margin-top:6px">${sugg}</div></div>`;
+    // 🎯 优先推荐「包含 query 子串」的关键词（命中用户意图），其次回退到通用建议
+    const q = (queryOrig || '').trim();
+    let sugg;
+    if (q) {
+      const starts = SEARCH_SUGGESTIONS.filter(s => s.startsWith(q));
+      const contains = SEARCH_SUGGESTIONS.filter(s => !s.startsWith(q) && s.includes(q));
+      const others = SEARCH_SUGGESTIONS.filter(s => !s.includes(q));
+      sugg = [...starts, ...contains, ...others].slice(0, 5);
+    } else {
+      sugg = SEARCH_SUGGESTIONS.slice(0, 5);
+    }
+    // 🔒 转义防 XSS，并对 query 子串做高亮（视觉提示「这些词和你的输入相关」）
+    const safeQ = escapeHTML(q);
+    const chipHtml = sugg.map(s => {
+      const safeS = escapeHTML(s);
+      const hi = q && s.includes(q)
+        ? safeS.replace(new RegExp('(' + escapeRegex(q) + ')', 'g'), '<em style="color:var(--blue);font-style:normal;font-weight:700">$1</em>')
+        : safeS;
+      return `<a class="sr-sugg" data-q="${escapeAttr(s)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.q;scheduleSearch(i);i.focus();">${hi}</a>`;
+    }).join(' · ');
+    $('searchResults').innerHTML = `<div class="search-hint">😅 未找到「<strong>${safeQ}</strong>」<br><span style="opacity:0.7;font-size:11px">试试这些（已按相关度排序）：</span><br><div style="margin-top:6px">${chipHtml}</div></div>`;
     if (meta) meta.textContent = '0 条结果';
     return;
   }
