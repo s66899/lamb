@@ -6010,4 +6010,18 @@ document.addEventListener('keydown', (e) => {
       e.preventDefault(); nextChapter();
     }
   }
+
+  // a11y: Enter/Space 触发当前焦点 [role="button"][tabindex="0"] 的 onclick
+  // 让所有「div 当按钮」键盘可达，零侵入、未来加新元素自动生效
+  if (e.key === 'Enter' || e.key === ' ') {
+    const el = document.activeElement;
+    if (el && el.getAttribute && el.getAttribute('role') === 'button'
+        && el.getAttribute('tabindex') === '0'
+        && typeof el.click === 'function') {
+      // 避免双触发：元素已有 onkeydown 自处理时跳过（按其 own handler 优先）
+      if (typeof el.onkeydown === 'function') return;
+      e.preventDefault();
+      el.click();
+    }
+  }
 });
