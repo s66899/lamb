@@ -4609,6 +4609,51 @@ function checkQuiz(qi,oi){
     quizStreak = 0;
     _updateStreakBar();
   }
+  // v3.14.6 测验闭环：所有题答完后注入本节总结卡，让连击 streak 的成果被「看见」
+  _maybeRenderQuizSummary();
+}
+// 本节测验完成总结卡：3 题全答完后展示得分 + 最高连击 + 累计 XP + 再答一节入口
+// 让刚加的连击系统形成闭环，避免答完 3 题后只剩「下一节」按钮、连击感被切断
+function _maybeRenderQuizSummary() {
+  if (!quizItems.length) return;
+  // 检测所有题目是否都已作答（所有 qc-btn 都 disabled）
+  const allAnswered = Array.from(document.querySelectorAll('#quizContent .qc-btn')).every(b => b.disabled);
+  if (!allAnswered) return;
+  // 防止重复注入
+  if (document.getElementById('quizSummary')) return;
+  // 按 qcr- 的文案统计更准（避免按钮重复挂多个 class 误计）
+  let correct = 0;
+  quizItems.forEach((_, i) => {
+    const r = document.getElementById(`qcr-${i}`);
+    if (r && r.textContent && r.textContent.includes('✅')) correct++;
+  });
+  const total = quizItems.length;
+  const best = Math.max(quizStreak, quizBestSession);
+  const pct = Math.round((correct / total) * 100);
+  // 总结等级：满分/优秀/加油 三档视觉反馈
+  const tier = pct === 100 ? 'perfect' : (pct >= 60 ? 'good' : 'try');
+  const tierIcon = tier === 'perfect' ? '🏆' : (tier === 'good' ? '✨' : '💪');
+  const tierText = tier === 'perfect' ? '全对！本节测验完美通关' : (tier === 'good' ? '不错！阅读理解基本到位' : '再读一遍正文，巩固关键点');
+  const xpEarned = correct * 5; // 基础 XP（每题 +5）
+  const summary = document.createElement('div');
+  summary.id = 'quizSummary';
+  summary.style.cssText = 'margin-top:10px;padding:12px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;animation:iosFadeUp .35s ease';
+  summary.innerHTML = `
+    <div style="font-size:24px;margin-bottom:4px">${tierIcon}</div>
+    <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px">${tierText}</div>
+    <div style="display:flex;justify-content:space-around;margin:8px 0;padding:8px 4px;background:var(--bg3);border-radius:6px">
+      <div style="flex:1"><div style="font-size:18px;font-weight:700;color:var(--green)">${correct}/${total}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">本节得分</div></div>
+      <div style="flex:1;border-left:1px solid var(--border)"><div style="font-size:18px;font-weight:700;color:var(--orange)">🔥 ${best}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">最高连击</div></div>
+      <div style="flex:1;border-left:1px solid var(--border)"><div style="font-size:18px;font-weight:700;color:var(--gold)">+${xpEarned}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">本节 XP</div></div>
+    </div>
+    <button onclick="setupQuiz(getCurChapter());showToast('🔄 已重置本节测验',1200);" style="margin-top:4px;padding:6px 14px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit">🔄 再答一次</button>
+  `;
+  const qc = $('quizContent');
+  if (qc) qc.appendChild(summary);
+  // 顶部展示一次大局反馈：让用户感受到「已完成本节测验」的事件
+  if (pct === 100) showToast(`🏆 本节测验全对 · +${xpEarned} XP`, 2200);
+  else if (pct >= 60) showToast(`✨ 本节测验 ${correct}/${total} · +${xpEarned} XP`, 1800);
+  else showToast(`💪 本节 ${correct}/${total} · 回到正文再读一遍效果更好`, 2400);
 }
 // 切章/离开阅读器时把本节 best 连击刷回 RP（避免下次进入看到旧值）
 function _flushQuizStreak() {
