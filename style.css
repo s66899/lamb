@@ -781,6 +781,24 @@ article hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
 .sr-pinned { background:rgba(255,215,0,0.08); border:1px solid rgba(255,215,0,0.35); color:var(--gold); }
 .sr-pinned:hover { background:var(--gold); color:#000; border-color:var(--gold); }
 
+/* v3.18.0 搜索范围过滤 chip（全部 / 当前模块 / 仅标题） */
+.sr-scope {
+  flex:1;
+  padding:5px 8px;
+  border-radius:8px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  color:var(--text2);
+  font-size:11px;
+  font-family:inherit;
+  cursor:pointer;
+  transition:all .15s ease;
+  text-align:center;
+}
+.sr-scope:hover:not(:disabled) { background:var(--bg); border-color:var(--blue); color:var(--text); }
+.sr-scope.active { background:linear-gradient(135deg,var(--blue),var(--purple)); border-color:transparent; color:#fff; font-weight:600; box-shadow:0 2px 6px rgba(10,132,255,0.25); }
+.sr-scope:disabled { cursor:not-allowed; }
+
 /* 读者端搜索关键词高亮 + 锚点动画 */
 article .search-hl {
   background: rgba(255, 213, 79, 0.45);

@@ -5160,6 +5160,8 @@ function goBack() {
 let _srSelIdx = -1;
 let _srLastQuery = '';
 let _srDebounceTimer = null;
+// v3.18.0 搜索范围：'all' | 'title' | 'module'
+let _srScope = 'all';
 
 // 📜 v3.9.3 搜索历史：去重 + 最新置顶 + 最多 8 条，关闭弹窗后保留
 const SEARCH_HISTORY_KEY = 'lamb_search_history_v1';
@@ -5244,10 +5246,37 @@ function updateSelHighlight(items) {
 
 function openSearch() {
   _srSelIdx = -1;
+  _srScope = 'all';
   const overlay = document.createElement('div');
   overlay.className='overlay';overlay.onclick=function(e){if(e.target===this)this.remove();};
-  overlay.innerHTML=`<div class="panel panel-search" onclick="event.stopPropagation()"><div class="panel-hd"><input type="text" id="searchInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none" placeholder="🔍 搜索训练内容·知识书塔 · ↑↓ 选 · ↵ 跳转" autofocus oninput="scheduleSearch(this)" onkeydown="handleSearchKey(event,this)"><button id="pinSearchBtn" class="h-btn" title="收藏当前关键词" onclick="togglePinCurrent()" style="opacity:0.6">🔖</button><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-meta" id="searchMeta" style="font-size:11px;color:var(--text3);padding:4px 12px;text-align:right">⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭</div><div class="panel-bd" id="searchResults">${renderSearchHistoryHTML()}</div></div>`;
+  // v3.18.0 搜索范围过滤：全部 / 当前模块 / 仅标题 — 一个有问题时快速切换，
+  // 例：搜「营养」太多结果 → 切「当前模块」缩小范围；只想粗筛 → 切「仅标题」跳过正文
+  // 当前模块的判定：currentBookId + currentChapterIdx 都有效时视为「在某个模块/书里」
+  const inModule = (typeof currentBookId === 'string' && currentBookId) ? 1 : 0;
+  const scopeChips = [
+    { k: 'all',    l: '🔍 全部', tip: '全书库 + 正文全文' },
+    { k: 'module', l: '📂 当前模块', tip: '只搜当前正在看的书', disabled: inModule ? '' : 'disabled style="opacity:0.35;cursor:not-allowed" title="先进入一本书再切到这里"' },
+    { k: 'title',  l: '📑 仅标题', tip: '只匹配章节标题 / H2，最快' }
+  ].map(c => `<button class="sr-scope ${c.k === _srScope ? 'active' : ''}" data-scope="${c.k}" ${c.disabled} onclick="setSearchScope('${c.k}')" title="${c.tip}">${c.l}</button>`).join('');
+  overlay.innerHTML=`<div class="panel panel-search" onclick="event.stopPropagation()"><div class="panel-hd"><input type="text" id="searchInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none" placeholder="🔍 搜索训练内容·知识书塔 · ↑↓ 选 · ↵ 跳转" autofocus oninput="scheduleSearch(this)" onkeydown="handleSearchKey(event,this)"><button id="pinSearchBtn" class="h-btn" title="收藏当前关键词" onclick="togglePinCurrent()" style="opacity:0.6">🔖</button><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-meta" id="searchMeta" style="font-size:11px;color:var(--text3);padding:4px 12px;text-align:right">⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭</div><div class="sr-scopes" id="searchScopes" style="display:flex;gap:6px;padding:6px 12px;border-bottom:1px solid var(--border);background:var(--bg2)">${scopeChips}</div><div class="panel-bd" id="searchResults">${renderSearchHistoryHTML()}</div></div>`;
   document.body.appendChild(overlay);setTimeout(()=>{document.getElementById('searchInput')?.focus();refreshPinBtn();},100);
+}
+
+/** 切换搜索范围并立即重跑当前查询（无查询时不做事） */
+function setSearchScope(scope) {
+  if (_srScope === scope) return;
+  _srScope = scope;
+  // 更新 chip 视觉态
+  const chips = document.querySelectorAll('#searchScopes .sr-scope');
+  chips.forEach(el => el.classList.toggle('active', el.getAttribute('data-scope') === scope));
+  // 重新跑当前查询
+  const inp = document.getElementById('searchInput');
+  if (inp && inp.value.trim()) doSearch(inp.value.trim());
+  else {
+    // 无查询时给个 prompt 提示
+    const meta = document.getElementById('searchMeta');
+    if (meta) meta.textContent = scope === 'title' ? '📑 仅标题模式 · 输入关键词开始搜索' : scope === 'module' ? '📂 当前模块模式 · 输入关键词开始搜索' : '⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭';
+  }
 }
 
 /** 根据当前输入框内容更新「收藏」按钮的状态（已收藏则高亮） */
@@ -5336,7 +5365,8 @@ function scoreSearchResult(r, ql, contentHits) {
 
 /** Search chapter titles and H2 headings (no network needed, fast) */
 function searchMetadata(ql, results) {
-  for (const book of MANIFEST.books) {
+  const books = booksForScope();
+  for (const book of books) {
     for (const ch of book.chapters) {
       if (results.length >= MAX_RESULTS) break;
       if (ch.title.toLowerCase().includes(ql) || ch.file.toLowerCase().includes(ql)) {
@@ -5358,7 +5388,8 @@ function searchMetadata(ql, results) {
 
 /** Search chapter content (fetches markdown, slower) */
 async function searchContent(ql, results, queryOrig) {
-  for (const book of MANIFEST.books) {
+  const books = booksForScope();
+  for (const book of books) {
     for (const ch of book.chapters) {
       if (results.length >= MAX_RESULTS) break;
       if (results.some(r => r.ch === ch)) continue;
@@ -5385,9 +5416,21 @@ async function searchContent(ql, results, queryOrig) {
   }
 }
 
-/** Try to fetch chapter markdown from local then remote */
+/** v3.18.0 根据当前搜索范围返回应遍历的 book 列表
+ *  - 'all'    : 全部书（默认）
+ *  - 'module' : 当前正在阅读的书（缩小范围）
+ *  - 'title'  : 全部书（仅在调用方跳过正文搜索，由 doSearch 控制）
+ */
+function booksForScope() {
+  if (_srScope === 'module' && currentBookId) {
+    const b = MANIFEST.books.find(x => x.id === currentBookId);
+    return b ? [b] : MANIFEST.books;
+  }
+  return MANIFEST.books;
+}
+
+/** Try to fetch chapter markdown from local then remote (8s timeout) */
 async function fetchChapterContent(bookId, file) {
-  // 取资源来了一道超时：8秒
   const fetchWithTimeout = (url, ms = 8000) => {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), ms);
@@ -5399,11 +5442,6 @@ async function fetchChapterContent(bookId, file) {
     if (r1.ok) return await r1.text();
   } catch (_) { /* ignore local */ }
   try {
-    const fetchWithTimeout = (url, ms = 8000) => {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), ms);
-      return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
-    };
     const r2 = await fetchWithTimeout(RAW + '/books/' + bookId + '/' + file);
     if (r2.ok) return await r2.text();
   } catch (_) { /* ignore remote */ }
@@ -5484,8 +5522,8 @@ async function doSearch(query) {
   // Phase 1: fast metadata search (titles, H2s)
   searchMetadata(ql, results);
 
-  // Phase 2: slower content search (fetch markdown) if room remains
-  if (results.length < MAX_RESULTS) {
+  // Phase 2: slower content search (fetch markdown) — 'title' 模式跳过，跳过所有网络请求
+  if (results.length < MAX_RESULTS && _srScope !== 'title') {
     await searchContent(ql, results, query);
   }
 
