@@ -16,7 +16,7 @@ let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新
 let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"秒数
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.16.0';
+const APP_VERSION = 'v3.17.0';
 const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -2173,22 +2173,22 @@ function renderTowerEntry() {
 function renderSidebar() {
   const list = $('bookList');
   let html = '';
-  // ── 顶级导航 ──
+  
+  // ── 顶部导航（始终可见）──
   html += '<div class="side-section side-section-links">';
   html += `<div class="side-link ${currentModule==='dashboard'?'active':''}" onclick="goHome()"><span class="sl-icon">🏠</span> 首页</div>`;
-  html += `<div class="side-link ${currentModule==='coach'?'active':''}" onclick="openCoach()"><span class="sl-icon">🎯</span> 教练系统</div>`;
-  html += `<div class="side-link" onclick="openEyeSystem()"><span class="sl-icon">🐑</span> 🐑眼系统</div>`;
-  html += `<div class="side-link" onclick="showLibrary()"><span class="sl-icon">📖</span> 阅读</div>`;
+  html += `<div class="side-link ${currentModule==='coach'?'active':''}" onclick="openCoach()"><span class="sl-icon">🎯</span> 教练</div>`;
+  html += `<div class="side-link" onclick="openEyeSystem()"><span class="sl-icon">📊</span> 数据中心</div>`;
   html += '</div>';
 
   // ── 训练系统（折叠）──
   const isTrainingActive = ['badminton-tech','strength','psychology','nutrition','competition','personal'].includes(currentModule);
-  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">💪 训练系统</div>`;
+  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">🏸 训练模块 ${isTrainingActive?'▼':'▶'}</div>`;
   html += `<div class="side-collapsible" ${isTrainingActive?'':'style="display:none"'}>${renderTrainingItems()}</div>`;
   html += '</div>';
 
   // ── 工具集（折叠）──
-  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">🛠️ 工具集</div>`;
+  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">🛠️ 工具 ▼</div>`;
   html += `<div class="side-collapsible" style="display:none">${renderToolItems()}</div>`;
   html += '</div>';
 
@@ -2514,7 +2514,13 @@ function renderToolItems() {
 
 function toggleSideSection(el) {
   const section = el.parentElement.querySelector('.side-collapsible');
-  if (section) section.style.display = section.style.display==='none' ? 'block' : 'none';
+  if (section) {
+    const isHidden = section.style.display === 'none';
+    section.style.display = isHidden ? 'block' : 'none';
+    // 更新箭头方向
+    const text = el.textContent.replace(/[▶▼]/g, isHidden ? '▼' : '▶');
+    el.textContent = text;
+  }
 }
 
 // ─── 训练模块详情 ────────────────────────
