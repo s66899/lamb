@@ -16,7 +16,7 @@ let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新
 let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"秒数
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.14.5';
+const APP_VERSION = 'v3.14.6';
 const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
