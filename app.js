@@ -16,7 +16,7 @@ let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新
 let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"秒数
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.17.3';
+const APP_VERSION = 'v3.17.4';
 const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -5164,6 +5164,27 @@ let _srDebounceTimer = null;
 // 📜 v3.9.3 搜索历史：去重 + 最新置顶 + 最多 8 条，关闭弹窗后保留
 const SEARCH_HISTORY_KEY = 'lamb_search_history_v1';
 const SEARCH_HISTORY_MAX = 8;
+// 🔖 收藏搜索：用户主动 pin 的关键词，最多 6 条，跨会话保留
+const PINNED_SEARCH_KEY = 'lamb_pinned_search_v1';
+const PINNED_SEARCH_MAX = 6;
+function getPinnedSearch() {
+  const arr = safeGet(PINNED_SEARCH_KEY, []);
+  return Array.isArray(arr) ? arr : [];
+}
+function togglePinSearch(q) {
+  if (!q || !q.trim()) return false;
+  q = q.trim();
+  const arr = getPinnedSearch();
+  const idx = arr.indexOf(q);
+  if (idx >= 0) { arr.splice(idx, 1); safeSet(PINNED_SEARCH_KEY, arr); return false; }
+  arr.unshift(q);
+  if (arr.length > PINNED_SEARCH_MAX) arr.length = PINNED_SEARCH_MAX;
+  safeSet(PINNED_SEARCH_KEY, arr);
+  return true;
+}
+function clearPinnedSearch() {
+  safeSet(PINNED_SEARCH_KEY, []);
+}
 function getSearchHistory() {
   const arr = safeGet(SEARCH_HISTORY_KEY, []);
   return Array.isArray(arr) ? arr : [];
@@ -5225,18 +5246,47 @@ function openSearch() {
   _srSelIdx = -1;
   const overlay = document.createElement('div');
   overlay.className='overlay';overlay.onclick=function(e){if(e.target===this)this.remove();};
-  overlay.innerHTML=`<div class="panel panel-search" onclick="event.stopPropagation()"><div class="panel-hd"><input type="text" id="searchInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none" placeholder="🔍 搜索训练内容·知识书塔 · ↑↓ 选 · ↵ 跳转" autofocus oninput="scheduleSearch(this)" onkeydown="handleSearchKey(event,this)"><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-meta" id="searchMeta" style="font-size:11px;color:var(--text3);padding:4px 12px;text-align:right">⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭</div><div class="panel-bd" id="searchResults">${renderSearchHistoryHTML()}</div></div>`;
-  document.body.appendChild(overlay);setTimeout(()=>document.getElementById('searchInput')?.focus(),100);
+  overlay.innerHTML=`<div class="panel panel-search" onclick="event.stopPropagation()"><div class="panel-hd"><input type="text" id="searchInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none" placeholder="🔍 搜索训练内容·知识书塔 · ↑↓ 选 · ↵ 跳转" autofocus oninput="scheduleSearch(this)" onkeydown="handleSearchKey(event,this)"><button id="pinSearchBtn" class="h-btn" title="收藏当前关键词" onclick="togglePinCurrent()" style="opacity:0.6">🔖</button><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-meta" id="searchMeta" style="font-size:11px;color:var(--text3);padding:4px 12px;text-align:right">⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭</div><div class="panel-bd" id="searchResults">${renderSearchHistoryHTML()}</div></div>`;
+  document.body.appendChild(overlay);setTimeout(()=>{document.getElementById('searchInput')?.focus();refreshPinBtn();},100);
+}
+
+/** 根据当前输入框内容更新「收藏」按钮的状态（已收藏则高亮） */
+function refreshPinBtn() {
+  const btn = document.getElementById('pinSearchBtn');
+  const inp = document.getElementById('searchInput');
+  if (!btn || !inp) return;
+  const q = (inp.value || '').trim();
+  const pinned = getPinnedSearch().includes(q);
+  btn.style.opacity = pinned ? '1' : '0.6';
+  btn.textContent = pinned ? '📌' : '🔖';
+  btn.title = pinned ? '已收藏（点击取消）' : '收藏当前关键词';
+}
+
+/** 切换当前输入框关键词的收藏状态 */
+function togglePinCurrent() {
+  const inp = document.getElementById('searchInput');
+  if (!inp) return;
+  const q = (inp.value || '').trim();
+  if (!q) { showToast('🔖 请先输入要收藏的关键词', 1800); return; }
+  const added = togglePinSearch(q);
+  refreshPinBtn();
+  showToast(added ? `🔖 已收藏「${q}」` : `📌 已取消收藏「${q}」`, 1600);
+  // 刷新历史面板（保留区会立即反映状态）
+  if (document.getElementById('searchResults') && !document.getElementById('searchInput').value) {
+    renderSearchHistory();
+  }
 }
 
 /** 渲染搜索历史面板 HTML（空历史时回退到原提示） */
 function renderSearchHistoryHTML() {
+  const pinned = getPinnedSearch();
   const hist = getSearchHistory();
-  if (!hist.length) {
-    return '<div class="search-hint">⌨️ 输入 → 自动搜索<br><span style="opacity:0.6;font-size:11px">试搜：发球 / 杀球 / 营养 / 战术</span></div>';
+  if (!pinned.length && !hist.length) {
+    return '<div class="search-hint">⌨️ 输入 → 自动搜索<br><span style="opacity:0.6;font-size:11px">试搜：发球 / 杀球 / 营养 / 战术（输入后点 🔖 收藏）</span></div>';
   }
-  const items = hist.map((q, i) => `<a class="sr-sugg sr-hist" data-hist-q="${escapeAttr(q)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.histQ;scheduleSearch(i);i.focus();">🔁 ${escapeHTML(q)}</a>`).join(' ');
-  return `<div class="search-hint" style="text-align:left;padding:14px 12px 8px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--text3);font-weight:600">📜 最近搜索</span><a onclick="clearSearchHistory()" style="font-size:10px;color:var(--text3);cursor:pointer;opacity:0.7">🗑️ 清空</a></div><div style="line-height:1.8">${items}</div><div style="margin-top:8px;font-size:10px;color:var(--text3);opacity:0.7">⌨️ 输入关键字开始搜索</div></div>`;
+  const pinnedItems = pinned.length ? `<div style="margin-bottom:10px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><span style="font-size:11px;color:var(--gold);font-weight:600">🔖 收藏的关键词</span><a onclick="clearPinnedSearch();renderSearchHistory();" style="font-size:10px;color:var(--text3);cursor:pointer;opacity:0.7">🗑️ 清空</a></div><div style="line-height:1.8">${pinned.map(q => `<a class="sr-sugg sr-pinned" data-pin-q="${escapeAttr(q)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.pinQ;scheduleSearch(i);i.focus();">📌 ${escapeHTML(q)}</a>`).join(' ')}</div></div>` : '';
+  const histBlock = hist.length ? `<div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--text3);font-weight:600">📜 最近搜索</span><a onclick="clearSearchHistory()" style="font-size:10px;color:var(--text3);cursor:pointer;opacity:0.7">🗑️ 清空</a></div><div style="line-height:1.8">${hist.map(q => `<a class="sr-sugg sr-hist" data-hist-q="${escapeAttr(q)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.histQ;scheduleSearch(i);i.focus();">🔁 ${escapeHTML(q)}</a>`).join(' ')}</div></div>` : '';
+  return `<div class="search-hint" style="text-align:left;padding:14px 12px 8px">${pinnedItems}${histBlock}<div style="margin-top:8px;font-size:10px;color:var(--text3);opacity:0.7">⌨️ 输入关键字开始搜索 · 🔖 收藏常用词</div></div>`;
 }
 
 /** 把搜索历史区域重渲染（点击"清空"后调用） */
@@ -5394,14 +5444,23 @@ function renderSearchResults(results, queryOrig) {
   }
   const escaped = escapeRegex(queryOrig);
   const re = new RegExp('(' + escaped + ')', 'gi');
+  // 📍 当前正在阅读的章节（仅在阅读器视图时有值）；用于在搜索结果中标记「当前章节」方便一眼定位
+  const here = (typeof currentBookId === 'string' && currentChapterIdx >= 0)
+    ? { bookId: currentBookId, chapterIdx: currentChapterIdx }
+    : null;
   if (meta) meta.textContent = `${results.length} 条结果（按相关度 · ↑↓ 选 · ↵ 跳转）`;
   $('searchResults').innerHTML = results.map(r => {
     const highlighted = r.preview.replace(re, '<em>$1</em>');
-    // 内容匹配才传 line，标题/H2 匹配则传空，由读者端用 query 全文高亮
     const lineAttr = r.line ? r.line : '';
-    const meta2 = (r.line ? '<span class="sr-m">第' + r.line + '行</span>' : '') + (r.hits > 1 ? '<span class="sr-hits">命中 ' + r.hits + ' 次</span>' : '');
+    // 🎯 章节序号 + 📍 当前章节标记：让用户一眼明白匹配来自书的哪个位置
+    const chIdx = r.book.chapters.findIndex(c => c.file === r.ch.file);
+    const total = r.book.chapters.length;
+    const posLabel = chIdx >= 0 ? `第 ${chIdx + 1}/${total} 节` : '';
+    const isHere = here && here.bookId === r.book.id && chIdx === here.chapterIdx;
+    const hereBadge = isHere ? '<span class="sr-here">📍 当前章节</span>' : '';
+    const meta2 = posLabel + (r.line ? ' · <span class="sr-m">第' + r.line + '行</span>' : '') + (r.hits > 1 ? ' <span class="sr-hits">命中 ' + r.hits + ' 次</span>' : '');
     return `<div class="sr-item" onclick="this.closest('.overlay').remove();goSearchResult('${r.book.id}','${r.ch.file}',${lineAttr ? r.line : 'null'},'${escapeRegex(queryOrig).replace(/'/g, "\\'")}')">
-      <div class="sr-b">${r.book.emoji} ${r.book.title} · ${r.ch.title}</div>
+      <div class="sr-b">${r.book.emoji} ${r.book.title} · ${r.ch.title} ${hereBadge}</div>
       <div class="sr-p">${highlighted}</div>
       ${meta2 ? `<div class="sr-meta-row">${meta2}</div>` : ''}
     </div>`;
