@@ -16,7 +16,7 @@ let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新
 let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"秒数
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.17.1';
+const APP_VERSION = 'v3.17.2';
 const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -6487,6 +6487,12 @@ document.addEventListener('keydown', (e) => {
   // Esc → 关闭最顶层弹窗；如无弹窗则尝试返回上一页
   if (e.key === 'Escape') {
     if (closeTopOverlay()) { e.preventDefault(); return; }
+    // 抽屉模式下也关闭侧边栏
+    if (typeof sidebarOpen !== 'undefined' && sidebarOpen && window.innerWidth <= 1023) {
+      toggleSidebar(false);
+      e.preventDefault();
+      return;
+    }
     if (typeof navStack !== 'undefined' && navStack.length) {
       e.preventDefault(); goBack();
     }
@@ -6498,6 +6504,59 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     if (typeof openSearch === 'function') openSearch();
     return;
+  }
+
+  // 单独按 / 打开搜索（GitHub/VSCode 风格）
+  if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+    e.preventDefault();
+    if (typeof openSearch === 'function') openSearch();
+    return;
+  }
+
+  // Backspace 在非输入态 → 应用内后退
+  if (e.key === 'Backspace' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+    if (typeof goBack === 'function') { e.preventDefault(); goBack(); }
+    return;
+  }
+
+  // Alt+← 后退（传统桌面浏览器语义）
+  if (e.altKey && e.key === 'ArrowLeft' && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault();
+    if (typeof goBack === 'function') goBack();
+    return;
+  }
+
+  // Ctrl+Shift+T 切换主题
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && (e.key === 'T' || e.key === 't')) {
+    e.preventDefault();
+    if (typeof toggleTheme === 'function') toggleTheme();
+    return;
+  }
+
+  // Ctrl+Shift+S 打开训练报告
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && (e.key === 'S' || e.key === 's')) {
+    e.preventDefault();
+    if (typeof openStats === 'function') openStats();
+    return;
+  }
+
+  // Ctrl + - / = / 0 字号（与浏览器缩放语义一致）
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+    if (e.key === '=' || e.key === '+') {
+      e.preventDefault();
+      if (typeof increaseFont === 'function') increaseFont();
+      return;
+    }
+    if (e.key === '-' || e.key === '_') {
+      e.preventDefault();
+      if (typeof decreaseFont === 'function') decreaseFont();
+      return;
+    }
+    if (e.key === '0') {
+      e.preventDefault();
+      if (typeof resetFont === 'function') resetFont();
+      return;
+    }
   }
 
   // Home 键 → 回首页（与右下角 Home FAB 等价）
@@ -6529,5 +6588,35 @@ document.addEventListener('keydown', (e) => {
       e.preventDefault();
       el.click();
     }
+  }
+});
+
+// ─── 快捷键帮助面板（? 键弹出）────────────────────
+const SHORTCUT_HELP = [
+  { k: '/  or  Ctrl+K', d: '🔍 打开搜索' },
+  { k: 'Esc', d: '✕ 关闭弹窗 / 侧边栏' },
+  { k: 'Backspace  /  Alt+←', d: '← 后退' },
+  { k: 'Ctrl + Home', d: '🏠 回首页' },
+  { k: '←  /  →', d: '📖 上一节 / 下一节' },
+  { k: 'Ctrl + Shift + T', d: '🌓 切换主题' },
+  { k: 'Ctrl + Shift + S', d: '📊 训练报告' },
+  { k: 'Ctrl + +/-/0', d: '🔠 字号 放大/缩小/重置' },
+  { k: '?', d: '⌨️ 打开本帮助' },
+];
+function openShortcutHelp() {
+  const rows = SHORTCUT_HELP.map(s =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:12px">
+       <span style="font-size:12px;color:var(--text2);flex:1">${s.d}</span>
+       <kbd style="font-family:ui-monospace,monospace;font-size:11px;background:var(--bg3);padding:3px 8px;border:1px solid var(--border);border-radius:5px;color:var(--text);white-space:nowrap">${s.k}</kbd>
+     </div>`).join('');
+  showOverlay('panel-shortcuts', '⌨️ 键盘快捷键',
+    `<div style="padding:4px 2px 2px">${rows}</div>
+     <div style="font-size:10px;color:var(--text3);margin-top:10px;text-align:center">💡 在输入框/搜索框内仅 Esc 生效，避免打断输入</div>`);
+}
+document.addEventListener('keydown', (e) => {
+  if (isTypingTarget(e.target)) return;
+  if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+    e.preventDefault();
+    openShortcutHelp();
   }
 });
