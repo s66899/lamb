@@ -2865,7 +2865,7 @@ function exportSelfEval() {
   const avg = ((tech + psych + fit + tact) / 4).toFixed(1);
   const checks = [...document.querySelectorAll('.match-check:checked')].map(c => c.dataset.item).join(' / ');
   const txt = `🏸 赛后自评 ${new Date().toISOString().slice(0,10)}\n综合 ${avg}/10\n· 技术 ${tech}/10\n· 心理 ${psych}/10\n· 体能 ${fit}/10\n· 战术 ${tact}/10${checks ? '\n赛前准备：' + checks : ''}`;
-  navigator.clipboard.writeText(txt).then(() => alert('✅ 已复制到剪贴板'));
+  navigator.clipboard.writeText(txt).then(() => showToast('✅ 已复制到剪贴板', 2000));
 }
 function renderModuleOnly(modId) {
   const mod = TRAIN_MODULES.find(m=>m.id===modId);
@@ -3325,6 +3325,41 @@ function showToast(text, ms) {
   } catch(e) {}
 }
 
+// 自定义确认弹窗（替代原生 confirm()，与现有 overlay 风格统一）
+// 回调形式：showConfirm('真的要删除？', () => { /* 用户点确认 */ });
+function showConfirm(text, onOk, opts) {
+  try {
+    opts = opts || {};
+    const okText = opts.okText || '确认';
+    const cancelText = opts.cancelText || '取消';
+    const danger = !!opts.danger;
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay showConfirm-overlay';
+    overlay.onclick = (e) => { if (e.target === overlay) { overlay.remove(); } };
+    overlay.innerHTML = `<div class="panel showConfirm-panel" onclick="event.stopPropagation()" style="max-width:340px;width:calc(100vw - 40px);padding:20px 18px 16px;text-align:center;animation:slideUp .3s ease">
+      <div style="font-size:14px;color:var(--text);line-height:1.6;margin-bottom:16px;word-break:break-word">${text}</div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button data-act="cancel" style="flex:1;padding:9px 0;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">${cancelText}</button>
+        <button data-act="ok" style="flex:1;padding:9px 0;background:${danger ? '#ff3b30' : 'var(--blue)'};color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">${okText}</button>
+      </div>
+    </div>`;
+    overlay.querySelector('[data-act="cancel"]').onclick = () => overlay.remove();
+    overlay.querySelector('[data-act="ok"]').onclick = () => {
+      overlay.remove();
+      try { onOk && onOk(); } catch (e) { console.warn('[showConfirm onOk]', e); }
+    };
+    document.body.appendChild(overlay);
+    // Esc 关闭
+    const escHandler = (e) => {
+      if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); }
+    };
+    document.addEventListener('keydown', escHandler);
+  } catch (e) {
+    // 兜底：极端情况下退回原生 confirm，保证流程不中断
+    if (confirm(text)) { try { onOk && onOk(); } catch (_) {} }
+  }
+}
+
 // ─── 交互式损伤筛查 v2.0 ────────────────────────────
 // 损伤部位数据
 const injuryBodyParts = {
@@ -3505,7 +3540,7 @@ function generateInjuryReport() {
   });
   
   if (answeredCount < 2) {
-    alert('请至少回答2个问题以便生成报告');
+    showConfirm('请至少回答 2 个问题以便生成报告', null, { okText: '知道了', cancelText: '' });
     return;
   }
   
@@ -4970,7 +5005,7 @@ function _flushQuizStreak() {
   quizStreak = 0;
   quizBestSession = 0;
 }
-function openFullQuiz(){const b=MANIFEST?.books.find(x=>x.id===currentBookId);const ch=b?.chapters[currentChapterIdx];if(!ch)return;const h2s=ch.h2s||[];if(!h2s.length){alert('本章暂无测试点');return;}}
+function openFullQuiz(){const b=MANIFEST?.books.find(x=>x.id===currentBookId);const ch=b?.chapters[currentChapterIdx];if(!ch)return;const h2s=ch.h2s||[];if(!h2s.length){showToast('📝 本章暂无测试点', 2000);return;}}
 function toggleQuizPanel(){const qs=$('quizSidebar');if(qs)qs.style.display=qs.style.display==='none'?'block':'none';}
 
 // ─── Markdown Parser ─────────────────────────────────
@@ -6337,17 +6372,19 @@ function addCoach() {
   setRoleData(data); openAdminSettings();
 }
 function deleteStudent(id) {
-  if (!confirm('确认删除该学员？')) return;
-  const data = loadRoleData();
-  data.students = data.students.filter(s=>s.id!==id);
-  data.coaches.forEach(c=>c.students = c.students.filter(sid=>sid!==id));
-  setRoleData(data); openAdminSettings();
+  showConfirm('确认删除该学员？此操作不可撤销', () => {
+    const data = loadRoleData();
+    data.students = data.students.filter(s=>s.id!==id);
+    data.coaches.forEach(c=>c.students = c.students.filter(sid=>sid!==id));
+    setRoleData(data); openAdminSettings();
+  }, { danger: true, okText: '删除' });
 }
 function deleteCoach(id) {
-  if (!confirm('确认删除该教练？')) return;
-  const data = loadRoleData();
-  data.coaches = data.coaches.filter(c=>c.id!==id);
-  setRoleData(data); openAdminSettings();
+  showConfirm('确认删除该教练？此操作不可撤销', () => {
+    const data = loadRoleData();
+    data.coaches = data.coaches.filter(c=>c.id!==id);
+    setRoleData(data); openAdminSettings();
+  }, { danger: true, okText: '删除' });
 }
 function toggleAssignment(coachId, studentId) {
   const data = loadRoleData();
@@ -6361,12 +6398,14 @@ function toggleAssignment(coachId, studentId) {
 function exportRoleData() {
   const data = loadRoleData();
   const json = JSON.stringify(data, null, 2);
-  navigator.clipboard.writeText(json).then(()=>alert('已复制JSON到剪贴板'));
+  navigator.clipboard.writeText(json).then(()=>showToast('✅ 已复制 JSON 到剪贴板', 2000));
 }
 function resetRoleData() {
-  if (!confirm('确认重置为默认数据？当前数据将丢失。')) return;
-  localStorage.removeItem(ROLE_DATA_LSK);
-  loadRoleData(); openAdminSettings();
+  showConfirm('确认重置为默认数据？当前数据将丢失，且不可恢复', () => {
+    localStorage.removeItem(ROLE_DATA_LSK);
+    loadRoleData(); openAdminSettings();
+    showToast('🔄 已重置为默认数据', 2000);
+  }, { danger: true, okText: '重置' });
 }
 
 // ─── 全局键盘快捷键 ──────────────────────────────────────
