@@ -2179,15 +2179,17 @@ function renderSidebar() {
   html += `<div class="side-link ${currentModule==='coach'?'active':''}" onclick="openCoach()"><span class="sl-icon">🎯</span> 教练系统</div>`;
   html += `<div class="side-link" onclick="openEyeSystem()"><span class="sl-icon">🐑</span> 🐑眼系统</div>`;
   html += `<div class="side-link" onclick="showLibrary()"><span class="sl-icon">📖</span> 阅读</div>`;
-  const curRole = getCurrentRole();
-  const roleIcon = curRole?.role === 'principal' ? '🏛️' : curRole?.role === 'coach' ? '👨‍🏫' : curRole?.role === 'student' ? '🧑‍🎓' : '🎭';
-  html += `<div class="side-link ${currentModule==='role-dashboard'?'active':''}" onclick="openRoleCenter()"><span class="sl-icon">${roleIcon}</span> 角色中心</div>`;
   html += '</div>';
 
   // ── 训练系统（折叠）──
   const isTrainingActive = ['badminton-tech','strength','psychology','nutrition','competition','personal'].includes(currentModule);
   html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">💪 训练系统</div>`;
   html += `<div class="side-collapsible" ${isTrainingActive?'':'style="display:none"'}>${renderTrainingItems()}</div>`;
+  html += '</div>';
+
+  // ── 工具集（折叠）──
+  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">🛠️ 工具集</div>`;
+  html += `<div class="side-collapsible" style="display:none">${renderToolItems()}</div>`;
   html += '</div>';
 
   list.innerHTML = html;
