@@ -8,10 +8,16 @@ let currentModule = 'dashboard';
 let currentBookId = null;
 let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
+// 待定位的搜索匹配：{ bookId, file, line, query } — 章节渲染完后跳转并高亮
+let pendingSearchJump = null;
+// v3.14.5 阅读时长追踪：进入章节时打点，scroll 监听里节流刷新，切换/离开时累加进 RP.totalReadSeconds
+let readStartTs = 0;        // 当前章节首次进入时间戳
+let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新）
+let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"秒数
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.8.7';
-const APP_DATE = '2026-07-18';
+const APP_VERSION = 'v3.14.7';
+const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
 window.addEventListener('error', (e) => {
@@ -77,8 +83,8 @@ const TRAIN_MODULES = [
     books:['badminton'],
     chapters:['基础握拍与准备姿势','正手高远球技术','反手技术体系','网前小球技术','步伐体系','杀球与扣杀','平抽快挡','综合训练','常见错误纠正','比赛心理'] },
   { id:'strength', icon:'💪', title:'体能训练', color:'var(--green)',
-    desc:'关节稳定·代谢适应·间歇训练·周期安排 — 科学力量与体能训练体系',
-    tags:['肩关节','膝关节','核心力量','代谢','间歇','周期'], docs:18,
+    desc:'NSCA-CPT · 体适能 · 中考高考 · 年龄分层训练库 + 疲劳度自检 + 周期化负荷调整',
+    tags:['肩关节','膝关节','核心力量','代谢','间歇','周期','恢复'], docs:18,
     books:['nsca-cpt'],
     chapters:['训练哲学','运动解剖','基础力量','爆发力训练','敏捷性','柔韧性','核心训练','周期化训练','损伤预防','恢复策略'] },
   { id:'psychology', icon:'🧠', title:'心理训练', color:'var(--purple)',
@@ -100,9 +106,474 @@ const TRAIN_MODULES = [
     desc:'AI教练辅助 · 训练计划编排 · 动作分析指导 · 个性化周期规划',
     tags:['AI教练','训练计划','动作分析','周期规划','数据追踪'], docs:12,
     chapters:['训练计划设计原则','周期性训练编排','动作质量评估体系','训练负荷调控','个性化方案制定','技术诊断方法论','比赛录像分析','训练日志与复盘','运动员心理辅导','智能教练工具'] },
+  { id:'personal', icon:'👤', title:'个人专项', color:'var(--blue)',
+    desc:'自定义训练计划 · 专项目标设定 · 个性化周期管理',
+    tags:['自定义','个人','专项','目标','计划'], docs:0,
+    chapters:['我的训练计划'] },
 ];
 
 // ─── 模块内联内容（营养/比赛等无 book 映射的模块） ──
+// ===== 体能训练库：4 个年龄段 × 训练目标 矩阵 =====
+// 来源：NSCA-CPT 周期化原则 + 体适能体系 + 中考体育 + 高考体育
+// 结构：每个 segment 含 goals（力量/爆发/耐力/综合 等），每个 goal 含 phases（基础期/强化期/专项期/恢复期）
+const STRENGTH_PROGRAMS = {
+  'adult-full': {
+    label: '成人·全面体能', icon: '💪', age: '18-45 岁', source: 'NSCA-CPT',
+    summary: '力量·爆发力·耐力·柔韧·核心 全面均衡，适用于业余爱好者与综合提升',
+    weekly: 3, intensityBase: 70,
+    goals: {
+      power:   { label: '爆发力', color: '#ff9f0a', items: ['抓举 5×3','高翻 4×3','跳箱 4×6','药球掷远 4×8','短冲刺 30m×6'] },
+      strength:{ label: '最大力量', color: '#0a84ff', items: ['深蹲 5×5 @85%','硬拉 5×3','卧推 5×5','罗马尼亚硬拉 3×8','引体向上 4×8'] },
+      endurance:{ label: '肌肉耐力', color: '#30d158', items: ['战绳 4×30s','壶铃摇摆 5×15','波比跳 4×12','划船机 2000m','循环训练 20min'] },
+      core:    { label: '核心稳定', color: '#a855f7', items: ['平板支撑 3×60s','死虫 3×12','鸟狗 3×12','农夫行走 4×30m','侧桥 3×45s'] }
+    },
+    recovery: { rest: '48h/肌群', sleep: '7-9h', hydration: '35ml/kg/天', protein: '1.6-2.0g/kg/天' }
+  },
+  'adult-specific': {
+    label: '成人·专项体能', icon: '🎯', age: '18-45 岁', source: 'NSCA-CSCS',
+    summary: '针对单一板块（速度/力量/耐力）深耕，周期化分明，含专项评估',
+    weekly: 4, intensityBase: 80,
+    goals: {
+      speed:   { label: '速度专攻', color: '#ff453a', items: ['加速跑 10×30m','冲刺间歇 6×60m','变向跑 5×20m','反应起跑 8×10m','增强式训练 4×8'] },
+      hypertrophy:{ label: '肌肥大', color: '#0a84ff', items: ['深蹲 4×10 @70%','卧推 4×10','罗马尼亚硬拉 4×10','哑铃推举 3×12','腿弯举 3×12'] },
+      peak:    { label: '峰值力量', color: '#ff9f0a', items: ['深蹲 6×2 @90%','硬拉 5×2','推举 5×2','抓举 5×2','颈后深蹲 4×2'] },
+      aerobic: { label: '有氧基础', color: '#30d158', items: ['LSD 慢跑 60min','节奏跑 4×8min','法特莱克 40min','骑行 90min Z2','游泳 1500m'] }
+    },
+    recovery: { rest: '72h/肌群', sleep: '8-9h', hydration: '40ml/kg/天', protein: '1.8-2.2g/kg/天' }
+  },
+  'mid-school': {
+    label: '中考体育·初三年级', icon: '📚', age: '14-16 岁', source: '中考体育标准',
+    summary: '围绕 1000/800m + 跳绳/实心球 + 立定跳远 + 选考项 训练',
+    weekly: 4, intensityBase: 65,
+    goals: {
+      endurance:{ label: '耐力跑', color: '#30d158', items: ['1000m 计时×4','800m 间歇×6','变速跑 400m×8','越野跑 25min','跳绳 3min×4'] },
+      jump:     { label: '下肢爆发', color: '#ff9f0a', items: ['立定跳远 6×3','收腹跳 4×10','蛙跳 3×8','单脚跳 4×6','跳深 4×6'] },
+      strength: { label: '全身力量', color: '#0a84ff', items: ['自重深蹲 4×15','俯卧撑 4×12','平板支撑 3×60s','仰卧起坐 4×20','俄罗斯转体 4×20'] },
+      throw:    { label: '投掷专项', color: '#a855f7', items: ['实心球掷远 6×3','铅球姿势练习 5×5','药球前抛 5×5','挥臂练习 4×8','核心抗旋 3×10'] }
+    },
+    recovery: { rest: '24-48h', sleep: '8-10h', hydration: '30ml/kg/天', protein: '1.2-1.5g/kg/天' }
+  },
+  'high-school': {
+    label: '高考体育·专项生', icon: '🏅', age: '16-19 岁', source: '高考体育标准',
+    summary: '100m/立定跳远/铅球/800m 四项达标 + 专项强化（径赛/田赛二选一）',
+    weekly: 5, intensityBase: 75,
+    goals: {
+      sprint:   { label: '短跑专项', color: '#ff453a', items: ['起跑 30m×6','加速跑 60m×4','弯道跑 4×120m','行进间跑 3×30m','阻力跑 4×40m'] },
+      jump2:    { label: '跳跃专项', color: '#ff9f0a', items: ['立定三级跳 5×3','跳远全程 6×3','跨步跳 4×8','挺身跳 4×6','单足跳 4×6'] },
+      throw2:  { label: '投掷专项', color: '#a855f7', items: ['铅球滑步 6×3','铅球旋转 5×3','杠铃抓举 4×3','卧推 4×5','旋转爆发 5×5'] },
+      endur2: { label: '中长跑', color: '#30d158', items: ['1500m 计时×3','间歇跑 400m×10','节奏跑 3×1200m','法特莱克 30min','登山跑 25min'] }
+    },
+    recovery: { rest: '48-72h/肌群', sleep: '9h+', hydration: '35ml/kg/天', protein: '1.6-2.0g/kg/天' }
+  }
+};
+
+// ===== 心理训练库：周期化心理调适 =====
+const PSYCHOLOGY_PROGRAMS = {
+  'competition-prep': {
+    label: '赛前心理准备', icon: '🎯', age: '全年龄', source: '运动心理学',
+    summary: '赛前焦虑调控 · 自信心建立 · 比赛流程可视化 · 注意力聚焦',
+    weekly: 2, intensityBase: 60,
+    goals: {
+      anxiety: { label: '焦虑调控', color: '#bf5af2', items: ['呼吸放松 5min×3/日','渐进式肌肉放松','正念冥想 10min','焦虑记录日记'] },
+      confidence: { label: '自信建立', color: '#ffd60a', items: ['成功画面重现','自我暗示训练','优势清单回顾','信心口号背诵'] },
+      focus: { label: '注意力聚焦', color: '#0a84ff', items: ['专注当下练习','外部聚焦训练','抗干扰练习','比赛流程可视化'] },
+      routine: { label: '比赛routine', color: '#30d158', items: ['热身routine','赛前仪式','得分庆祝','失误恢复'] }
+    },
+    recovery: { rest: '每日', sleep: '8h+', mental: '避免赛前过度社交', protein: '均衡饮食' }
+  },
+  'stress-management': {
+    label: '日常压力管理', icon: '🧠', age: '全年龄', source: '运动心理学',
+    summary: '训练/生活压力识别 · 情绪调节技巧 · 恢复性心理练习',
+    weekly: 3, intensityBase: 50,
+    goals: {
+      stress: { label: '压力识别', color: '#ff9f0a', items: ['压力源清单','身体信号觉察','压力等级自评','触发因素记录'] },
+      emotion: { label: '情绪调节', color: '#ff453a', items: ['情绪ABC模型','认知重评','情绪表达练习','情绪日记'] },
+      recovery: { label: '心理恢复', color: '#30d158', items: ['冥想放松','自然接触','兴趣爱好时间','社交支持'] },
+      growth: { label: '心理成长', color: '#a855f7', items: ['成长型思维','失败重构','积极自我对话','感恩练习'] }
+    },
+    recovery: { rest: '每日30min', sleep: '7-8h', mental: '定期心理休息日', protein: 'Omega-3补充' }
+  },
+  'team dynamics': {
+    label: '团队心理建设', icon: '👥', age: '青少年+成人', source: '团队心理学',
+    summary: '团队凝聚力 · 沟通技巧 · 冲突处理 · 领导力培养',
+    weekly: 1, intensityBase: 40,
+    goals: {
+      cohesion: { label: '团队凝聚', color: '#52b788', items: ['团队目标设定','共同挑战活动','成员认可仪式','团队故事建立'] },
+      communication: { label: '有效沟通', color: '#0a84ff', items: ['积极倾听练习','非暴力沟通','反馈技巧','公开表达'] },
+      conflict: { label: '冲突处理', color: '#ff9f0a', items: ['冲突识别','利益分析','双赢策略','情感修复'] },
+      leadership: { label: '领导力', color: '#ffd60a', items: ['领袖榜样学习','决策练习','责任承担','激励他人'] }
+    },
+    recovery: { rest: '每周1天', sleep: '7-9h', mental: '团队建设活动', protein: '均衡饮食' }
+  }
+};
+
+// ===== 营养模块：周期化营养策略 =====
+const NUTRITION_PROGRAMS = {
+  'competition-cycle': {
+    label: '比赛周期营养', icon: '🏆', age: '全年龄', source: 'NSCA运动营养',
+    summary: '赛前减脂 · 比赛周饮食 · 赛后恢复 · 补剂策略',
+    weekly: 7, intensityBase: 70,
+    goals: {
+      load: { label: '碳水加载', color: '#ffd60a', items: ['赛前3天高碳水','肝糖原超补偿','比赛日早餐','赛中补给'] },
+      hydrate: { label: '水合管理', color: '#0a84ff', items: ['赛前水合评估','比赛间歇补水','赛后脱水恢复','电解质补充'] },
+      recovery: { label: '赛后恢复', color: '#30d158', items: ['赛后30min窗口','蛋白质补充','碳水+蛋白比例','抗炎食物'] },
+      supplement: { label: '补剂策略', color: '#a855f7', items: ['咖啡因 timing','β-丙氨酸','肌酸','维生素D'] }
+    },
+    recovery: { rest: '赛后完全休息', sleep: '8h+', hydration: '3L+/天', protein: '2.0-2.4g/kg' }
+  },
+  'fat-loss': {
+    label: '减脂周期', icon: '📉', age: '18-45岁', source: 'NSCA运动营养',
+    summary: '热量赤字 · 蛋白质保护 · 训练表现维持 · 代谢保护',
+    weekly: 7, intensityBase: 75,
+    goals: {
+      calorie: { label: '热量控制', color: '#ff453a', items: ['每日赤字300-500','间歇性禁食','欺骗餐安排','热量循环'] },
+      protein: { label: '蛋白质保护', color: '#0a84ff', items: ['2.0-2.4g/kg摄入','每餐蛋白','亮氨酸优化','蛋白时间分布'] },
+      train: { label: '训练配合', color: '#30d158', items: ['力量训练优先','HIIT控制','训练后有氧','活动量增加'] },
+      metabolism: { label: '代谢保护', color: '#ff9f0a', items: ['定期热量重置','甲状腺支持','睡眠优化','压力管理'] }
+    },
+    recovery: { rest: '1-2天/周', sleep: '7-8h', hydration: '40ml/kg/天', protein: '2.2g/kg' }
+  },
+  'muscle-gain': {
+    label: '增肌周期', icon: '💪', age: '18-45岁', source: 'NSCA运动营养',
+    summary: '热量盈余 · 渐进负荷 · 合成代谢 · 恢复优化',
+    weekly: 5, intensityBase: 80,
+    goals: {
+      surplus: { label: '热量盈余', color: '#ffd60a', items: ['每日盈余200-300','碳水循环','训练日高碳','休息日适中'] },
+      anabolic: { label: '合成代谢', color: '#0a84ff', items: ['每餐蛋白25-40g','必需氨基酸','肌酸5g/日','胰岛素敏感度'] },
+      training: { label: '训练营养', color: '#30d158', items: ['训练前低碳高脂','训练中补水','训练后快碳+蛋白','练后餐 timing'] },
+      sleep: { label: '恢复优化', color: '#a855f7', items: ['睡眠8h+','生长激素高峰','褪黑素支持','睡前蛋白'] }
+    },
+    recovery: { rest: '1-2天/周', sleep: '8-9h', hydration: '35ml/kg/天', protein: '1.8-2.2g/kg' }
+  }
+};
+
+// ===== 个人专项计划（用户自定义） =====
+const PERSONAL_KEY = 'bk_personal_programs_v1';
+function getPersonalPrograms() {
+  try { return JSON.parse(localStorage.getItem(PERSONAL_KEY) || '[]'); } catch { return []; }
+}
+function savePersonalPrograms(arr) {
+  localStorage.setItem(PERSONAL_KEY, JSON.stringify(arr));
+}
+// 默认示例计划
+const DEFAULT_PERSONAL = [
+  { id: 'my-shuttle', name: '我的羽毛球专项', icon: '🏸', desc: '结合步法+技术+体能的系统训练',
+    goals: [
+      { label: '步法训练', color: '#0a84ff', items: ['全场四点跑','杀上网','吊上网','防守反击','前后轮换','交叉换位'] },
+      { label: '技术打磨', color: '#30d158', items: ['高远球','吊球','杀球','搓球','推球','勾对角','扑球'] },
+      { label: '体能储备', color: '#ff9f0a', items: ['跳绳3000','折返跑','核心稳定性','冲刺训练','敏捷梯','多球训练'] }
+    ],
+    recovery: { rest: '每周1天', sleep: '8h', hydration: '2L/天' }
+  },
+  { id: 'fitness-general', name: '综合体能提升', icon: '💪', desc: '力量+耐力+柔韧全面提升',
+    goals: [
+      { label: '力量训练', color: '#0a84ff', items: ['深蹲','硬拉','卧推','划船','肩推','引体'] },
+      { label: '有氧耐力', color: '#30d158', items: ['慢跑30min','骑行','游泳','HIIT','冲刺间歇'] },
+      { label: '柔韧拉伸', color: '#a855f7', items: ['全身拉伸','瑜伽','筋膜球','动态热身'] }
+    ],
+    recovery: { rest: '每周2天', sleep: '7-8h', hydration: '2.5L/天' }
+  },
+  { id: 'competition-prep', name: '赛前突击', icon: '🏆', desc: '比赛前2周集中准备',
+    goals: [
+      { label: '技术冲刺', color: '#0a84ff', items: ['多球训练','实战对练','关键分处理','心态调整'] },
+      { label: '体能储备', color: '#30d158', items: ['短距离冲刺','高强度间歇','模拟比赛'] },
+      { label: '心理调整', color: '#a855f7', items: ['比赛流程可视化','呼吸放松','自信心暗示'] }
+    ],
+    recovery: { rest: '赛前1天', sleep: '8h+', hydration: '3L/天' }
+  }
+];
+
+// ===== 疲劳度自检 + 恢复追踪（数据驱动周期调整） =====
+const FATIGUE_KEY = 'bk_fatigue_v1';
+const CYCLE_KEY   = 'bk_cycle_v1';
+
+// 疲劳自检 4 维（参考 NSCA RPE + 主观恢复量表）
+const FATIGUE_DIMS = [
+  { id: 'sleep',  label: '睡眠质量', desc: '过去 3 天平均睡眠小时与深度' },
+  { id: 'muscle', label: '肌肉酸痛', desc: '训练后 24-48h 酸痛/僵硬感' },
+  { id: 'mood',   label: '情绪/动力', desc: '训练意愿与日常专注度' },
+  { id: 'energy', label: '能量水平', desc: '日常精力与训练表现' }
+];
+// 每维 1-10 分（10 = 极佳 / 1 = 极差），总平均 → 状态灯
+function classifyFatigue(avg) {
+  if (avg >= 8) return { code: 'green',  label: '绿·良好',  advice: '可按计划推进，可尝试突破训练' };
+  if (avg >= 6) return { code: 'yellow', label: '黄·可控',  advice: '维持当前强度，重视睡眠与拉伸' };
+  if (avg >= 4) return { code: 'orange', label: '橙·警戒',  advice: '降低强度 20%，加一次主动恢复' };
+  return          { code: 'red',    label: '红·危险',  advice: '强制休息 1-2 天，复查原因（睡眠/疾病）' };
+}
+
+function getFatigueLog() { try { return JSON.parse(localStorage.getItem(FATIGUE_KEY) || '[]'); } catch { return []; } }
+function setFatigueLog(arr) { try { localStorage.setItem(FATIGUE_KEY, JSON.stringify(arr)); } catch {} }
+
+// 7 天滑动平均（按 ISO 日期去重，每日取最后一次）
+function fatigue7dAvg() {
+  const log = getFatigueLog();
+  const byDay = {};
+  for (const r of log) (byDay[r.date] = byDay[r.date] || []).push(r);
+  const days = Object.keys(byDay).sort().slice(-7);
+  if (!days.length) return null;
+  const avg = days.reduce((s, d) => s + byDay[d].reduce((a, r) => a + (r.score || 0), 0) / byDay[d].length, 0) / days.length;
+  return { avg: Math.round(avg * 10) / 10, days: days.length, latest: byDay[days[days.length - 1]] };
+}
+
+// 周期调整算法：基于 7 天疲劳均值 → 下周训练负荷调整
+function computeCycleAdjust(segmentKey) {
+  const prog = STRENGTH_PROGRAMS[segmentKey];
+  if (!prog) return null;
+  const f = fatigue7dAvg();
+  const baseWeekly = prog.weekly;
+  const baseIntensity = prog.intensityBase;
+  if (!f) {
+    return { segment: prog.label, weekly: baseWeekly, intensity: baseIntensity, note: '尚无疲劳数据，先按基线推进。记录 3 天后再评估。' };
+  }
+  let weekly = baseWeekly, intensity = baseIntensity, note = '';
+  if (f.avg >= 8)        { weekly = baseWeekly + 1; intensity = Math.min(95, baseIntensity + 5); note = '状态极佳：+1 练次，强度上浮 5%'; }
+  else if (f.avg >= 6)   { weekly = baseWeekly;     intensity = baseIntensity;              note = '状态稳定：按基线推进'; }
+  else if (f.avg >= 4)   { weekly = Math.max(2, baseWeekly - 1); intensity = Math.max(50, baseIntensity - 15); note = '累积疲劳：-1 练次，强度下调 15%'; }
+  else                   { weekly = Math.max(1, baseWeekly - 2); intensity = Math.max(40, baseIntensity - 25); note = '过劳信号：-2 练次，强度下调 25%，优先恢复'; }
+  return { segment: prog.label, weekly, intensity, avg: f.avg, note };
+}
+
+// 写入疲劳记录
+function recordFatigue(scores) {
+  const avg = Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10;
+  const log = getFatigueLog();
+  const today = new Date().toISOString().slice(0, 10);
+  log.push({ date: today, ts: Date.now(), scores, score: avg });
+  // 仅保留 60 天
+  setFatigueLog(log.slice(-180));
+  return { avg, status: classifyFatigue(avg) };
+}
+
+// 打开疲劳自检面板
+function openFatigueCheck() {
+  const inputs = FATIGUE_DIMS.map((d, i) =>
+    `<div style="margin:10px 0"><label style="font-size:12px;color:var(--text2)">${d.label} <span style="color:var(--text3);font-size:10px">${d.desc}</span></label>
+     <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+       <input type="range" min="1" max="10" value="7" id="fq_${d.id}" style="flex:1">
+       <span id="fv_${d.id}" style="font-size:12px;color:var(--text);min-width:24px;text-align:right">7</span>
+     </div></div>`).join('');
+  showOverlay('panel', '🩺 疲劳度自检（RPE 量表）',
+    `<div style="font-size:11px;color:var(--text3);margin-bottom:10px">基于 NSCA 主观恢复量表 · 1=极差 / 10=极佳 · 建议每天训练前记录</div>
+     ${inputs}
+     <div style="display:flex;gap:8px;margin-top:14px">
+       <button class="h-btn" style="flex:1;background:var(--green);color:#fff" onclick="submitFatigueCheck()">✅ 提交并保存</button>
+       <button class="h-btn" onclick="this.closest('.overlay').remove()">取消</button>
+     </div>`);
+  // 绑定滑块联动
+  FATIGUE_DIMS.forEach(d => {
+    const el = document.getElementById('fq_' + d.id);
+    const out = document.getElementById('fv_' + d.id);
+    if (el && out) el.addEventListener('input', () => out.textContent = el.value);
+  });
+}
+
+function submitFatigueCheck() {
+  const scores = FATIGUE_DIMS.map(d => parseInt(document.getElementById('fq_' + d.id)?.value) || 5);
+  const { avg, status } = recordFatigue(scores);
+  document.querySelector('.overlay .panel')?.parentElement?.remove();
+  showOverlay('panel', '🩺 评估结果',
+    `<div style="text-align:center;padding:10px 0">
+       <div style="font-size:42px;font-weight:700;color:var(--${status.code === 'red' ? 'red' : status.code === 'orange' ? 'orange' : status.code === 'yellow' ? 'yellow' : 'green'})">${avg}</div>
+       <div style="font-size:13px;font-weight:600;margin:4px 0">${status.label}</div>
+       <div style="font-size:11px;color:var(--text2);margin:8px 20px">${status.advice}</div>
+     </div>
+     <div style="display:flex;gap:8px;margin-top:12px">
+       <button class="h-btn" style="flex:1" onclick="openCyclePlanner()">📅 查看本周周期调整</button>
+       <button class="h-btn" onclick="this.closest('.overlay').remove()">关闭</button>
+     </div>`);
+}
+
+// 周期规划器：基于所选训练库 + 疲劳数据给出下周建议
+let _selectedSegment = localStorage.getItem('bk_segment') || 'adult-full';
+function setSegment(key) { _selectedSegment = key; localStorage.setItem('bk_segment', key); renderCyclePlan(); }
+function openCyclePlanner() {
+  const segPicker = Object.entries(STRENGTH_PROGRAMS).map(([k, p]) =>
+    `<button class="h-btn" style="flex:1;${_selectedSegment === k ? 'background:var(--green);color:#fff' : ''}" onclick="setSegment('${k}')">${p.icon} ${p.label}</button>`).join('');
+  showOverlay('panel panel-wide', '📅 周期化训练规划器',
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${segPicker}</div>
+     <div id="cyclePlanBody"></div>
+     <div style="display:flex;gap:8px;margin-top:12px">
+       <button class="h-btn" onclick="openFatigueCheck()">🩺 立即疲劳自检</button>
+       <button class="h-btn" onclick="this.closest('.overlay').remove()">关闭</button>
+     </div>`);
+  renderCyclePlan();
+}
+
+function renderCyclePlan() {
+  const body = document.getElementById('cyclePlanBody');
+  if (!body) return;
+  const prog = STRENGTH_PROGRAMS[_selectedSegment];
+  if (!prog) return;
+  const adj = computeCycleAdjust(_selectedSegment);
+  const f = fatigue7dAvg();
+  const goalGrid = Object.entries(prog.goals).map(([k, g]) =>
+    `<div style="background:var(--bg3);padding:10px;border-radius:8px;border-left:3px solid ${g.color}">
+       <div style="font-size:12px;font-weight:600;color:${g.color}">${g.label}</div>
+       <div style="font-size:11px;color:var(--text2);margin-top:4px">${g.items.slice(0,3).join(' · ')}</div>
+       <div style="font-size:10px;color:var(--text3);margin-top:2px">+${g.items.length - 3} 项</div>
+     </div>`).join('');
+  const recovery = prog.recovery;
+  body.innerHTML = `
+    <div style="background:var(--bg3);padding:12px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${prog.icon} ${prog.label} <span style="font-size:10px;color:var(--text3)">${prog.age} · 来源 ${prog.source}</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">${prog.summary}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px;font-size:11px">
+        <div>😴 睡眠：${recovery.sleep}</div><div>💧 水合：${recovery.hydration}</div>
+        <div>🥩 蛋白：${recovery.protein}</div><div>⏱️ 休息：${recovery.rest}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin:8px 0 6px">🎯 训练目标库</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">${goalGrid}</div>
+    <div style="background:var(--bg2);padding:12px;border-radius:8px;border:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px">📈 下周训练负荷调整</div>
+      ${f ? `<div style="font-size:11px;color:var(--text2);margin-bottom:6px">近 7 天疲劳均值：<strong>${f.avg}</strong> / 10（${f.days} 天记录）</div>` : '<div style="font-size:11px;color:var(--text3);margin-bottom:6px">尚无疲劳数据</div>'}
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:12px">
+        <div>📅 每周练次：<strong>${adj.weekly}</strong> 次</div>
+        <div>🔥 强度基线：<strong>${adj.intensity}%</strong> 1RM</div>
+      </div>
+      <div style="font-size:11px;color:var(--green);margin-top:8px">💡 ${adj.note}</div>
+    </div>`;
+}
+
+// 体能模块入口重写：打开时跳到周期规划器（保留原 book 章节作为深入阅读）
+function openStrengthHub() { openCyclePlanner(); }
+
+// 心理训练周期规划器
+let _selectedPsych = localStorage.getItem('bk_psych_segment') || 'competition-prep';
+function setPsychSegment(key) { _selectedPsych = key; localStorage.setItem('bk_psych_segment', key); renderPsychPlan(); }
+function openPsychHub() {
+  const segPicker = Object.entries(PSYCHOLOGY_PROGRAMS).map(([k, p]) =>
+    `<button class="h-btn" style="flex:1;${_selectedPsych === k ? 'background:var(--purple);color:#fff' : ''}" onclick="setPsychSegment('${k}')">${p.icon} ${p.label}</button>`).join('');
+  showOverlay('panel panel-wide', '🧠 心理训练规划器',
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${segPicker}</div>
+     <div id="psychPlanBody"></div>`);
+  renderPsychPlan();
+}
+function renderPsychPlan() {
+  const body = document.getElementById('psychPlanBody');
+  if (!body) return;
+  const prog = PSYCHOLOGY_PROGRAMS[_selectedPsych];
+  if (!prog) return;
+  const goalGrid = Object.entries(prog.goals).map(([k, g]) =>
+    `<div style="background:var(--bg3);padding:10px;border-radius:8px;border-left:3px solid ${g.color}">
+       <div style="font-size:12px;font-weight:600;color:${g.color}">${g.label}</div>
+       <div style="font-size:11px;color:var(--text2);margin-top:4px">${g.items.slice(0,3).join(' · ')}</div>
+       <div style="font-size:10px;color:var(--text3);margin-top:2px">+${g.items.length - 3} 项</div>
+    </div>`).join('');
+  const r = prog.recovery;
+  body.innerHTML = `
+    <div style="background:var(--bg3);padding:12px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${prog.icon} ${prog.label} <span style="font-size:10px;color:var(--text3)">${prog.age} · 来源 ${prog.source}</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">${prog.summary}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px;font-size:11px">
+        <div>😴 睡眠：${r.sleep}</div><div>🧘 心理：${r.mental || '正常'}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin:8px 0 6px">🎯 心理训练目标库</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${goalGrid}</div>`;
+}
+
+// 营养周期规划器
+let _selectedNutr = localStorage.getItem('bk_nutr_segment') || 'competition-cycle';
+function setNutrSegment(key) { _selectedNutr = key; localStorage.setItem('bk_nutr_segment', key); renderNutrPlan(); }
+function openNutrHub() {
+  const segPicker = Object.entries(NUTRITION_PROGRAMS).map(([k, p]) =>
+    `<button class="h-btn" style="flex:1;${_selectedNutr === k ? 'background:var(--orange);color:#fff' : ''}" onclick="setNutrSegment('${k}')">${p.icon} ${p.label}</button>`).join('');
+  showOverlay('panel panel-wide', '🍎 营养规划器',
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${segPicker}</div>
+     <div id="nutrPlanBody"></div>`);
+  renderNutrPlan();
+}
+function renderNutrPlan() {
+  const body = document.getElementById('nutrPlanBody');
+  if (!body) return;
+  const prog = NUTRITION_PROGRAMS[_selectedNutr];
+  if (!prog) return;
+  const goalGrid = Object.entries(prog.goals).map(([k, g]) =>
+    `<div style="background:var(--bg3);padding:10px;border-radius:8px;border-left:3px solid ${g.color}">
+       <div style="font-size:12px;font-weight:600;color:${g.color}">${g.label}</div>
+       <div style="font-size:11px;color:var(--text2);margin-top:4px">${g.items.slice(0,3).join(' · ')}</div>
+       <div style="font-size:10px;color:var(--text3);margin-top:2px">+${g.items.length - 3} 项</div>
+    </div>`).join('');
+  const r = prog.recovery;
+  body.innerHTML = `
+    <div style="background:var(--bg3);padding:12px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${prog.icon} ${prog.label} <span style="font-size:10px;color:var(--text3)">${prog.age} · 来源 ${prog.source}</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">${prog.summary}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px;font-size:11px">
+        <div>💧 水合：${r.hydration}</div><div>🥩 蛋白：${r.protein}</div>
+        <div>😴 睡眠：${r.sleep}</div><div>⏱️ 休息：${r.rest}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin:8px 0 6px">🎯 营养策略目标库</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${goalGrid}</div>`;
+}
+
+// ===== 个人专项计划规划器 =====
+let _selectedPersonal = localStorage.getItem('bk_personal_segment') || '';
+function openPersonalHub() {
+  const list = getPersonalPrograms();
+  const progs = list.length ? list : DEFAULT_PERSONAL;
+  // 初始化选中第一个
+  if (!_selectedPersonal || !progs.find(p=>p.id===_selectedPersonal)) {
+    _selectedPersonal = progs[0]?.id || '';
+  }
+  const segPicker = progs.map(p =>
+    `<button class="h-btn" style="flex:1;${_selectedPersonal === p.id ? 'background:var(--blue);color:#fff' : ''}" onclick="setPersonalSegment('${p.id}')">${p.icon} ${p.name}</button>`).join('');
+  showOverlay('panel panel-wide', '👤 个人专项计划',
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${segPicker}</div>
+     <button class="h-btn" style="width:100%;margin-bottom:10px;background:var(--bg3)" onclick="addNewPersonalPlan()">➕ 创建新计划</button>
+     <div id="personalPlanBody"></div>`);
+  renderPersonalPlan();
+}
+function setPersonalSegment(key) { _selectedPersonal = key; localStorage.setItem('bk_personal_segment', key); renderPersonalPlan(); }
+function renderPersonalPlan() {
+  const body = document.getElementById('personalPlanBody');
+  if (!body) return;
+  const list = getPersonalPrograms();
+  const progs = list.length ? list : DEFAULT_PERSONAL;
+  const prog = progs.find(p=>p.id===_selectedPersonal);
+  if (!prog) { body.innerHTML = '<div style="text-align:center;color:var(--text2)">暂无计划，请创建</div>'; return; }
+  const goalGrid = (prog.goals||[]).map(g =>
+    `<div style="background:var(--bg3);padding:10px;border-radius:8px;border-left:3px solid ${g.color||'var(--blue)'}">
+       <div style="font-size:12px;font-weight:600;color:${g.color||'var(--blue)'}">${g.label}</div>
+       <div style="font-size:11px;color:var(--text2);margin-top:4px">${(g.items||[]).slice(0,3).join(' · ')}</div>
+       <div style="font-size:10px;color:var(--text3);margin-top:2px">+${(g.items||[]).length - 3} 项</div>
+    </div>`).join('');
+  const r = prog.recovery||{};
+  body.innerHTML = `
+    <div style="background:var(--bg3);padding:12px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${prog.icon||'📋'} ${prog.name}</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">${prog.desc||''}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px;font-size:11px">
+        <div>😴 睡眠：${r.sleep||'--'}</div><div>⏱️ 休息：${r.rest||'--'}</div>
+        <div>💧 水合：${r.hydration||'--'}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin:8px 0 6px">🎯 训练目标库</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${goalGrid}</div>`;
+}
+function addNewPersonalPlan() {
+  const name = prompt('计划名称（如：我的乒乓球专项）');
+  if (!name) return;
+  const icon = prompt('图标（ emoji，如 🏓）', '🎯') || '🎯';
+  const desc = prompt('计划描述', '自定义训练计划') || '自定义训练计划';
+  const newPlan = {
+    id: 'custom-' + Date.now(),
+    name, icon, desc,
+    goals: [
+      { label: '基础训练', color: '#0a84ff', items: ['内容1','内容2','内容3'] }
+    ],
+    recovery: { rest: '每周1天', sleep: '8h' }
+  };
+  const list = getPersonalPrograms();
+  list.push(newPlan);
+  savePersonalPrograms(list);
+  _selectedPersonal = newPlan.id;
+  localStorage.setItem('bk_personal_segment', _selectedPersonal);
+  openPersonalHub(); // 刷新
+}
 const MODULE_CONTENT = {
   nutrition: [
     // 1. TDEE
@@ -1036,9 +1507,118 @@ const TOWER_BOOKS = ['badminton','finance','psychology','engineering-mechanics',
 // ═══════════════════════════════════════════════════════════════════
 const RP_KEY = 'lamb_rpg_data';
 function getRP() { try { return JSON.parse(localStorage.getItem(RP_KEY)||'{}'); } catch { return {}; } }
-function setRP(r) { localStorage.setItem(RP_KEY, JSON.stringify(r)); }
-function getDefaultRP() { return { level:1, xp:0, xpToNext:100, achievements:{}, quests:{}, totalRead:0, totalQuizCorrect:0, avatar:'🧙' }; }
+function setRP(r) { safeSet(RP_KEY, r); }
+function getDefaultRP() { return { level:1, xp:0, xpToNext:100, achievements:{}, quests:{}, totalRead:0, totalQuizCorrect:0, avatar:'🧙', totalReadSeconds:0 }; }
 function initRP() { let r=getRP(); if(!r.level){r=getDefaultRP();setRP(r);} r.xpToNext=getXpForLevel(r.level); return r; }
+// v3.14.5 阅读时长：累加当前章节已驻留秒数进 RP（在页面可见时才计），供切章/离开时调用
+function _tickReadSeconds() {
+  if (!readStartTs) return 0;
+  // 页面不可见时不计（后台 tab 静默时段）
+  if (typeof document !== 'undefined' && document.hidden) return 0;
+  const now = Date.now();
+  if (now - lastTickTs < 800) return 0; // 节流：少于 0.8s 不动
+  const delta = Math.min(5, Math.floor((now - lastTickTs) / 1000)); // 单次最多 5s，防呆防挂机
+  if (delta > 0) {
+    readSecThisChapter += delta;
+    lastTickTs = now;
+  }
+  return readSecThisChapter;
+}
+// v3.14.5 阅读时长：切换章节/离开阅读器时，把当前章节驻留秒数持久化到 RP.totalReadSeconds
+function _flushReadSeconds() {
+  _tickReadSeconds();
+  if (readSecThisChapter > 0) {
+    try {
+      const r = getRP();
+      r.totalReadSeconds = (r.totalReadSeconds || 0) + readSecThisChapter;
+      setRP(r);
+    } catch (_) {}
+  }
+  readSecThisChapter = 0;
+  readStartTs = 0;
+  lastTickTs = 0;
+}
+
+// ─── 本周阅读目标（产品优化迭代 2026-08-02 新增）──
+// ISO 周键（YYYY-Www），跨周自然滚动，永不污染旧周
+function _isoWeekKey(d) {
+  d = d || new Date();
+  // 拷贝到本周一 00:00（ISO 周从周一开始）
+  const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = (dt.getUTCDay() + 6) % 7; // 周一=0
+  dt.setUTCDate(dt.getUTCDate() - day);
+  const year = dt.getUTCFullYear();
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Day = (jan4.getUTCDay() + 6) % 7;
+  jan4.setUTCDate(jan4.getUTCDate() - jan4Day);
+  const weekNo = Math.floor((dt - jan4) / (7 * 24 * 3600 * 1000)) + 1;
+  return `${year}-W${String(weekNo).padStart(2, '0')}`;
+}
+function _getWeekReadSec() {
+  const wk = safeGet('bk_read_week', {});
+  return wk[_isoWeekKey()] || 0;
+}
+function _addWeekReadSec(delta) {
+  if (!delta || delta <= 0) return;
+  const wk = safeGet('bk_read_week', {});
+  const k = _isoWeekKey();
+  wk[k] = (wk[k] || 0) + delta;
+  // 只保留近 8 周，防 localStorage 无限增长
+  const keys = Object.keys(wk).sort().reverse();
+  if (keys.length > 8) {
+    for (let i = 8; i < keys.length; i++) delete wk[keys[i]];
+  }
+  safeSet('bk_read_week', wk);
+}
+// 触发累加 + 实时刷新阅读器顶部目标条（在 _tickReadSeconds 节流后调用）
+function _tickWeekGoal() {
+  // 单独维护一个"已计入本周桶"的秒数，避免 _flushReadSeconds 清零后重复加
+  if (typeof _weekBucketDelta === 'undefined') _weekBucketDelta = 0;
+  // 计算本次应累加 delta：当前 readSecThisChapter 减去上次已累计
+  if (typeof _weekBucketBase === 'undefined') _weekBucketBase = 0;
+  const pending = readSecThisChapter - _weekBucketBase;
+  if (pending > 0) {
+    _addWeekReadSec(pending);
+    _weekBucketBase = readSecThisChapter;
+  }
+  _renderReadGoalBar();
+}
+function _renderReadGoalBar() {
+  const bar = document.getElementById('readGoalBar');
+  if (!bar) return;
+  const sec = _getWeekReadSec();
+  // 默认目标 30 分钟/周；用户可在 console：localStorage.setItem('bk_read_goal_min', 60)
+  const goalMin = parseInt(safeGet('bk_read_goal_min', 30), 10) || 30;
+  const goalSec = goalMin * 60;
+  const cur = Math.floor(sec / 60);
+  // 不再硬截断 100%：保留真实进度，让超额用户看到自己超越目标多少
+  const pctRaw = goalSec > 0 ? (sec / goalSec) * 100 : 0;
+  const pctDisplay = Math.round(pctRaw);
+  const isDone = pctRaw >= 100;
+  // 颜色：未达 60% 蓝，达 100% 金，超额 120% 加紫红强调
+  let color, label;
+  if (pctRaw >= 120) {
+    color = '#a855f7'; // 紫：超额达人
+    const overMin = Math.floor(sec / 60) - goalMin;
+    label = `🚀 超越目标 ${overMin} 分钟 · 太卷了！`;
+  } else if (isDone) {
+    color = 'var(--gold)';
+    label = `✅ 本周阅读目标已完成`;
+  } else if (pctRaw >= 60) {
+    color = 'var(--green)';
+    label = `📈 本周已读 ${cur} 分钟 · 目标 ${goalMin} 分钟`;
+  } else {
+    color = 'var(--blue)';
+    label = `📈 本周已读 ${cur} 分钟 · 目标 ${goalMin} 分钟`;
+  }
+  bar.innerHTML = `
+    <div class="rgb-row" role="status" aria-live="polite" aria-label="${label}">
+      <span class="rgb-label">${label}</span>
+      <span class="rgb-pct" style="color:${color}">${pctDisplay}%</span>
+    </div>
+    <div class="rgb-track"><div class="rgb-fill" style="width:${Math.min(100, pctDisplay)}%;background:${color}"></div></div>
+  `;
+}
 function getXpForLevel(lvl) { return Math.floor(50*Math.pow(1.2,lvl-1)); }
 function calcLevel(xpTotal) {
   let lvl=1, needed=50;
@@ -1059,8 +1639,8 @@ function updateRpgHud(){const r=initRP(),h=$('rpgHud');if(!h)return;const pct=r.
 // ─── 进度系统 ──────────────────────────────────
 const PK='bk_prog';
 function getP(){try{return JSON.parse(localStorage.getItem(PK)||'{}');}catch{return {};}}
-function setP(p){localStorage.setItem(PK,JSON.stringify(p));}
-function markRead(bid,f){const p=getP();if(!p[bid])p[bid]=[];if(!p[bid].includes(f)){p[bid].push(f);setP(p);const r=getRP();if(!r.level){setRP(getDefaultRP());}r.totalRead=(r.totalRead||0)+1;setRP(r);addXP(10,'📖');checkAchievements();}updateProgress();}
+function setP(p){safeSet(PK,p);}
+function markRead(bid,f){const p=getP();if(!p[bid])p[bid]=[];const isNew=!p[bid].includes(f);if(isNew){p[bid].push(f);setP(p);const r=getRP();if(!r.level){setRP(getDefaultRP());}r.totalRead=(r.totalRead||0)+1;setRP(r);addXP(10,'📖');checkAchievements();}updateProgress();return isNew;}
 function unmarkRead(bid,f){const p=getP();if(p[bid]){p[bid]=p[bid].filter(x=>x!==f);setP(p);}updateProgress();}
 function isRead(bid,f){const p=getP();return p[bid]&&p[bid].includes(f);}
 function chProgress(bid){const b=MANIFEST?.books.find(x=>x.id===bid);if(!b||!b.chapters.length)return 0;const p=getP();const d=(p[bid]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;return d/b.chapters.length;}
@@ -1189,6 +1769,13 @@ const ACHIEVEMENTS={
   quiz_guru:{icon:'🎯',name:'测验宗师',desc:'答对200道',check:(r)=>r.totalQuizCorrect>=200},
   full_book:{icon:'🎉',name:'完成一本书',desc:'读完一本书全部章节',check:(r)=>checkAnyBookComplete()},
   all_books:{icon:'👑',name:'六艺精通',desc:'六本书全部完成',check:(r)=>checkAllBooksComplete()},
+  // v3.14.5 阅读时长：累计阅读满 30 分钟解锁
+  focused_30min:{icon:'⏱️',name:'专注读者',desc:'累计阅读满 30 分钟',check:(r)=>(r.totalReadSeconds||0)>=1800},
+  focused_3hr:{icon:'🕰️',name:'沉浸学者',desc:'累计阅读满 3 小时',check:(r)=>(r.totalReadSeconds||0)>=10800},
+  // v3.14.6 测验连击：达到连击里程碑解锁
+  streak_5:{icon:'🔥',name:'小试牛刀',desc:'测验达成 5 连击',check:(r)=>(r.bestQuizStreak||0)>=5},
+  streak_10:{icon:'🔥',name:'势如破竹',desc:'测验达成 10 连击',check:(r)=>(r.bestQuizStreak||0)>=10},
+  streak_20:{icon:'🌋',name:'连击大师',desc:'测验达成 20 连击',check:(r)=>(r.bestQuizStreak||0)>=20},
 };
 function getTotalChapters(){return MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;}
 function checkAnyBookComplete(){if(!MANIFEST)return false;const p=getP();for(const b of MANIFEST.books){const d=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;if(d>=b.chapters.length)return true;}return false;}
@@ -1200,15 +1787,140 @@ function openAchievements(){const r=getRP();if(!r.achievements)r.achievements={}
 // ─── 每日任务 ──────────────────────────────
 const $=id=>document.getElementById(id);
 const $$=s=>document.querySelectorAll(s);
-function getDailyQuests(){return[{id:'daily_read',icon:'📖',name:'每日阅读',desc:'读一章',check:(r)=>true,reward:'+20 XP'},{id:'daily_quiz',icon:'🧪',name:'测验',desc:'答对3题',check:(r)=>(r.totalQuizCorrect||0)>=3}];}
-function openQuests(){const r=getRP();if(!r.quests)r.quests={};const qs=getDailyQuests();let h='<div class="quest-list">';for(const q of qs){const done=r.quests[q.id];h+=`<div class="quest-item ${done?'completed':''}"><div class="qi-icon">${q.icon}</div><div class="qi-info"><div class="qi-name">${q.name}</div><div class="qi-desc">${q.desc}</div><div class="qi-reward">🎁 ${q.reward}</div></div>${done?'✅':''}</div>`;}h+='</div>';showOverlay('panel-quest','📋 每日任务',h);}
+// 今日答对计数（每日任务 daily_quiz 用真实今日累计判定）
+function _incDailyQuiz() {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const dk = safeGet('bk_daily_quiz', {});
+    dk[today] = (dk[today] || 0) + 1;
+    safeSet('bk_daily_quiz', dk);
+  } catch (_) {}
+}
+function _getTodayReadFlag() {
+  return safeGet('bk_today_read') === new Date().toISOString().slice(0, 10);
+}
+function _getTodayQuizCorrect() {
+  const today = new Date().toISOString().slice(0, 10);
+  const dk = safeGet('bk_daily_quiz', {});
+  return dk[today] || 0;
+}
+function _getTodayReadSec() {
+  const wk = safeGet('bk_read_week', {});
+  const k = (typeof _isoWeekKey === 'function') ? _isoWeekKey() : '';
+  const flushed = wk[k] || 0;
+  const live = (typeof readSecThisChapter !== 'undefined') ? readSecThisChapter : 0;
+  return flushed + live;
+}
+function getDailyQuests(){
+  const todayRead = _getTodayReadFlag();
+  const todayQuiz = _getTodayQuizCorrect();
+  const todaySec = _getTodayReadSec();
+  const quests = [
+    {id:'daily_read', icon:'📖', name:'每日阅读', desc:'读一章', progress: todayRead ? '1/1' : '0/1', reward:'+20 XP', done: todayRead},
+    {id:'daily_quiz', icon:'🧪', name:'测验打卡', desc:'今日答对 3 题', progress: Math.min(3, todayQuiz) + '/3', reward:'+15 XP', done: todayQuiz >= 3},
+    {id:'daily_streak_min', icon:'⏱️', name:'今日专注', desc:'累计阅读 ≥ 5 分钟', progress: Math.min(5, Math.floor(todaySec/60)) + '/5 分', reward:'+10 XP', done: todaySec >= 300},
+  ];
+  return quests;
+}
+function openQuests(){
+  const r=getRP();if(!r.quests)r.quests={};
+  const qs=getDailyQuests();
+  const today=new Date().toISOString().slice(0,10);
+  const lastQuestDay=safeGet('bk_quests_day');
+  if(lastQuestDay && lastQuestDay!==today){r.quests={};setRP(r);}
+  safeSet('bk_quests_day', today);
+  const completedCount=qs.filter(function(q){return q.done;}).length;
+  let h='<div class="quest-list">';
+  for(let i=0;i<qs.length;i++){
+    const q=qs[i];
+    const done=q.done;
+    const row='<div class="quest-item '+(done?'completed':'')+'">'
+      +'<div class="qi-icon">'+q.icon+'</div>'
+      +'<div class="qi-info">'
+        +'<div class="qi-name">'+q.name+' <span style="float:right;font-size:10px;color:'+(done?'var(--green)':'var(--text3)')+';font-weight:600">'+q.progress+'</span></div>'
+        +'<div class="qi-desc">'+q.desc+'</div>'
+        +'<div class="qi-reward">🎁 '+q.reward+(done?' · ✅ 已完成':' · ⏳ 待完成')+'</div>'
+      +'</div></div>';
+    h+=row;
+  }
+  h+='</div>';
+  if(completedCount===qs.length){
+    h+='<div style="margin-top:14px;padding:10px;background:var(--bg3);border-radius:8px;text-align:center;font-size:12px;color:var(--green)">🎉 今日三任务全部完成！坚持就是胜利。</div>';
+  } else {
+    h+='<div style="margin-top:10px;font-size:11px;color:var(--text3);text-align:center">📅 '+today+' · '+completedCount+'/'+qs.length+' 完成</div>';
+  }
+  showOverlay('panel-quest','📋 每日任务',h);
+}
 
 // ─── Stats ──────────────────────────────
-function openStats(){const tp=totalP();const totalCh=MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;const p=getP();let totalRead=0;for(const b of MANIFEST.books)totalRead+=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;const r=initRP();const achCount=Object.values(r.achievements||{}).filter(v=>v).length;const content=`<div class="stats-grid"><div class="stat-card"><div class="sc-num">${totalRead}</div><div class="sc-label">✅ 已通关</div></div><div class="stat-card"><div class="sc-num">${totalCh-totalRead}</div><div class="sc-label">📖 未读</div></div><div class="stat-card"><div class="sc-num">${MANIFEST.books.length}</div><div class="sc-label">📚 书塔</div></div><div class="stat-card"><div class="sc-num">${Math.round(tp*100)}%</div><div class="sc-label">📊 总进度</div></div></div><div style="text-align:center;margin:14px 0"><span style="font-size:36px">${r.avatar}</span><div style="font-size:14px;font-weight:600;margin:4px 0">Lv.${r.level} · 🧪 ${r.xp}/${r.xpToNext} XP</div><div style="font-size:11px;color:var(--text2)">🏆 ${achCount} 成就 · 🧪 ${r.totalQuizCorrect||0} 测验</div></div>`;showOverlay('panel-stats','📊 训练报告',content);}
+function openStats(){const tp=totalP();const totalCh=MANIFEST?MANIFEST.books.reduce((s,b)=>s+b.chapters.length,0):0;const p=getP();let totalRead=0;for(const b of MANIFEST.books)totalRead+=(p[b.id]||[]).filter(f=>b.chapters.some(c=>c.file===f)).length;const r=initRP();const achCount=Object.values(r.achievements||{}).filter(v=>v).length;const content=`<div class="stats-grid"><div class="stat-card"><div class="sc-num">${totalRead}</div><div class="sc-label">✅ 已通关</div></div><div class="stat-card"><div class="sc-num">${totalCh-totalRead}</div><div class="sc-label">📖 未读</div></div><div class="stat-card"><div class="sc-num">${MANIFEST.books.length}</div><div class="sc-label">📚 书塔</div></div><div class="stat-card"><div class="sc-num">${Math.round(tp*100)}%</div><div class="sc-label">📊 总进度</div></div></div><div style="text-align:center;margin:14px 0"><span style="font-size:36px">${r.avatar}</span><div style="font-size:14px;font-weight:600;margin:4px 0">Lv.${r.level} · 🧪 ${r.xp}/${r.xpToNext} XP</div><div style="font-size:11px;color:var(--text2)">🏆 ${achCount} 成就 · 🧪 ${r.totalQuizCorrect||0} 测验 · 🔥 最高连击 ${r.bestQuizStreak||0} · ⏱️ 累计阅读 ${Math.floor((r.totalReadSeconds||0)/60)} 分钟</div></div>`;showOverlay('panel-stats','📊 训练报告',content);}
 
 // ═══════════════════════════════════════════════════════════════════
 //  🏠 Dashboard 首页渲染（对标参考站风格）
 // ═══════════════════════════════════════════════════════════════════
+
+// 渲染首页"继续阅读"入口卡片。如无最近阅读记录则不渲染。
+function renderContinueReading() {
+  const sec = $('principlesSection');
+  if (!sec) return;
+  // 移除旧条目（重渲染时）
+  const old = document.getElementById('continueReadingSection');
+  if (old) old.remove();
+
+  const last = safeGet('bk_last_read');
+  if (!last || !last.bookId || typeof last.chapterIdx !== 'number') return;
+  // MANIFEST 尚未就绪时跳过
+  const books = (typeof MANIFEST !== 'undefined' && MANIFEST && MANIFEST.books) ? MANIFEST.books : null;
+  if (!books) return;
+  const book = books.find(b => b.id === last.bookId);
+  if (!book || !book.chapters[last.chapterIdx]) return;
+  const ch = book.chapters[last.chapterIdx];
+  const total = book.chapters.length;
+  const idx = Math.max(0, Math.min(last.chapterIdx, total - 1));
+  const pct = Math.round(((idx + 1) / total) * 100);
+  // 时间格式化
+  let timeLabel = '';
+  if (last.ts) {
+    const diff = Date.now() - last.ts;
+    const min = Math.floor(diff / 60000);
+    if (min < 1) timeLabel = '刚刚';
+    else if (min < 60) timeLabel = `${min} 分钟前`;
+    else if (min < 60 * 24) timeLabel = `${Math.floor(min / 60)} 小时前`;
+    else timeLabel = `${Math.floor(min / 1440)} 天前`;
+  }
+  const html = `
+    <div id="continueReadingSection" class="continue-reading">
+      <div class="section-divider"><span class="sd-label">📖 继续阅读</span><div class="sd-line"></div></div>
+      <div class="cr-card ios-press" onclick="resumeLastRead()" role="button" tabindex="0" aria-label="继续阅读 ${escapeAttr(book.title)} 第 ${idx + 1} 节">
+        <div class="cr-icon">📚</div>
+        <div class="cr-body">
+          <div class="cr-book">${escapeHTML(book.title || book.id)}</div>
+          <div class="cr-chapter">第 ${idx + 1}/${total} 节 · ${escapeHTML(ch.title || '')}</div>
+          <div class="cr-bar"><div class="cr-bar-fill" style="width:${pct}%"></div></div>
+          <div class="cr-meta">
+            <span>${pct}% · ${timeLabel || '继续上次的进度'}</span>
+            <span class="cr-arrow">继续 →</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  sec.insertAdjacentHTML('beforebegin', html);
+}
+
+// 点击"继续阅读"卡片：跳转到上次记录的章节
+function resumeLastRead() {
+  const last = safeGet('bk_last_read');
+  if (!last || !last.bookId) return;
+  const books = (typeof MANIFEST !== 'undefined' && MANIFEST && MANIFEST.books) ? MANIFEST.books : null;
+  if (!books) return;
+  const book = books.find(b => b.id === last.bookId);
+  if (!book || !book.chapters[last.chapterIdx]) return;
+  // 设置当前书与章节并跳转
+  currentBookId = last.bookId;
+  openChapter(last.chapterIdx);
+  // 跳转后给出视觉反馈，让用户明确感知"接上了之前的进度"
+  setTimeout(() => showToast(`📖 已回到《${book.title || book.id}》第 ${last.chapterIdx + 1} 节`, 2400), 80);
+}
 
 function renderDashboard() {
   currentModule = 'dashboard';
@@ -1233,6 +1945,9 @@ function renderDashboard() {
     const existing = document.getElementById('heroVersion');
     if (existing) existing.textContent = `${APP_VERSION} · ${APP_DATE}`;
   }
+
+  // ── 📖 继续阅读（如有最近阅读记录） ──
+  renderContinueReading();
 
   // ── ⚡ 核心原则 ──
   $('principlesSection').innerHTML = `
@@ -1312,14 +2027,73 @@ function renderDashboard() {
         <span class="mc-tag" style="border-color:rgba(255,214,10,.3);color:var(--gold)">教练系统</span>
       </div>
       <div class="mc-foot"><span>🏆 6专家 · 21轮研讨</span><span class="mc-arrow">进入教练工作台 →</span></div>
-    </div>` + TRAIN_MODULES.filter(m=>m.id!=='coach').map(m => {
+    }</div>` + TRAIN_MODULES.filter(m=>m.id!=='coach').map(m => {
     const colors = {'var(--blue)':'#4f9aff','var(--green)':'#3dd68c','var(--purple)':'#a855f7','var(--orange)':'#f59e0b','var(--red)':'#f06060'};
     const c = colors[m.color]||'#4f9aff';
-    return `<div class="module-card" onclick="openTrainModule('${m.id}')" style="border-top:3px solid ${c}">
+    // 计算模块进度：累加映射书籍下已完成章节数 / 该模块声明的章节数
+    const total = m.chapters.length || m.docs || 0;
+    let done = 0;
+    if (m.books && m.books.length && typeof MANIFEST !== 'undefined' && MANIFEST) {
+      const p = (typeof getP === 'function') ? getP() : {};
+      for (const bid of m.books) {
+        const book = MANIFEST.books.find(x => x.id === bid);
+        if (!book) continue;
+        const readFiles = (p[bid] || []);
+        done += book.chapters.filter(ch => readFiles.includes(ch.file)).length;
+      }
+    }
+    const pct = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
+    const progressHTML = total ? `
+      <div class="mc-progress" aria-label="模块完成度 ${pct}%">
+        <div class="mc-progress-bar"><div class="mc-progress-fill" style="width:${pct}%;background:${c}"></div></div>
+        <div class="mc-progress-meta"><span>${done}/${total} 节</span><span style="color:${c};font-weight:600">${pct}%</span></div>
+      </div>` : '';
+    // 计算"继续下一节"按钮：找该模块映射书籍里的第一个未读章节
+    let nextActionHTML = '';
+    if (m.books && m.books.length && typeof MANIFEST !== 'undefined' && MANIFEST && total) {
+      const prog = (typeof getP === 'function') ? getP() : {};
+      let nextTarget = null; // { bookId, chIdx, title }
+      // 优先：模块内第一本未完成书的第一个未读章节
+      for (const bid of m.books) {
+        const book = MANIFEST.books.find(x => x.id === bid);
+        if (!book) continue;
+        const read = prog[bid] || [];
+        const idx = book.chapters.findIndex(ch => !read.includes(ch.file));
+        if (idx >= 0) { nextTarget = { bookId: bid, chIdx: idx, title: (book.chapters[idx].title || ('第' + (idx+1) + '节')) }; break; }
+      }
+      const isComplete = pct >= 100;
+      if (isComplete) {
+        // 🔄 完成态对称闭环：给一个「重读最后一节」的具体去处，避免完成态用户只剩「回顾」空按钮
+        let lastTarget = null;
+        for (const bid of m.books) {
+          const book = MANIFEST.books.find(x => x.id === bid);
+          if (!book) continue;
+          const lastIdx = book.chapters.length - 1;
+          if (lastIdx >= 0) lastTarget = { bookId: bid, chIdx: lastIdx, title: (book.chapters[lastIdx].title || ('第' + (lastIdx+1) + '节')) };
+        }
+        if (lastTarget) {
+          const titleRaw = lastTarget.title || ('第 ' + (lastTarget.chIdx+1) + ' 节');
+          const titleShort = titleRaw.length > 14 ? (titleRaw.slice(0, 13) + '…') : titleRaw;
+          nextActionHTML = `<button class="mc-cta mc-cta-done" onclick="event.stopPropagation();openModuleChapterById('${m.id}','${lastTarget.bookId}',${lastTarget.chIdx})" aria-label="重读最后一节">🔄 重读最后一节 · ${escapeHTML(titleShort)}</button>`;
+        } else {
+          nextActionHTML = `<button class="mc-cta mc-cta-done" onclick="event.stopPropagation();openTrainModule('${m.id}')" aria-label="回顾已完成模块">✅ 已完成 · 回顾</button>`;
+        }
+      } else if (nextTarget) {
+        const titleRaw = nextTarget.title || ('第 ' + (nextTarget.chIdx+1) + ' 节');
+        const titleShort = titleRaw.length > 14 ? (titleRaw.slice(0, 13) + '…') : titleRaw;
+        // 直接调 openModuleChapterById，跳过 topic 模运算的取模路径
+        nextActionHTML = `<button class="mc-cta" style="--cta:${c}" onclick="event.stopPropagation();openModuleChapterById('${m.id}','${nextTarget.bookId}',${nextTarget.chIdx})" aria-label="继续第 ${nextTarget.chIdx+1} 节">▶ 继续第 ${nextTarget.chIdx+1} 节 · ${escapeHTML(titleShort)}</button>`;
+      } else {
+        nextActionHTML = `<button class="mc-cta mc-cta-start" style="--cta:${c}" onclick="event.stopPropagation();openModuleTopic('${m.id}',0)" aria-label="开始第 1 节">🚀 开始第 1 节</button>`;
+      }
+    }
+    return `<div class="module-card ${pct>=100?'module-complete':''}" onclick="openTrainModule('${m.id}')" style="border-top:3px solid ${c}">
       <div class="mc-icon">${m.icon}</div>
-      <div class="mc-title">${m.title}</div>
+      <div class="mc-title">${m.title}${pct>=100?' <span class="mc-badge-done">已完成</span>':''}</div>
       <div class="mc-desc">${m.desc}</div>
       <div class="mc-tags">${m.tags.map(t=>`<span class="mc-tag" style="border-color:${c}20;color:${c}">${t}</span>`).join('')}</div>
+      ${progressHTML}
+      ${nextActionHTML}
       <div class="mc-foot"><span>📖 ${m.docs} 教学文档</span><span class="mc-arrow">查看详情 →</span></div>
     </div>`;
   }).join('');
@@ -1403,24 +2177,17 @@ function renderSidebar() {
   html += '<div class="side-section side-section-links">';
   html += `<div class="side-link ${currentModule==='dashboard'?'active':''}" onclick="goHome()"><span class="sl-icon">🏠</span> 首页</div>`;
   html += `<div class="side-link ${currentModule==='coach'?'active':''}" onclick="openCoach()"><span class="sl-icon">🎯</span> 教练系统</div>`;
-  const curRole = getCurrentRole();
-  const roleIcon = curRole?.role === 'principal' ? '🏛️' : curRole?.role === 'coach' ? '👨‍🏫' : curRole?.role === 'student' ? '🧑‍🎓' : '🎭';
-  html += `<div class="side-link ${currentModule==='role-dashboard'?'active':''}" onclick="openRoleCenter()"><span class="sl-icon">${roleIcon}</span> 角色中心</div>`;
-  html += '</div>';
-
-  // ── 阅读（折叠）──
-  const isReadingActive = currentModule === 'book' || currentBookId;
-  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">📚 阅读</div>`;
-  html += `<div class="side-collapsible" ${isReadingActive?'':'style="display:none"'}>${renderBookListItems()}</div>`;
+  html += `<div class="side-link" onclick="openEyeSystem()"><span class="sl-icon">🐑</span> 🐑眼系统</div>`;
+  html += `<div class="side-link" onclick="showLibrary()"><span class="sl-icon">📖</span> 阅读</div>`;
   html += '</div>';
 
   // ── 训练系统（折叠）──
-  const isTrainingActive = ['badminton-tech','strength','psychology','nutrition','competition'].includes(currentModule);
+  const isTrainingActive = ['badminton-tech','strength','psychology','nutrition','competition','personal'].includes(currentModule);
   html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">💪 训练系统</div>`;
   html += `<div class="side-collapsible" ${isTrainingActive?'':'style="display:none"'}>${renderTrainingItems()}</div>`;
   html += '</div>';
 
-  // ── 工具（折叠）──
+  // ── 工具集（折叠）──
   html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">🛠️ 工具集</div>`;
   html += `<div class="side-collapsible" style="display:none">${renderToolItems()}</div>`;
   html += '</div>';
@@ -1443,6 +2210,104 @@ function renderTrainingItems() {
   return TRAIN_MODULES.filter(m=>m.id!=='coach').map(m => {
     return `<div class="side-link sub ${currentModule===m.id?'active':''}" onclick="openTrainModule('${m.id}')"><span class="sl-icon">${m.icon}</span> ${m.title}</div>`;
   }).join('');
+}
+
+// 🐑眼系统 - 观察者视角
+function openEyeSystem() {
+  showView('book');
+  currentModule = 'eye';
+  navStack.push({view:'dashboard'});
+  historyPush('eye', {});
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
+    <h1>🐑 🐑眼系统</h1>
+    <div class="vm">观察者视角 · 全局洞察 · 趋势分析</div>`;
+  $('bookStats').innerHTML = `
+    <div class="bs-item"><span class="bs-num">📊</span><span class="bs-label">数据总览</span></div>
+    <div class="bs-item"><span class="bs-num">📈</span><span class="bs-label">趋势追踪</span></div>
+    <div class="bs-item"><span class="bs-num">🎯</span><span class="bs-label">目标进度</span></div>`;
+  $('contentGrid').innerHTML = `
+    <div class="calc-card" style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--purple);border-radius:var(--radius);padding:16px;grid-column:1/-1">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div style="font-size:32px">🐑</div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;color:var(--purple)">🐑眼系统 · 观察者视角</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.5">
+            从全局视角观察训练数据、学习进度、能力成长趋势<br>
+            📊 仪表盘 · 📈 趋势图 · 🎯 目标追踪
+          </div>
+        </div>
+        <button onclick="openEyeDashboard()" class="tb-btn" style="font-size:12px;padding:6px 14px;background:var(--purple);color:#fff;border:none;font-weight:600">🚀 打开仪表盘</button>
+      </div>
+    </div>
+    <div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text3)">功能开发中...</div>`;
+}
+
+function openEyeDashboard() {
+  // 获取学习数据
+  const rp = getRP();
+  const p = getP();
+  const totalXp = rp.xp || 0;
+  const level = rp.level || 1;
+  const streak = rp.streak || 0;
+  
+  // 计算阅读进度
+  let totalRead = 0, totalChapters = 0;
+  if (MANIFEST) {
+    MANIFEST.books.forEach(b => {
+      totalChapters += b.chapters.length;
+      const readList = p[b.id] || [];
+      totalRead += b.chapters.filter(c => readList.includes(c.file)).length;
+    });
+  }
+  
+  showOverlay('panel panel-wide', '🐑 观察者仪表盘',
+    `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--purple)">Lv.${level}</div>
+        <div style="font-size:10px;color:var(--text2)">当前等级</div>
+      </div>
+      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--gold)">${totalXp}</div>
+        <div style="font-size:10px;color:var(--text2)">总经验值</div>
+      </div>
+      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--green)">${streak}</div>
+        <div style="font-size:10px;color:var(--text2)">连续学习天数</div>
+      </div>
+    </div>
+    <div style="background:var(--bg3);padding:12px;border-radius:10px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:600;margin-bottom:8px">📖 阅读进度</div>
+      <div style="background:var(--bg);height:8px;border-radius:4px;overflow:hidden">
+        <div style="width:${totalChapters?Math.round(totalRead/totalChapters*100):0}%;background:var(--blue);height:100%"></div>
+      </div>
+      <div style="font-size:10px;color:var(--text2);margin-top:4px">${totalRead} / ${totalChapters} 章节 (${totalChapters?Math.round(totalRead/totalChapters*100):0}%)</div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--text3)">更多分析功能开发中...</div>`);
+}
+
+// 阅读中心
+function renderLibraryContent() {
+  if (!MANIFEST) return '<div style="padding:20px;text-align:center;color:var(--text2)">加载中...</div>';
+  const books = MANIFEST.books.filter(b => TOWER_BOOKS.includes(b.id));
+  const p = getP();
+  return books.map(b => {
+    const progress = chProgress(b.id);
+    const readCount = (p[b.id] || []).length;
+    return `<div class="chapter-card fade-in" onclick="goToBook('${b.id}')" style="cursor:pointer">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${b.color||'var(--blue)'};opacity:.6"></div>
+      <div style="font-size:32px;margin-bottom:8px">${b.emoji}</div>
+      <div class="cc-title" style="font-size:14px;font-weight:600">${b.title}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">${b.chapters.length} 章 · 已读 ${readCount}</div>
+      <div style="background:var(--bg);height:4px;border-radius:2px;margin-top:8px;overflow:hidden">
+        <div style="width:${Math.round(progress*100)}%;background:${b.color||'var(--blue)'};height:100%"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showLibrary() {
+  showView('library');
+  $('libraryContent').innerHTML = renderLibraryContent();
 }
 
 function renderToolItems() {
@@ -1493,7 +2358,11 @@ function openTrainModule(modId) {
     <div class="bs-item"><span class="bs-num">${mod.chapters.length}</span><span class="bs-label">📖 训练主题</span></div>
     <div class="bs-item"><span class="bs-num">${mod.tags.length}</span><span class="bs-label">🏷️ 核心标签</span></div>
     <div class="bs-item"><span class="bs-num">${mod.docs}</span><span class="bs-label">📚 教学文档</span></div>
-    ${(modId==='nutrition'||modId==='competition') ? `<div class="bs-item" style="cursor:pointer;background:var(--bg3);border-radius:6px;padding:4px 8px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><span class="bs-num">🛠️</span><span class="bs-label">交互工具</span></div>` : ''}`;
+    ${(modId==='nutrition'||modId==='competition') ? `<div class="bs-item" style="cursor:pointer;background:var(--bg3);border-radius:6px;padding:4px 8px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><span class="bs-num">🛠️</span><span class="bs-label">交互工具</span></div>` : ''}
+    ${modId==='strength' ? `<div class="bs-item" style="cursor:pointer;background:var(--green);color:#fff;border-radius:6px;padding:4px 8px" onclick="openStrengthHub()"><span class="bs-num">🩺</span><span class="bs-label">疲劳/周期</span></div>` : ''}
+    ${modId==='psychology' ? `<div class="bs-item" style="cursor:pointer;background:var(--purple);color:#fff;border-radius:6px;padding:4px 8px" onclick="openPsychHub()"><span class="bs-num">🧠</span><span class="bs-label">心理规划</span></div>` : ''}
+    ${modId==='nutrition' ? `<div class="bs-item" style="cursor:pointer;background:var(--orange);color:#fff;border-radius:6px;padding:4px 8px" onclick="openNutrHub()"><span class="bs-num">🍎</span><span class="bs-label">营养规划</span></div>` : ''}
+    ${modId==='personal' ? `<div class="bs-item" style="cursor:pointer;background:var(--blue);color:#fff;border-radius:6px;padding:4px 8px" onclick="openPersonalHub()"><span class="bs-num">👤</span><span class="bs-label">个人计划</span></div>` : ''}`;
   const toolBtn = (modId==='nutrition'||modId==='competition') ? `<div class="calc-card" style="grid-column:1/-1;background:linear-gradient(135deg,var(--bg2),var(--bg3));border:2px solid ${mod.color};border-radius:var(--radius);padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px" onclick="${modId==='nutrition'?'openNutritionTools()':'openCompetitionTools()'}"><div style="font-size:32px">${modId==='nutrition'?'🍎':'🏆'}</div><div style="flex:1"><div style="font-size:14px;font-weight:600;color:${mod.color}">${modId==='nutrition'?'营养交互工具集':'比赛交互工具集'}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">${modId==='nutrition'?'餐食计算器·出汗率计算·补剂时间表':'赛前清单·对手弱点·赛后自评'}</div></div><div style="font-size:18px">→</div></div>` : '';
   $('contentGrid').innerHTML = toolBtn + mod.chapters.map((title, i) => `
     <div class="chapter-card fade-in" onclick="openModuleTopic('${mod.id}',${i})">
@@ -1506,6 +2375,24 @@ function openTrainModule(modId) {
 }
 
 // ─── 模块主题（跳转到对应书籍章节） ──────
+// v3.14.3 — 凭 bookId+chIdx 精准跳转，绕过 topicIdx 取模路径（首页"继续下一节"按钮使用）
+function openModuleChapterById(modId, bookId, chIdx) {
+  const mod = TRAIN_MODULES.find(m => m.id === modId);
+  if (!mod || !MANIFEST) return;
+  const book = MANIFEST.books.find(b => b.id === bookId);
+  if (!book || !book.chapters[chIdx]) return;
+  // 记录模块访问（行为与 openModuleTopic 一致）
+  try {
+    const rp = getRP();
+    if (!rp.visitedModules) rp.visitedModules = [];
+    if (!rp.visitedModules.includes(modId)) { rp.visitedModules.push(modId); setRP(rp); }
+  } catch (_) {}
+  navStack.push({ view: 'module', moduleId: modId });
+  currentBookId = bookId;
+  currentModule = 'tower';
+  openChapter(chIdx);
+}
+
 function openModuleTopic(modId, topicIdx) {
   const mod = TRAIN_MODULES.find(m=>m.id===modId);
   if (!mod || !MANIFEST) return;
@@ -1579,7 +2466,38 @@ function renderModuleInline(mod, topicIdx) {
   $('article').innerHTML = html;
   $('content').scrollTo({top:0,behavior:'smooth'});
   updateProgress();
+  // 进度条归零：新章节从 0 开始
+  const _rpFill = $('rpFill'); const _rpThumb = $('rpThumb'); const _rpBar = $('readProgress');
+  if (_rpFill) _rpFill.style.width = '0%';
+  if (_rpThumb) _rpThumb.style.left = '0%';
+  if (_rpBar) _rpBar.classList.remove('show');
+  // 与 openChapter 对齐：内联模块同样按节计数（不污染 books 进度），首次阅读给 XP + toast
+  const _isNewModuleRead = markModuleRead(mod.id, topicIdx);
+  if (_isNewModuleRead) {
+    showToast(`✅ 已读完《${mod.title}》第 ${topicIdx+1} 节 · +XP 10`, 2400);
+    const pos = document.getElementById('chapterPos');
+    if (pos) {
+      pos.classList.remove('pulse-read');
+      void pos.offsetWidth;
+      pos.classList.add('pulse-read');
+      setTimeout(() => pos.classList.remove('pulse-read'), 1400);
+    }
+  }
   historyPush('module-inline', {moduleId: mod.id, topicIdx: topicIdx});
+}
+
+// 模块内联阅读计数（仅在 rpgData 里累加，不动 books 进度，因为 MODULE_CONTENT 不是真实书籍）
+function markModuleRead(modId, idx) {
+  const r = getRP();
+  if (!r.moduleRead) r.moduleRead = {};
+  const key = `${modId}::${idx}`;
+  if (r.moduleRead[key]) return false;
+  r.moduleRead[key] = Date.now();
+  r.totalRead = (r.totalRead || 0) + 1;
+  setRP(r);
+  addXP(10, '📖');
+  checkAchievements();
+  return true;
 }
 
 // ─── 营养交互工具集 ────────
@@ -1991,11 +2909,37 @@ function openLevelDetail(levelId) {
 }
 
 // ─── 学员问卷 v3.7.7 (3 步 · 水平/伤病/优势) ─────────────
-let _profileDraft = { level: null, injuries: [], strengths: [] };
+// v3.13.1: 草稿持久化 — 填到一半刷新/误关不再丢失
+const PROFILE_DRAFT_KEY = 'lamb_student_profile_draft_v1';
+function loadProfileDraft() {
+  try {
+    const raw = localStorage.getItem(PROFILE_DRAFT_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    if (!d || typeof d !== 'object') return null;
+    return {
+      level: d.level || null,
+      injuries: Array.isArray(d.injuries) ? d.injuries : [],
+      strengths: Array.isArray(d.strengths) ? d.strengths : [],
+    };
+  } catch { return null; }
+}
+function saveProfileDraft() {
+  try { localStorage.setItem(PROFILE_DRAFT_KEY, JSON.stringify(_profileDraft)); } catch {}
+}
+function clearProfileDraft() {
+  try { localStorage.removeItem(PROFILE_DRAFT_KEY); } catch {}
+}
+let _profileDraft = loadProfileDraft() || { level: null, injuries: [], strengths: [] };
 function openStudentProfile() {
-  // 从 localStorage 恢复初值
-  const cur = getProfile();
-  _profileDraft = cur ? { level: cur.level, injuries: [...(cur.injuries||[])], strengths: [...(cur.strengths||[])] } : { level: null, injuries: [], strengths: [] };
+  // 优先恢复未提交的草稿；没有草稿时再用已保存的 profile 兜底
+  const draft = loadProfileDraft();
+  if (draft && (draft.level || draft.injuries.length || draft.strengths.length)) {
+    _profileDraft = draft;
+  } else {
+    const cur = getProfile();
+    _profileDraft = cur ? { level: cur.level, injuries: [...(cur.injuries||[])], strengths: [...(cur.strengths||[])] } : { level: null, injuries: [], strengths: [] };
+  }
   showOverlay('panel-md', '📋 我的个性化方案', renderProfileMain());
 }
 
@@ -2131,12 +3075,14 @@ function toggleInjury(id, on) {
   const i = _profileDraft.injuries.indexOf(id);
   if (on && i<0) _profileDraft.injuries.push(id);
   if (!on && i>=0) _profileDraft.injuries.splice(i,1);
+  saveProfileDraft();
   showOverlayContent(renderProfileStep2());
 }
 function toggleStrength(id, on) {
   const i = _profileDraft.strengths.indexOf(id);
   if (on && i<0) _profileDraft.strengths.push(id);
   if (!on && i>=0) _profileDraft.strengths.splice(i,1);
+  saveProfileDraft();
   showOverlayContent(renderProfileStep3());
 }
 function submitProfile() {
@@ -2147,6 +3093,7 @@ function submitProfile() {
     taken_at: new Date().toISOString(),
   };
   setProfile(p);
+  clearProfileDraft(); // v3.13.1: 提交后清草稿，避免下次误以为没保存
   closeProfileOverlay();
   // 顶栏提示 + 重渲 level pyramid 状态文本
   try {
@@ -2157,13 +3104,15 @@ function submitProfile() {
   showToast('✅ 已应用个性化方案 · 训练等级比重已调整');
 }
 function closeProfileOverlay() {
-  const ov = document.getElementById('_tmpOverlay');
-  if (ov) ov.remove();
+  // 关闭所有当前可见的 overlay（包括角色/profile 系列）
+  document.querySelectorAll('.overlay').forEach(o => o.remove());
 }
 // showOverlay 创建后定位 body 容器、后续调用可重渲
+// 注意：showOverlayContent 现在直接对最新一个 .overlay 生效（已移除共享 _tmpOverlay id）
 function showOverlayContent(body) {
-  const ov = document.getElementById('_tmpOverlay');
-  if (!ov) return;
+  const ovs = document.querySelectorAll('.overlay');
+  if (!ovs.length) return;
+  const ov = ovs[ovs.length - 1]; // 最新一个
   const bd = ov.querySelector('.panel-bd');
   if (bd) bd.innerHTML = body;
 }
@@ -2178,99 +3127,279 @@ function showToast(text, ms) {
   } catch(e) {}
 }
 
-// ─── 工具页面 ────────────────────────────
-function openScreening() {
+// ─── 交互式损伤筛查 v2.0 ────────────────────────────
+// 损伤部位数据
+const injuryBodyParts = {
+  shoulder: {
+    name: '肩部', icon: '💪', color: '#0a84ff',
+    questions: [
+      { id: 'pain', text: '肩部是否有疼痛？', options: [{v:0,t:'无疼痛'},{v:1,t:'轻微酸痛'},{v:2,t:'明显疼痛'},{v:3,t:'严重疼痛'}], type: 'select' },
+      { id: 'raise', text: '能否举手过头？', options: [{v:0,t:'完全没问题'},{v:1,t:'能举但受限'},{v:2,t:'只能举到肩部'},{v:3,t:'完全举不起来'}], type: 'select' },
+      { id: 'serve', text: '发球/杀球时肩部感觉？', options: [{v:0,t:'正常发力'},{v:1,t:'轻微不适'},{v:2,t:'明显酸软'},{v:3,t:'无法发力'}], type: 'select' },
+      { id: 'sound', text: '肩部是否有弹响/摩擦声？', options: [{v:0,t:'无'},{v:1,t:'偶尔有'},{v:2,t:'经常有'},{v:3,t:'每次活动都有'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '肩袖炎', symptoms: '举手过顶疼痛+夜间痛醒', severity: '中', solution: '① 弹力带外旋训练 ② 肩部保暖 ③ 暂停过头动作 ④ 每周2次理疗' },
+      { name: '肱二头肌腱炎', symptoms: '屈臂时肩前疼痛', severity: '轻', solution: '① 减轻训练量 ② 冰敷 ③ 伸展肱二头肌' },
+      { name: '肩关节不稳', symptoms: '举手时肩部"脱落感"', severity: '重', solution: '① 立刻就医 ② 停止扣杀 ③ 强化肩袖深层肌' }
+    ]
+  },
+  wrist: {
+    name: '腕部', icon: '🤲', color: '#30d158',
+    questions: [
+      { id: 'pain', text: '腕部是否有疼痛？', options: [{v:0,t:'无疼痛'},{v:1,t:'轻微酸痛'},{v:2,t:'明显疼痛'},{v:3,t:'剧痛'}], type: 'select' },
+      { id: 'grip', text: '握拍时疼痛程度？', options: [{v:0,t:'正常'},{v:1,t:'轻微不适'},{v:2,t:'明显疼痛'},{v:3,t:'无法握拍'}], type: 'select' },
+      { id: 'twist', text: '手腕扭转是否受限？', options: [{v:0,t:'完全正常'},{v:1,t:'轻微受限'},{v:2,t:'明显受限'},{v:3,t:'无法扭转'}], type: 'select' },
+      { id: 'swelling', text: '腕部是否肿胀？', options: [{v:0,t:'无'},{v:1,t:'轻微'},{v:2,t:'明显肿胀'},{v:3,t:'严重肿胀'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '网球肘(肱骨外上髁炎)', symptoms: '握拍+反手击球时腕部外侧疼痛', severity: '中', solution: '① 停止握拍发力 ② 前臂拉伸 ③ 护具固定 ④ 必要时就医' },
+      { name: '腕管综合征', symptoms: '手指麻木+夜间加重', severity: '重', solution: '① 就医检查 ② 减少手腕屈伸 ③ 营养神经' },
+      { name: '三角纤维软骨损伤', symptoms: '手腕小指侧疼痛+扭毛巾无力', severity: '中', solution: '① 护腕固定 ② 避免手腕翻转 ③ 康复训练' }
+    ]
+  },
+  waist: {
+    name: '腰部', icon: '🧘', color: '#ff9f0a',
+    questions: [
+      { id: 'pain', text: '腰部是否有疼痛？', options: [{v:0,t:'无疼痛'},{v:1,t:'轻微酸痛'},{v:2,t:'明显疼痛'},{v:3,t:'剧痛难忍'}], type: 'select' },
+      { id: 'bend', text: '弯腰是否受限？', options: [{v:0,t:'完全正常'},{v:1,t:'轻微受限'},{v:2,t:'明显受限'},{v:3,t:'无法弯腰'}], type: 'select' },
+      { id: 'twist', text: '腰部扭转是否疼痛？', options: [{v:0,t:'无'},{v:1,t:'轻微'},{v:2,t:'明显疼痛'},{v:3,t:'无法扭转'}], type: 'select' },
+      { id: 'leg', text: '是否有腿麻/放射痛？', options: [{v:0,t:'无'},{v:1,t:'偶尔'},{v:2,t:'经常'},{v:3,t:'持续麻木'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '腰肌劳损', symptoms: '久坐+弯腰酸痛+晨起僵硬', severity: '轻', solution: '① 核心训练 ② 避免久坐 ③ 热敷 ④ 拉伸髂腰肌' },
+      { name: '腰椎间盘突出', symptoms: '腰疼+腿麻+咳嗽加重', severity: '重', solution: '① 立刻就医 ② 避免弯腰搬重物 ③ 睡硬板床' },
+      { name: '急性腰扭伤', symptoms: '突然疼痛+活动受限', severity: '中', solution: '① 立刻冰敷 ② 卧床休息 ③ 48小时后热敷' }
+    ]
+  },
+  knee: {
+    name: '膝盖', icon: '🦵', color: '#ff453a',
+    questions: [
+      { id: 'pain', text: '膝盖是否有疼痛？', options: [{v:0,t:'无疼痛'},{v:1,t:'轻微酸痛'},{v:2,t:'明显疼痛'},{v:3,t:'剧痛'}], type: 'select' },
+      { id: 'stair', text: '上下楼梯感觉？', options: [{v:0,t:'完全正常'},{v:1,t:'轻微不适'},{v:2,t:'明显疼痛'},{v:3,t:'无法上下楼'}], type: 'select' },
+      { id: 'squat', text: '深蹲时膝盖感觉？', options: [{v:0,t:'正常'},{v:1,t:'轻微不适'},{v:2,t:'明显疼痛'},{v:3,t:'无法深蹲'}], type: 'select' },
+      { id: 'swelling', text: '膝盖是否肿胀/积液？', options: [{v:0,t:'无'},{v:1,t:'轻微'},{v:2,t:'明显肿胀'},{v:3,t:'严重肿胀'}], type: 'select' },
+      { id: 'sound', text: '膝盖活动时有弹响？', options: [{v:0,t:'无'},{v:1,t:'偶尔'},{v:2,t:'经常'},{v:3,t:'每次活动都有'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '髌腱炎(跳跃膝)', symptoms: '膝盖下方疼痛+跳跃加重', severity: '中', solution: '① 停止跳跃 ② 冰敷 ③ 强化股四头肌 ④ 佩戴髌腱带' },
+      { name: '半月板损伤', symptoms: '膝盖卡住+肿胀+活动受限', severity: '重', solution: '① 就医检查 ② 避免深蹲 ③ 康复训练 ④ 严重需手术' },
+      { name: '髂胫束综合征', symptoms: '膝盖外侧疼痛+跑步加重', severity: '中', solution: '① 停止跑步 ② 泡沫轴放松 ③ 侧卧抬腿强化' },
+      { name: '前交叉韧带损伤', symptoms: '膝盖"错位"感+肿胀', severity: '重', solution: '① 立刻就医 ② RICE原则 ③ 手术+康复' }
+    ]
+  },
+  ankle: {
+    name: '脚踝', icon: '🦶', color: '#bf5af2',
+    questions: [
+      { id: 'pain', text: '脚踝是否有疼痛？', options: [{v:0,t:'无疼痛'},{v:1,t:'轻微酸痛'},{v:2,t:'明显疼痛'},{v:3,t:'剧痛'}], type: 'select' },
+      { id: 'twist', text: '是否容易崴脚？', options: [{v:0,t:'从不'},{v:1,t:'偶尔'},{v:2,t:'经常'},{v:3,t:'反复崴脚'}], type: 'select' },
+      { id: 'stable', text: '单腿站立是否稳定？', options: [{v:0,t:'非常稳定'},{v:1,t:'轻微晃动'},{v:2,t:'明显不稳'},{v:3,t:'无法站立'}], type: 'select' },
+      { id: 'swelling', text: '脚踝是否肿胀？', options: [{v:0,t:'无'},{v:1,t:'轻微'},{v:2,t:'明显肿胀'},{v:3,t:'严重肿胀'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '踝关节扭伤', symptoms: '崴脚+肿胀+疼痛', severity: '中', solution: '① RICE原则 ② 护踝固定 ③ 康复训练 ④ 3周内避免运动' },
+      { name: '慢性踝关节不稳', symptoms: '反复崴脚+"打软腿"', severity: '中', solution: '① 本体感觉训练 ② 平衡板训练 ③ 强化腓骨肌 ④ 护踝' },
+      { name: '跟腱炎', symptoms: '脚后跟疼痛+晨起僵硬', severity: '中', solution: '① 停止跑跳 ② 拉伸小腿 ③ 冰敷 ④ 避免赤脚' }
+    ]
+  },
+  muscle: {
+    name: '肌肉', icon: '💪', color: '#64d2ff',
+    questions: [
+      { id: 'soreness', text: '肌肉酸痛程度？', options: [{v:0,t:'无'},{v:1,t:'轻微(24h内消失)'},{v:2,t:'明显(48h消失)'},{v:3,t:'严重(>3天)'}], type: 'select' },
+      { id: 'cramp', text: '是否经常抽筋？', options: [{v:0,t:'从不'},{v:1,t:'偶尔'},{v:2,t:'经常'},{v:3,t:'每次运动都抽筋'}], type: 'select' },
+      { id: 'tight', text: '肌肉是否经常紧绷？', options: [{v:0,t:'否'},{v:1,t:'轻微'},{v:2,t:'明显'},{v:3,t:'严重紧绷'}], type: 'select' },
+      { id: 'tear', text: '是否有肌肉撕裂感？', options: [{v:0,t:'无'},{v:1,t:'轻微拉伤'},{v:2,t:'中度拉伤'},{v:3,t:'严重撕裂'}], type: 'select' }
+    ],
+    commonInjuries: [
+      { name: '肌肉拉伤', symptoms: '发力时突然剧痛+"被踢"感', severity: '中', solution: '① 立刻停止 ② 冰敷 ③ 加压包扎 ④ 72小时后热敷+拉伸' },
+      { name: '延迟性肌肉酸痛(DOMS)', symptoms: '训练后24-48h酸痛', severity: '轻', solution: '① 轻度活动 ② 泡沫轴放松 ③ 补充电解质 ④ 等待自愈' },
+      { name: '肌肉痉挛', symptoms: '突发抽筋+剧烈疼痛', severity: '轻', solution: '① 拉伸痉挛肌群 ② 补充盐水 ③ 按摩 ④ 热敷' }
+    ]
+  }
+};
+
+// 打开损伤筛查
+function openInjuryScreening() {
   showView('book');
-  currentModule = 'screening';
+  currentModule = 'injury-screening';
   navStack.push({view:'dashboard'});
-  historyPush('screening', {});
+  historyPush('injury-screening', {});
+  
   $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
-    <h1>🩺 羽毛球专项功能筛查</h1>
-    <div class="vm">BSFS v1.0 · 6个测试 · 10分钟完成 · 每月重测</div>`;
+    <h1>🩹 损伤筛查系统</h1>
+    <div class="vm">交互式 · 6部位 · 智能诊断</div>`;
   $('bookStats').innerHTML = '';
+  
+  // 显示身体部位选择
+  const bodyPartsHtml = Object.entries(injuryBodyParts).map(([key, part]) => `
+    <div onclick="selectInjuryPart('${key}')" style="cursor:pointer;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s" onmouseover="this.style.borderColor='${part.color}'" onmouseout="this.style.borderColor='var(--border)'">
+      <span style="font-size:28px">${part.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:600;color:var(--text)">${part.name}</div>
+        <div style="font-size:11px;color:var(--text2)">${part.commonInjuries.length}种常见损伤</div>
+      </div>
+      <span style="color:var(--text3);font-size:18px">›</span>
+    </div>`).join('');
+  
   $('contentGrid').innerHTML = `
-    <div style="grid-column:1/-1;background:var(--bg3);border-radius:var(--radius);padding:16px 18px;margin-bottom:6px">
-      <div style="font-size:13px;font-weight:500;margin-bottom:6px">🎯 为什么做功能筛查？</div>
-      <div style="font-size:11px;color:var(--text2);line-height:1.6">识别身体薄弱环节，预防运动损伤，制定个性化训练计划。这个筛查专门为羽毛球运动设计，比通用筛查更有效。</div>
+    <div style="grid-column:1/-1;background:linear-gradient(135deg,var(--bg3),var(--bg2));border-radius:var(--radius);padding:20px;margin-bottom:12px;text-align:center">
+      <div style="font-size:22px;margin-bottom:8px">🏸 羽毛球损伤全面筛查</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6">选择身体部位，回答几个简单问题<br>生成个性化损伤清单和解决方案</div>
     </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">1️⃣ 动态平衡测试</span>
-        <span style="font-size:9px;color:var(--text3)">Y-Balance</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        单腿站立，双手叉腰，另一腿分别向前/后内/后外三个方向伸展，记录最大距离(cm)，计算：(前方+后内+后外)÷(3×腿长)×100
-      </div>
-      <div class="score-standard"><span>>90%</span><span>80-90%</span><span>70-80%</span><span>≤70%</span></div>
-      <div class="score-desc"><span>3分·步法稳定</span><span>2分·基本稳定</span><span>1分·需加强</span><span>0分·不稳定</span></div>
-    </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">2️⃣ 单腿跳跃测试</span>
-        <span style="font-size:9px;color:var(--text3)">Single-Leg Hop</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        单腿站立向前跳跃，测量跳距(cm)÷腿长，每侧3次取最佳
-      </div>
-      <div class="score-standard"><span>>1.5</span><span>1.3-1.5</span><span>1.1-1.3</span><span><1.1</span></div>
-      <div class="score-desc"><span>3分·起跳有力</span><span>2分·正常</span><span>1分·需加强</span><span>0分·弱</span></div>
-    </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">3️⃣ 侧向移动测试</span>
-        <span style="font-size:9px;color:var(--text3)">Lateral Shuffle</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        双脚并拢站在线旁，侧向跳跃过线再跳回，30秒总次数×2（换算每分钟）
-      </div>
-      <div class="score-standard"><span>>80次/分钟</span><span>60-80</span><span>40-60</span><span><40</span></div>
-      <div class="score-desc"><span>3分·移动快</span><span>2分·正常</span><span>1分·需加强</span><span>0分·慢</span></div>
-    </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">4️⃣ 肩关节稳定性</span>
-        <span style="font-size:9px;color:var(--text3)">Shoulder Stability</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        双手举过头顶保持平衡，另一人轻推手臂，观察稳定性
-      </div>
-      <div class="score-standard"><span>完全稳定</span><span>轻微晃动</span><span>明显不稳</span></div>
-      <div class="score-desc"><span>3分·击球稳定</span><span>2分·基本稳定</span><span>1分·需肩袖强化</span></div>
-    </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">5️⃣ 核心耐力测试</span>
-        <span style="font-size:9px;color:var(--text3)">Side Bridge</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        侧桥姿势保持，身体成直线，双侧都测取较差值
-      </div>
-      <div class="score-standard"><span>>60秒</span><span>45-60秒</span><span>30-45秒</span><span><30秒</span></div>
-      <div class="score-desc"><span>3分·核心稳定</span><span>2分·正常</span><span>1分·需加强</span><span>0分·差</span></div>
-    </div>
-
-    <div class="screening-test" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:600">6️⃣ 髋关节灵活性</span>
-        <span style="font-size:9px;color:var(--text3)">Hip Flexion Test</span>
-      </div>
-      <div style="font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:6px">
-        仰卧桌边，一腿抱向胸口，另一腿自然下垂，观察大腿能否接触桌面
-      </div>
-      <div class="score-standard"><span>正常</span><span>轻度紧张</span><span>明显紧张</span></div>
-      <div class="score-desc"><span>3分·步幅大</span><span>2分·正常</span><span>1分·需拉伸</span></div>
-    </div>
-
-    <div style="grid-column:1/-1;text-align:center;padding:10px;font-size:10px;color:var(--text3)">
-      🛡️ 预防性训练：平衡差→单腿站立 · 肩不稳→弹力带外旋 · 核心差→侧桥 · 髋紧→拉伸
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+      ${bodyPartsHtml}
     </div>`;
 }
 
+// 选择损伤部位
+function selectInjuryPart(partKey) {
+  const part = injuryBodyParts[partKey];
+  if (!part) return;
+  
+  window._currentInjuryPart = partKey;
+  window._injuryAnswers = {};
+  
+  const questionsHtml = part.questions.map((q, idx) => `
+    <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;border-left:3px solid ${part.color}">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">${idx+1}. ${q.text}</div>
+      <select id="injury_q_${q.id}" onchange="saveInjuryAnswer('${q.id}', this.value)" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px">
+        <option value="">请选择...</option>
+        ${q.options.map(o => `<option value="${o.v}">${o.t}</option>`).join('')}
+      </select>
+    </div>`).join('');
+  
+  $('contentGrid').innerHTML = `
+    <div style="grid-column:1/-1">
+      <div onclick="openInjuryScreening()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:var(--bg2);border-radius:20px;margin-bottom:12px;cursor:pointer;font-size:12px;color:var(--text2)">
+        <span>‹</span> 返回部位选择
+      </div>
+      <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:32px">${part.icon}</span>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">${part.name}损伤筛查</div>
+          <div style="font-size:11px;color:var(--text2)">请如实回答以下问题</div>
+        </div>
+      </div>
+      ${questionsHtml}
+      <button onclick="generateInjuryReport()" style="width:100%;padding:14px;background:${part.color};color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px">
+        📋 生成损伤报告
+      </button>
+    </div>`;
+}
+
+// 保存答案
+function saveInjuryAnswer(qId, value) {
+  window._injuryAnswers[qId] = parseInt(value) || 0;
+}
+
+// 生成损伤报告
+function generateInjuryReport() {
+  const partKey = window._currentInjuryPart;
+  const part = injuryBodyParts[partKey];
+  const answers = window._injuryAnswers || {};
+  
+  // 计算总分
+  let totalScore = 0;
+  let answeredCount = 0;
+  Object.values(answers).forEach(v => {
+    totalScore += v;
+    answeredCount++;
+  });
+  
+  if (answeredCount < 2) {
+    alert('请至少回答2个问题以便生成报告');
+    return;
+  }
+  
+  // 计算风险等级
+  const maxScore = answeredCount * 3;
+  const riskLevel = totalScore / maxScore;
+  let riskText, riskColor, riskAdvice;
+  
+  if (riskLevel < 0.25) {
+    riskText = '低风险'; riskColor = '#30d158'; riskAdvice = '继续保持良好的训练习惯，注意热身和拉伸';
+  } else if (riskLevel < 0.5) {
+    riskText = '中等风险'; riskColor = '#ff9f0a'; riskAdvice = '需要注意训练强度，加强相关部位的力量和灵活性训练';
+  } else if (riskLevel < 0.75) {
+    riskText = '较高风险'; riskColor = '#ff7500'; riskAdvice = '建议减少训练强度，及时进行康复训练，必要时就医';
+  } else {
+    riskText = '高风险'; riskColor = '#ff453a'; riskAdvice = '强烈建议立即停止训练，就医检查，遵医嘱进行康复';
+  }
+  
+  // 根据得分推荐相关损伤
+  const relevantInjuries = part.commonInjuries.filter((inj, idx) => {
+    // 根据答案相关性展示
+    if (answers.pain >= 2 && idx < 2) return true;
+    if (answers.pain >= 1 && idx < 3) return true;
+    return idx === 0;
+  });
+  
+  // 构建报告HTML
+  const injuriesHtml = relevantInjuries.map(inj => `
+    <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;border-left:3px solid ${inj.severity==='重'?'#ff453a':inj.severity==='中'?'#ff9f0a':'#30d158'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:14px;font-weight:600;color:var(--text)">${inj.name}</span>
+        <span style="font-size:11px;padding:3px 8px;border-radius:12px;background:${inj.severity==='重'?'#ff453a22':inj.severity==='中'?'#ff9f0a22':'#30d15822'};color:${inj.severity==='重'?'#ff453a':inj.severity==='中'?'#ff9f0a':'#30d158'}">${inj.severity}度</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">📍 症状: ${inj.symptoms}</div>
+      <div style="font-size:12px;color:var(--blue);background:var(--bg3);padding:10px;border-radius:8px">💡 ${inj.solution}</div>
+    </div>`).join('');
+  
+  const reportHtml = `
+    <div style="padding:20px;max-height:80vh;overflow-y:auto">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:40px;margin-bottom:10px">${part.icon}</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text)">${part.name}损伤评估报告</div>
+      </div>
+      
+      <div style="background:linear-gradient(135deg,${riskColor}22,${riskColor}11);border:2px solid ${riskColor};border-radius:12px;padding:16px;text-align:center;margin-bottom:16px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px">综合风险等级</div>
+        <div style="font-size:28px;font-weight:700;color:${riskColor}">${riskText}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px">${riskAdvice}</div>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;text-align:center">
+        <div style="background:var(--bg2);border-radius:8px;padding:10px">
+          <div style="font-size:20px;font-weight:700;color:var(--text)">${answeredCount}</div>
+          <div style="font-size:10px;color:var(--text2)">回答问题</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:8px;padding:10px">
+          <div style="font-size:20px;font-weight:700;color:${riskColor}">${Math.round(riskLevel*100)}%</div>
+          <div style="font-size:10px;color:var(--text2)">风险指数</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:8px;padding:10px">
+          <div style="font-size:20px;font-weight:700;color:var(--text)">${relevantInjuries.length}</div>
+          <div style="font-size:10px;color:var(--text2)">相关损伤</div>
+        </div>
+      </div>
+      
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px">📋 可能的相关损伤及建议</div>
+      ${injuriesHtml}
+      
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-top:16px;border:1px dashed var(--border)">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">🛡️ 预防建议</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8">
+          • 每次训练前充分热身（10-15分钟）<br>
+          • 训练后进行针对性拉伸<br>
+          • 加强相关部位的力量训练<br>
+          • 注意训练强度，循序渐进<br>
+          • 如有不适及时停止并冰敷<br>
+          • 严重疼痛建议就医检查
+        </div>
+      </div>
+      
+      <button onclick="closeOverlayPopup(this)" style="width:100%;padding:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;margin-top:16px;cursor:pointer">关闭报告</button>
+    </div>`;
+  
+  showOverlay('panel-lg', '📋 损伤筛查报告', reportHtml);
+}
+
+// 旧版功能筛查（兼容调用新系统）
+function openScreening() {
+  openInjuryScreening();
+}
+
+// ─── 工具页面 ────────────────────────────
 function openCalculators() {
 showView("book");
 currentModule="calculators";
@@ -2281,15 +3410,127 @@ document.getElementById("bookStats").innerHTML="";
 document.getElementById("contentGrid").innerHTML="<div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--blue)\">🔥 TDEE</div><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px\"><label>性别<select id=\"tdeeGender\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=male>男</option><option value=female>女</option></select></label><label>体重(kg)<input id=\"tdeeWeight\" type=number value=70 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>身高(cm)<input id=\"tdeeHeight\" type=number value=175 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>年龄<input id=\"tdeeAge\" type=number value=25 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>活动<select id=\"tdeeActivity\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=1.2>久坐</option><option value=1.375>轻度</option><option value=1.55 selected>中度</option><option value=1.725>高度</option><option value=1.9>极高</option></select></label></div><button onclick=\"calcTDEE()\" class=\"qw-btn\" style=\"background:var(--blue);color:#fff;border:none;width:100%\">🔥 计算 TDEE</button><div id=\"tdeeResult\" style=\"margin-top:8px;font-size:12px\"></div></div><div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--green)\">🥩 营养素</div><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px\"><label>体重<input id=\"macroWeight\" type=number value=70 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>目标<select id=\"macroGoal\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=maintain>维持</option><option value=gain>增肌</option><option value=lose>减脂</option></select></label><label>TDEE<input id=\"macroTDEE\" type=number value=2500 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label></div><button onclick=\"calcMacro()\" class=\"qw-btn\" style=\"background:var(--green);color:#fff;border:none;width:100%\">🥩 计算营养素</button><div id=\"macroResult\" style=\"margin-top:8px;font-size:12px\"></div></div><div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--blue)\">💧 水合</div><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px\"><label>体重<input id=\"waterWeight\" type=number value=70 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>训练(分钟)<input id=\"waterTrain\" type=number value=60 style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"></label><label>温度<select id=\"waterTemp\" style=\"display:block;width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px\"><option value=1>常温</option><option value=1.2>&gt;30°C</option></select></label></div><button onclick=\"calcWater()\" class=\"qw-btn\" style=\"background:var(--blue);color:#fff;border:none;width:100%\">💧 计算水合</button><div id=\"waterResult\" style=\"margin-top:8px;font-size:12px\"></div></div><div class=\"qw-step\"><div style=\"font-size:16px;font-weight:700;margin-bottom:10px;color:var(--gold)\">⏰ 恢复时间线</div><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:var(--text2)\"><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--blue)\">0-30分</strong><br>快速碳水1-1.2g/kg+蛋白0.3-0.4g/kg</div><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--blue)\">30分-2h</strong><br>正餐(碳水+蛋白+蔬菜)</div><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--blue)\">2h-睡前</strong><br>泡沫轴10-15分钟</div><div style=\"background:var(--surface2);padding:10px;border-radius:var(--radius-sm)\"><strong style=\"color:var(--gold)\">睡眠7-9h</strong><br>⭐ 组织修复</div></div></div>";
 updateProgress();
 }function openDiagnosis() {
-  showOverlay('panel-sm', '🔍 训练问题诊断', `
-    <div class="diag-list">
-      <div class="diag-item"><strong style="color:var(--text)">动作标准但没进步</strong><br><span style="color:var(--text2);font-size:11px">→ 检查训练量/恢复/变式</span></div>
-      <div class="diag-item"><strong style="color:var(--text)">动作越练越差</strong><br><span style="color:var(--text2);font-size:11px">→ 疲劳累积/加量太快</span></div>
-      <div class="diag-item"><strong style="color:var(--text)">训练中某个部位痛</strong><br><span style="color:var(--text2);font-size:11px">→ 刺痛=停 · 酸胀=正常</span></div>
-      <div class="diag-item"><strong style="color:var(--text)">能完成但"使不上劲"</strong><br><span style="color:var(--text2);font-size:11px">→ 检查动力链顺序</span></div>
-      <div class="diag-item"><strong style="color:var(--text)">体能跟不上技术训练</strong><br><span style="color:var(--text2);font-size:11px">→ 加强基础体能/代谢适应</span></div>
-      <div class="diag-item"><strong style="color:var(--text)">比赛时技术变形</strong><br><span style="color:var(--text2);font-size:11px">→ 压力适应训练/模拟比赛</span></div>
+  showOverlay('panel-lg', '🔍 训练问题诊断', `
+    <div style="padding:10px;max-height:70vh;overflow-y:auto">
+      <div style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:16px">点击问题查看详细解决方案</div>
+      
+      <div onclick="toggleDiagnosisDetail(0)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">动作标准但没进步</strong>
+          <span id="diag_icon_0" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_0" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">可能原因：</strong><br>
+          • 训练强度不够/周期太长<br>
+          • 恢复不足导致适应<br>
+          • 技术动作已定型但缺乏比赛检验<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 用VBT等工具检测是否真的没进步<br>
+          ② 尝试新的训练变式（重量/次数/节奏）<br>
+          ③ 加入比赛场景训练
+
+        </div>
+      </div>
+      
+      <div onclick="toggleDiagnosisDetail(1)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">动作越练越差</strong>
+          <span id="diag_icon_1" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_1" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">可能原因：</strong><br>
+          • 疲劳累积（神经疲劳/肌肉疲劳）<br>
+          • 加量太快，没有循序渐进<br>
+          • 睡眠/营养不足<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 连续休息2-3天<br>
+          ② 检查睡眠是否7-9小时<br>
+          ③ 下次训练减量30%
+        </div>
+      </div>
+      
+      <div onclick="toggleDiagnosisDetail(2)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">训练中某个部位痛</strong>
+          <span id="diag_icon_2" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_2" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">判断方法：</strong><br>
+          • 刺痛 = 立刻停止，可能严重损伤<br>
+          • 酸胀 = 正常乳酸堆积，可继续<br>
+          • 锐痛 = 停止，冷敷<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 刺痛立即停止，冰敷<br>
+          ② 48小时内冰敷，之后热敷<br>
+          ③ 严重就就医
+        </div>
+      </div>
+      
+      <div onclick="toggleDiagnosisDetail(3)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">能完成但"使不上劲"</strong>
+          <span id="diag_icon_3" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_3" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">可能原因：</strong><br>
+          • 动力链断裂（力传导不畅）<br>
+          • 核心不稳导致力量泄漏<br>
+          • 肌张力不平衡<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 检查动作流畅度<br>
+          ② 加强核心训练<br>
+          ③ 从慢动作开始重建动力链
+        </div>
+      </div>
+      
+      <div onclick="toggleDiagnosisDetail(4)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">体能跟不上技术训练</strong>
+          <span id="diag_icon_4" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_4" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">可能原因：</strong><br>
+          • 有氧基础薄弱<br>
+          • 糖原储备不足<br>
+          • 训练模式单一<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 增加有氧训练（跑步/跳绳）<br>
+          ② 训练前补足碳水<br>
+          ③ 尝试间歇训练
+        </div>
+      </div>
+      
+      <div onclick="toggleDiagnosisDetail(5)" style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;border-left:3px solid var(--orange)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text);font-size:13px">比赛时技术变形</strong>
+          <span id="diag_icon_5" style="color:var(--text3)">›</span>
+        </div>
+        <div id="diag_detail_5" style="display:none;margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg3);padding:12px;border-radius:8px">
+          <strong style="color:var(--blue)">可能原因：</strong><br>
+          • 心理压力导致动作僵硬<br>
+          • 对手打乱节奏<br>
+          • 体能下降后技术变形<br>
+          <br><strong style="color:var(--green)">建议方案：</strong><br>
+          ① 模拟比赛场景训练<br>
+          ② 简化技术在压力下使用<br>
+          ③ 增强体能延长技术保持时间
+        </div>
+      </div>
+      
+      <button onclick="closeOverlayPopup(this)" style="width:100%;margin-top:10px;padding:10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">关闭</button>
     </div>`);
+}
+
+function toggleDiagnosisDetail(idx) {
+  var detail = document.getElementById('diag_detail_' + idx);
+  var icon = document.getElementById('diag_icon_' + idx);
+  if (detail.style.display === 'none') {
+    detail.style.display = 'block';
+    icon.innerHTML = 'ˇ';
+  } else {
+    detail.style.display = 'none';
+    icon.innerHTML = '›';
+  }
 }
 
 function openWeeklyCheck() {
@@ -2676,6 +3917,9 @@ function toggleCoachDrills(idx) {
     </div>`;
   el.dataset.currentIdx = idx;
 }
+
+// 暴露到全局（兼容旧调用）
+window.showCoachDrills = toggleCoachDrills;
 
 // ========== 科学训练动作库（根据级别、频率、时长动态生成）==========
 
@@ -3148,10 +4392,22 @@ function openChapter(idx) {
       navStack.push({view:'book', bookId:currentBookId});
     }
   }
+  // v3.14.5 阅读时长追踪：离开/切换前一节时，先把上一节已驻留秒数累加进 RP（避免重入清零）
+  _flushReadSeconds();
+  // v3.14.6 测验连击：切章时把本节最佳连击刷回 RP，避免下一节从旧 best 开始
+  _flushQuizStreak();
   currentChapterIdx = idx;
   showView('reader');
   renderChapter();
   historyPush('reader', {bookId: currentBookId, chapterIdx: idx});
+  // 记录"最近阅读"位置（首页继续阅读入口用），用 safeSet 防丢
+  safeSet('bk_last_read', { bookId: currentBookId, chapterIdx: idx, ts: Date.now() });
+  // v3.14.5 阅读时长：进入章节时打点（用作当前章节驻留秒数的基准）
+  readStartTs = Date.now();
+  lastTickTs = Date.now();
+  // 2026-08-02 新增：进入章节时初始化本周目标条基准
+  _weekBucketBase = 0;
+  _renderReadGoalBar();
 }
 
 async function renderChapter() {
@@ -3189,8 +4445,43 @@ async function renderChapter() {
     } catch(e2) {}
   }
   if (md) {
-    $('article').innerHTML = mdParse(md) + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
+    // 文章末尾「下一节」CTA：把"读完→下一章"路径从"滚顶→点按钮"压成"滚底→点按钮"
+    // 与首页完成态「重读最后一节」对称；最后一节不显示（顶部 nextChapter 也会 disabled）
+    const _isLast = currentChapterIdx >= book.chapters.length - 1;
+    const _nextCh = _isLast ? null : book.chapters[currentChapterIdx + 1];
+    const _nextCta = (!_isLast && _nextCh) ? `
+      <div class="next-ch-cta" onclick="nextChapter()" role="button" tabindex="0"
+           aria-label="进入下一节 ${escapeAttr(_nextCh.title || '')}"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();nextChapter();}">
+        <div class="nc-label">下一节 · 第 ${currentChapterIdx + 2} 节</div>
+        <div class="nc-title">${escapeHTML(_nextCh.title || '')}</div>
+        <div class="nc-arrow">▶ 继续阅读</div>
+      </div>` : '';
+    $('article').innerHTML = mdParse(md)
+      + _nextCta
+      + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
     makeCollapsible(); setupQuiz(ch); markStreak();
+    // 自动标记已读：用户实际看到正文即视为完成（markRead 内部已对已读章节短路，不会重复加 XP/弹成就）
+    const _isNewRead = markRead(currentBookId, ch.file);
+    if (_isNewRead) {
+      // v3.14.5 阅读时长：带出本章驻留分钟数，让用户「看到」自己真读了多久
+      _tickReadSeconds();
+      const mins = readSecThisChapter >= 30 ? `${Math.max(1, Math.round(readSecThisChapter / 60))} 分钟` : `${readSecThisChapter}s`;
+      // 首次读完本节：轻 toast + 顶栏位置微脉冲，让用户「看到」系统收到了
+      showToast(`✅ 读了 ${mins} · 《${book.title || currentBookId}》第 ${currentChapterIdx+1} 节 完成 · +XP 10`, 2800);
+      const pos = document.getElementById('chapterPos');
+      if (pos) {
+        pos.classList.remove('pulse-read'); // 重置可重启动画
+        // 强制 reflow，确保 class 重新挂载时浏览器重新跑一次动画
+        void pos.offsetWidth;
+        pos.classList.add('pulse-read');
+        setTimeout(() => pos.classList.remove('pulse-read'), 1400);
+      }
+    }
+    // 搜索跳转：定位到匹配行并高亮关键词
+    if (pendingSearchJump && pendingSearchJump.bookId === currentBookId && pendingSearchJump.file === ch.file) {
+      applySearchJump();
+    }
   } else {
     $('article').innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">❌ 加载失败</div>`;
   }
@@ -3201,14 +4492,124 @@ async function renderChapter() {
 function buildToc(ch) {
   const list = $('tocList');
   const h2s = ch.h2s || [];
-  list.innerHTML = h2s.length ? h2s.map((h,i)=>`<div class="toc-item toc-h2" onclick="scrollToToc(${i})">${h.title}</div>`).join('') : '<div style="font-size:10px;color:var(--text3)">无子章节</div>';
+  if (!h2s.length) { list.innerHTML = '<div style="font-size:10px;color:var(--text3)">无子章节</div>'; return; }
+  list.innerHTML = h2s.map((h,i)=>{
+    // 序号补 0：让长章节的子目录条目一眼可数（02/12 比 2/12 在密集列表里更易扫）
+    const num = String(i + 1).padStart(2, '0');
+    return `<div class="toc-item toc-h2" data-toc-idx="${i}" onclick="scrollToToc(${i})"><span class="toc-num">${num}</span><span class="toc-text">${escapeHTML(h.title)}</span></div>`;
+  }).join('');
+  // 渲染完后立即按当前滚动位置点亮对应条目（用户从外部跳进章节时也能命中）
+  requestAnimationFrame(updateTocActive);
 }
-function scrollToToc(idx) { const h=$$('article h2'); if(h[idx]) h[idx].scrollIntoView({behavior:'smooth',block:'start'}); }
-function toggleTocFn() { $('readerToc').style.display=$('readerToc').style.display==='none'?'block':'none'; }
+function scrollToToc(idx) { const h=$$('article h2'); if(h[idx]) h[idx].scrollIntoView({behavior:'smooth',block:'start'}); closeMobileToc(); }
+// 阅读滚动时联动侧边目录：用 IntersectionObserver 找出当前可见的第一条 h2，高亮对应 TOC 条目
+// 滚动节流由 IO 自带（不重复 fire），比 scroll 事件 + 计算距离更准也更省
+let _tocIO = null;
+let _tocScrollPending = false;
+// scroll 节流：rAF 合并多次滚动事件，避免长章节快速滚动时反复重算
+function _tocScrollTick() {
+  if (_tocScrollPending) return;
+  _tocScrollPending = true;
+  requestAnimationFrame(() => {
+    _tocScrollPending = false;
+    updateTocActive();
+  });
+}
+function updateTocActive() {
+  const list = $('tocList');
+  if (!list) return;
+  const h2s = $$('article h2');
+  if (!h2s.length) return;
+  // 顶部安全区：viewport 上 25% 处作为"当前阅读锚点"（避免被 sticky 顶栏盖住）
+  const anchorY = window.innerHeight * 0.25;
+  let activeIdx = 0;
+  for (let i = 0; i < h2s.length; i++) {
+    const r = h2s[i].getBoundingClientRect();
+    if (r.top - anchorY <= 0) activeIdx = i;
+    else break;
+  }
+  // 同步高亮（用 class 切换比改 textContent 触发更少重排）
+  const items = list.querySelectorAll('.toc-item');
+  items.forEach((el, i) => el.classList.toggle('toc-active', i === activeIdx));
+  // 自动滚到可见区：仅当活动条目被遮挡时（长章节翻到后面再回来很有用）
+  const activeEl = items[activeIdx];
+  if (activeEl) {
+    const tocBox = list.parentElement?.getBoundingClientRect();
+    if (tocBox) {
+      const elTop = activeEl.offsetTop;
+      const elBottom = elTop + activeEl.offsetHeight;
+      const visTop = list.scrollTop;
+      const visBottom = visTop + tocBox.height;
+      if (elTop < visTop || elBottom > visBottom) {
+        list.scrollTo({ top: elTop - 8, behavior: 'smooth' });
+      }
+    }
+  }
+}
+function toggleTocFn() {
+  const toc = $('readerToc');
+  const isMobile = window.innerWidth <= 480;
+  if (isMobile) {
+    const isOpen = toc.classList.toggle('mobile-drawer', true) && toc.classList.contains('mobile-drawer');
+    // 抽屉模式：用 class 切换显示
+    const opened = toc.classList.toggle('open');
+    let bd = document.querySelector('.reader-toc.mobile-backdrop');
+    if (opened) {
+      if (!bd) {
+        bd = document.createElement('div');
+        bd.className = 'reader-toc mobile-backdrop';
+        bd.addEventListener('click', closeMobileToc);
+        document.body.appendChild(bd);
+      }
+      requestAnimationFrame(() => bd.classList.add('show'));
+    } else {
+      closeMobileToc();
+    }
+  } else {
+    toc.style.display = toc.style.display === 'none' ? 'block' : 'none';
+  }
+}
+function closeMobileToc() {
+  const toc = $('readerToc');
+  if (toc) toc.classList.remove('open');
+  const bd = document.querySelector('.reader-toc.mobile-backdrop');
+  if (bd) {
+    bd.classList.remove('show');
+    setTimeout(() => bd.remove(), 250);
+  }
+}
 function toggleFocus() { document.body.classList.toggle('focus-mode',!focusMode); focusMode=!focusMode; }
-function increaseFont() { if(fontBase<22){fontBase++;applyFont();} }
-function decreaseFont() { if(fontBase>12){fontBase--;applyFont();} }
-function applyFont() { document.documentElement.style.setProperty('--font-base',fontBase+'px'); localStorage.setItem('bk_font',fontBase); }
+const FONT_MIN = 12, FONT_MAX = 22, FONT_DEFAULT = 15;
+function increaseFont() {
+  if (fontBase < FONT_MAX) { fontBase++; applyFont(); showToast(`🔼 字号 ${fontBase}px`); }
+  else showToast(`已达最大字号 ${FONT_MAX}px`);
+  _updateFontBtnState();
+}
+function decreaseFont() {
+  if (fontBase > FONT_MIN) { fontBase--; applyFont(); showToast(`🔽 字号 ${fontBase}px`); }
+  else showToast(`已达最小字号 ${FONT_MIN}px`);
+  _updateFontBtnState();
+}
+function resetFont() {
+  if (fontBase === FONT_DEFAULT) { showToast(`已是默认字号 ${FONT_DEFAULT}px`); return; }
+  fontBase = FONT_DEFAULT;
+  applyFont();
+  showToast(`🔄 字号已重置为默认 ${FONT_DEFAULT}px`);
+  _updateFontBtnState();
+}
+function applyFont() {
+  document.documentElement.style.setProperty('--font-base', fontBase+'px');
+  localStorage.setItem('bk_font', fontBase);
+  document.dispatchEvent(new CustomEvent('fontchange', { detail: { size: fontBase } }));
+}
+function _updateFontBtnState() {
+  const min = document.getElementById('fontMinBtn');
+  const max = document.getElementById('fontMaxBtn');
+  const reset = document.getElementById('fontResetBtn');
+  if (min) min.style.opacity = fontBase <= FONT_MIN ? '0.4' : '1';
+  if (max) max.style.opacity = fontBase >= FONT_MAX ? '0.4' : '1';
+  if (reset) reset.style.opacity = fontBase === FONT_DEFAULT ? '0.4' : '1';
+}
 function toggleTheme() { 
   const cur = document.documentElement.getAttribute('data-theme');
   const next = cur === 'dark' ? 'light' : 'dark';
@@ -3216,10 +4617,51 @@ function toggleTheme() {
   localStorage.setItem('bk_theme', next);
   document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌓';
 }
+// 羽毛球拍光标切换 (2026-07-18)
+function toggleBadmintonCursor() {
+  const body = document.body;
+  const enabled = body.classList.toggle('badminton-cursor');
+  localStorage.setItem('bk_badminton_cursor', enabled);
+  return enabled;
+}
+function initBadmintonCursor() {
+  const enabled = localStorage.getItem('bk_badminton_cursor') === 'true';
+  if (enabled) {
+    document.body.classList.add('badminton-cursor');
+    initHitAnimation(); // 初始化击球动画
+  }
+}
+
+// 羽毛球击球动画 (2026-07-18) - 直接注入式
+function playHitAnimation(e) {
+  if (!document.body.classList.contains('badminton-cursor')) return;
+  
+  const hit = document.createElement('div');
+  hit.id = 'hit-anim';
+  hit.style.cssText = 'position:fixed;pointer-events:none;z-index:99999;font-size:28px;left:' + (e.clientX-16) + 'px;top:' + (e.clientY-16) + 'px;animation:hitPop 0.3s ease-out forwards';
+  hit.textContent = '🏸';
+  document.body.appendChild(hit);
+  setTimeout(() => hit.remove(), 300);
+}
+
+// 注入动画关键帧
+if (!document.getElementById('hit-anim-style')) {
+  const style = document.createElement('style');
+  style.id = 'hit-anim-style';
+  style.textContent = '@keyframes hitPop {0%{transform:scale(0.5);opacity:1}50%{transform:scale(1.3);opacity:1}100%{transform:scale(1) translateY(-30px);opacity:0}}';
+  document.head.appendChild(style);
+}
+
+function initHitAnimation() {
+  if (document.body.classList.contains('badminton-cursor')) {
+    document.addEventListener('click', playHitAnimation, true);
+    console.log('[羽毛球] 击球动画已启用');
+  }
+}
 function toggleReadMark() { const ch=getCurChapter(); if(!ch)return; if(isRead(currentBookId,ch.file)) unmarkRead(currentBookId,ch.file); else markRead(currentBookId,ch.file); $('readMarkBtn').textContent=isRead(currentBookId,ch.file)?'✅':'📌'; }
 function getCurChapter() { if(!currentBookId||currentChapterIdx<0) return null; const b=MANIFEST?.books.find(x=>x.id===currentBookId); return b?.chapters[currentChapterIdx]||null; }
 function prevChapter() { if(currentChapterIdx>0) openChapter(currentChapterIdx-1); }
-function nextChapter() { const b=MANIFEST?.books.find(x=>x.id===currentBookId); if(b&currentChapterIdx<b.chapters.length-1) openChapter(currentChapterIdx+1); }
+function nextChapter() { const b=MANIFEST?.books.find(x=>x.id===currentBookId); if(b && currentChapterIdx<b.chapters.length-1) openChapter(currentChapterIdx+1); }
 function makeCollapsible() { $$('article h2, article h3').forEach(el=>{el.addEventListener('click',()=>el.classList.toggle('collapsed'));}); }
 function markStreak() { const p=getP(); if(!p._streak) p._streak={}; const t=new Date().toISOString().slice(0,10); if(!p._streak[t]){p._streak[t]=true;setP(p);} }
 
@@ -3228,8 +4670,108 @@ let quizItems=[], fontBase=15, focusMode=false, tocBtnState=true, studyQuestions
 function setupQuiz(ch) { quizItems=[]; const h2s=ch.h2s||[]; if(!h2s.length){$('quizContent').innerHTML='<div style="font-size:10px;color:var(--text3);text-align:center;padding:12px">🤷 无测试点</div>';return;} const n=Math.min(3,h2s.length); const picked=[...h2s].sort(()=>Math.random()-.5).slice(0,n); quizItems=picked.map(h=>({q:`「${h.title}」主要讲什么？`,a:h.title,options:shuffle([h.title,...getRandomH2s(ch,h,3)])})); renderQuizSidebar(); }
 function getRandomH2s(ch,exclude,count){const others=(ch.h2s||[]).filter(h=>h.title!==exclude.title);return[...others].sort(()=>Math.random()-.5).slice(0,count).map(h=>h.title);}
 function shuffle(arr){return[...arr].sort(()=>Math.random()-.5);}
-function renderQuizSidebar(){$('quizContent').innerHTML=quizItems.map((item,qi)=>`<div class="quiz-card" id="qc-${qi}"><div class="qc-q">${item.q}</div>${item.options.map((o,oi)=>`<button class="qc-btn" onclick="checkQuiz(${qi},${oi})" id="qcb-${qi}-${oi}">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}<div class="qc-result" id="qcr-${qi}"></div></div>`).join('');$('quizSidebar').style.display='block';}
-function checkQuiz(qi,oi){const item=quizItems[qi];const correctIdx=item.options.indexOf(item.a);const correct=oi===correctIdx;for(let i=0;i<item.options.length;i++){const btn=$(`qcb-${qi}-${i}`);if(btn){btn.disabled=true;btn.classList.add(i===correctIdx?'correct':i===oi&&!correct?'wrong':'');}}const r=$(`qcr-${qi}`);if(r)r.textContent=correct?'✅ 正确！':`❌ 答案是 ${item.a}`;if(correct){const rp=getRP();rp.totalQuizCorrect=(rp.totalQuizCorrect||0)+1;setRP(rp);addXP(5,'🧪');checkAchievements();}}
+// ─── Quiz 连击 Streak 系统 ───────────────────────
+// 当前会话连击数（每答对一题 +1，答错归 0 或刷新章节归 0）
+let quizStreak = 0;
+let quizBestSession = 0;
+function renderQuizSidebar(){
+  // 顶部连击状态条：让用户实时看到「连击 X」+「最佳 Y」
+  const streakHtml = `<div id="quizStreakBar" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;margin-bottom:8px;background:var(--bg3);border-radius:6px;font-size:11px">
+    <span style="color:var(--text2)">🔥 当前连击 <strong id="qsCur" style="color:var(--orange);font-size:14px">${quizStreak}</strong></span>
+    <span style="color:var(--text3)">⭐ 最佳 <strong id="qsBest" style="color:var(--gold)">${Math.max(quizStreak, quizBestSession)}</strong></span>
+  </div>`;
+  $('quizContent').innerHTML = streakHtml + quizItems.map((item,qi)=>`<div class="quiz-card" id="qc-${qi}"><div class="qc-q">${item.q}</div>${item.options.map((o,oi)=>`<button class="qc-btn" onclick="checkQuiz(${qi},${oi})" id="qcb-${qi}-${oi}">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}<div class="qc-result" id="qcr-${qi}"></div></div>`).join('');
+  $('quizSidebar').style.display='block';
+}
+function _updateStreakBar(){
+  const cur=$('qsCur'); if(cur) cur.textContent=quizStreak;
+  const best=$('qsBest'); if(best) best.textContent=Math.max(quizStreak, quizBestSession);
+}
+function checkQuiz(qi,oi){
+  const item=quizItems[qi];const correctIdx=item.options.indexOf(item.a);const correct=oi===correctIdx;
+  for(let i=0;i<item.options.length;i++){const btn=$(`qcb-${qi}-${i}`);if(btn){btn.disabled=true;btn.classList.add(i===correctIdx?'correct':i===oi&&!correct?'wrong':'');}}
+  const r=$(`qcr-${qi}`);if(r)r.textContent=correct?'✅ 正确！':`❌ 答案是 ${item.a}`;
+  if(correct){
+    quizStreak += 1;
+    if (quizStreak > quizBestSession) quizBestSession = quizStreak;
+    const rp=getRP();
+    rp.totalQuizCorrect=(rp.totalQuizCorrect||0)+1;
+    rp.bestQuizStreak = Math.max(rp.bestQuizStreak || 0, quizStreak);
+    _incDailyQuiz();
+    setRP(rp);
+    addXP(5,'🧪');
+    // 连击里程碑奖励：5/10/15 给额外 XP + toast 反馈，让用户感受到「越连越爽」
+    const milestones = { 5: 15, 10: 40, 15: 80, 20: 150 };
+    if (milestones[quizStreak]) {
+      addXP(milestones[quizStreak], `🔥 ${quizStreak}连击`);
+      showToast(`🔥 ${quizStreak} 连击！+${milestones[quizStreak]} XP 奖励`, 2200);
+    } else if (quizStreak >= 3) {
+      showToast(`🔥 ${quizStreak} 连击 · 继续！`, 1200);
+    }
+    _updateStreakBar();
+    checkAchievements();
+  } else {
+    // 答错：streak 归零，给温和提示而不是负反馈
+    if (quizStreak >= 3) showToast(`💔 连击中断（${quizStreak}）· 下一题重新开始`, 1500);
+    quizStreak = 0;
+    _updateStreakBar();
+  }
+  // v3.14.6 测验闭环：所有题答完后注入本节总结卡，让连击 streak 的成果被「看见」
+  _maybeRenderQuizSummary();
+}
+// 本节测验完成总结卡：3 题全答完后展示得分 + 最高连击 + 累计 XP + 再答一节入口
+// 让刚加的连击系统形成闭环，避免答完 3 题后只剩「下一节」按钮、连击感被切断
+function _maybeRenderQuizSummary() {
+  if (!quizItems.length) return;
+  // 检测所有题目是否都已作答（所有 qc-btn 都 disabled）
+  const allAnswered = Array.from(document.querySelectorAll('#quizContent .qc-btn')).every(b => b.disabled);
+  if (!allAnswered) return;
+  // 防止重复注入
+  if (document.getElementById('quizSummary')) return;
+  // 按 qcr- 的文案统计更准（避免按钮重复挂多个 class 误计）
+  let correct = 0;
+  quizItems.forEach((_, i) => {
+    const r = document.getElementById(`qcr-${i}`);
+    if (r && r.textContent && r.textContent.includes('✅')) correct++;
+  });
+  const total = quizItems.length;
+  const best = Math.max(quizStreak, quizBestSession);
+  const pct = Math.round((correct / total) * 100);
+  // 总结等级：满分/优秀/加油 三档视觉反馈
+  const tier = pct === 100 ? 'perfect' : (pct >= 60 ? 'good' : 'try');
+  const tierIcon = tier === 'perfect' ? '🏆' : (tier === 'good' ? '✨' : '💪');
+  const tierText = tier === 'perfect' ? '全对！本节测验完美通关' : (tier === 'good' ? '不错！阅读理解基本到位' : '再读一遍正文，巩固关键点');
+  const xpEarned = correct * 5; // 基础 XP（每题 +5）
+  const summary = document.createElement('div');
+  summary.id = 'quizSummary';
+  summary.style.cssText = 'margin-top:10px;padding:12px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;animation:iosFadeUp .35s ease';
+  summary.innerHTML = `
+    <div style="font-size:24px;margin-bottom:4px">${tierIcon}</div>
+    <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px">${tierText}</div>
+    <div style="display:flex;justify-content:space-around;margin:8px 0;padding:8px 4px;background:var(--bg3);border-radius:6px">
+      <div style="flex:1"><div style="font-size:18px;font-weight:700;color:var(--green)">${correct}/${total}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">本节得分</div></div>
+      <div style="flex:1;border-left:1px solid var(--border)"><div style="font-size:18px;font-weight:700;color:var(--orange)">🔥 ${best}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">最高连击</div></div>
+      <div style="flex:1;border-left:1px solid var(--border)"><div style="font-size:18px;font-weight:700;color:var(--gold)">+${xpEarned}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">本节 XP</div></div>
+    </div>
+    <button onclick="setupQuiz(getCurChapter());showToast('🔄 已重置本节测验',1200);" style="margin-top:4px;padding:6px 14px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit">🔄 再答一次</button>
+  `;
+  const qc = $('quizContent');
+  if (qc) qc.appendChild(summary);
+  // 顶部展示一次大局反馈：让用户感受到「已完成本节测验」的事件
+  if (pct === 100) showToast(`🏆 本节测验全对 · +${xpEarned} XP`, 2200);
+  else if (pct >= 60) showToast(`✨ 本节测验 ${correct}/${total} · +${xpEarned} XP`, 1800);
+  else showToast(`💪 本节 ${correct}/${total} · 回到正文再读一遍效果更好`, 2400);
+}
+// 切章/离开阅读器时把本节 best 连击刷回 RP（避免下次进入看到旧值）
+function _flushQuizStreak() {
+  try {
+    const rp = getRP();
+    rp.bestQuizStreak = Math.max(rp.bestQuizStreak || 0, quizBestSession);
+    setRP(rp);
+  } catch (_) {}
+  quizStreak = 0;
+  quizBestSession = 0;
+}
 function openFullQuiz(){const b=MANIFEST?.books.find(x=>x.id===currentBookId);const ch=b?.chapters[currentChapterIdx];if(!ch)return;const h2s=ch.h2s||[];if(!h2s.length){alert('本章暂无测试点');return;}}
 function toggleQuizPanel(){const qs=$('quizSidebar');if(qs)qs.style.display=qs.style.display==='none'?'block':'none';}
 
@@ -3249,7 +4791,7 @@ const mdParse = (txt) => {
 };
 
 // ─── View Switch ──────────────────────────────
-const VIEW_MAP = { dashboard:'viewDashboard', book:'viewBook', reader:'viewReader' };
+const VIEW_MAP = { dashboard:'viewDashboard', book:'viewBook', reader:'viewReader', library:'viewLibrary' };
 function showView(v) {
   for (const [key, id] of Object.entries(VIEW_MAP)) {
     const el = $(id);
@@ -3268,8 +4810,6 @@ function showView(v) {
 function goHome() {
   // 关闭所有可能打开的 overlay
   document.querySelectorAll('.overlay').forEach(o => o.remove());
-  // 关闭可能的浮层
-  document.querySelectorAll('._tmpOverlay').forEach(o => o.remove());
   // 重置状态
   currentBookId = null;
   currentChapterIdx = -1;
@@ -3318,11 +4858,101 @@ function goBack() {
   }
 }
 
+// 搜索面板当前选中项索引（用于键盘 ↑↓ 导航）
+let _srSelIdx = -1;
+let _srLastQuery = '';
+let _srDebounceTimer = null;
+
+// 📜 v3.9.3 搜索历史：去重 + 最新置顶 + 最多 8 条，关闭弹窗后保留
+const SEARCH_HISTORY_KEY = 'lamb_search_history_v1';
+const SEARCH_HISTORY_MAX = 8;
+function getSearchHistory() {
+  const arr = safeGet(SEARCH_HISTORY_KEY, []);
+  return Array.isArray(arr) ? arr : [];
+}
+function addSearchHistory(q) {
+  if (!q || !q.trim()) return;
+  q = q.trim();
+  const arr = getSearchHistory().filter(x => x !== q);
+  arr.unshift(q);
+  if (arr.length > SEARCH_HISTORY_MAX) arr.length = SEARCH_HISTORY_MAX;
+  safeSet(SEARCH_HISTORY_KEY, arr);
+}
+function clearSearchHistory() {
+  safeSet(SEARCH_HISTORY_KEY, []);
+  renderSearchHistory();
+}
+
+/** 防抖搜索：输入即查，避免每个按键都跑全文搜索 */
+function scheduleSearch(input) {
+  clearTimeout(_srDebounceTimer);
+  const q = input.value.trim();
+  _srLastQuery = q;
+  _srDebounceTimer = setTimeout(() => {
+    if (_srLastQuery === q) doSearch(q);
+  }, 250);
+}
+
+/** 处理搜索面板内的键盘事件（↑↓ 导航，Enter 跳转） */
+function handleSearchKey(e, input) {
+  const items = document.querySelectorAll('.sr-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (!items.length) return;
+    _srSelIdx = Math.min(items.length - 1, _srSelIdx + 1);
+    updateSelHighlight(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!items.length) return;
+    _srSelIdx = Math.max(0, _srSelIdx - 1);
+    updateSelHighlight(items);
+  } else if (e.key === 'Enter') {
+    // 优先跳转选中项；无选中则执行搜索
+    if (_srSelIdx >= 0 && items[_srSelIdx]) {
+      e.preventDefault();
+      items[_srSelIdx].click();
+    }
+  }
+}
+
+/** 更新选中项视觉态，并滚入视图 */
+function updateSelHighlight(items) {
+  items.forEach((el, i) => el.classList.toggle('active', i === _srSelIdx));
+  if (_srSelIdx >= 0 && items[_srSelIdx]) {
+    items[_srSelIdx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+
 function openSearch() {
+  _srSelIdx = -1;
   const overlay = document.createElement('div');
   overlay.className='overlay';overlay.onclick=function(e){if(e.target===this)this.remove();};
-  overlay.innerHTML=`<div class="panel panel-search" onclick="event.stopPropagation()"><div class="panel-hd"><input type="text" id="searchInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none" placeholder="🔍 搜索训练内容·知识书塔 · ↵ 搜索" autofocus onkeydown="if(event.key==='Enter')doSearch(this.value)"><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-bd" id="searchResults"><div class="search-hint">⌨️ 输入 → ↵ 搜索</div></div></div>`;
+  overlay.innerHTML=`<div class="panel panel-search" onclick="event.stopPropagation()"><div class="panel-hd"><input type="text" id="searchInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none" placeholder="🔍 搜索训练内容·知识书塔 · ↑↓ 选 · ↵ 跳转" autofocus oninput="scheduleSearch(this)" onkeydown="handleSearchKey(event,this)"><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-meta" id="searchMeta" style="font-size:11px;color:var(--text3);padding:4px 12px;text-align:right">⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭</div><div class="panel-bd" id="searchResults">${renderSearchHistoryHTML()}</div></div>`;
   document.body.appendChild(overlay);setTimeout(()=>document.getElementById('searchInput')?.focus(),100);
+}
+
+/** 渲染搜索历史面板 HTML（空历史时回退到原提示） */
+function renderSearchHistoryHTML() {
+  const hist = getSearchHistory();
+  if (!hist.length) {
+    return '<div class="search-hint">⌨️ 输入 → 自动搜索<br><span style="opacity:0.6;font-size:11px">试搜：发球 / 杀球 / 营养 / 战术</span></div>';
+  }
+  const items = hist.map((q, i) => `<a class="sr-sugg sr-hist" data-hist-q="${escapeAttr(q)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.histQ;scheduleSearch(i);i.focus();">🔁 ${escapeHTML(q)}</a>`).join(' ');
+  return `<div class="search-hint" style="text-align:left;padding:14px 12px 8px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--text3);font-weight:600">📜 最近搜索</span><a onclick="clearSearchHistory()" style="font-size:10px;color:var(--text3);cursor:pointer;opacity:0.7">🗑️ 清空</a></div><div style="line-height:1.8">${items}</div><div style="margin-top:8px;font-size:10px;color:var(--text3);opacity:0.7">⌨️ 输入关键字开始搜索</div></div>`;
+}
+
+/** 把搜索历史区域重渲染（点击"清空"后调用） */
+function renderSearchHistory() {
+  const box = document.getElementById('searchResults');
+  if (box) box.innerHTML = renderSearchHistoryHTML();
+}
+
+/** 转义 HTML 防止 XSS（搜索历史来自用户输入） */
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) {
+  return escapeHTML(s);
 }
 
 const MAX_RESULTS = 30;
@@ -3330,6 +4960,31 @@ const RE_SPECIAL = /[.*+?^${}()|[\]\\]/g;
 
 /** Escape special regex characters in a query string */
 function escapeRegex(s) { return s.replace(RE_SPECIAL, '\\$&'); }
+
+/** 计算搜索结果的相关度分数（越大越相关）
+ *  - 章节标题完全匹配：+100
+ *  - 章节标题包含：+50（开头再 +10）
+ *  - H2 标题完全匹配：+40
+ *  - H2 标题包含：+20（开头再 +10）
+ *  - 正文行匹配：+5（词频再加权，最高 +15）
+ */
+function scoreSearchResult(r, ql, contentHits) {
+  let score = 0;
+  const t = r.ch.title.toLowerCase();
+  if (t === ql) score += 100;
+  else if (t.includes(ql)) { score += 50; if (t.startsWith(ql)) score += 10; }
+  const preview = (r.preview || '').toLowerCase();
+  if (preview.startsWith('📌 ')) {
+    const h2 = preview.slice(2).trim();
+    if (h2 === ql) score += 40;
+    else if (h2.includes(ql)) { score += 20; if (h2.startsWith(ql)) score += 10; }
+  }
+  if (r.line > 0) {
+    const hits = contentHits[r.ch.file] || 0;
+    score += 5 + Math.min(10, hits);
+  }
+  return score;
+}
 
 /** Search chapter titles and H2 headings (no network needed, fast) */
 function searchMetadata(ql, results) {
@@ -3362,12 +5017,20 @@ async function searchContent(ql, results, queryOrig) {
       const md = await fetchChapterContent(book.id, ch.file);
       if (!md) continue;
       const lines = md.split('\n');
-      for (let i = 0; i < lines.length && results.length < MAX_RESULTS; i++) {
-        if (lines[i].toLowerCase().includes(ql) && !lines[i].startsWith('#')) {
-          const p = lines[i].length > 100 ? lines[i].slice(0, 100) + '…' : lines[i];
-          results.push({ book, ch, preview: p, line: i + 1 });
-          break;
+      let firstMatchLine = -1;
+      let totalHits = 0;
+      for (let i = 0; i < lines.length; i++) {
+        const ln = lines[i].toLowerCase();
+        if (ln.startsWith('#')) continue;
+        if (ln.includes(ql)) {
+          totalHits++;
+          if (firstMatchLine < 0) firstMatchLine = i + 1;
         }
+      }
+      if (firstMatchLine > 0) {
+        const raw = lines[firstMatchLine - 1];
+        const p = raw.length > 100 ? raw.slice(0, 100) + '…' : raw;
+        results.push({ book, ch, preview: p, line: firstMatchLine, hits: totalHits });
       }
     }
     if (results.length >= MAX_RESULTS) break;
@@ -3399,20 +5062,50 @@ async function fetchChapterContent(bookId, file) {
   return null;
 }
 
+/** 常见搜索建议（无结果时给出） */
+const SEARCH_SUGGESTIONS = ['发球', '杀球', '接发', '营养', '战术', '体能', '训练计划', '损伤', '柔韧', '心理'];
+
 /** Render search results into the DOM */
 function renderSearchResults(results, queryOrig) {
+  _srSelIdx = -1;
+  const meta = document.getElementById('searchMeta');
   if (!results.length) {
-    $('searchResults').innerHTML = '<div class="search-hint">😅 未找到匹配内容</div>';
+    // 🎯 优先推荐「包含 query 子串」的关键词（命中用户意图），其次回退到通用建议
+    const q = (queryOrig || '').trim();
+    let sugg;
+    if (q) {
+      const starts = SEARCH_SUGGESTIONS.filter(s => s.startsWith(q));
+      const contains = SEARCH_SUGGESTIONS.filter(s => !s.startsWith(q) && s.includes(q));
+      const others = SEARCH_SUGGESTIONS.filter(s => !s.includes(q));
+      sugg = [...starts, ...contains, ...others].slice(0, 5);
+    } else {
+      sugg = SEARCH_SUGGESTIONS.slice(0, 5);
+    }
+    // 🔒 转义防 XSS，并对 query 子串做高亮（视觉提示「这些词和你的输入相关」）
+    const safeQ = escapeHTML(q);
+    const chipHtml = sugg.map(s => {
+      const safeS = escapeHTML(s);
+      const hi = q && s.includes(q)
+        ? safeS.replace(new RegExp('(' + escapeRegex(q) + ')', 'g'), '<em style="color:var(--blue);font-style:normal;font-weight:700">$1</em>')
+        : safeS;
+      return `<a class="sr-sugg" data-q="${escapeAttr(s)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.q;scheduleSearch(i);i.focus();">${hi}</a>`;
+    }).join(' · ');
+    $('searchResults').innerHTML = `<div class="search-hint">😅 未找到「<strong>${safeQ}</strong>」<br><span style="opacity:0.7;font-size:11px">试试这些（已按相关度排序）：</span><br><div style="margin-top:6px">${chipHtml}</div></div>`;
+    if (meta) meta.textContent = '0 条结果';
     return;
   }
   const escaped = escapeRegex(queryOrig);
   const re = new RegExp('(' + escaped + ')', 'gi');
+  if (meta) meta.textContent = `${results.length} 条结果（按相关度 · ↑↓ 选 · ↵ 跳转）`;
   $('searchResults').innerHTML = results.map(r => {
     const highlighted = r.preview.replace(re, '<em>$1</em>');
-    return `<div class="sr-item" onclick="this.closest('.overlay').remove();goSearchResult('${r.book.id}','${r.ch.file}')">
+    // 内容匹配才传 line，标题/H2 匹配则传空，由读者端用 query 全文高亮
+    const lineAttr = r.line ? r.line : '';
+    const meta2 = (r.line ? '<span class="sr-m">第' + r.line + '行</span>' : '') + (r.hits > 1 ? '<span class="sr-hits">命中 ' + r.hits + ' 次</span>' : '');
+    return `<div class="sr-item" onclick="this.closest('.overlay').remove();goSearchResult('${r.book.id}','${r.ch.file}',${lineAttr ? r.line : 'null'},'${escapeRegex(queryOrig).replace(/'/g, "\\'")}')">
       <div class="sr-b">${r.book.emoji} ${r.book.title} · ${r.ch.title}</div>
       <div class="sr-p">${highlighted}</div>
-      ${r.line ? '<div class="sr-m">第' + r.line + '行</div>' : ''}
+      ${meta2 ? `<div class="sr-meta-row">${meta2}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -3420,9 +5113,13 @@ function renderSearchResults(results, queryOrig) {
 async function doSearch(query) {
   query = query.trim();
   if (!query) {
-    $('searchResults').innerHTML = '<div class="search-hint">⌨️ 输入 → ↵ 搜索</div>';
+    $('searchResults').innerHTML = renderSearchHistoryHTML();
+    const meta = document.getElementById('searchMeta');
+    if (meta) meta.textContent = '⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭';
     return;
   }
+  // 📜 记录到搜索历史（去重 + 最新置顶）
+  addSearchHistory(query);
   $('searchResults').innerHTML = '<div class="search-hint">⏳ 搜索中…</div>';
   const ql = query.toLowerCase();
   const results = [];
@@ -3435,25 +5132,184 @@ async function doSearch(query) {
     await searchContent(ql, results, query);
   }
 
+  // 🎯 v3.9.3 按相关度排序：标题完全匹配 > 标题包含 > H2 匹配 > 正文匹配（词频加权）
+  const contentHits = {};
+  for (const r of results) {
+    if (r.hits && r.ch) contentHits[r.ch.file] = r.hits;
+  }
+  results.forEach(r => { r._score = scoreSearchResult(r, ql, contentHits); });
+  results.sort((a, b) => b._score - a._score);
+
   renderSearchResults(results, query);
 }
-function goSearchResult(bid,file){goToBook(bid);const b=MANIFEST.books.find(x=>x.id===bid);const idx=b?.chapters.findIndex(c=>c.file===file);if(idx>=0)setTimeout(()=>openChapter(idx),300);}
+function goSearchResult(bid,file,line,query){pendingSearchJump={bookId:bid,file:file,line:line||0,query:query||''};goToBook(bid);const b=MANIFEST.books.find(x=>x.id===bid);const idx=b?.chapters.findIndex(c=>c.file===file);if(idx>=0)setTimeout(()=>openChapter(idx),300);}
+
+/** 在章节渲染完成后定位搜索匹配：滚动到匹配行 + 高亮关键词 + 镉定标记 */
+function applySearchJump() {
+  const jump = pendingSearchJump;
+  if (!jump) return;
+  const article = $('article');
+  if (!article) return;
+  // 先清除上次的高亮与镉定
+  article.querySelectorAll('.search-hl,.search-anchor').forEach(el => {
+    const parent = el.parentNode;
+    if (!parent) return;
+    if (el.classList.contains('search-anchor')) {
+      el.classList.remove('search-anchor');
+    } else {
+      // 还原文本节点
+      parent.replaceChild(document.createTextNode(el.textContent), el);
+      parent.normalize();
+    }
+  });
+  // 镉定指定行：如果有 line，则找到第 N 个段落（近似对应 markdown 行）
+  let anchorEl = null;
+  if (jump.line > 0) {
+    const blocks = article.querySelectorAll('p,li,h2,h3,h4,pre,blockquote,table');
+    if (blocks.length) {
+      // 按比例近似跳转（markdown 行 → HTML 块）
+      const idx = Math.min(blocks.length - 1, Math.max(0, Math.floor((jump.line - 1) * blocks.length / Math.max(jump.line + 5, 30))));
+      anchorEl = blocks[idx];
+    }
+  }
+  // 如果没有 line 或没找到镉定，则高亮第一个出现位置所在的祖先块
+  if (!anchorEl && jump.query) {
+    const first = findFirstMatchInArticle(article, jump.query);
+    if (first) anchorEl = first.closest('p,li,h2,h3,h4,pre,blockquote,table,article') || article;
+  }
+  // 在正文中高亮所有匹配关键词
+  if (jump.query) {
+    const safe = jump.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (safe) {
+      const re = new RegExp(safe, 'gi');
+      walkTextNodes(article, (text) => {
+        re.lastIndex = 0;
+        if (!re.test(text)) return null;
+        re.lastIndex = 0;
+        const frag = document.createDocumentFragment();
+        let last = 0;
+        let m;
+        while ((m = re.exec(text)) !== null) {
+          if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+          const em = document.createElement('em');
+          em.className = 'search-hl';
+          em.textContent = m[0];
+          frag.appendChild(em);
+          last = m.index + m[0].length;
+          if (m[0].length === 0) re.lastIndex++;
+        }
+        if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+        return frag;
+      });
+    }
+  }
+  // 定位滚动：镉定元素出现在视口上方 20% 处
+  if (anchorEl) {
+    anchorEl.classList.add('search-anchor');
+    requestAnimationFrame(() => {
+      const content = $('content');
+      if (!content) return;
+      const rect = anchorEl.getBoundingClientRect();
+      const containerRect = content.getBoundingClientRect();
+      const offset = rect.top - containerRect.top + content.scrollTop - content.clientHeight * 0.2;
+      content.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+      // 4秒后移除镉定动画
+      setTimeout(() => anchorEl && anchorEl.classList.remove('search-anchor'), 4000);
+    });
+  }
+  pendingSearchJump = null;
+}
+
+/** 遍历 article 内的文本节点（不进 script/style） */
+function walkTextNodes(root, cb) {
+  const skip = new Set(['SCRIPT', 'STYLE']);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      let p = node.parentNode;
+      while (p && p !== root) {
+        if (p.nodeType === 1 && (skip.has(p.tagName) || p.classList.contains('search-hl'))) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        p = p.parentNode;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  let n;
+  const replacements = [];
+  while ((n = walker.nextNode())) replacements.push(n);
+  for (const node of replacements) {
+    const result = cb(node.nodeValue);
+    if (result && node.parentNode) {
+      node.parentNode.replaceChild(result, node);
+    }
+  }
+}
+
+/** 在 article 中查找首个匹配文本的节点 */
+function findFirstMatchInArticle(root, query) {
+  if (!query) return null;
+  const safe = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (!safe) return null;
+  const re = new RegExp(safe, 'i');
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      re.lastIndex = 0;
+      return re.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  return walker.nextNode();
+}
 
 // ─── Sidebar ──────────────────────────────────
-function toggleSidebar(show){if(show===undefined)show=!sidebarOpen;$('sidebar').classList.toggle('closed',!show);sidebarOpen=show;}
+// 抽屉式侧栏：在 ≤1023px 设备上打开时显示全屏遮罩，点击遮罩可关闭侧栏
+function getSidebarBackdrop() {
+  let bd = document.getElementById('sidebarBackdrop');
+  if (!bd) {
+    bd = document.createElement('div');
+    bd.id = 'sidebarBackdrop';
+    bd.className = 'sidebar-backdrop hidden';
+    bd.setAttribute('aria-hidden', 'true');
+    bd.addEventListener('click', () => toggleSidebar(false));
+    document.body.appendChild(bd);
+  }
+  return bd;
+}
+function toggleSidebar(show){
+  if(show===undefined) show=!sidebarOpen;
+  $('sidebar').classList.toggle('closed',!show);
+  sidebarOpen=show;
+  // 仅在抽屉模式（≤1023px）下显示遮罩
+  const bd = getSidebarBackdrop();
+  if (bd) bd.classList.toggle('hidden', !show || window.innerWidth > 1023);
+}
 let sidebarOpen=true;
 
+// 通用关闭弹窗函数
+function closeOverlayPopup(btn) {
+  var overlay = btn.closest('.overlay');
+  if (overlay) overlay.remove();
+}
+
 // ─── Overlay ──────────────────────────────────
-function showOverlay(cls,title,body){const overlay=document.createElement('div');overlay.className='overlay';overlay.id='_tmpOverlay';overlay.onclick=function(e){if(e.target===this)this.remove();};overlay.innerHTML=`<div class="${cls}" onclick="event.stopPropagation()"><div class="panel-hd"><span>${title}</span><button class="h-btn" onclick="this.closest('.overlay').remove()">✕</button></div><div class="panel-bd">${body}</div></div>`;document.body.appendChild(overlay);}
+// 每次创建独立 id（避免 _tmpOverlay 重复导致旧 overlay 泄漏）
+let _overlaySeq = 0;
+function nextOverlayId() { return `_overlay_${++_overlaySeq}`; }
+function showOverlay(cls,title,body){const overlay=document.createElement('div');overlay.className='overlay';overlay.id=nextOverlayId();overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label',title||'弹窗');overlay.onclick=function(e){if(e.target===this)this.remove();};overlay.innerHTML=`<div class="${cls}" onclick="event.stopPropagation()"><div class="panel-hd"><span>${title}</span><button class="h-btn" onclick="this.closest('.overlay').remove()" aria-label="关闭">✕</button></div><div class="panel-bd">${body}</div></div>`;document.body.appendChild(overlay);return overlay;}
 
 // ─── 教练系统内嵌 iframe 加载 ────────
 function openCoachInline(url, title) {
   // 移除已有 overlay
-  const existing = document.getElementById('_tmpOverlay');
+  const existing = document.querySelector('.overlay.coach-inline-overlay');
   if (existing) existing.remove();
   const overlay = document.createElement('div');
   overlay.className = 'overlay coach-inline-overlay';
-  overlay.id = '_tmpOverlay';
+  overlay.id = nextOverlayId();
+  overlay.setAttribute('role','dialog');
+  overlay.setAttribute('aria-modal','true');
+  overlay.setAttribute('aria-label', title || '教练系统');
   overlay.onclick = function(e) { if (e.target === this) this.remove(); };
   overlay.innerHTML = `<div class="coach-inline-wrap" onclick="event.stopPropagation()">
     <div class="panel-hd coach-inline-hd">
@@ -3479,11 +5335,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.documentElement.setAttribute('data-theme', theme);
   document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌓';
   const savedFont=localStorage.getItem('bk_font');if(savedFont){fontBase=parseInt(savedFont);document.documentElement.style.setProperty('--font-base',fontBase+'px');}
+  setTimeout(_updateFontBtnState, 300); // 让工具栏 DOM 就绪后再同步按钮状态
   bar.style.width='90%';await sleep(200);
-  initRP();bar.style.width='100%';await sleep(200);
+  initRP();
+  initBadmintonCursor(); // 初始化羽毛球拍光标
+  bar.style.width='100%';await sleep(200);
   $('splash').style.display='none';$('app').style.display='block';
   renderDashboard();updateProgress();
-  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);});
+  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);updateReadProgress();_tickReadSeconds();_tickWeekGoal();_tocScrollTick();});
+  _rpInitDrag(); // v3.14.2 阅读进度条拖拽初始化
   if(window.innerWidth<=768)toggleSidebar(false);
   setTimeout(checkAchievements,2000);
 });
@@ -3508,9 +5368,41 @@ var a=parseInt((document.getElementById("tdeeAge")||{}).value)||25;
 var act=parseFloat((document.getElementById("tdeeActivity")||{}).value)||1.55;
 var bmr=g==="male"?10*w+6.25*h-5*a+5:10*w+6.25*h-5*a-161;
 var tdee=Math.round(bmr*act);
-var r=document.getElementById("tdeeResult");
-if(r) r.innerHTML="BMR:"+Math.round(bmr)+"kcal | TDEE:"+tdee+"kcal/天";
+
+// 弹窗展示结果
+var advice = act < 1.4 ? '你活动量较小，建议增加运动' : act < 1.6 ? '你活动量适中，保持目前的运动习惯' : '你活动量很大，注意补充营养';
+showOverlay('panel-sm', '🔥 TDEE 计算结果', `
+  <div style="text-align:center;padding:10px">
+    <div style="font-size:14px;color:var(--text2);margin-bottom:8px">你的基础代谢</div>
+    <div style="font-size:36px;font-weight:700;color:var(--blue)">${Math.round(bmr)}</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px">千卡/天</div>
+    <div style="background:var(--bg2);border-radius:12px;padding:16px;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">每日总消耗(TDEE)</div>
+      <div style="font-size:28px;font-weight:700;color:var(--green)">${tdee}</div>
+      <div style="font-size:11px;color:var(--text3)">千卡/天</div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);text-align:left;line-height:1.8">
+      <strong>📋 通俗解读：</strong><br>
+      • 你每天躺着不动会消耗 <strong>${Math.round(bmr)}</strong> 千卡<br>
+      • 加上日常活动后大约 <strong>${tdee}</strong> 千卡<br>
+      • ${advice}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px;text-align:center">
+      <div style="background:var(--bg2);border-radius:8px;padding:10px">
+        <div style="font-size:11px;color:var(--text2)">减脂</div>
+        <div style="font-size:16px;font-weight:600;color:var(--red)">${tdee-400}</div>
+        <div style="font-size:10px;color:var(--text3)">千卡/天</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:8px;padding:10px">
+        <div style="font-size:11px;color:var(--text2)">增肌</div>
+        <div style="font-size:16px;font-weight:600;color:var(--green)">${tdee+300}</div>
+        <div style="font-size:10px;color:var(--text3)">千卡/天</div>
+      </div>
+    </div>
+    <button onclick="closeOverlayPopup(this)" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
+  </div>`);
 }
+
 function calcMacro(){
 var w=parseFloat((document.getElementById("macroWeight")||{}).value)||70;
 var g=(document.getElementById("macroGoal")||{}).value||"maintain";
@@ -3521,21 +5413,140 @@ var protein=Math.round(pMult[g]*w);
 var fat=Math.round(0.8*w);
 var cal=tdee+calAdj[g];
 var carb=Math.round((cal-protein*4-fat*9)/4);
-var r=document.getElementById("macroResult");
-if(r) r.innerHTML="蛋白"+protein+"g 脂肪"+fat+"g 碳水"+carb+"g 总计"+cal+"kcal";
+
+// 弹窗展示结果
+var goalText = {maintain:'维持体重',gain:'增肌',lose:'减脂'}[g];
+var goalAdvice = {maintain:'保持现有饮食，注意营养均衡',gain:'要多吃才能长肌肉，建议增加500大卡',lose:'要控制饮食，建议减少400大卡'}[g];
+showOverlay('panel-sm', '🥩 营养素计算结果', `
+  <div style="text-align:center;padding:10px">
+    <div style="font-size:14px;color:var(--text2);margin-bottom:12px">目标：${goalText}</div>
+    <div style="background:linear-gradient(135deg,var(--green),var(--blue));border-radius:12px;padding:20px;margin-bottom:16px">
+      <div style="font-size:12px;color:rgba(255,255,255,0.8)">每日总热量</div>
+      <div style="font-size:32px;font-weight:700;color:#fff">${cal}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.7)">千卡</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+      <div style="background:var(--bg2);border-radius:10px;padding:12px">
+        <div style="font-size:20px;font-weight:700;color:var(--green)">${protein}g</div>
+        <div style="font-size:10px;color:var(--text2)">蛋白质</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:12px">
+        <div style="font-size:20px;font-weight:700;color:var(--gold)">${carb}g</div>
+        <div style="font-size:10px;color:var(--text2)">碳水</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:12px">
+        <div style="font-size:20px;font-weight:700;color:var(--red)">${fat}g</div>
+        <div style="font-size:10px;color:var(--text2)">脂肪</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);text-align:left;line-height:1.8;background:var(--bg2);border-radius:10px;padding:12px">
+      <strong>📋 通俗解读：</strong><br>
+      • 蛋白质 <strong>${protein}g</strong> = 约${Math.round(protein/30)}个鸡蛋的蛋白量<br>
+      • 碳水 <strong>${carb}g</strong> = 约${Math.round(carb/60)}碗米饭<br>
+      • 脂肪 <strong>${fat}g</strong> = 约${Math.round(fat/9)}勺油<br>
+      <br>
+      <strong>建议：</strong>${goalAdvice}
+    </div>
+    <button onclick="closeOverlayPopup(this)" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
+  </div>`);
 }
+
 function calcWater(){
 var w=parseFloat((document.getElementById("waterWeight")||{}).value)||70;
 var t=parseInt((document.getElementById("waterTrain")||{}).value)||60;
 var temp=parseFloat((document.getElementById("waterTemp")||{}).value)||1;
 var daily=Math.round(w*33*temp);
 var train=Math.round(t*12);
-var r=document.getElementById("waterResult");
-if(r) r.innerHTML="日常"+daily+"ml + 训练"+train+"ml = "+Math.round((daily+train)/10)/100+"L";
+var total=Math.round(daily+train);
+
+// 弹窗展示结果
+var bottles = Math.round(total / 550);
+showOverlay('panel-sm', '💧 饮水计算结果', `
+  <div style="text-align:center;padding:10px">
+    <div style="font-size:40px;margin-bottom:8px">💧</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:4px">每日建议饮水量</div>
+    <div style="font-size:36px;font-weight:700;color:var(--blue)">${total}</div>
+    <div style="font-size:14px;color:var(--text3);margin-bottom:16px">毫升（约${(total/1000).toFixed(1)}升）</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px">
+      <div style="background:var(--bg2);border-radius:10px;padding:12px">
+        <div style="font-size:11px;color:var(--text2)">日常饮水</div>
+        <div style="font-size:18px;font-weight:600;color:var(--text)">${daily}ml</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:12px">
+        <div style="font-size:11px;color:var(--text2)">训练补充</div>
+        <div style="font-size:18px;font-weight:600;color:var(--text)">+${train}ml</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);text-align:left;line-height:1.8;background:var(--bg2);border-radius:10px;padding:12px">
+      <strong>📋 通俗解读：</strong><br>
+      • 约等于 <strong>${bottles}</strong> 瓶550ml矿泉水<br>
+      • 建议分${Math.min(8, Math.ceil(total/500))}次喝完，不要一次喝太多<br>
+      • 训练中每15-20分钟补充${Math.round(t/60*250)}ml水<br>
+      ${temp > 1 ? '• 高温天气记得多补充水分！' : ''}
+    </div>
+    <button onclick="closeOverlayPopup(this)" style="width:100%;margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">知道了</button>
+  </div>`);
 }
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function scrollToTop(){$('content').scrollTo({top:0,behavior:'smooth'});}
+
+// ─── v3.14.2 阅读进度条（拖拽跳转） ─────────────────
+function updateReadProgress() {
+  const c = $('content');
+  const bar = $('readProgress');
+  if (!c || !bar) return;
+  const scrollTop = c.scrollTop;
+  const max = c.scrollHeight - c.clientHeight;
+  const pct = max > 0 ? Math.min(100, Math.max(0, Math.round((scrollTop / max) * 100))) : 0;
+  const fill = $('rpFill');
+  const thumb = $('rpThumb');
+  if (fill) fill.style.width = pct + '%';
+  if (thumb) thumb.style.left = pct + '%';
+  bar.classList.toggle('show', max > 60 && (pct > 1 || max > 200));
+}
+
+let _rpDragging = false;
+function _rpSetFromX(clientX) {
+  const track = $('rpTrack');
+  const c = $('content');
+  if (!track || !c) return;
+  const rect = track.getBoundingClientRect();
+  const pct = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
+  const max = c.scrollHeight - c.clientHeight;
+  c.scrollTop = (pct / 100) * max;
+  const fill = $('rpFill');
+  const thumb = $('rpThumb');
+  const bubble = $('rpBubble');
+  if (fill) fill.style.width = pct + '%';
+  if (thumb) thumb.style.left = pct + '%';
+  if (bubble) { bubble.textContent = Math.round(pct) + '%'; bubble.classList.add('show'); }
+}
+function _rpInitDrag() {
+  const track = $('rpTrack');
+  const bar = $('readProgress');
+  const bubble = $('rpBubble');
+  if (!track || !bar) return;
+  track.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    _rpDragging = true;
+    bar.setPointerCapture?.(e.pointerId);
+    _rpSetFromX(e.clientX);
+    if (bubble) bubble.classList.add('show');
+  });
+  bar.addEventListener('pointermove', (e) => {
+    if (!_rpDragging) return;
+    _rpSetFromX(e.clientX);
+  });
+  const stop = () => {
+    if (!_rpDragging) return;
+    _rpDragging = false;
+    setTimeout(() => bubble?.classList.remove('show'), 600);
+  };
+  bar.addEventListener('pointerup', stop);
+  bar.addEventListener('pointercancel', stop);
+  track.addEventListener('touchstart', (e) => { if (e.touches[0]) _rpSetFromX(e.touches[0].clientX); }, {passive: true});
+}
 
 
 
@@ -3549,13 +5560,16 @@ function loadRoleData() {
     const stored = JSON.parse(localStorage.getItem(ROLE_DATA_LSK));
     if (stored && stored.students && stored.coaches) return stored;
   } catch(e) {}
+  // 🐏 以"今天"为锚点动态生成最后活跃日期 — 避免硬编码 2026-07 后所有学员看上去都是 N 天未动
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysAgo = (n) => { const d = new Date(today); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
   const seed = {
     students: [
-      { id:'s1', name:'小明', level:3, xp:245, chaptersRead:12, lastActive:'2026-07-05', quizScore:8 },
-      { id:'s2', name:'小红', level:5, xp:480, chaptersRead:28, lastActive:'2026-07-04', quizScore:15 },
-      { id:'s3', name:'小华', level:2, xp:120, chaptersRead:5, lastActive:'2026-07-03', quizScore:3 },
-      { id:'s4', name:'小芳', level:4, xp:360, chaptersRead:18, lastActive:'2026-07-02', quizScore:10 },
-      { id:'s5', name:'小军', level:1, xp:50, chaptersRead:2, lastActive:'2026-06-30', quizScore:1 },
+      { id:'s1', name:'小明', level:3, xp:245, chaptersRead:12, lastActive:daysAgo(0), quizScore:8 },
+      { id:'s2', name:'小红', level:5, xp:480, chaptersRead:28, lastActive:daysAgo(1), quizScore:15 },
+      { id:'s3', name:'小华', level:2, xp:120, chaptersRead:5,  lastActive:daysAgo(2), quizScore:3 },
+      { id:'s4', name:'小芳', level:4, xp:360, chaptersRead:18, lastActive:daysAgo(5), quizScore:10 },
+      { id:'s5', name:'小军', level:1, xp:50,  chaptersRead:2,  lastActive:daysAgo(12), quizScore:1 },
     ],
     coaches: [
       { id:'c1', name:'李教练', students:['s1','s2'], totalXp:1200 },
@@ -3600,7 +5614,7 @@ function selectRole(role) {
   const data = loadRoleData();
   if (role === 'student') {
     setCurrentRole('student', 'self');
-    document.getElementById('_tmpOverlay')?.remove();
+    document.querySelectorAll('.overlay').forEach(o => o.remove());
     showStudentDashboard();
   } else if (role === 'coach') {
     showOverlay('panel-coach-pick', '👨‍🏫 选择教练身份', `
@@ -3618,14 +5632,14 @@ function selectRole(role) {
     `);
   } else if (role === 'principal') {
     setCurrentRole('principal', data.principal.id);
-    document.getElementById('_tmpOverlay')?.remove();
+    document.querySelectorAll('.overlay').forEach(o => o.remove());
     showPrincipalDashboard();
   }
 }
 
 function pickCoach(coachId) {
   setCurrentRole('coach', coachId);
-  document.getElementById('_tmpOverlay')?.remove();
+  document.querySelectorAll('.overlay').forEach(o => o.remove());
   showCoachDashboard(coachId);
 }
 
@@ -4042,10 +6056,21 @@ function showPrincipalDashboard() {
 }
 
 function openAdminSettings() {
+  const cursorEnabled = document.body.classList.contains('badminton-cursor');
   const data = loadRoleData();
   showOverlay('panel-admin', '⚙️ 管理员设置', `
     <div style="display:flex;flex-direction:column;gap:12px">
       <div style="font-size:11px;color:var(--text3);text-align:center">本设备数据 · 可添加/编辑学员、教练、分配关系</div>
+      
+      <!-- 羽毛球拍光标设置 -->
+      <div class="calc-card" style="padding:12px;background:linear-gradient(135deg,var(--bg2),rgba(82,183,136,0.08));border:1px solid var(--green)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:13px;font-weight:600">🏸 羽毛球拍光标</div>
+          <button onclick="const en=toggleBadmintonCursor();this.textContent=en?'✅ 已开启':'⚪ 关闭';this.style.background=en?'var(--green)':'var(--bg3)';this.style.color=en?'#fff':'var(--text)'" class="tb-btn" style="font-size:11px;background:${cursorEnabled?'var(--green)':'var(--bg3)'};color:${cursorEnabled?'#fff':'var(--text)'}">${cursorEnabled?'✅ 已开启':'⚪ 关闭'}</button>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px">将鼠标光标替换为羽毛球拍样式</div>
+      </div>
+      
       <div class="calc-card" style="padding:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <div style="font-size:13px;font-weight:600">🧑‍🎓 学员 (${data.students.length})</div>
@@ -4141,3 +6166,75 @@ function resetRoleData() {
   localStorage.removeItem(ROLE_DATA_LSK);
   loadRoleData(); openAdminSettings();
 }
+
+// ─── 全局键盘快捷键 ──────────────────────────────────────
+// Esc/Backspace 关闭弹窗 · Ctrl+K 打开搜索 · ←/→ 章节翻页 · Home 回首页
+function isTypingTarget(el) {
+  if (!el) return false;
+  const tag = (el.tagName || '').toLowerCase();
+  return tag === 'input' || tag === 'textarea' || el.isContentEditable;
+}
+
+function closeTopOverlay() {
+  const overlays = document.querySelectorAll('.overlay');
+  if (!overlays.length) return false;
+  // 关闭最顶层（最后添加的）
+  overlays[overlays.length - 1].remove();
+  return true;
+}
+
+document.addEventListener('keydown', (e) => {
+  // 让 input/textarea/contenteditable 内的按键不触发全局快捷键
+  if (isTypingTarget(e.target)) {
+    // 例外：Esc 仍可关闭弹窗
+    if (e.key === 'Escape') closeTopOverlay();
+    return;
+  }
+
+  // Esc → 关闭最顶层弹窗；如无弹窗则尝试返回上一页
+  if (e.key === 'Escape') {
+    if (closeTopOverlay()) { e.preventDefault(); return; }
+    if (typeof navStack !== 'undefined' && navStack.length) {
+      e.preventDefault(); goBack();
+    }
+    return;
+  }
+
+  // Ctrl/Cmd + K → 打开搜索
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+    e.preventDefault();
+    if (typeof openSearch === 'function') openSearch();
+    return;
+  }
+
+  // Home 键 → 回首页（与右下角 Home FAB 等价）
+  if (e.key === 'Home' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    if (typeof goHome === 'function') goHome();
+    return;
+  }
+
+  // ← / → 章节翻页（仅在阅读器视图）
+  const inReader = currentBookId && currentChapterIdx >= 0;
+  if (inReader && typeof prevChapter === 'function' && typeof nextChapter === 'function') {
+    if (e.key === 'ArrowLeft' && currentChapterIdx > 0) {
+      e.preventDefault(); prevChapter();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault(); nextChapter();
+    }
+  }
+
+  // a11y: Enter/Space 触发当前焦点 [role="button"][tabindex="0"] 的 onclick
+  // 让所有「div 当按钮」键盘可达，零侵入、未来加新元素自动生效
+  if (e.key === 'Enter' || e.key === ' ') {
+    const el = document.activeElement;
+    if (el && el.getAttribute && el.getAttribute('role') === 'button'
+        && el.getAttribute('tabindex') === '0'
+        && typeof el.click === 'function') {
+      // 避免双触发：元素已有 onkeydown 自处理时跳过（按其 own handler 优先）
+      if (typeof el.onkeydown === 'function') return;
+      e.preventDefault();
+      el.click();
+    }
+  }
+});
