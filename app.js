@@ -555,24 +555,29 @@ function renderPersonalPlan() {
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${goalGrid}</div>`;
 }
 function addNewPersonalPlan() {
-  const name = prompt('计划名称（如：我的乒乓球专项）');
-  if (!name) return;
-  const icon = prompt('图标（ emoji，如 🏓）', '🎯') || '🎯';
-  const desc = prompt('计划描述', '自定义训练计划') || '自定义训练计划';
-  const newPlan = {
-    id: 'custom-' + Date.now(),
-    name, icon, desc,
-    goals: [
-      { label: '基础训练', color: '#0a84ff', items: ['内容1','内容2','内容3'] }
-    ],
-    recovery: { rest: '每周1天', sleep: '8h' }
-  };
-  const list = getPersonalPrograms();
-  list.push(newPlan);
-  savePersonalPrograms(list);
-  _selectedPersonal = newPlan.id;
-  localStorage.setItem('bk_personal_segment', _selectedPersonal);
-  openPersonalHub(); // 刷新
+  showPrompt('计划名称（如：我的乒乓球专项）', (name) => {
+    if (!name) return;
+    showPrompt('图标（emoji，如 🏓）', (icon) => {
+      icon = icon || '🎯';
+      showPrompt('计划描述', (desc) => {
+        desc = desc || '自定义训练计划';
+        const newPlan = {
+          id: 'custom-' + Date.now(),
+          name, icon, desc,
+          goals: [
+            { label: '基础训练', color: '#0a84ff', items: ['内容1','内容2','内容3'] }
+          ],
+          recovery: { rest: '每周1天', sleep: '8h' }
+        };
+        const list = getPersonalPrograms();
+        list.push(newPlan);
+        savePersonalPrograms(list);
+        _selectedPersonal = newPlan.id;
+        localStorage.setItem('bk_personal_segment', _selectedPersonal);
+        openPersonalHub(); // 刷新
+      }, { defaultValue: '自定义训练计划' });
+    }, { placeholder: '🎯', defaultValue: '🎯' });
+  }, { title: '新建自定义计划' });
 }
 const MODULE_CONTENT = {
   nutrition: [
@@ -3357,6 +3362,49 @@ function showConfirm(text, onOk, opts) {
   } catch (e) {
     // 兜底：极端情况下退回原生 confirm，保证流程不中断
     if (confirm(text)) { try { onOk && onOk(); } catch (_) {} }
+  }
+}
+
+// 自定义输入弹窗（替代原生 prompt()，与 showConfirm 风格统一）
+// 回调形式：showPrompt('计划名称', (val) => { if (val) {...} }, { placeholder: '...', defaultValue: '🎯', title: '新建计划' });
+function showPrompt(text, onOk, opts) {
+  try {
+    opts = opts || {};
+    const title = opts.title || '';
+    const placeholder = opts.placeholder || '';
+    const defaultValue = opts.defaultValue || '';
+    const okText = opts.okText || '确认';
+    const cancelText = opts.cancelText || '取消';
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay showPrompt-overlay';
+    overlay.onclick = (e) => { if (e.target === overlay) { overlay.remove(); } };
+    overlay.innerHTML = `<div class="panel showPrompt-panel" onclick="event.stopPropagation()" style="max-width:340px;width:calc(100vw - 40px);padding:20px 18px 16px;text-align:left;animation:slideUp .3s ease">
+      ${title ? `<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px">${title}</div>` : ''}
+      <div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px">${text}</div>
+      <input type="text" data-prompt-input value="${(defaultValue+'').replace(/"/g,'&quot;')}" placeholder="${(placeholder+'').replace(/"/g,'&quot;')}" style="width:100%;padding:9px 11px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;margin-bottom:14px" />
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button data-act="cancel" style="flex:1;padding:9px 0;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">${cancelText}</button>
+        <button data-act="ok" style="flex:1;padding:9px 0;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">${okText}</button>
+      </div>
+    </div>`;
+    const input = overlay.querySelector('[data-prompt-input]');
+    input.focus(); input.select();
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      else if (e.key === 'Escape') { e.preventDefault(); overlay.remove(); }
+    });
+    overlay.querySelector('[data-act="cancel"]').onclick = () => overlay.remove();
+    overlay.querySelector('[data-act="ok"]').onclick = commit;
+    function commit() {
+      const val = (input.value || '').trim();
+      overlay.remove();
+      try { onOk && onOk(val); } catch (e) { console.warn('[showPrompt onOk]', e); }
+    }
+    document.body.appendChild(overlay);
+  } catch (e) {
+    // 兜底：极端情况下退回原生 prompt，保证流程不中断
+    const fallback = prompt(text, defaultValue);
+    try { onOk && onOk((fallback || '').trim()); } catch (_) {}
   }
 }
 
@@ -6358,18 +6406,22 @@ function openAdminSettings() {
 }
 
 function addStudent() {
-  const name = prompt('学员姓名:'); if (!name) return;
-  const data = loadRoleData();
-  const id = 's' + Date.now();
-  data.students.push({ id, name, level:1, xp:0, chaptersRead:0, lastActive:new Date().toISOString().slice(0,10), quizScore:0 });
-  setRoleData(data); openAdminSettings();
+  showPrompt('学员姓名', (name) => {
+    if (!name) return;
+    const data = loadRoleData();
+    const id = 's' + Date.now();
+    data.students.push({ id, name, level:1, xp:0, chaptersRead:0, lastActive:new Date().toISOString().slice(0,10), quizScore:0 });
+    setRoleData(data); openAdminSettings();
+  }, { title: '添加学员', placeholder: '如：张三' });
 }
 function addCoach() {
-  const name = prompt('教练姓名:'); if (!name) return;
-  const data = loadRoleData();
-  const id = 'c' + Date.now();
-  data.coaches.push({ id, name, students:[], totalXp:0 });
-  setRoleData(data); openAdminSettings();
+  showPrompt('教练姓名', (name) => {
+    if (!name) return;
+    const data = loadRoleData();
+    const id = 'c' + Date.now();
+    data.coaches.push({ id, name, students:[], totalXp:0 });
+    setRoleData(data); openAdminSettings();
+  }, { title: '添加教练', placeholder: '如：李教练' });
 }
 function deleteStudent(id) {
   showConfirm('确认删除该学员？此操作不可撤销', () => {
