@@ -679,6 +679,13 @@ article hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
   box-shadow:var(--shadow); transition:all .2s ease; display:none; z-index:50;
 }
 .fab:hover { transform:scale(1.1); }
+/* v3.14.9 回到顶部 FAB：位于右下方 home/search FAB 上方，避免与搜索按钮重叠 */
+.fab-top {
+  bottom: 110px; /* 避开 search FAB (bottom: 16px + height 36px + 8px gap) */
+  background: var(--bg3); color: var(--text);
+  border: 1px solid var(--border);
+}
+.fab-top:hover { background: var(--bg4); }
 .fab.show { display:block; animation:fadeIn .2s ease; }
 
 /* ═══ v3.14.2 阅读进度条（拖拽跳转） ═══ */
@@ -1443,6 +1450,7 @@ header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
   .panel { width: 95vw; max-height: 85vh; }
   .fab-home { width: 46px; height: 46px; right: 12px; bottom: 60px; }
   .fab-search { width: 36px; height: 36px; right: 50px; font-size: 14px; }
+  .fab-top { width: 40px; height: 40px; right: 14px; bottom: 116px; font-size: 13px; }
 }
 
 /* ── 响应式：平板 ───────────────────────────────── */

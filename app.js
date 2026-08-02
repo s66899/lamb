@@ -4804,6 +4804,10 @@ function showView(v) {
   // 搜索 FAB 始终可见（只是位置不同）
   const searchFab = document.getElementById('fabSearch');
   if (searchFab) searchFab.classList.toggle('show', v !== 'dashboard');
+  // 顶部 FAB：仅阅读器视图显示（其它视图隐藏，避免首页/列表页干扰）
+  // scroll 显隐已由 #content 的 scroll 监听器（scrollTop>300 时挂 .show）控制
+  const topFab = document.getElementById('fab');
+  if (topFab) topFab.classList.toggle('show', v === 'reader');
 }
 
 // ─── 返回首页 ───
