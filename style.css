@@ -666,6 +666,21 @@ article hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
 .quiz-card .qc-btn.correct { border-color:var(--green); background:rgba(48,209,88,.1); color:var(--green); }
 .quiz-card .qc-btn.wrong { border-color:var(--red); background:rgba(255,69,58,.1); color:var(--red); }
 .quiz-card .qc-result { font-size:11px; margin-top:4px; }
+/* v3.17.3 Quiz 连击状态条 (从内联样式抽出：更易主题化 + 里程碑高亮 + 升降级动画) */
+.quiz-streak-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:6px 10px; margin-bottom:8px;
+  background:var(--bg3); border:1px solid var(--border); border-radius:6px;
+  font-size:11px; transition:border-color .25s ease, background .25s ease;
+}
+.quiz-streak-bar .qs-cur { color:var(--text2); }
+.quiz-streak-bar .qs-cur b { color:var(--orange); font-size:14px; transition:transform .25s var(--ios-spring); display:inline-block; }
+.quiz-streak-bar .qs-best { color:var(--text3); }
+.quiz-streak-bar .qs-best b { color:var(--gold); }
+/* 连击里程碑触发：背景染暖色 + 数字弹一下 */
+.quiz-streak-bar.milestone { border-color:var(--orange); background:linear-gradient(90deg, rgba(255,149,0,.12), rgba(255,149,0,.04)); animation:streakPulse .55s ease; }
+.quiz-streak-bar.milestone .qs-cur b { transform:scale(1.35); }
+@keyframes streakPulse { 0%{transform:scale(1)} 40%{transform:scale(1.04)} 100%{transform:scale(1)} }
 .qf-btn { text-align:left; padding:6px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg3); cursor:pointer; font-size:11px; color:var(--text); transition:all .15s ease; }
 .qf-btn:hover { background:var(--bg4); }
 .qf-btn.correct { border-color:var(--green); background:rgba(48,209,88,.1); color:var(--green); }

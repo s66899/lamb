@@ -16,7 +16,7 @@ let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新
 let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"秒数
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.17.2';
+const APP_VERSION = 'v3.17.3';
 const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -4948,7 +4948,7 @@ function markStreak() { const p=getP(); if(!p._streak) p._streak={}; const t=new
 
 // ─── Quiz ──────────────────────────────────────
 let quizItems=[], fontBase=15, focusMode=false, tocBtnState=true, studyQuestions=[], studyIdx=0;
-function setupQuiz(ch) { quizItems=[]; const h2s=ch.h2s||[]; if(!h2s.length){$('quizContent').innerHTML='<div style="font-size:10px;color:var(--text3);text-align:center;padding:12px">🤷 无测试点</div>';return;} const n=Math.min(3,h2s.length); const picked=[...h2s].sort(()=>Math.random()-.5).slice(0,n); quizItems=picked.map(h=>({q:`「${h.title}」主要讲什么？`,a:h.title,options:shuffle([h.title,...getRandomH2s(ch,h,3)])})); renderQuizSidebar(); }
+function setupQuiz(ch) { quizItems=[]; const h2s=ch.h2s||[]; if(!h2s.length){$('quizContent').innerHTML='<div style="font-size:10px;color:var(--text3);text-align:center;padding:12px">🤷 无测试点</div>';return;} const n=Math.min(3,h2s.length); const picked=[...h2s].sort(()=>Math.random()-.5).slice(0,n); quizItems=picked.map(h=>({q:`「${h.title}」主要讲什么？`,a:h.title,options:shuffle([h.title,...getRandomH2s(ch,h,3)])})); quizStreak=0; quizBestSession=0; renderQuizSidebar(); }
 function getRandomH2s(ch,exclude,count){const others=(ch.h2s||[]).filter(h=>h.title!==exclude.title);return[...others].sort(()=>Math.random()-.5).slice(0,count).map(h=>h.title);}
 function shuffle(arr){return[...arr].sort(()=>Math.random()-.5);}
 // ─── Quiz 连击 Streak 系统 ───────────────────────
@@ -4956,17 +4956,29 @@ function shuffle(arr){return[...arr].sort(()=>Math.random()-.5);}
 let quizStreak = 0;
 let quizBestSession = 0;
 function renderQuizSidebar(){
-  // 顶部连击状态条：让用户实时看到「连击 X」+「最佳 Y」
-  const streakHtml = `<div id="quizStreakBar" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;margin-bottom:8px;background:var(--bg3);border-radius:6px;font-size:11px">
-    <span style="color:var(--text2)">🔥 当前连击 <strong id="qsCur" style="color:var(--orange);font-size:14px">${quizStreak}</strong></span>
-    <span style="color:var(--text3)">⭐ 最佳 <strong id="qsBest" style="color:var(--gold)">${Math.max(quizStreak, quizBestSession)}</strong></span>
+  // v3.17.3 顶部连击状态条：移到 .quiz-streak-bar CSS (更易主题化)，最佳值取 session 与 RP 终身最佳 的较大值
+  const lifetimeBest = (getRP() && getRP().bestQuizStreak) || 0;
+  const showBest = Math.max(quizStreak, quizBestSession, lifetimeBest);
+  const streakHtml = `<div id="quizStreakBar" class="quiz-streak-bar">
+    <span class="qs-cur">🔥 当前连击 <b id="qsCur">${quizStreak}</b></span>
+    <span class="qs-best">⭐ 最佳 <b id="qsBest">${showBest}</b></span>
   </div>`;
   $('quizContent').innerHTML = streakHtml + quizItems.map((item,qi)=>`<div class="quiz-card" id="qc-${qi}"><div class="qc-q">${item.q}</div>${item.options.map((o,oi)=>`<button class="qc-btn" onclick="checkQuiz(${qi},${oi})" id="qcb-${qi}-${oi}">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}<div class="qc-result" id="qcr-${qi}"></div></div>`).join('');
   $('quizSidebar').style.display='block';
 }
 function _updateStreakBar(){
   const cur=$('qsCur'); if(cur) cur.textContent=quizStreak;
-  const best=$('qsBest'); if(best) best.textContent=Math.max(quizStreak, quizBestSession);
+  const best=$('qsBest'); if(best) best.textContent=Math.max(quizStreak, quizBestSession, (getRP()&&getRP().bestQuizStreak)||0);
+}
+// v3.17.3 里程碑触发动画：连击数换档 (进入新里程碑) 时让状态条染暖色 + 弹一下
+function _pulseStreakBar(){
+  const bar=$('quizStreakBar');
+  if(!bar) return;
+  bar.classList.remove('milestone');
+  // 强制 reflow 让动画可以重复触发
+  void bar.offsetWidth;
+  bar.classList.add('milestone');
+  setTimeout(()=>bar.classList.remove('milestone'), 700);
 }
 function checkQuiz(qi,oi){
   const item=quizItems[qi];const correctIdx=item.options.indexOf(item.a);const correct=oi===correctIdx;
@@ -4986,6 +4998,7 @@ function checkQuiz(qi,oi){
     if (milestones[quizStreak]) {
       addXP(milestones[quizStreak], `🔥 ${quizStreak}连击`);
       showToast(`🔥 ${quizStreak} 连击！+${milestones[quizStreak]} XP 奖励`, 2200);
+      _pulseStreakBar(); // v3.17.3: 里程碑瞬间让状态条染暖色 + 弹一下
     } else if (quizStreak >= 3) {
       showToast(`🔥 ${quizStreak} 连击 · 继续！`, 1200);
     }
