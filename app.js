@@ -16,7 +16,7 @@ let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新
 let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"秒数
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.14.6';
+const APP_VERSION = 'v3.14.7';
 const APP_DATE = '2026-08-02';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -259,11 +259,27 @@ function savePersonalPrograms(arr) {
 const DEFAULT_PERSONAL = [
   { id: 'my-shuttle', name: '我的羽毛球专项', icon: '🏸', desc: '结合步法+技术+体能的系统训练',
     goals: [
-      { label: '步法训练', color: '#0a84ff', items: ['全场四点跑','杀上网','吊上网','防守反击'] },
-      { label: '技术打磨', color: '#30d158', items: ['高远球','吊球','杀球','搓球','推球'] },
-      { label: '体能储备', color: '#ff9f0a', items: ['跳绳3000','折返跑','核心稳定性','冲刺训练'] }
+      { label: '步法训练', color: '#0a84ff', items: ['全场四点跑','杀上网','吊上网','防守反击','前后轮换','交叉换位'] },
+      { label: '技术打磨', color: '#30d158', items: ['高远球','吊球','杀球','搓球','推球','勾对角','扑球'] },
+      { label: '体能储备', color: '#ff9f0a', items: ['跳绳3000','折返跑','核心稳定性','冲刺训练','敏捷梯','多球训练'] }
     ],
     recovery: { rest: '每周1天', sleep: '8h', hydration: '2L/天' }
+  },
+  { id: 'fitness-general', name: '综合体能提升', icon: '💪', desc: '力量+耐力+柔韧全面提升',
+    goals: [
+      { label: '力量训练', color: '#0a84ff', items: ['深蹲','硬拉','卧推','划船','肩推','引体'] },
+      { label: '有氧耐力', color: '#30d158', items: ['慢跑30min','骑行','游泳','HIIT','冲刺间歇'] },
+      { label: '柔韧拉伸', color: '#a855f7', items: ['全身拉伸','瑜伽','筋膜球','动态热身'] }
+    ],
+    recovery: { rest: '每周2天', sleep: '7-8h', hydration: '2.5L/天' }
+  },
+  { id: 'competition-prep', name: '赛前突击', icon: '🏆', desc: '比赛前2周集中准备',
+    goals: [
+      { label: '技术冲刺', color: '#0a84ff', items: ['多球训练','实战对练','关键分处理','心态调整'] },
+      { label: '体能储备', color: '#30d158', items: ['短距离冲刺','高强度间歇','模拟比赛'] },
+      { label: '心理调整', color: '#a855f7', items: ['比赛流程可视化','呼吸放松','自信心暗示'] }
+    ],
+    recovery: { rest: '赛前1天', sleep: '8h+', hydration: '3L/天' }
   }
 ];
 
@@ -2161,26 +2177,17 @@ function renderSidebar() {
   html += '<div class="side-section side-section-links">';
   html += `<div class="side-link ${currentModule==='dashboard'?'active':''}" onclick="goHome()"><span class="sl-icon">🏠</span> 首页</div>`;
   html += `<div class="side-link ${currentModule==='coach'?'active':''}" onclick="openCoach()"><span class="sl-icon">🎯</span> 教练系统</div>`;
+  html += `<div class="side-link" onclick="openEyeSystem()"><span class="sl-icon">🐑</span> 🐑眼系统</div>`;
+  html += `<div class="side-link" onclick="showLibrary()"><span class="sl-icon">📖</span> 阅读</div>`;
   const curRole = getCurrentRole();
   const roleIcon = curRole?.role === 'principal' ? '🏛️' : curRole?.role === 'coach' ? '👨‍🏫' : curRole?.role === 'student' ? '🧑‍🎓' : '🎭';
   html += `<div class="side-link ${currentModule==='role-dashboard'?'active':''}" onclick="openRoleCenter()"><span class="sl-icon">${roleIcon}</span> 角色中心</div>`;
   html += '</div>';
 
-  // ── 阅读（折叠）──
-  const isReadingActive = currentModule === 'book' || currentBookId;
-  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">📚 阅读</div>`;
-  html += `<div class="side-collapsible" ${isReadingActive?'':'style="display:none"'}>${renderBookListItems()}</div>`;
-  html += '</div>';
-
   // ── 训练系统（折叠）──
-  const isTrainingActive = ['badminton-tech','strength','psychology','nutrition','competition'].includes(currentModule);
+  const isTrainingActive = ['badminton-tech','strength','psychology','nutrition','competition','personal'].includes(currentModule);
   html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">💪 训练系统</div>`;
   html += `<div class="side-collapsible" ${isTrainingActive?'':'style="display:none"'}>${renderTrainingItems()}</div>`;
-  html += '</div>';
-
-  // ── 工具（折叠）──
-  html += `<div class="side-section"><div class="side-title collapsible" onclick="toggleSideSection(this)">🛠️ 工具集</div>`;
-  html += `<div class="side-collapsible" style="display:none">${renderToolItems()}</div>`;
   html += '</div>';
 
   list.innerHTML = html;
@@ -2201,6 +2208,104 @@ function renderTrainingItems() {
   return TRAIN_MODULES.filter(m=>m.id!=='coach').map(m => {
     return `<div class="side-link sub ${currentModule===m.id?'active':''}" onclick="openTrainModule('${m.id}')"><span class="sl-icon">${m.icon}</span> ${m.title}</div>`;
   }).join('');
+}
+
+// 🐑眼系统 - 观察者视角
+function openEyeSystem() {
+  showView('book');
+  currentModule = 'eye';
+  navStack.push({view:'dashboard'});
+  historyPush('eye', {});
+  $('bookHeader').innerHTML = `<div class="back" onclick="goBack()">← 返回</div>
+    <h1>🐑 🐑眼系统</h1>
+    <div class="vm">观察者视角 · 全局洞察 · 趋势分析</div>`;
+  $('bookStats').innerHTML = `
+    <div class="bs-item"><span class="bs-num">📊</span><span class="bs-label">数据总览</span></div>
+    <div class="bs-item"><span class="bs-num">📈</span><span class="bs-label">趋势追踪</span></div>
+    <div class="bs-item"><span class="bs-num">🎯</span><span class="bs-label">目标进度</span></div>`;
+  $('contentGrid').innerHTML = `
+    <div class="calc-card" style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--purple);border-radius:var(--radius);padding:16px;grid-column:1/-1">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div style="font-size:32px">🐑</div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px;color:var(--purple)">🐑眼系统 · 观察者视角</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.5">
+            从全局视角观察训练数据、学习进度、能力成长趋势<br>
+            📊 仪表盘 · 📈 趋势图 · 🎯 目标追踪
+          </div>
+        </div>
+        <button onclick="openEyeDashboard()" class="tb-btn" style="font-size:12px;padding:6px 14px;background:var(--purple);color:#fff;border:none;font-weight:600">🚀 打开仪表盘</button>
+      </div>
+    </div>
+    <div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text3)">功能开发中...</div>`;
+}
+
+function openEyeDashboard() {
+  // 获取学习数据
+  const rp = getRP();
+  const p = getP();
+  const totalXp = rp.xp || 0;
+  const level = rp.level || 1;
+  const streak = rp.streak || 0;
+  
+  // 计算阅读进度
+  let totalRead = 0, totalChapters = 0;
+  if (MANIFEST) {
+    MANIFEST.books.forEach(b => {
+      totalChapters += b.chapters.length;
+      const readList = p[b.id] || [];
+      totalRead += b.chapters.filter(c => readList.includes(c.file)).length;
+    });
+  }
+  
+  showOverlay('panel panel-wide', '🐑 观察者仪表盘',
+    `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--purple)">Lv.${level}</div>
+        <div style="font-size:10px;color:var(--text2)">当前等级</div>
+      </div>
+      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--gold)">${totalXp}</div>
+        <div style="font-size:10px;color:var(--text2)">总经验值</div>
+      </div>
+      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--green)">${streak}</div>
+        <div style="font-size:10px;color:var(--text2)">连续学习天数</div>
+      </div>
+    </div>
+    <div style="background:var(--bg3);padding:12px;border-radius:10px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:600;margin-bottom:8px">📖 阅读进度</div>
+      <div style="background:var(--bg);height:8px;border-radius:4px;overflow:hidden">
+        <div style="width:${totalChapters?Math.round(totalRead/totalChapters*100):0}%;background:var(--blue);height:100%"></div>
+      </div>
+      <div style="font-size:10px;color:var(--text2);margin-top:4px">${totalRead} / ${totalChapters} 章节 (${totalChapters?Math.round(totalRead/totalChapters*100):0}%)</div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--text3)">更多分析功能开发中...</div>`);
+}
+
+// 阅读中心
+function renderLibraryContent() {
+  if (!MANIFEST) return '<div style="padding:20px;text-align:center;color:var(--text2)">加载中...</div>';
+  const books = MANIFEST.books.filter(b => TOWER_BOOKS.includes(b.id));
+  const p = getP();
+  return books.map(b => {
+    const progress = chProgress(b.id);
+    const readCount = (p[b.id] || []).length;
+    return `<div class="chapter-card fade-in" onclick="goToBook('${b.id}')" style="cursor:pointer">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${b.color||'var(--blue)'};opacity:.6"></div>
+      <div style="font-size:32px;margin-bottom:8px">${b.emoji}</div>
+      <div class="cc-title" style="font-size:14px;font-weight:600">${b.title}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">${b.chapters.length} 章 · 已读 ${readCount}</div>
+      <div style="background:var(--bg);height:4px;border-radius:2px;margin-top:8px;overflow:hidden">
+        <div style="width:${Math.round(progress*100)}%;background:${b.color||'var(--blue)'};height:100%"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showLibrary() {
+  showView('library');
+  $('libraryContent').innerHTML = renderLibraryContent();
 }
 
 function renderToolItems() {
@@ -4684,7 +4789,7 @@ const mdParse = (txt) => {
 };
 
 // ─── View Switch ──────────────────────────────
-const VIEW_MAP = { dashboard:'viewDashboard', book:'viewBook', reader:'viewReader' };
+const VIEW_MAP = { dashboard:'viewDashboard', book:'viewBook', reader:'viewReader', library:'viewLibrary' };
 function showView(v) {
   for (const [key, id] of Object.entries(VIEW_MAP)) {
     const el = $(id);
