@@ -2243,46 +2243,238 @@ function openEyeSystem() {
 }
 
 function openEyeDashboard() {
-  // 获取学习数据
+  // 🐏眼 v3.14.9 — 从「3 卡 + 进度条 + 占位」升级为多面板观察者仪表盘
+  // 数据源：getRP()·getP()·getComments()·calcAbilityScore()·p._streak·lamb_application_v1
   const rp = getRP();
   const p = getP();
   const totalXp = rp.xp || 0;
   const level = rp.level || 1;
   const streak = rp.streak || 0;
-  
-  // 计算阅读进度
-  let totalRead = 0, totalChapters = 0;
+
+  // ── 阅读进度 ─────────────────────────────
+  let totalRead = 0, totalChapters = 0, readPct = 0;
+  let bookProgress = [];
   if (MANIFEST) {
     MANIFEST.books.forEach(b => {
-      totalChapters += b.chapters.length;
       const readList = p[b.id] || [];
-      totalRead += b.chapters.filter(c => readList.includes(c.file)).length;
+      const readCount = b.chapters.filter(c => readList.includes(c.file)).length;
+      totalChapters += b.chapters.length;
+      totalRead += readCount;
+      bookProgress.push({ id: b.id, title: b.title, emoji: b.emoji, color: b.color || 'var(--blue)', read: readCount, total: b.chapters.length, pct: b.chapters.length ? Math.round(readCount / b.chapters.length * 100) : 0 });
     });
+    if (totalChapters) readPct = Math.round(totalRead / totalChapters * 100);
   }
-  
-  showOverlay('panel panel-wide', '🐑 观察者仪表盘',
-    `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
-      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
-        <div style="font-size:24px;font-weight:700;color:var(--purple)">Lv.${level}</div>
-        <div style="font-size:10px;color:var(--text2)">当前等级</div>
+
+  // ── 本周 7 天热力图（基于 p._streak 日期 map） ─
+  const streakMap = p._streak || {};
+  const heatDays = [];
+  const labels = ['日','一','二','三','四','五','六'];
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    heatDays.push({ key, label: labels[d.getDay()], date: d.getDate(), active: !!streakMap[key], isToday: i === 0 });
+  }
+  const weekActive = heatDays.filter(d => d.active).length;
+  const heatHtml = heatDays.map(d => {
+    const bg = d.active ? 'linear-gradient(135deg,var(--green),var(--blue))' : 'var(--bg2)';
+    const txt = d.active ? '#fff' : 'var(--text3)';
+    return `<div title="${d.key}${d.active?' · 已学习':''}" style="flex:1;aspect-ratio:1/1;border-radius:6px;background:${bg};color:${txt};display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-weight:600;${d.isToday?'outline:1.5px solid var(--gold);outline-offset:1px':''}">
+      <div style="opacity:.75">${d.label}</div>
+      <div style="font-size:11px;font-weight:700">${d.date}</div>
+      ${d.active ? '<div style="font-size:8px">🔥</div>' : ''}
+    </div>`;
+  }).join('');
+
+  // ── 每本书进度条 ─────────────────────────────
+  const bookRows = bookProgress.sort((a,b) => b.pct - a.pct).map(b => `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <span style="font-size:14px;width:18px;text-align:center">${b.emoji}</span>
+      <span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">${b.title}</span>
+      <span style="font-size:10px;color:var(--text3);width:46px;text-align:right">${b.read}/${b.total}</span>
+      <span style="width:90px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden">
+        <span style="display:block;height:100%;width:${b.pct}%;background:${b.color};border-radius:3px"></span>
+      </span>
+      <span style="font-size:10px;font-weight:600;width:32px;text-align:right;color:${b.color}">${b.pct}%</span>
+    </div>`).join('');
+
+  // ── 6 维能力雷达（小尺寸 SVG） ─────────────
+  let radarMini = '';
+  try {
+    if (typeof calcAbilityScore === 'function') {
+      const a = calcAbilityScore();
+      const dims = a.dims || {};
+      const radarDims = [
+        { key:'read',       name:'阅读',  angle:-90 },
+        { key:'modules',    name:'模块',  angle:-30 },
+        { key:'quiz',       name:'测验',  angle: 30 },
+        { key:'streak',     name:'连续',  angle: 90 },
+        { key:'methods',    name:'掌握',  angle:150 },
+        { key:'application',name:'实战',  angle:210 },
+      ];
+      const cx = 60, cy = 60, maxR = 44;
+      const pts = radarDims.map(d => {
+        const v = Math.min(100, Math.max(0, dims[d.key] || 0));
+        const r = maxR * v / 100;
+        const rad = d.angle * Math.PI / 180;
+        return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad), lx: cx + (maxR + 9) * Math.cos(rad), ly: cy + (maxR + 9) * Math.sin(rad), v, name: d.name };
+      });
+      const dataPts = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+      const gridPolys = [25, 50, 75, 100].map(pct => {
+        const r = maxR * pct / 100;
+        const ps = radarDims.map(d => {
+          const rad = d.angle * Math.PI / 180;
+          return `${(cx + r * Math.cos(rad)).toFixed(1)},${(cy + r * Math.sin(rad)).toFixed(1)}`;
+        }).join(' ');
+        return `<polygon points="${ps}" fill="none" stroke="#475569" stroke-width="0.4" opacity="${pct===100?0.6:0.25}"/>`;
+      }).join('');
+      const dots = pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.2" fill="#3b82f6" stroke="var(--bg3)" stroke-width="0.8"/>`).join('');
+      const labels = pts.map(p => `<text x="${p.lx.toFixed(1)}" y="${p.ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="7" fill="var(--text2)">${p.name}${Math.round(p.v)}</text>`).join('');
+      radarMini = `<svg viewBox="0 0 120 120" style="width:140px;height:140px;display:block">
+        ${gridPolys}${dots}${labels}
+        <polygon points="${dataPts}" fill="rgba(99,140,255,0.18)" stroke="#3b82f6" stroke-width="1.3" stroke-linejoin="round"/>
+        <text x="${cx}" y="${cy - 3}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--gold)">${a.score}</text>
+        <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="6" fill="var(--text3)">/ 100</text>
+      </svg>`;
+    }
+  } catch(e) { /* calc not ready */ }
+
+  // ── 教练评语 feed（最近 3 条） ─────────────
+  const comments = getComments().slice().sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 3);
+  const commentHtml = comments.length === 0
+    ? '<div style="text-align:center;color:var(--text3);padding:10px;font-size:11px">暂无评语 · 写一条试试 →</div>'
+    : comments.map(c => `<div style="background:var(--bg2);border-left:3px solid var(--purple);padding:7px 9px;border-radius:5px;margin-bottom:5px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+          <span style="font-size:10px;font-weight:600">${c.role==='coach'?'🎓':'🧑'}${c.author||'教练'}</span>
+          <span style="font-size:9px;color:var(--text3)">${new Date(c.ts).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'})}</span>
+        </div>
+        <div style="font-size:11px;line-height:1.5;color:var(--text2)">${(c.text||'').replace(/</g,'&lt;').slice(0,80)}${(c.text||'').length>80?'…':''}</div>
+      </div>`).join('');
+
+  // ── 实战数据读取 ─────────────────────────────
+  let appBadge = '', appRaw = null;
+  try { appRaw = JSON.parse(localStorage.getItem('lamb_application_v1') || 'null'); } catch(e) {}
+  if (appRaw && typeof appRaw.score === 'number') {
+    const pct = Math.round(appRaw.score * 100);
+    const col = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : 'var(--orange)';
+    appBadge = `<span style="font-size:16px;font-weight:700;color:${col}">${pct}%</span>`;
+  } else {
+    appBadge = `<span style="font-size:11px;color:var(--text3)">未接入</span>`;
+  }
+
+  // ── 成就徽章（6 维度解锁提示） ─────────────
+  let ability = null;
+  try { ability = (typeof calcAbilityScore === 'function') ? calcAbilityScore() : null; } catch(e) {}
+  const badges = [
+    { emoji:'📖', label:'阅读', val: ability?.dims?.read || 0, col:'var(--blue)' },
+    { emoji:'🏋️', label:'模块', val: ability?.dims?.modules || 0, col:'var(--blue)' },
+    { emoji:'🧪', label:'测验', val: ability?.dims?.quiz || 0, col:'var(--blue)' },
+    { emoji:'🔥', label:'连续', val: ability?.dims?.streak || 0, col:'var(--blue)' },
+    { emoji:'🎓', label:'掌握', val: ability?.dims?.methods || 0, col:'var(--blue)' },
+    { emoji:'⚔️', label:'实战', val: ability?.dims?.application || 0, col:'#a855f7' },
+  ];
+  const badgeHtml = badges.map(b => {
+    const unlocked = b.val >= 60;
+    const op = unlocked ? 1 : 0.35;
+    return `<div title="${b.label} ${Math.round(b.val)}%" style="text-align:center;padding:6px 4px;background:var(--bg2);border-radius:7px;opacity:${op}">
+      <div style="font-size:18px">${b.emoji}</div>
+      <div style="font-size:9px;color:var(--text2);margin-top:2px">${b.label}</div>
+      <div style="font-size:10px;font-weight:700;color:${b.col}">${Math.round(b.val)}</div>
+    </div>`;
+  }).join('');
+
+  // ── 教练智能评语（基于本期数据自动生成） ───
+  const insights = [];
+  if (streak >= 7) insights.push(`🔥 已连续 ${streak} 天学习，保持节奏`);
+  else if (streak === 0) insights.push(`⏱ 今日还未学习，开始一次吧`);
+  else insights.push(`📅 连续 ${streak} 天，离 7 天差 ${Math.max(0,7-streak)} 天`);
+  if (readPct >= 80) insights.push(`📚 阅读进度 ${readPct}%，进入巩固阶段`);
+  else if (readPct < 20) insights.push(`📖 阅读进度 ${readPct}%，建议先攻一本书`);
+  if (weekActive >= 5) insights.push(`✅ 本周活跃 ${weekActive}/7 天，状态良好`);
+  else if (weekActive <= 2) insights.push(`⚠️ 本周活跃 ${weekActive}/7 天，需加把劲`);
+  if (ability && ability.score >= 70) insights.push(`🌟 综合能力 ${ability.score} 分，达到熟练阶段`);
+  else if (ability && ability.score < 30) insights.push(`🌱 综合 ${ability.score} 分，从单点突破开始`);
+  if (appRaw && typeof appRaw.score === 'number') {
+    const pct = Math.round(appRaw.score * 100);
+    if (pct >= 70) insights.push(`⚔️ 实战 ${pct}%，可挑战更高水平对手`);
+    else insights.push(`⚔️ 实战 ${pct}%，多打比赛积累经验`);
+  } else {
+    insights.push(`⚔️ 实战未接入 · 在控制台存值：localStorage.setItem('lamb_application_v1', JSON.stringify({score:0.65,note:'',updatedAt:Date.now()}))`);
+  }
+
+  // ── 拼装面板 ─────────────────────────────
+  showOverlay('panel panel-wide', '🐑 观察者仪表盘', `
+    <!-- 行 1：核心数字 (3 列) -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+      <div style="background:var(--bg3);padding:10px 8px;border-radius:10px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:var(--purple)">Lv.${level}</div>
+        <div style="font-size:9px;color:var(--text2)">当前等级</div>
       </div>
-      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
-        <div style="font-size:24px;font-weight:700;color:var(--gold)">${totalXp}</div>
-        <div style="font-size:10px;color:var(--text2)">总经验值</div>
+      <div style="background:var(--bg3);padding:10px 8px;border-radius:10px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:var(--gold)">${totalXp}</div>
+        <div style="font-size:9px;color:var(--text2)">总经验值</div>
       </div>
-      <div style="background:var(--bg3);padding:12px;border-radius:10px;text-align:center">
-        <div style="font-size:24px;font-weight:700;color:var(--green)">${streak}</div>
-        <div style="font-size:10px;color:var(--text2)">连续学习天数</div>
+      <div style="background:var(--bg3);padding:10px 8px;border-radius:10px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:var(--green)">${streak}</div>
+        <div style="font-size:9px;color:var(--text2)">连续天数</div>
+      </div>
+      <div style="background:var(--bg3);padding:10px 8px;border-radius:10px;text-align:center">
+        ${appBadge}
+        <div style="font-size:9px;color:var(--text2);margin-top:2px">实战应用</div>
       </div>
     </div>
+
+    <!-- 行 2：本周热力图 + 6维雷达 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div style="background:var(--bg3);padding:12px;border-radius:10px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600">📅 本周学习热力</div>
+          <div style="font-size:10px;color:var(--text2)">${weekActive}/7 天</div>
+        </div>
+        <div style="display:flex;gap:4px">${heatHtml}</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:6px;line-height:1.5">📍 数据源: <code style="font-size:8.5px;font-family:monospace">lamb_progress._streak</code><br>🟢 已学习 · ⬜ 未学习 · 黄框=今天</div>
+      </div>
+      <div style="background:var(--bg3);padding:12px;border-radius:10px;display:flex;flex-direction:column;align-items:center">
+        <div style="font-size:12px;font-weight:600;align-self:flex-start;margin-bottom:4px">🎯 6 维能力雷达</div>
+        ${radarMini || '<div style="font-size:10px;color:var(--text3)">能力算法未就绪</div>'}
+      </div>
+    </div>
+
+    <!-- 行 3：每本书进度 -->
     <div style="background:var(--bg3);padding:12px;border-radius:10px;margin-bottom:12px">
-      <div style="font-size:12px;font-weight:600;margin-bottom:8px">📖 阅读进度</div>
-      <div style="background:var(--bg);height:8px;border-radius:4px;overflow:hidden">
-        <div style="width:${totalChapters?Math.round(totalRead/totalChapters*100):0}%;background:var(--blue);height:100%"></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:600">📚 各书进度 · 总体 ${readPct}%</div>
+        <div style="font-size:10px;color:var(--text2)">${totalRead} / ${totalChapters} 章</div>
       </div>
-      <div style="font-size:10px;color:var(--text2);margin-top:4px">${totalRead} / ${totalChapters} 章节 (${totalChapters?Math.round(totalRead/totalChapters*100):0}%)</div>
+      <div style="background:var(--bg);height:8px;border-radius:4px;overflow:hidden;margin-bottom:10px">
+        <div style="width:${readPct}%;background:linear-gradient(90deg,var(--blue),var(--green));height:100%"></div>
+      </div>
+      ${bookRows || '<div style="font-size:10px;color:var(--text3)">暂无书塔</div>'}
     </div>
-    <div style="text-align:center;font-size:11px;color:var(--text3)">更多分析功能开发中...</div>`);
+
+    <!-- 行 4：成就徽章 + 教练评语feed -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div style="background:var(--bg3);padding:12px;border-radius:10px">
+        <div style="font-size:12px;font-weight:600;margin-bottom:8px">🏆 成就徽章 <span style="font-size:9px;color:var(--text3);font-weight:400">≥60 解锁</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">${badgeHtml}</div>
+      </div>
+      <div style="background:var(--bg3);padding:12px;border-radius:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600">💬 教练评语 <span style="font-size:9px;color:var(--text3);font-weight:400">最近 ${comments.length}</span></div>
+          <button onclick="closeOverlay();openStudentProfile()" style="background:var(--purple);color:#fff;border:none;padding:4px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer">＋ 写</button>
+        </div>
+        ${commentHtml}
+      </div>
+    </div>
+
+    <!-- 行 5：智能观察建议 -->
+    <div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--purple);border-radius:10px;padding:12px">
+      <div style="font-size:12px;font-weight:600;color:var(--purple);margin-bottom:8px">🐑 观察者建议 <span style="font-size:9px;color:var(--text3);font-weight:400">基于本期数据自动生成</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        ${insights.map(s => `<div style="font-size:11px;line-height:1.55;color:var(--text);padding:6px 9px;background:var(--bg);border-radius:6px;border-left:2px solid var(--purple)">${s}</div>`).join('')}
+      </div>
+    </div>
+  `);
 }
 
 // 阅读中心
