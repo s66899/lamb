@@ -5173,7 +5173,7 @@ async function renderChapter() {
   }
   if (md) {
     // 文章末尾「下一节」CTA：把"读完→下一章"路径从"滚顶→点按钮"压成"滚底→点按钮"
-    // 与首页完成态「重读最后一节」对称；最后一节不显示（顶部 nextChapter 也会 disabled）
+    // 与首页完成态「重读最后一节」对称；最后一节显示「结业庆贺 + 下一本」闭环 CTA
     const _isLast = currentChapterIdx >= book.chapters.length - 1;
     const _nextCh = _isLast ? null : book.chapters[currentChapterIdx + 1];
     const _nextCta = (!_isLast && _nextCh) ? `
@@ -5184,8 +5184,54 @@ async function renderChapter() {
         <div class="nc-title">${escapeHTML(_nextCh.title || '')}</div>
         <div class="nc-arrow">▶ 继续阅读</div>
       </div>` : '';
+    // 最后一节：结业 CTA —— 庆祝掌握 + 智能推荐下一本（看其它书的首个未读章节；无则回首页）
+    let _finishCta = '';
+    if (_isLast) {
+      // 找下一本：当前书之外，找"未读章节最多"的那本；都没有就回首页
+      let nextBookHtml = '';
+      try {
+        const _p = getP();
+        const _candidates = (MANIFEST?.books || [])
+          .filter(b => b.id !== currentBookId)
+          .map(b => {
+            const readList = _p[b.id] || [];
+            const unread = b.chapters.filter(c => !readList.includes(c.file)).length;
+            return { b, unread, total: b.chapters.length };
+          })
+          .filter(x => x.unread > 0)
+          .sort((a, b) => (b.unread / b.total) - (a.unread / a.total));
+        const _next = _candidates[0]?.b;
+        if (_next) {
+          const _firstUnread = (() => {
+            const readList = _p[_next.id] || [];
+            const idx = _next.chapters.findIndex(c => !readList.includes(c.file));
+            return idx >= 0 ? idx : 0;
+          })();
+          nextBookHtml = `
+            <button class="finish-next-btn" onclick="goToBook('${_next.id}');setTimeout(()=>openChapter(${_firstUnread}),200)"
+                    aria-label="下一本：《${escapeAttr(_next.title)}》第 ${_firstUnread + 1} 节">
+              <span class="fn-label">📚 下一本推荐</span>
+              <span class="fn-title">${escapeHTML(_next.title || _next.id)}</span>
+              <span class="fn-sub">从第 ${_firstUnread + 1} 节继续 · 还有 ${_candidates[0].unread} 节未读</span>
+              <span class="fn-arrow">开始阅读 →</span>
+            </button>`;
+        }
+      } catch (_) { /* 推荐失败时只显示庆祝区 */ }
+      _finishCta = `
+        <div class="finish-cta" role="region" aria-label="本书读完">
+          <div class="finish-icon">🎉</div>
+          <div class="finish-title">《${escapeHTML(book.title || currentBookId)}》通关！</div>
+          <div class="finish-sub">${book.chapters.length} 节全部读完 · 知识内化需要复盘，欢迎 7 天后回看</div>
+          <div class="finish-actions">
+            <button class="finish-btn finish-btn-home" onclick="goHome()" aria-label="返回首页">🏠 返回首页</button>
+            <button class="finish-btn finish-btn-chapters" onclick="goToBook('${currentBookId}')" aria-label="回到本书目录">📑 本书目录</button>
+          </div>
+          ${nextBookHtml}
+        </div>`;
+    }
     $('article').innerHTML = mdParse(md)
       + _nextCta
+      + _finishCta
       + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
     makeCollapsible(); setupQuiz(ch); markStreak();
     // v3.18.9 TOC 观察器：文章 DOM 已挂载，挂 IntersectionObserver 监听所有 H2

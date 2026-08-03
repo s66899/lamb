@@ -413,6 +413,66 @@ header {
   .next-ch-cta { padding:14px 16px; }
   .next-ch-cta .nc-title { font-size:14px; }
 }
+
+/* ── 阅读器末节「结业」CTA (v3.19.0) ── 把读完最后一章的"死胡同"变成"庆祝 + 下一本"闭环
+   与 next-ch-cta 风格一致（无渐变 / token 驱动 / 偏好动画尊重）*/
+.finish-cta {
+  margin-top:48px;
+  padding:24px 20px 20px;
+  border-radius:var(--radius);
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-left:4px solid var(--gold);
+  text-align:center;
+  box-shadow:var(--shadow-sm, 0 2px 8px rgba(0,0,0,.06));
+  animation: finishCtaIn .5s ease both;
+}
+@keyframes finishCtaIn {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.finish-cta .finish-icon { font-size:40px; margin-bottom:6px; animation: finishIconPop .6s ease .1s both; }
+@keyframes finishIconPop {
+  0%   { transform:scale(.4) rotate(-12deg); opacity:0; }
+  60%  { transform:scale(1.15) rotate(4deg); opacity:1; }
+  100% { transform:scale(1) rotate(0); }
+}
+.finish-cta .finish-title { font-size:18px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.finish-cta .finish-sub { font-size:12px; color:var(--text2); line-height:1.55; margin-bottom:14px; }
+.finish-cta .finish-actions { display:flex; gap:8px; justify-content:center; margin-bottom:14px; flex-wrap:wrap; }
+.finish-cta .finish-btn {
+  padding:8px 16px; font-size:13px; font-weight:600; font-family:inherit;
+  border-radius:8px; cursor:pointer; transition:all .2s ease;
+  background:var(--bg3); color:var(--text); border:1px solid var(--border);
+}
+.finish-cta .finish-btn:hover { border-color:var(--blue); color:var(--blue); }
+.finish-cta .finish-btn-home { background:var(--blue); color:#fff; border-color:var(--blue); }
+.finish-cta .finish-btn-home:hover { background:#1976d2; color:#fff; border-color:#1976d2; }
+.finish-cta .finish-btn-chapters { background:var(--bg3); color:var(--text); }
+.finish-cta .finish-next-btn {
+  display:flex; flex-direction:column; align-items:flex-start; gap:3px;
+  width:100%; padding:14px 16px; margin-top:4px;
+  background:var(--bg2); color:var(--text);
+  border:1px solid var(--border); border-left:4px solid var(--blue);
+  border-radius:var(--radius); cursor:pointer; font-family:inherit; text-align:left;
+  transition:all .2s ease;
+}
+.finish-cta .finish-next-btn:hover { border-color:var(--blue); transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.08); }
+.finish-cta .finish-next-btn:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+.finish-cta .fn-label { font-size:10px; color:var(--text3); letter-spacing:.5px; text-transform:uppercase; font-weight:600; }
+.finish-cta .fn-title { font-size:15px; font-weight:600; line-height:1.35; color:var(--text); }
+.finish-cta .fn-sub { font-size:11px; color:var(--text2); }
+.finish-cta .fn-arrow { font-size:12px; font-weight:600; color:var(--blue); margin-top:4px; transition:transform .2s ease; }
+.finish-cta .finish-next-btn:hover .fn-arrow { transform:translateX(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .finish-cta, .finish-cta .finish-icon, .finish-cta .finish-btn,
+  .finish-cta .finish-next-btn, .finish-cta .fn-arrow { animation:none; transition:none; transform:none; }
+}
+@media (max-width:480px) {
+  .finish-cta { padding:18px 14px 14px; }
+  .finish-cta .finish-title { font-size:16px; }
+  .finish-cta .finish-icon { font-size:32px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .mc-cta, .mc-cta:hover, .mc-cta:active { transition:none; transform:none; }
 }
