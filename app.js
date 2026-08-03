@@ -6469,7 +6469,7 @@ async function doSearch(query) {
 }
 function goSearchResult(bid,file,line,query){pendingSearchJump={bookId:bid,file:file,line:line||0,query:query||''};goToBook(bid);const b=MANIFEST.books.find(x=>x.id===bid);const idx=b?.chapters.findIndex(c=>c.file===file);if(idx>=0)setTimeout(()=>openChapter(idx),300);}
 
-/** 在章节渲染完成后定位搜索匹配：滚动到匹配行 + 高亮关键词 + 镉定标记 */
+/** 在章节渲染完成后定位搜索匹配：滚动到匹配行 + 高亮关键词 + 锚定标记 */
 function applySearchJump() {
   const jump = pendingSearchJump;
   if (!jump) return;
@@ -6480,7 +6480,7 @@ function applySearchJump() {
   _searchMatches = [];
   _searchCurrIdx = -1;
   closeSearchNav();
-  // 先清除上次的高亮与镉定
+  // 先清除上次的高亮与锚定
   article.querySelectorAll('.search-hl,.search-anchor').forEach(el => {
     const parent = el.parentNode;
     if (!parent) return;
@@ -6492,7 +6492,7 @@ function applySearchJump() {
       parent.normalize();
     }
   });
-  // 镉定指定行：如果有 line，则找到第 N 个段落（近似对应 markdown 行）
+  // 锚定指定行：如果有 line，则找到第 N 个段落（近似对应 markdown 行）
   let anchorEl = null;
   if (jump.line > 0) {
     const blocks = article.querySelectorAll('p,li,h2,h3,h4,pre,blockquote,table');
@@ -6502,7 +6502,7 @@ function applySearchJump() {
       anchorEl = blocks[idx];
     }
   }
-  // 如果没有 line 或没找到镉定，则高亮第一个出现位置所在的祖先块
+  // 如果没有 line 或没找到锚定，则高亮第一个出现位置所在的祖先块
   if (!anchorEl && jump.query) {
     const first = findFirstMatchInArticle(article, jump.query);
     if (first) anchorEl = first.closest('p,li,h2,h3,h4,pre,blockquote,table,article') || article;
@@ -6533,7 +6533,7 @@ function applySearchJump() {
       });
     }
   }
-  // 定位滚动：镉定元素出现在视口上方 20% 处
+  // 定位滚动：锚定元素出现在视口上方 20% 处
   if (anchorEl) {
     anchorEl.classList.add('search-anchor');
     requestAnimationFrame(() => {
@@ -6543,12 +6543,12 @@ function applySearchJump() {
       const containerRect = content.getBoundingClientRect();
       const offset = rect.top - containerRect.top + content.scrollTop - content.clientHeight * 0.2;
       content.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
-      // 4秒后移除镉定动画
+      // 4秒后移除锚定动画
       setTimeout(() => anchorEl && anchorEl.classList.remove('search-anchor'), 4000);
     });
   }
   // v3.22.1 收集所有匹配节点 + 渲染导航栏：搜索跳进章节后用户可以 n / Shift+N 循环跳转
-  // 在「镉定动画」设置完后跑，确保首个匹配有足够突出 — 顶部匹配还有 scroll-anchor 描边
+  // 在「锚定动画」设置完后跑，确保首个匹配有足够突出 — 顶部匹配还有 scroll-anchor 描边
   _searchMatches = Array.from(article.querySelectorAll('em.search-hl'));
   if (_searchMatches.length > 0) {
     _searchCurrIdx = 0;
@@ -6580,7 +6580,7 @@ function renderSearchNavBar() {
     <button class="sn-btn" onclick="gotoSearchMatch(-1)" title="上一个匹配（Shift+N）" aria-label="上一个匹配">‹</button>
     <span class="sn-cnt" title="第 ${idx} / ${total} 个匹配">${idx} / ${total}</span>
     <button class="sn-btn" onclick="gotoSearchMatch(1)" title="下一个匹配（N）" aria-label="下一个匹配">›</button>
-    <span class="sn-key">科普 ${escapeHTML(pendingSearchJump?.query || '')}</span>
+    <span class="sn-key">搜索 ${escapeHTML(pendingSearchJump?.query || '')}</span>
     <button class="sn-close" onclick="closeSearchNav()" title="关闭（Esc）" aria-label="关闭搜索导航">×</button>
   `;
 }
@@ -6606,7 +6606,7 @@ function gotoSearchMatch(delta) {
   renderSearchNavBar();
 }
 
-/** 关闭搜索导航栏：清除状态 + 移除导航栏 + 恢复所以匹配为非“当前”态 */
+/** 关闭搜索导航栏：清除状态 + 移除导航栏 + 恢复所有匹配为非“当前”态 */
 function closeSearchNav() {
   const bar = document.getElementById('searchNavBar');
   if (bar) bar.remove();
