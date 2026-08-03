@@ -667,7 +667,8 @@ function exLazyGifs() {
       if (!gif) continue;
       // base64 id → CDN 路径：videos/0007-4IKbhHV.gif → CDN
       // 注意：CDN 的视频文件没在仓库，需要回退到外网 gymvisual CDN
-      const cdnUrl = `https://gym-visual-cdn.b-cdn.net/${gif}`;
+      // 动图走源仓库 raw.githubusercontent.com (© Gym visual · 已验证 200 OK)
+      const cdnUrl = `https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/${gif}`;
       el.dataset.loaded = '1';
       const img = new Image();
       img.alt = id;
@@ -689,7 +690,7 @@ async function openExerciseDetail(id) {
   if (!_EX) await loadExerciseLib();
   const ex = _EX.find(x => x.id === id);
   if (!ex) return;
-  const gifUrl = `https://gym-visual-cdn.b-cdn.net/${ex.gif}`;
+  const gifUrl = `https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/${ex.gif}`;
   const stepsHtml = (ex.steps || []).map((s, i) =>
     `<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed var(--border)">
        <span style="flex:0;width:22px;height:22px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">${i+1}</span>
@@ -782,25 +783,46 @@ function exCopyLink(id) {
 }
 
 // NSCA/STRENGTH_PROGRAMS 目标 → EX_LIB 筛选映射
-// goal key → EX_LIB goal (核心/力量/心肺/手臂/腿部/背部/胸部/肩部/全身)
+// goal key (按 segment:goalKey 命名) → EX_LIB goal (核心/力量/心肺/手臂/腿部/背部/胸部/肩部/全身)
+// 注意：mid-school 的 'strength' 跟 adult-full 的 'strength' 撞 key，所以这里按 segmentKey:goalKey 区分
 const EX_GOAL_MAP = {
-  // 成人全面
-  power: 'strength', strength: 'strength', endurance: 'cardio', core: 'core',
-  // 成人专项
-  speed: 'cardio', hypertrophy: 'strength', peak: 'strength', aerobic: 'cardio',
-  // 中考体育
-  jump: 'leg', throw: 'shoulder',
-  // 高考体育
-  sprint: 'cardio', jump2: 'leg', throw2: 'shoulder', endur2: 'cardio'
+  // adult-full 成人全面
+  'adult-full:power':      'strength',
+  'adult-full:strength':   'strength',
+  'adult-full:endurance':  'cardio',
+  'adult-full:core':       'core',
+  // adult-specific 成人专项
+  'adult-specific:speed':        'cardio',
+  'adult-specific:hypertrophy':  'strength',
+  'adult-specific:peak':         'strength',
+  'adult-specific:aerobic':      'cardio',
+  // mid-school 中考
+  'mid-school:endurance':  'cardio',
+  'mid-school:jump':       'leg',
+  'mid-school:strength':  'strength',
+  'mid-school:throw':      'shoulder',
+  // high-school 高考
+  'high-school:sprint':   'cardio',
+  'high-school:jump2':    'leg',
+  'high-school:throw2':   'shoulder',
+  'high-school:endur2':   'cardio',
+  // 个人专项计划 (my-shuttle / fitness-general / competition-prep)
+  'my-shuttle':       'leg',
+  'fitness-general':  'strength',
+  'competition-prep': 'cardio',
 };
 async function exOpenByGoal(segmentKey, goalKey) {
-  const exGoal = EX_GOAL_MAP[goalKey] || '';
+  // 优先按 segmentKey:goalKey 查，fallback 到裸 goalKey
+  const mapKey = (segmentKey && goalKey) ? `${segmentKey}:${goalKey}` : (goalKey || segmentKey || '');
+  const exGoal = EX_GOAL_MAP[mapKey] || EX_GOAL_MAP[goalKey] || EX_GOAL_MAP[segmentKey] || '';
   await openExerciseLib();
   // 打开后再覆盖筛选
   _EX_FILTER.goal = exGoal;
   exRenderFilters();
   exApplyAndRender();
-  showToast?.(`已跳转：${GOAL_LABEL[exGoal] || exGoal} 相关动作`);
+  const segLabel = STRENGTH_PROGRAMS[segmentKey]?.label || segmentKey || '';
+  const goalLabel = (STRENGTH_PROGRAMS[segmentKey]?.goals?.[goalKey]?.label) || goalKey || '';
+  showToast?.(`已跳转：${segLabel}${goalLabel ? ' · ' + goalLabel : ''} → ${GOAL_LABEL[exGoal] || '全部动作'}`);
 }
 
 // 周期规划器：在原有 layout 顶部加一行按钮，跳到动作库
