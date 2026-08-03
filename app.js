@@ -17,7 +17,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.21.2';
+const APP_VERSION = 'v3.21.3';
 const APP_DATE = '2026-08-03';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -5885,6 +5885,19 @@ function clearSearchHistory() {
   safeSet(SEARCH_HISTORY_KEY, []);
   renderSearchHistory();
 }
+// v3.21.3 单条删除：只删除指定项，不影响其它历史/收藏
+function removeHistoryOne(q) {
+  if (!q) return;
+  const arr = getSearchHistory().filter(x => x !== q);
+  safeSet(SEARCH_HISTORY_KEY, arr);
+  renderSearchHistory();
+}
+function removePinnedOne(q) {
+  if (!q) return;
+  const arr = getPinnedSearch().filter(x => x !== q);
+  safeSet(PINNED_SEARCH_KEY, arr);
+  renderSearchHistory();
+}
 
 /** 防抖搜索：输入即查，避免每个按键都跑全文搜索 */
 function scheduleSearch(input) {
@@ -5995,9 +6008,10 @@ function renderSearchHistoryHTML() {
   if (!pinned.length && !hist.length) {
     return '<div class="search-hint">⌨️ 输入 → 自动搜索<br><span style="opacity:0.6;font-size:11px">试搜：发球 / 杀球 / 营养 / 战术（输入后点 🔖 收藏）</span></div>';
   }
-  const pinnedItems = pinned.length ? `<div style="margin-bottom:10px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><span style="font-size:11px;color:var(--gold);font-weight:600">🔖 收藏的关键词</span><a onclick="clearPinnedSearch();renderSearchHistory();" style="font-size:10px;color:var(--text3);cursor:pointer;opacity:0.7">🗑️ 清空</a></div><div style="line-height:1.8">${pinned.map(q => `<a class="sr-sugg sr-pinned" data-pin-q="${escapeAttr(q)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.pinQ;scheduleSearch(i);i.focus();">📌 ${escapeHTML(q)}</a>`).join(' ')}</div></div>` : '';
-  const histBlock = hist.length ? `<div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--text3);font-weight:600">📜 最近搜索</span><a onclick="clearSearchHistory()" style="font-size:10px;color:var(--text3);cursor:pointer;opacity:0.7">🗑️ 清空</a></div><div style="line-height:1.8">${hist.map(q => `<a class="sr-sugg sr-hist" data-hist-q="${escapeAttr(q)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.histQ;scheduleSearch(i);i.focus();">🔁 ${escapeHTML(q)}</a>`).join(' ')}</div></div>` : '';
-  return `<div class="search-hint" style="text-align:left;padding:14px 12px 8px">${pinnedItems}${histBlock}<div style="margin-top:8px;font-size:10px;color:var(--text3);opacity:0.7">⌨️ 输入关键字开始搜索 · 🔖 收藏常用词</div></div>`;
+  // v3.21.3 词条右上角加 × 按钮：单项删除（不破坏其它记录），与「🗑️ 清空」配套
+  const pinnedItems = pinned.length ? `<div style="margin-bottom:10px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><span style="font-size:11px;color:var(--gold);font-weight:600">🔖 收藏的关键词</span><a onclick="clearPinnedSearch();renderSearchHistory();" style="font-size:10px;color:var(--text3);cursor:pointer;opacity:0.7">🗑️ 清空</a></div><div style="line-height:1.8">${pinned.map(q => `<span class="sr-sugg-wrap"><a class="sr-sugg sr-pinned" data-pin-q="${escapeAttr(q)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.pinQ;scheduleSearch(i);i.focus();">📌 ${escapeHTML(q)}</a><a class="sr-sugg-del" data-pin-del="${escapeAttr(q)}" onclick="removePinnedOne(this.dataset.pinDel);" title="删除这条收藏">×</a></span>`).join(' ')}</div></div>` : '';
+  const histBlock = hist.length ? `<div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--text3);font-weight:600">📜 最近搜索</span><a onclick="clearSearchHistory()" style="font-size:10px;color:var(--text3);cursor:pointer;opacity:0.7">🗑️ 清空</a></div><div style="line-height:1.8">${hist.map(q => `<span class="sr-sugg-wrap"><a class="sr-sugg sr-hist" data-hist-q="${escapeAttr(q)}" onclick="var i=document.getElementById('searchInput');i.value=this.dataset.histQ;scheduleSearch(i);i.focus();">🔁 ${escapeHTML(q)}</a><a class="sr-sugg-del" data-hist-del="${escapeAttr(q)}" onclick="removeHistoryOne(this.dataset.histDel);" title="删除这条记录">×</a></span>`).join(' ')}</div></div>` : '';
+  return `<div class="search-hint" style="text-align:left;padding:14px 12px 8px">${pinnedItems}${histBlock}<div style="margin-top:8px;font-size:10px;color:var(--text3);opacity:0.7">⌨️ 输入关键字开始搜索 · 🔖 收藏常用词 · 点 × 单条删除</div></div>`;
 }
 
 /** 把搜索历史区域重渲染（点击"清空"后调用） */
