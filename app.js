@@ -14,9 +14,10 @@ let pendingSearchJump = null;
 let readStartTs = 0;        // 当前章节首次进入时间戳
 let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新）
 let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"秒数
+let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.18.4';
+const APP_VERSION = 'v3.18.5';
 const APP_DATE = '2026-08-03';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -5172,8 +5173,12 @@ async function renderChapter() {
   } else {
     $('article').innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">❌ 加载失败</div>`;
   }
+  // v3.18.5 阅读位置记忆：刚进入新章节时先把上一节（残留）的位置清掉，避免 _scrollPosKey key 切换时误匹配
+  _clearScrollPosForCurrent();
   $('content').scrollTo({top:0,behavior:'smooth'});
   updateProgress();
+  // v3.18.5 阅读位置记忆：若该章节有上次保存的中间位置，layout 完成后自动滚回并提示
+  _restoreScrollPos();
 }
 
 function buildToc(ch) {
@@ -6231,7 +6236,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bar.style.width='100%';await sleep(200);
   $('splash').style.display='none';$('app').style.display='block';
   renderDashboard();updateProgress();
-  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);updateReadProgress();_tickReadSeconds();_tickWeekGoal();_tocScrollTick();});
+  $('content').addEventListener('scroll',()=>{$('fab').classList.toggle('show',$('content').scrollTop>300);updateReadProgress();_tickReadSeconds();_tickWeekGoal();_tocScrollTick();_saveScrollPosThrottled();});
   _rpInitDrag(); // v3.14.2 阅读进度条拖拽初始化
   if(window.innerWidth<=768)toggleSidebar(false);
   setTimeout(checkAchievements,2000);
@@ -6379,6 +6384,63 @@ showOverlay('panel-sm', '💧 饮水计算结果', `
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function scrollToTop(){$('content').scrollTo({top:0,behavior:'smooth'});}
+
+// ─── v3.18.5 阅读位置记忆 ──────────────────────────────
+// 长章节翻到中间离开后，再次进入同一节应自动滚回上次位置。
+// 用「bookId+chapterIdx」做 key，滚动节流 800ms 写一次 localStorage（避免写爆）。
+const SCROLL_POS_KEY = 'bk_scroll_pos';
+function _scrollPosKey() {
+  return currentBookId && currentChapterIdx >= 0 ? `${currentBookId}::${currentChapterIdx}` : '';
+}
+function _saveScrollPosThrottled() {
+  if (!_scrollPosKey()) return;
+  clearTimeout(_scrollSaveT);
+  _scrollSaveT = setTimeout(() => {
+    const c = $('content');
+    if (!c) return;
+    const max = c.scrollHeight - c.clientHeight;
+    if (max <= 0) return;
+    // 只记录「中间位置」：在顶 5% 或底 5% 视作「已读完/刚开始」，下次进来走默认行为
+    const pct = c.scrollTop / max;
+    if (pct < 0.05 || pct > 0.95) return;
+    const map = safeGet(SCROLL_POS_KEY, {}) || {};
+    map[_scrollPosKey()] = Math.round(c.scrollTop);
+    if (Object.keys(map).length > 50) {
+      // 上限 50 个章节的位置：超过则按插入顺序剪掉最早 10 个，防止长期使用撑爆 localStorage
+      const keys = Object.keys(map);
+      keys.slice(0, keys.length - 40).forEach(k => delete map[k]);
+    }
+    safeSet(SCROLL_POS_KEY, map);
+  }, 800);
+}
+function _restoreScrollPos() {
+  const k = _scrollPosKey();
+  if (!k) return;
+  const map = safeGet(SCROLL_POS_KEY, {}) || {};
+  const saved = map[k];
+  if (!saved || saved < 200) return; // 太靠顶（200px 内）不需要恢复，避免「几乎没滚还跳一下」的违和感
+  // 等待 layout 完成后再滚：文章刚 innerHTML 完，scrollHeight 还在算
+  const tryRestore = () => {
+    const c = $('content');
+    if (!c) return;
+    const max = c.scrollHeight - c.clientHeight;
+    if (max <= 0) return;
+    // 防御：保存值超过当前章节可滚动高度（章节内容可能改了），clamp 一下
+    const target = Math.min(saved, max);
+    c.scrollTo({ top: target, behavior: 'instant' });
+    updateReadProgress();
+    // 一句短 toast 告诉用户「我接着上次读」，避免「咦怎么直接跳到这里」的困惑
+    showToast(`📍 已回到上次阅读位置（${Math.round(target / 100) * 100}px）`, 1600);
+  };
+  // 双 rAF：保证 innerHTML 完成 + 浏览器已 layout
+  requestAnimationFrame(() => requestAnimationFrame(tryRestore));
+}
+function _clearScrollPosForCurrent() {
+  if (!_scrollPosKey()) return;
+  const map = safeGet(SCROLL_POS_KEY, {}) || {};
+  delete map[_scrollPosKey()];
+  safeSet(SCROLL_POS_KEY, map);
+}
 
 // ─── v3.14.2 阅读进度条（拖拽跳转） ─────────────────
 function updateReadProgress() {
