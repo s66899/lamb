@@ -17,7 +17,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.18.8';
+const APP_VERSION = 'v3.18.9';
 const APP_DATE = '2026-08-03';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -5188,6 +5188,8 @@ async function renderChapter() {
       + _nextCta
       + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
     makeCollapsible(); setupQuiz(ch); markStreak();
+    // v3.18.9 TOC 观察器：文章 DOM 已挂载，挂 IntersectionObserver 监听所有 H2
+    requestAnimationFrame(_setupTocObserver);
     // 自动标记已读：用户实际看到正文即视为完成（markRead 内部已对已读章节短路，不会重复加 XP/弹成就）
     const _isNewRead = markRead(currentBookId, ch.file);
     if (_isNewRead) {
@@ -5232,11 +5234,20 @@ function buildToc(ch) {
   // 渲染完后立即按当前滚动位置点亮对应条目（用户从外部跳进章节时也能命中）
   requestAnimationFrame(updateTocActive);
 }
-function scrollToToc(idx) { const h=$$('article h2'); if(h[idx]) h[idx].scrollIntoView({behavior:'smooth',block:'start'}); closeMobileToc(); }
+function scrollToToc(idx) {
+  const h=$$('article h2');
+  if (h[idx]) {
+    h[idx].scrollIntoView({behavior:'smooth',block:'start'});
+    _tocActiveIdx = idx; // 立即同步，避免 IO 异步回调到来前用户已切到下一节
+  }
+  closeMobileToc();
+}
 // 阅读滚动时联动侧边目录：用 IntersectionObserver 找出当前可见的第一条 h2，高亮对应 TOC 条目
 // 滚动节流由 IO 自带（不重复 fire），比 scroll 事件 + 计算距离更准也更省
 let _tocIO = null;
 let _tocScrollPending = false;
+// 记录当前高亮的 H2 序号：reader 内键盘 J/K 跳转、急切 scrollToToc 后兜底同步都依赖它
+let _tocActiveIdx = 0;
 // scroll 节流：rAF 合并多次滚动事件，避免长章节快速滚动时反复重算
 function _tocScrollTick() {
   if (_tocScrollPending) return;
@@ -5246,6 +5257,69 @@ function _tocScrollTick() {
     updateTocActive();
   });
 }
+
+// 初始化 TOC 的 IntersectionObserver：监听所有 article h2，自动同步高亮
+// 比 onscroll + getBoundingClientRect 更省：浏览器只在 ref/raf 合并后回调一次
+function _setupTocObserver() {
+  if (_tocIO) { try { _tocIO.disconnect(); } catch(_){} _tocIO = null; }
+  // 已渲染过的 H2 不存在就别建 observer（用户打开了无 H2 的章节）
+  const h2s = $$('article h2');
+  if (!h2s.length) return;
+  _tocIO = new IntersectionObserver((entries) => {
+    // 同一帧内多次回调取「最靠顶部且仍在视口内」的 H2 作为当前
+    let best = null;
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      if (!best || e.boundingClientRect.top < best.boundingClientRect.top) best = e;
+    }
+    if (!best) return;
+    const idx = h2s.indexOf(best.target);
+    if (idx >= 0) {
+      _tocActiveIdx = idx;
+      _highlightTocByIdx(idx);
+    }
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+  h2s.forEach(h => _tocIO.observe(h));
+  // 初始兜底：刚进入章节时按当前滚动位置立刻点亮，否则用户切到页面啥都没高亮
+  requestAnimationFrame(updateTocActive);
+}
+
+// 纯高亮切换（与 _setupTocObserver 解耦），给键盘快捷键和点击 scrollToToc 复用
+function _highlightTocByIdx(idx) {
+  const list = $('tocList');
+  if (!list) return;
+  const items = list.querySelectorAll('.toc-item');
+  if (!items.length) return;
+  items.forEach((el, i) => el.classList.toggle('toc-active', i === idx));
+  // 让活动条目滚到 TOC 列表可见区（仅当被遮挡时），长章节翻到后面再回来很有用
+  const activeEl = items[idx];
+  if (activeEl) {
+    const tocBox = list.parentElement?.getBoundingClientRect();
+    if (tocBox) {
+      const elTop = activeEl.offsetTop;
+      const elBottom = elTop + activeEl.offsetHeight;
+      const visTop = list.scrollTop;
+      const visBottom = visTop + tocBox.height;
+      if (elTop < visTop || elBottom > visBottom) {
+        list.scrollTo({ top: elTop - 8, behavior: 'smooth' });
+      }
+    }
+  }
+}
+
+// 键盘 J/K 跳到上一/下一节 H2：让桌面用户在长章节里不必滚轮就能一段段跳
+function gotoTocByOffset(delta) {
+  const h2s = $$('article h2');
+  if (!h2s.length) return;
+  const next = Math.max(0, Math.min(h2s.length - 1, _tocActiveIdx + delta));
+  if (next === _tocActiveIdx) {
+    // 已到边界：给个微提示，让用户知道按了没反应是「已经到底/顶」不是没生效
+    showToast(delta > 0 ? '⬇️ 已到本节末尾' : '⬆️ 已在当前章节首段', 1200);
+    return;
+  }
+  scrollToToc(next);
+}
+
 function updateTocActive() {
   const list = $('tocList');
   if (!list) return;
@@ -5259,23 +5333,8 @@ function updateTocActive() {
     if (r.top - anchorY <= 0) activeIdx = i;
     else break;
   }
-  // 同步高亮（用 class 切换比改 textContent 触发更少重排）
-  const items = list.querySelectorAll('.toc-item');
-  items.forEach((el, i) => el.classList.toggle('toc-active', i === activeIdx));
-  // 自动滚到可见区：仅当活动条目被遮挡时（长章节翻到后面再回来很有用）
-  const activeEl = items[activeIdx];
-  if (activeEl) {
-    const tocBox = list.parentElement?.getBoundingClientRect();
-    if (tocBox) {
-      const elTop = activeEl.offsetTop;
-      const elBottom = elTop + activeEl.offsetHeight;
-      const visTop = list.scrollTop;
-      const visBottom = visTop + tocBox.height;
-      if (elTop < visTop || elBottom > visBottom) {
-        list.scrollTo({ top: elTop - 8, behavior: 'smooth' });
-      }
-    }
-  }
+  _tocActiveIdx = activeIdx;
+  _highlightTocByIdx(activeIdx);
 }
 function toggleTocFn() {
   const toc = $('readerToc');
@@ -7217,6 +7276,14 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
     e.preventDefault();
     if (typeof openSearch === 'function') openSearch();
+    return;
+  }
+
+  // v3.18.9 阅读器内 J/K 跳到上一/下一节 H2：长章节不必滚轮也能一段段跳
+  // 只在阅读器视图生效；输入态已由 isTypingTarget 拦截，不会误触
+  if (currentModule === 'reader' && (e.key === 'j' || e.key === 'J' || e.key === 'k' || e.key === 'K') && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+    e.preventDefault();
+    gotoTocByOffset(e.key === 'j' || e.key === 'J' ? 1 : -1);
     return;
   }
 
