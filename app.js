@@ -17,7 +17,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.21.9';
+const APP_VERSION = 'v3.22.0';
 const APP_DATE = '2026-08-04';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -6399,24 +6399,35 @@ function renderSearchResults(results, queryOrig) {
     ? { bookId: currentBookId, chapterIdx: currentChapterIdx }
     : null;
   if (meta) meta.textContent = `${results.length} 条结果（按相关度 · ↑↓ 选 · ↵ 跳转）`;
-  $('searchResults').innerHTML = results.map(r => {
-    // 🎯 v3.18.6 标题行高亮：让用户一眼看清「书名 / 章节名」哪个命中
-    const titleHTML = `${r.book.emoji} ${r.book.title.replace(re, '<em class="sr-hl">$1</em>')} · ${r.ch.title.replace(re, '<em class="sr-hl">$1</em>')}`;
-    const highlighted = r.preview.replace(re, '<em class="sr-hl">$1</em>');
-    const lineAttr = r.line ? r.line : '';
-    // 🎯 章节序号 + 📍 当前章节标记：让用户一眼明白匹配来自书的哪个位置
-    const chIdx = r.book.chapters.findIndex(c => c.file === r.ch.file);
-    const total = r.book.chapters.length;
-    const posLabel = chIdx >= 0 ? `第 ${chIdx + 1}/${total} 节` : '';
-    const isHere = here && here.bookId === r.book.id && chIdx === here.chapterIdx;
-    const hereBadge = isHere ? '<span class="sr-here">📍 当前章节</span>' : '';
-    const meta2 = posLabel + (r.line ? ' · <span class="sr-m">第' + r.line + '行</span>' : '') + (r.hits > 1 ? ' <span class="sr-hits">命中 ' + r.hits + ' 次</span>' : '');
-    return `<div class="sr-item" onclick="this.closest('.overlay').remove();goSearchResult('${r.book.id}','${r.ch.file}',${lineAttr ? r.line : 'null'},'${escapeRegex(queryOrig).replace(/'/g, "\\'")}')">
-      <div class="sr-b">${titleHTML} ${hereBadge}</div>
-      <div class="sr-p">${highlighted}</div>
-      ${meta2 ? `<div class="sr-meta-row">${meta2}</div>` : ''}
-    </div>`;
+  // 📚 v3.22.0 按书分组：聚合每本书的命中数，渲染分组头 + 命中章节；保持章节内按相关度排序
+  // 性价比：搜「营养」可能命中 5 本书里 8 章节，分组后用户一眼看清「这本书命中 3 章」，决策更快
+  const byBook = new Map();
+  results.forEach(r => {
+    if (!byBook.has(r.book.id)) byBook.set(r.book.id, { book: r.book, items: [] });
+    byBook.get(r.book.id).items.push(r);
+  });
+  const groupHtml = Array.from(byBook.values()).map(g => {
+    const totalHits = g.items.reduce((s, r) => s + (r.hits || 1), 0);
+    const head = `<div class="sr-group-hd">${g.book.emoji} ${escapeHTML(g.book.title)} <span class="sr-group-cnt">${g.items.length} 章节 · ${totalHits} 次命中</span></div>`;
+    const itemsHtml = g.items.map(r => {
+      const titleHTML = `${r.book.emoji} ${r.book.title.replace(re, '<em class="sr-hl">$1</em>')} · ${r.ch.title.replace(re, '<em class="sr-hl">$1</em>')}`;
+      const highlighted = r.preview.replace(re, '<em class="sr-hl">$1</em>');
+      const lineAttr = r.line ? r.line : '';
+      const chIdx = r.book.chapters.findIndex(c => c.file === r.ch.file);
+      const total = r.book.chapters.length;
+      const posLabel = chIdx >= 0 ? `第 ${chIdx + 1}/${total} 节` : '';
+      const isHere = here && here.bookId === r.book.id && chIdx === here.chapterIdx;
+      const hereBadge = isHere ? '<span class="sr-here">📍 当前章节</span>' : '';
+      const meta2 = posLabel + (r.line ? ' · <span class="sr-m">第' + r.line + '行</span>' : '') + (r.hits > 1 ? ' <span class="sr-hits">命中 ' + r.hits + ' 次</span>' : '');
+      return `<div class="sr-item" onclick="this.closest('.overlay').remove();goSearchResult('${r.book.id}','${r.ch.file}',${lineAttr ? r.line : 'null'},'${escapeRegex(queryOrig).replace(/'/g, "\\'")}')">
+        <div class="sr-b">${titleHTML} ${hereBadge}</div>
+        <div class="sr-p">${highlighted}</div>
+        ${meta2 ? `<div class="sr-meta-row">${meta2}</div>` : ''}
+      </div>`;
+    }).join('');
+    return head + itemsHtml;
   }).join('');
+  $('searchResults').innerHTML = groupHtml;
 }
 
 async function doSearch(query) {
