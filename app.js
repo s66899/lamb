@@ -5215,12 +5215,28 @@ async function renderChapter() {
   const _nextLabel = _nextCh
     ? `${escapeHTML(_nextCh.title || '')} ▶`
     : `已是末节 ▶`;
+  // v3.21.9 顶部分页进度条：中间塞「23/41 · ▓▓▓░░░ 56%」迷你进度条，让读者一眼看到「已读到哪里、还剩多少」
+  // 用 RP 推断整本书已读章节数（避免重新解析整本书只为了一个整数）；无数据时回退为单章节计数
+  const _total = book.chapters.length;
+  const _cur = currentChapterIdx + 1;
+  let _readSoFar = 0;
+  try { const _p = getP(); const _list = _p[currentBookId] || []; _readSoFar = book.chapters.filter(c => _list.includes(c.file)).length; } catch (_) {}
+  const _pct = Math.round((_readSoFar / Math.max(1, _total)) * 100);
+  const _barWidth = 14; // 14 格迷你条
+  const _filled = Math.round((_readSoFar / Math.max(1, _total)) * _barWidth);
+  const _miniBar = '▓'.repeat(_filled) + '░'.repeat(_barWidth - _filled);
+  const _progressHtml = `<div class="reader-nav-progress" aria-label="书籍进度 ${_readSoFar}/${_total} 章 · ${_pct}%">`
+    + `<span class="rnp-pos">${_cur}/${_total}</span>`
+    + `<span class="rnp-bar" title="已读 ${_readSoFar}/${_total} · ${_pct}%">${_miniBar}</span>`
+    + `<span class="rnp-pct">${_pct}%</span>`
+    + `</div>`;
   $('readerNav').innerHTML = `
-    <button class="tb-btn nav-preview" onclick="prevChapter()" ${currentChapterIdx<=0?'disabled':''}
-            title="${_prevCh ? escapeAttr(_prevCh.title || '') : '已是首节'}">${_prevLabel}</button>
+    <button class="tb-btn nav-preview ${_prevCh ? '' : 'nav-stub'}" onclick="prevChapter()" ${currentChapterIdx<=0?'disabled':''}
+            title="${_prevCh ? escapeAttr(_prevCh.title || '') : '已是首节 · 没有上一节'}">${_prevLabel}</button>
+    ${_progressHtml}
     <button class="tb-btn" onclick="openFullQuiz()">🧪 测验</button>
-    <button class="tb-btn nav-preview" onclick="nextChapter()" ${currentChapterIdx>=book.chapters.length-1?'disabled':''}
-            title="${_nextCh ? escapeAttr(_nextCh.title || '') : '已是末节'}">${_nextLabel}</button>`;
+    <button class="tb-btn nav-preview ${_nextCh ? '' : 'nav-stub'}" onclick="nextChapter()" ${currentChapterIdx>=book.chapters.length-1?'disabled':''}
+            title="${_nextCh ? escapeAttr(_nextCh.title || '') : '已是末节 · 没有下一节'}">${_nextLabel}</button>`;
   buildToc(ch);
 
   // v3.21.5 章节切换 fade 过渡：先加一个 0.15s 淡出（用户先看到「接住了」），加载完后在渲染末尾 fade-in

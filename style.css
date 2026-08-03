@@ -1524,8 +1524,45 @@ body::before {
   gap: 4px;
 }
 .tb-btn.nav-preview:disabled { opacity: .3; cursor: default; }
+/* v3.21.9 顶部分页按钮禁用态细化：首节/末节「无目标」信息更明确（虚线边 + 标签） */
+.tb-btn.nav-preview.nav-stub { border-style: dashed; opacity: .55; }
+.tb-btn.nav-preview.nav-stub:hover { background: var(--bg3) !important; border-color: var(--border) !important; }
+/* v3.21.9 阅读器顶部分页进度条：中间塞「23/41 · ▓▓▓░░░ 56%」迷你进度条
+   让读者一眼看到「已读到哪里、还剩多少」；flex 自适应、不挤压两侧按钮 */
+.reader-nav-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg3);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text2);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  white-space: nowrap;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.reader-nav-progress .rnp-pos { font-weight: 600; color: var(--text); }
+.reader-nav-progress .rnp-bar {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: -1px;
+  color: var(--blue);
+  text-shadow: 0 0 1px rgba(0,0,0,.1);
+  white-space: nowrap;
+}
+.reader-nav-progress .rnp-pct { font-weight: 600; color: var(--green); }
 @media (max-width: 768px) {
   .tb-btn.nav-preview { max-width: 100px; font-size: 11px; }
+  /* 移动端进度条只显示「23/41 · 56%」+ 极简迷你条；挤压两边标题 */
+  .reader-nav-progress { padding: 4px 8px; gap: 4px; font-size: 10px; }
+  .reader-nav-progress .rnp-bar { display: none; }
+}
+@media (max-width: 420px) {
+  /* 极窄屏：进一步挤压，避免挤掉上一节/下一节标题 */
+  .tb-btn.nav-preview { max-width: 72px; font-size: 10px; }
+  .reader-nav-progress { padding: 3px 6px; font-size: 9px; }
 }
 
 /* ── 书籍条目 ─────────────────── */
