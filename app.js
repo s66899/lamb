@@ -5205,10 +5205,22 @@ async function renderChapter() {
   $('readerTitle').textContent = `📖 ${String(currentChapterIdx+1).padStart(2,'0')}/${book.chapters.length} · ${ch.title}`;
   $('chapterPos').textContent = `${currentChapterIdx+1}/${book.chapters.length}`;
   $('readMarkBtn').textContent = isRead(currentBookId,ch.file) ? '✅' : '📌';
+  // v3.21.8 顶部分页按钮预览：左侧/右侧揭示下一节标题，让「按 → 之前先知道去哪」
+  // 与底部 next-ch-cta 风格一致；标题过长时 CSS 截断；最后/最前一节显示「已是最末/首节」
+  const _prevCh = currentChapterIdx > 0 ? book.chapters[currentChapterIdx - 1] : null;
+  const _nextCh = currentChapterIdx < book.chapters.length - 1 ? book.chapters[currentChapterIdx + 1] : null;
+  const _prevLabel = _prevCh
+    ? `◀ ${escapeHTML(_prevCh.title || '')}`
+    : `◀ 已是首节`;
+  const _nextLabel = _nextCh
+    ? `${escapeHTML(_nextCh.title || '')} ▶`
+    : `已是末节 ▶`;
   $('readerNav').innerHTML = `
-    <button class="tb-btn" onclick="prevChapter()" ${currentChapterIdx<=0?'disabled':''}>◀ 上一节</button>
+    <button class="tb-btn nav-preview" onclick="prevChapter()" ${currentChapterIdx<=0?'disabled':''}
+            title="${_prevCh ? escapeAttr(_prevCh.title || '') : '已是首节'}">${_prevLabel}</button>
     <button class="tb-btn" onclick="openFullQuiz()">🧪 测验</button>
-    <button class="tb-btn" onclick="nextChapter()" ${currentChapterIdx>=book.chapters.length-1?'disabled':''}>下一节 ▶</button>`;
+    <button class="tb-btn nav-preview" onclick="nextChapter()" ${currentChapterIdx>=book.chapters.length-1?'disabled':''}
+            title="${_nextCh ? escapeAttr(_nextCh.title || '') : '已是末节'}">${_nextLabel}</button>`;
   buildToc(ch);
 
   // v3.21.5 章节切换 fade 过渡：先加一个 0.15s 淡出（用户先看到「接住了」），加载完后在渲染末尾 fade-in
