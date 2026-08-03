@@ -1892,21 +1892,90 @@ header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
     opacity: 0.6;
   }
   
-  /* 底部导航（如果需要） */
-  .bottom-nav {
+  /* 📱 微信风格底部导航栏 */
+  .bottom-tab-bar {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     height: 70px;
-    padding: 0 16px;
-    border-radius: 24px 24px 0 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    backdrop-filter: blur(20px);
+    background: rgba(var(--bg-rgb, 30, 30, 30), 0.95);
   }
-  .bn-item {
+  
+  .btb-item {
     flex: 1;
-    padding: 10px 4px;
-    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 60px;
     border-radius: 12px;
+    margin: 4px;
+    -webkit-tap-highlight-color: transparent;
   }
-  .bn-icon {
-    font-size: 24px;
+  
+  .btb-item:active {
+    transform: scale(0.95);
+    background: rgba(var(--green-rgb, 58, 125, 92), 0.15);
+  }
+  
+  .btb-item.active .btb-icon {
+    transform: scale(1.1);
+  }
+  
+  .btb-item.active .btb-label {
+    color: var(--green);
+    font-weight: 600;
+  }
+  
+  .btb-icon {
+    font-size: 26px;
     margin-bottom: 4px;
+    transition: transform 0.2s ease;
+  }
+  
+  .btb-label {
+    font-size: 11px;
+    color: var(--text4);
+    font-weight: 500;
+  }
+  
+  /* 移动端显示底部导航 */
+  @media (max-width: 640px) {
+    .bottom-tab-bar {
+      display: flex;
+    }
+    
+    /* 隐藏原来的FAB按钮，避免重复 */
+    .fab-home, .fab-search {
+      display: none;
+    }
+    
+    /* 内容区域底部留出导航栏空间 */
+    .content {
+      padding-bottom: 80px !important;
+    }
+    
+    /* 阅读器底部不需要那么大边距 */
+    .view-reader .content {
+      padding-bottom: 20px !important;
+    }
+    
+    /* 底部导航栏显示时调整阅读进度条位置 */
+    .read-progress {
+      bottom: 80px;
+    }
   }
   
   /* 按钮 - 游戏风格 */

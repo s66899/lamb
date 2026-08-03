@@ -17,7 +17,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.20.0';
+const APP_VERSION = 'v3.21.0';
 const APP_DATE = '2026-08-03';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -5707,6 +5707,109 @@ function goHome() {
   if (content) content.scrollTo({ top: 0, behavior: 'smooth' });
   // 触发一次resize以让 chart 重新计算
   setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+  // 更新底部Tab状态
+  updateBottomTab('dashboard');
+}
+
+// ─── 底部Tab切换 ───
+function switchTab(tab) {
+  // 更新Tab激活状态
+  updateBottomTab(tab);
+  
+  // 关闭可能存在的浮层
+  document.querySelectorAll('.overlay, .panel').forEach(o => {
+    if (o.id !== 'pwOverlay' && o.id !== 'adminOverlay') o.remove();
+  });
+  document.querySelector('.sidebar')?.classList.remove('open');
+  
+  // 根据Tab切换视图
+  switch(tab) {
+    case 'dashboard':
+      showView('dashboard');
+      renderDashboard();
+      break;
+    case 'library':
+      showView('library');
+      if (typeof renderLibrary === 'function') renderLibrary();
+      break;
+  }
+  
+  // 滚动到顶部
+  const content = $('content');
+  if (content) content.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── 更新底部Tab激活状态 ───
+function updateBottomTab(activeTab) {
+  const tabBar = document.getElementById('bottomTabBar');
+  if (!tabBar) return;
+  
+  tabBar.querySelectorAll('.btb-item').forEach(item => {
+    const view = item.dataset.view;
+    item.classList.toggle('active', view === activeTab);
+  });
+}
+
+// ─── 打开工具面板 ───
+function openToolsPanel() {
+  // 更新Tab激活状态
+  updateBottomTab('tools');
+  
+  if (typeof openTools === 'function') {
+    openTools();
+  } else {
+    // 备用：打开工具面板
+    const panel = document.getElementById('toolsPanel');
+    if (panel) {
+      panel.style.display = 'block';
+    } else {
+      // 简单的工具列表弹窗
+      showToast('🛠️ 工具面板开发中...');
+    }
+  }
+}
+
+// ─── 打开个人面板 ───
+function openProfilePanel() {
+  // 更新Tab激活状态
+  updateBottomTab('profile');
+  
+  // 打开个人中心/设置
+  if (typeof openSettings === 'function') {
+    openSettings();
+  } else {
+    // 备用：显示简单的个人面板
+    showToast('👤 个人中心开发中...');
+  }
+}
+
+// ─── Toast 提示 ───
+function showToast(msg, duration = 2000) {
+  const existing = document.querySelector('.toast-msg');
+  if (existing) existing.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast-msg';
+  toast.textContent = msg;
+  toast.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 16px;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.animation = 'fadeOut 0.2s ease';
+    setTimeout(() => toast.remove(), 200);
+  }, duration);
 }
 
 // ─── 返回上一页 ───
