@@ -17,7 +17,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.18.6';
+const APP_VERSION = 'v3.18.7';
 const APP_DATE = '2026-08-03';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -544,7 +544,7 @@ async function openExerciseLib() {
 }
 
 let _EX_IDX = null;
-let _EX_FILTER = { q: '', bp: '', eq: '', goal: '', level: '' };
+let _EX_FILTER = { q: '', bp: '', eq: '', goal: '', level: '', mu: '' };
 const BP_ORDER  = ['waist','upper legs','back','lower legs','chest','upper arms','cardio','shoulders','lower arms','neck'];
 const BP_LABEL  = { waist:'核心·腰腹','upper legs':'大腿','back':'背部','lower legs':'小腿','chest':'胸部','upper arms':'上臂',cardio:'心肺',shoulders:'肩部','lower arms':'前臂',neck:'颈部' };
 const EQ_LABEL  = { 'body weight':'徒手',dumbbell:'哑铃',barbell:'杠铃','olympic barbell':'奥杆','ez barbell':'EZ 杆',cable:'绳索','leverage machine':'固定器械','smith machine':'史密斯',kettlebell:'壶铃',band:'弹力带','resistance band':'弹力带','medicine ball':'药球','stability ball':'健身球','bosu ball':'波速球',sledmachine:'雪橇机','upper body ergometer':'上肢测功计','skiergmachine':'滑雪机',hammer:'锤式','tire':'轮胎','trap bar':'六角杠','stationary bike':'动感单车','elliptical machine':'椭圆机','stepmill machine':'踏步机',roller:'滚筒','wheelroller':'泡沫轴',assisted:'辅助',weighted:'负重',rope:'战绳' };
@@ -570,6 +570,16 @@ function exRenderFilters() {
     const c = (l === _EX_FILTER.level) ? 'background:var(--orange,#ff9f0a);color:#fff;border-color:var(--orange,#ff9f0a)' : '';
     return `<button class="h-btn" style="padding:4px 9px;font-size:11px;${c}" onclick="exSetFilter('level','${l}')">${LEVEL_LABEL[l] || l}</button>`;
   }).join('');
+  // 肌群 chip 组：按频次排序，展示 top 15 肌群（避免过长）
+  const topMus = [..._EX_IDX.allMuscles].sort((a,b) => {
+    const ca = _EX.filter(x => x.mu_zh === a || (Array.isArray(x.sec) && x.sec.includes(a))).length;
+    const cb = _EX.filter(x => x.mu_zh === b || (Array.isArray(x.sec) && x.sec.includes(b))).length;
+    return cb - ca;
+  }).slice(0, 15);
+  const muChips = topMus.map(m => {
+    const c = (m === _EX_FILTER.mu) ? 'background:var(--green);color:#fff;border-color:var(--green)' : '';
+    return `<button class="h-btn" style="padding:4px 9px;font-size:11px;${c}" onclick="exSetFilter('mu','${m}')">${m}</button>`;
+  }).join('');
   bar.innerHTML = `
     <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
       <span style="color:var(--text3);margin-right:2px">部位:</span>${bpChips}
@@ -580,6 +590,9 @@ function exRenderFilters() {
     <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
       <span style="color:var(--text3);margin-right:2px">目标:</span>${goalChips}
       <span style="color:var(--text3);margin:0 4px 0 6px">水平:</span>${lvlChips}
+    </div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+      <span style="color:var(--text3);margin-right:2px">💪 肌群:</span>${muChips}
     </div>`;
 }
 
@@ -589,8 +602,20 @@ function exSetFilter(k, v) {
   exApplyAndRender();
 }
 
+// 从详情抽屉点击主/次要肌群 → 一键跳转训练该肌群
+async function exFilterByMuscle(musName) {
+  if (!_EX) await loadExerciseLib();
+  // 关闭详情抽屉，再打开动作库并预筛肌群
+  document.querySelector('.overlay')?.remove();
+  await openExerciseLib();
+  _EX_FILTER.mu = musName || '';
+  exRenderFilters();
+  exApplyAndRender();
+  showToast?.(`已筛选：训练 ${musName} 的全部动作`);
+}
+
 function exResetFilters() {
-  _EX_FILTER = { q: '', bp: '', eq: '', goal: '', level: '' };
+  _EX_FILTER = { q: '', bp: '', eq: '', goal: '', level: '', mu: '' };
   const inp = document.getElementById('exSearch');
   if (inp) inp.value = '';
   exRenderFilters();
@@ -615,6 +640,15 @@ function exApplyAndRender() {
   if (f.eq)    list = list.filter(x => x.eq === f.eq);
   if (f.goal)  list = list.filter(x => x.goal === f.goal);
   if (f.level) list = list.filter(x => x.level === f.level);
+  if (f.mu) {
+    // 匹配主肌群 (mu_zh) 或次要肌群 (sec[]) 任一
+    list = list.filter(x =>
+      (x.mu_zh && x.mu_zh === f.mu) ||
+      (x.mu === f.mu) ||
+      (Array.isArray(x.sec) && x.sec.includes(f.mu)) ||
+      (x.tgt === f.mu) || (x.tgt_zh === f.mu)
+    );
+  }
   if (q) {
     list = list.filter(x =>
       (x.n && x.n.toLowerCase().includes(q)) ||
@@ -623,7 +657,12 @@ function exApplyAndRender() {
       (x.tgt_zh && x.tgt_zh.toLowerCase().includes(q))
     );
   }
-  if (stats) stats.textContent = `共 ${list.length} / ${_EX.length} 个动作`;
+  const muBanner = _EX_FILTER.mu
+    ? `<div style="background:linear-gradient(135deg,rgba(48,209,88,.12),rgba(10,132,255,.08));padding:8px 12px;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+         <div style="font-size:12px;color:var(--text)">💪 <strong>训练「${_EX_FILTER.mu}」</strong>的全部动作</div>
+         <button onclick="exSetFilter('mu','')" style="background:transparent;border:1px solid var(--border);color:var(--text2);font-size:10px;padding:3px 8px;border-radius:6px;cursor:pointer">✕ 清除</button>
+       </div>` : '';
+  if (stats) stats.innerHTML = muBanner + `共 ${list.length} / ${_EX.length} 个动作`;
   if (!list.length) {
     grid.innerHTML = `<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--text3);font-size:12px">未匹配到动作，换个关键词试试。</div>`;
     return;
@@ -699,7 +738,7 @@ async function openExerciseDetail(id) {
      </div>`).join('');
   const secHtml = (ex.sec && ex.sec.length) ?
     `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">
-       ${ex.sec.map(s => `<span style="background:var(--bg3);font-size:10px;padding:2px 7px;border-radius:8px">${s}</span>`).join('')}
+       ${ex.sec.map(s => `<span data-mus="${s}" style="background:var(--bg3);font-size:10px;padding:3px 9px;border-radius:8px;cursor:pointer;border:1px solid var(--border)" title="点击查看训练 ${s} 的全部动作" onclick="exFilterByMuscle('${s}')">${s} <span style="opacity:.5;font-size:9px">→</span></span>`).join('')}
      </div>` : '';
   // 训练建议：根据 goal 推导
   const rec = exRecommendSets(ex);
@@ -718,7 +757,7 @@ async function openExerciseDetail(id) {
        </div>
        <div>
          <div style="font-size:12px;font-weight:600;margin-bottom:4px">🎯 主要肌群</div>
-         <div style="font-size:13px;color:var(--green);font-weight:600">${ex.mu_zh || ex.mu}</div>
+         <div data-mus="${ex.mu_zh || ex.mu}" style="font-size:13px;color:var(--green);font-weight:600;cursor:pointer;display:inline-block;padding:3px 8px;background:rgba(48,209,88,.08);border-radius:6px" title="点击查看训练 ${ex.mu_zh || ex.mu} 的全部动作" onclick="exFilterByMuscle('${ex.mu_zh || ex.mu}')">${ex.mu_zh || ex.mu} <span style="opacity:.5;font-size:11px">→</span></div>
          <div style="font-size:11px;color:var(--text3);margin-top:2px">次要肌群：</div>
          ${secHtml}
        </div>
