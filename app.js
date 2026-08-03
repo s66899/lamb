@@ -12,7 +12,7 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 // v3.22.1 搜索匹配导航：applySearchJump 高亮完所有匹配后，把 em 节点存进 _searchMatches，
 // 并用 _searchCurrIdx 跟踪「当前」匹配；n / Shift+N 在阅读器视图循环跳转
-// （紧跟 v3.22.0 按书分组：搜出来 N 条 hits 是「看得到」，本步是「走得到」）
+// v3.22.1 搜索匹配导航：applySearchJump 高亮完所有匹配后，把 em 节点存进 _searchMatches，
 let _searchMatches = [];   // 当前章节里所有 <em class="search-hl"> 节点（按 DOM 顺序）
 let _searchCurrIdx = -1;   // 当前匹配序号（-1 = 无）；循环跳转时 wrap
 // v3.14.5 阅读时长追踪：进入章节时打点，scroll 监听里节流刷新，切换/离开时累加进 RP.totalReadSeconds
@@ -22,7 +22,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.0';
+const APP_VERSION = 'v3.22.1';
 const APP_DATE = '2026-08-04';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -6404,7 +6404,7 @@ function renderSearchResults(results, queryOrig) {
     ? { bookId: currentBookId, chapterIdx: currentChapterIdx }
     : null;
   if (meta) meta.textContent = `${results.length} 条结果（按相关度 · ↑↓ 选 · ↵ 跳转）`;
-  // 📚 v3.22.0 按书分组：聚合每本书的命中数，渲染分组头 + 命中章节；保持章节内按相关度排序
+  // 📚 v3.22.1 累计：按书分组 + n/Shift+N 循环跳转 + 笔误修复（科普→搜索、镉定→锚定、所以→所有）
   // 性价比：搜「营养」可能命中 5 本书里 8 章节，分组后用户一眼看清「这本书命中 3 章」，决策更快
   const byBook = new Map();
   results.forEach(r => {

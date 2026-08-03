@@ -869,7 +869,7 @@ article hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
 .sr-meta-row { display:flex; gap:8px; align-items:center; margin-top:2px; flex-wrap:wrap; }
 .sr-hits { font-size:10px; color:var(--orange); background:rgba(255,159,10,0.12); padding:1px 6px; border-radius:99px; font-family:monospace; }
 .sr-here { display:inline-block; font-size:9px; color:var(--gold); background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.35); padding:0 5px; border-radius:99px; margin-left:6px; font-weight:600; vertical-align:1px; }
-/* v3.22.0 搜索结果按书分组头：粘性顶部 + 浅边框 + 强对比，让用户一眼看清「这本书命中几章」 */
+/* v3.22.1 搜索结果按书分组头：粘性顶部 + 浅边框 + 强对比，让用户一眼看清「这本书命中几章」 */
 .sr-group-hd { position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 10px; margin:6px 0 2px; font-size:11px; font-weight:700; color:var(--text); background:linear-gradient(180deg, var(--bg2) 0%, color-mix(in srgb, var(--bg2) 80%, transparent) 100%); border-top:1px solid var(--border); border-bottom:1px solid var(--border); backdrop-filter:blur(6px); }
 .sr-group-hd:first-child { margin-top:0; border-top:none; }
 .sr-group-cnt { font-size:10px; font-weight:500; color:var(--text3); font-family:monospace; }
