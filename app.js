@@ -5334,9 +5334,58 @@ function escapeAttr(s) {
 
 const MAX_RESULTS = 30;
 const RE_SPECIAL = /[.*+?^${}()|[\]\\]/g;
+// v3.18.1 搜索并发 + 缓存：缓存已 fetch 的章节 markdown，避免每次输入/切 scope 都重拉网络
+const CHAPTER_CACHE_TTL_MS = 5 * 60 * 1000; // 5 分钟
+const CHAPTER_CACHE_MAX = 80;               // 最多缓存 80 章，超出 LRU 淘汰
+const SEARCH_FETCH_CONCURRENCY = 4;        // 同时跑的网络请求上限
+const _chapterCache = new Map();           // key: 'bookId/file' -> { md, ts }
+const _chapterInFlight = new Map();        // key: 'bookId/file' -> Promise<md|null>（去重并发请求）
 
 /** Escape special regex characters in a query string */
 function escapeRegex(s) { return s.replace(RE_SPECIAL, '\\$&'); }
+
+/** 从缓存取章节 markdown，未命中或过期返回 null */
+function _cacheGet(bookId, file) {
+  const k = bookId + '/' + file;
+  const hit = _chapterCache.get(k);
+  if (!hit) return null;
+  if (Date.now() - hit.ts > CHAPTER_CACHE_TTL_MS) {
+    _chapterCache.delete(k);
+    return null;
+  }
+  // LRU：命中后重新插到队尾
+  _chapterCache.delete(k);
+  _chapterCache.set(k, hit);
+  return hit.md;
+}
+
+/** 写入缓存，超出上限时淘汰最旧的 */
+function _cacheSet(bookId, file, md) {
+  if (md == null) return;
+  const k = bookId + '/' + file;
+  if (_chapterCache.has(k)) _chapterCache.delete(k);
+  _chapterCache.set(k, { md, ts: Date.now() });
+  while (_chapterCache.size > CHAPTER_CACHE_MAX) {
+    const oldest = _chapterCache.keys().next().value;
+    if (!oldest) break;
+    _chapterCache.delete(oldest);
+  }
+}
+
+/** 限制并发地逐项调用 worker(items, fn)，所有项跑完 resolve 全量结果 */
+async function _runWithLimit(items, limit, fn) {
+  const results = new Array(items.length);
+  let idx = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (true) {
+      const i = idx++;
+      if (i >= items.length) return;
+      results[i] = await fn(items[i], i);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
 
 /** 计算搜索结果的相关度分数（越大越相关）
  *  - 章节标题完全匹配：+100
@@ -5386,34 +5435,46 @@ function searchMetadata(ql, results) {
   }
 }
 
-/** Search chapter content (fetches markdown, slower) */
+/** Search chapter content (fetches markdown, slower)
+ *  v3.18.1：并发拉取 + 缓存复用 — 之前每次搜索都串行 fetch 几十章，切换 scope/输入新词都会重拉
+ *  现在：首次扫描全量加载到缓存（带 4 路并发），后续搜索直接复用缓存
+ */
 async function searchContent(ql, results, queryOrig) {
   const books = booksForScope();
+  const todo = [];
   for (const book of books) {
     for (const ch of book.chapters) {
       if (results.length >= MAX_RESULTS) break;
       if (results.some(r => r.ch === ch)) continue;
-      const md = await fetchChapterContent(book.id, ch.file);
-      if (!md) continue;
-      const lines = md.split('\n');
-      let firstMatchLine = -1;
-      let totalHits = 0;
-      for (let i = 0; i < lines.length; i++) {
-        const ln = lines[i].toLowerCase();
-        if (ln.startsWith('#')) continue;
-        if (ln.includes(ql)) {
-          totalHits++;
-          if (firstMatchLine < 0) firstMatchLine = i + 1;
-        }
-      }
-      if (firstMatchLine > 0) {
-        const raw = lines[firstMatchLine - 1];
-        const p = raw.length > 100 ? raw.slice(0, 100) + '…' : raw;
-        results.push({ book, ch, preview: p, line: firstMatchLine, hits: totalHits });
-      }
+      todo.push({ book, ch });
     }
     if (results.length >= MAX_RESULTS) break;
   }
+  if (!todo.length) return;
+
+  const scoreOne = async ({ book, ch }) => {
+    if (results.length >= MAX_RESULTS) return;
+    const md = await fetchChapterContent(book.id, ch.file);
+    if (!md) return;
+    const lines = md.split('\n');
+    let firstMatchLine = -1;
+    let totalHits = 0;
+    for (let i = 0; i < lines.length; i++) {
+      const ln = lines[i].toLowerCase();
+      if (ln.startsWith('#')) continue;
+      if (ln.includes(ql)) {
+        totalHits++;
+        if (firstMatchLine < 0) firstMatchLine = i + 1;
+      }
+    }
+    if (firstMatchLine > 0) {
+      const raw = lines[firstMatchLine - 1];
+      const p = raw.length > 100 ? raw.slice(0, 100) + '…' : raw;
+      results.push({ book, ch, preview: p, line: firstMatchLine, hits: totalHits });
+    }
+  };
+
+  await _runWithLimit(todo, SEARCH_FETCH_CONCURRENCY, scoreOne);
 }
 
 /** v3.18.0 根据当前搜索范围返回应遍历的 book 列表
@@ -5429,23 +5490,39 @@ function booksForScope() {
   return MANIFEST.books;
 }
 
-/** Try to fetch chapter markdown from local then remote (8s timeout) */
+/** Try to fetch chapter markdown from local then remote (8s timeout)
+ *  v3.18.1：加内存缓存 + 并发去重 — 同一章多处拉取时只发一次网络请求
+ */
 async function fetchChapterContent(bookId, file) {
+  // 1) 缓存命中直接返回
+  const cached = _cacheGet(bookId, file);
+  if (cached != null) return cached;
+
+  const k = bookId + '/' + file;
+  // 2) 同一章已在请求中：直接复用 in-flight Promise（避免重复 fetch）
+  if (_chapterInFlight.has(k)) return _chapterInFlight.get(k);
+
   const fetchWithTimeout = (url, ms = 8000) => {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), ms);
     return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
   };
-  try {
-    const localUrl = 'books/' + bookId + '/' + file;
-    const r1 = await fetchWithTimeout(localUrl);
-    if (r1.ok) return await r1.text();
-  } catch (_) { /* ignore local */ }
-  try {
-    const r2 = await fetchWithTimeout(RAW + '/books/' + bookId + '/' + file);
-    if (r2.ok) return await r2.text();
-  } catch (_) { /* ignore remote */ }
-  return null;
+
+  const p = (async () => {
+    try {
+      const localUrl = 'books/' + bookId + '/' + file;
+      const r1 = await fetchWithTimeout(localUrl);
+      if (r1.ok) { const md = await r1.text(); _cacheSet(bookId, file, md); return md; }
+    } catch (_) { /* ignore local */ }
+    try {
+      const r2 = await fetchWithTimeout(RAW + '/books/' + bookId + '/' + file);
+      if (r2.ok) { const md = await r2.text(); _cacheSet(bookId, file, md); return md; }
+    } catch (_) { /* ignore remote */ }
+    return null;
+  })().finally(() => { _chapterInFlight.delete(k); });
+
+  _chapterInFlight.set(k, p);
+  return p;
 }
 
 /** 常见搜索建议（无结果时给出） */
