@@ -17,7 +17,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.21.3';
+const APP_VERSION = 'v3.21.4';
 const APP_DATE = '2026-08-03';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -7552,12 +7552,15 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ─── 快捷键帮助面板（? 键弹出）────────────────────
+// v3.21.4 补全：原列表漏掉了 j/k H2 跳转、Ctrl+Shift+S 报告、Ctrl+Shift+T 主题、Ctrl+Home 首页
+// 按使用频率排序：搜索 / 关闭 / 翻页 / 跳转 / 工具
 const SHORTCUT_HELP = [
   { k: '/  or  Ctrl+K', d: '🔍 打开搜索' },
-  { k: 'Esc', d: '✕ 关闭弹窗 / 侧边栏' },
-  { k: 'Backspace  /  Alt+←', d: '← 后退' },
-  { k: 'Ctrl + Home', d: '🏠 回首页' },
+  { k: 'Esc', d: '✕ 关闭弹窗 / 侧边栏 / 返回' },
   { k: '←  /  →', d: '📖 上一节 / 下一节' },
+  { k: 'J  /  K', d: '📑 阅读器内跳到 下一/上一节标题' },
+  { k: 'Ctrl + Home', d: '🏠 回首页' },
+  { k: 'Backspace  /  Alt+←', d: '← 后退' },
   { k: 'Ctrl + Shift + T', d: '🌓 切换主题' },
   { k: 'Ctrl + Shift + S', d: '📊 训练报告' },
   { k: 'Ctrl + +/-/0', d: '🔠 字号 放大/缩小/重置' },
@@ -7571,7 +7574,10 @@ function openShortcutHelp() {
      </div>`).join('');
   showOverlay('panel-shortcuts', '⌨️ 键盘快捷键',
     `<div style="padding:4px 2px 2px">${rows}</div>
-     <div style="font-size:10px;color:var(--text3);margin-top:10px;text-align:center">💡 在输入框/搜索框内仅 Esc 生效，避免打断输入</div>`);
+     <div style="font-size:10px;color:var(--text3);margin-top:10px;text-align:center">💡 在输入框/搜索框内仅 Esc 生效，避免打断输入</div>
+     <div style="margin-top:12px;text-align:center">
+       <button class="h-btn" onclick="this.closest('.overlay').remove()">关闭</button>
+     </div>`);
 }
 document.addEventListener('keydown', (e) => {
   if (isTypingTarget(e.target)) return;
