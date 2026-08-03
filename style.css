@@ -770,6 +770,23 @@ article hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
 .sr-b { font-size:10px; font-weight:500; color:var(--blue); }
 .sr-p { font-size:11px; color:var(--text2); }
 .sr-p em { color:var(--text); font-style:normal; font-weight:600; }
+/* v3.18.6 搜索结果关键词高亮：标题行 + preview 统一醒目标记 */
+.sr-b .sr-hl, .sr-p .sr-hl {
+  background:linear-gradient(180deg,rgba(255,213,79,0.42) 0%,rgba(255,193,7,0.32) 100%);
+  color:#5a3e00;
+  font-style:normal;
+  font-weight:700;
+  padding:0 3px;
+  margin:0 1px;
+  border-radius:3px;
+  box-shadow:0 0 0 1px rgba(255,167,0,0.35), inset 0 -1px 0 rgba(255,167,0,0.25);
+}
+[data-theme="dark"] .sr-b .sr-hl, [data-theme="dark"] .sr-p .sr-hl {
+  background:linear-gradient(180deg,rgba(255,213,79,0.30) 0%,rgba(255,193,7,0.20) 100%);
+  color:#fff8dc;
+  box-shadow:0 0 0 1px rgba(255,193,7,0.55), inset 0 -1px 0 rgba(255,193,7,0.35);
+}
+.sr-b .sr-hl { font-size:inherit; }
 .sr-m { font-size:10px; color:var(--text3); margin-top:2px; font-family:monospace; }
 .sr-meta-row { display:flex; gap:8px; align-items:center; margin-top:2px; flex-wrap:wrap; }
 .sr-hits { font-size:10px; color:var(--orange); background:rgba(255,159,10,0.12); padding:1px 6px; border-radius:99px; font-family:monospace; }

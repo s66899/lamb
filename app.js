@@ -17,7 +17,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.18.5';
+const APP_VERSION = 'v3.18.6';
 const APP_DATE = '2026-08-03';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -5987,7 +5987,9 @@ function renderSearchResults(results, queryOrig) {
     : null;
   if (meta) meta.textContent = `${results.length} 条结果（按相关度 · ↑↓ 选 · ↵ 跳转）`;
   $('searchResults').innerHTML = results.map(r => {
-    const highlighted = r.preview.replace(re, '<em>$1</em>');
+    // 🎯 v3.18.6 标题行高亮：让用户一眼看清「书名 / 章节名」哪个命中
+    const titleHTML = `${r.book.emoji} ${r.book.title.replace(re, '<em class="sr-hl">$1</em>')} · ${r.ch.title.replace(re, '<em class="sr-hl">$1</em>')}`;
+    const highlighted = r.preview.replace(re, '<em class="sr-hl">$1</em>');
     const lineAttr = r.line ? r.line : '';
     // 🎯 章节序号 + 📍 当前章节标记：让用户一眼明白匹配来自书的哪个位置
     const chIdx = r.book.chapters.findIndex(c => c.file === r.ch.file);
@@ -5997,7 +5999,7 @@ function renderSearchResults(results, queryOrig) {
     const hereBadge = isHere ? '<span class="sr-here">📍 当前章节</span>' : '';
     const meta2 = posLabel + (r.line ? ' · <span class="sr-m">第' + r.line + '行</span>' : '') + (r.hits > 1 ? ' <span class="sr-hits">命中 ' + r.hits + ' 次</span>' : '');
     return `<div class="sr-item" onclick="this.closest('.overlay').remove();goSearchResult('${r.book.id}','${r.ch.file}',${lineAttr ? r.line : 'null'},'${escapeRegex(queryOrig).replace(/'/g, "\\'")}')">
-      <div class="sr-b">${r.book.emoji} ${r.book.title} · ${r.ch.title} ${hereBadge}</div>
+      <div class="sr-b">${titleHTML} ${hereBadge}</div>
       <div class="sr-p">${highlighted}</div>
       ${meta2 ? `<div class="sr-meta-row">${meta2}</div>` : ''}
     </div>`;
