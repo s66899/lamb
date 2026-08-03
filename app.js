@@ -17,7 +17,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.21.8';
+const APP_VERSION = 'v3.21.9';
 const APP_DATE = '2026-08-04';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -6059,10 +6059,13 @@ function handleSearchKey(e, input) {
     _srSelIdx = Math.max(0, _srSelIdx - 1);
     updateSelHighlight(items);
   } else if (e.key === 'Enter') {
-    // 优先跳转选中项；无选中则执行搜索
+    e.preventDefault();
+    // 优先跳转选中项；无选中则把当前 input 文本加到历史后重新跑一次搜索（保证「输入完直接回车」也能搜）
     if (_srSelIdx >= 0 && items[_srSelIdx]) {
-      e.preventDefault();
       items[_srSelIdx].click();
+    } else {
+      const q = input.value.trim();
+      if (q) doSearch(q);
     }
   }
 }
