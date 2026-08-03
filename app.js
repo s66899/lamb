@@ -17,7 +17,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.21.5';
+const APP_VERSION = 'v3.21.6';
 const APP_DATE = '2026-08-03';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -5852,31 +5852,54 @@ function openProfilePanel() {
 }
 
 // ─── Toast 提示 ───
+// v3.21.6 修复：旧实现每次调用都立刻 remove 已存在的 toast，导致连续触发时被覆盖、
+// 用户只看到最后一条（J/K 切章时 4-5 条通知堆叠，前几条根本来不及读）。
+// 新行为：① 同一条消息（去空格后相等）短时间内不重复显示；② 不同消息排队堆叠，
+// 最多同时 3 条，每条独立计时；③ 用稳定 toast-stack 容器便于统一样式与动画。
+const _toastSeen = new Map(); // msg -> 上次显示时间戳，去重冷却
+const TOAST_STACK_MAX = 3;
+const TOAST_DEDUP_MS = 1200;
 function showToast(msg, duration = 2000) {
-  const existing = document.querySelector('.toast-msg');
-  if (existing) existing.remove();
-  
-  const toast = document.createElement('div');
-  toast.className = 'toast-msg';
-  toast.textContent = msg;
-  toast.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.8);
-    color: #fff;
-    padding: 16px 24px;
-    border-radius: 12px;
-    font-size: 16px;
-    z-index: 10000;
-    animation: fadeIn 0.2s ease;
-  `;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.style.animation = 'fadeOut 0.2s ease';
-    setTimeout(() => toast.remove(), 200);
-  }, duration);
+  try {
+    const key = String(msg || '').trim();
+    if (!key) return;
+    const last = _toastSeen.get(key) || 0;
+    if (Date.now() - last < TOAST_DEDUP_MS) return;
+    _toastSeen.set(key, Date.now());
+
+    // 找到/创建堆叠容器（append 到固定容器，避免多 toast 互相影响定位）
+    let stack = document.getElementById('toastStack');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.id = 'toastStack';
+      stack.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none';
+      document.body.appendChild(stack);
+    }
+    // 超过堆叠上限：移除最早一条
+    const items = stack.querySelectorAll('.toast-msg');
+    if (items.length >= TOAST_STACK_MAX) items[0].remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg';
+    toast.textContent = msg;
+    toast.style.cssText = `
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      max-width: min(80vw, 480px);
+      text-align: center;
+      animation: fadeIn 0.2s ease;
+      pointer-events: auto;
+    `;
+    stack.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'fadeOut 0.2s ease';
+      // 200ms 是 fadeOut 动画时长，与原实现一致
+      setTimeout(() => toast.remove(), 200);
+    }, duration);
+  } catch (e) { /* 极端情况下吞错，避免 toast 自身打断主流程 */ }
 }
 
 // ─── 返回上一页 ───
