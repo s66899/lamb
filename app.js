@@ -5481,7 +5481,25 @@ function closeMobileToc() {
     setTimeout(() => bd.remove(), 250);
   }
 }
-function toggleFocus() { document.body.classList.toggle('focus-mode',!focusMode); focusMode=!focusMode; }
+// v3.21.7 专注模式：localStorage 持久化 + 启动恢复 + Toast 反馈 + 按钮 active 态
+function toggleFocus() {
+  focusMode = !focusMode;
+  document.body.classList.toggle('focus-mode', focusMode);
+  try { localStorage.setItem('bk_focus_mode', focusMode ? '1' : '0'); } catch (_) {}
+  const btn = document.getElementById('focusModeBtn');
+  if (btn) btn.classList.toggle('active', focusMode);
+  showToast(focusMode ? '🧘 专注模式：已隐藏导航，边距舒展' : '🧘 专注模式：已关闭');
+}
+function initFocusMode() {
+  let saved = false;
+  try { saved = localStorage.getItem('bk_focus_mode') === '1'; } catch (_) {}
+  if (saved) {
+    focusMode = true;
+    document.body.classList.add('focus-mode');
+    const btn = document.getElementById('focusModeBtn');
+    if (btn) btn.classList.add('active');
+  }
+}
 const FONT_MIN = 12, FONT_MAX = 22, FONT_DEFAULT = 15;
 function increaseFont() {
   if (fontBase < FONT_MAX) { fontBase++; applyFont(); showToast(`🔼 字号 ${fontBase}px`); }
@@ -6599,6 +6617,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bar.style.width='90%';await sleep(200);
   initRP();
   initBadmintonCursor(); // 初始化羽毛球拍光标
+  initFocusMode(); // v3.21.7 恢复专注模式偏好
   bar.style.width='100%';await sleep(200);
   $('splash').style.display='none';$('app').style.display='block';
   renderDashboard();updateProgress();

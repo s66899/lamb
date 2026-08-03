@@ -2247,3 +2247,37 @@ header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
   .cr-book { font-size: 12px; }
   .cr-chapter { font-size: 11px; }
 }
+
+/* ═══ v3.21.7 专注模式：隐藏导航 + 居中正文 + 舒缓留白 ═══ */
+.tb-btn.active {
+  background: var(--blue) !important;
+  color: #fff !important;
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 2px rgba(0,122,255,.18);
+}
+
+/* 专注模式：只对阅读器视图生效（避免误伤首页/仪表盘） */
+body.focus-mode .reader-toc {
+  display: none;
+}
+body.focus-mode .reader-layout {
+  justify-content: center;
+  max-width: 720px;
+  margin: 0 auto;
+  gap: 0;
+}
+body.focus-mode .reader-content {
+  padding: 8px 24px 60px;
+}
+body.focus-mode .reader-toolbar {
+  max-width: 720px;
+  margin: 0 auto 10px;
+  border-bottom-color: transparent;
+}
+body.focus-mode #readGoalBar {
+  max-width: 720px;
+  margin: -4px auto 10px;
+}
+@media (max-width: 768px) {
+  body.focus-mode .reader-content { padding: 8px 16px 80px; }
+}
