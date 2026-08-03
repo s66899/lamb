@@ -6681,6 +6681,16 @@ function _restoreScrollPos() {
   const map = safeGet(SCROLL_POS_KEY, {}) || {};
   const saved = map[k];
   if (!saved || saved < 200) return; // 太靠顶（200px 内）不需要恢复，避免「几乎没滚还跳一下」的违和感
+  // v3.21.3 已完成章节不再恢复位置：用户已标记已读 = 已经读完了，下次重温本应从开头看；
+  // 否则一进入就跳到中间 + 弹「已回到上次阅读位置」toast，会让人困惑「我刚才没读完吗？」
+  const book = MANIFEST?.books.find(b => b.id === currentBookId);
+  const ch = book?.chapters[currentChapterIdx];
+  if (ch && isRead(currentBookId, ch.file)) {
+    // 顺手清掉残留位置，避免 map 越积越大
+    delete map[k];
+    safeSet(SCROLL_POS_KEY, map);
+    return;
+  }
   // 等待 layout 完成后再滚：文章刚 innerHTML 完，scrollHeight 还在算
   const tryRestore = () => {
     const c = $('content');
