@@ -1555,32 +1555,81 @@ header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
 /* ── 响应式：手机端 ───────────────────────────────── */
 @media (max-width: 640px) {
   :root { --sidebar-w: 100%; }
-  .hero { padding: 16px; border-radius: 18px; }
-  .hero-title { font-size: 20px; }
-  .hero-sub { font-size: 11px; }
-  .hero-stats { gap: 8px; flex-wrap: wrap; }
-  .hero-stat-card { min-width: 70px; padding: 8px; }
-  .hero-stat-num { font-size: 18px; }
-  .module-card { padding: 14px; }
-  .mc-icon { font-size: 28px; }
-  .mc-title { font-size: 14px; }
-  .mc-desc { font-size: 11px; }
-  .tool-card { padding: 14px; }
-  .level-card { padding: 12px; }
-  .lc-emoji { font-size: 28px; }
-  .principles-table { font-size: 10px; }
-  .principle-row { grid-template-columns: 1fr !important; gap: 4px; font-size: 10px; }
+  
+  /* Header 简化 */
+  header { padding: 6px 12px; }
   .h-search-text { display: none; }
   .h-home-btn .hh-text { display: none; }
-  .h-home-btn { padding: 4px 6px; }
-  .h-home-btn .hh-icon { font-size: 14px; }
-  .rpg-level { padding: 2px 4px; }
+  .h-home-btn { padding: 6px 8px; }
+  .h-home-btn .hh-icon { font-size: 16px; }
+  .rpg-level { padding: 2px 6px; font-size: 10px; }
   .rpg-level .lvl-text { display: none; }
   .h-badge { display: none; }
-  .panel { width: 95vw; max-height: 85vh; }
-  .fab-home { width: 46px; height: 46px; right: 12px; bottom: 60px; }
-  .fab-search { width: 36px; height: 36px; right: 50px; font-size: 14px; }
-  .fab-top { width: 40px; height: 40px; right: 14px; bottom: 116px; font-size: 13px; }
+  
+  /* Hero 区域 */
+  .hero { padding: 16px 12px; border-radius: 16px; }
+  .hero-title { font-size: 22px; }
+  .hero-sub { font-size: 12px; }
+  .hero-stats { gap: 6px; }
+  .hero-stat-card { min-width: 65px; padding: 8px 6px; }
+  .hero-stat-num { font-size: 16px; }
+  
+  /* 模块卡片 - 更大触摸区域 */
+  .module-card { padding: 16px 14px; }
+  .mc-icon { font-size: 32px; }
+  .mc-title { font-size: 15px; }
+  .mc-desc { font-size: 12px; line-height: 1.5; }
+  .mc-tag { font-size: 10px; padding: 2px 8px; }
+  
+  /* 工具卡片 */
+  .tool-card { padding: 14px; }
+  .tool-card .tc-icon { font-size: 24px; }
+  .tool-card .tc-title { font-size: 14px; }
+  
+  /* 等级卡片 */
+  .level-card { padding: 14px; }
+  .lc-emoji { font-size: 28px; }
+  .lc-title { font-size: 14px; }
+  
+  /* 内容区域 */
+  .content { padding: 16px 12px; }
+  .section-title { font-size: 16px; margin-bottom: 12px; }
+  
+  /* 搜索结果 */
+  .search-result { padding: 12px; }
+  .sr-title { font-size: 15px; }
+  .sr-preview { font-size: 12px; }
+  
+  /* 阅读器 */
+  article { font-size: 16px !important; line-height: 1.7 !important; padding: 16px !important; }
+  article h1 { font-size: 22px !important; }
+  article h2 { font-size: 18px !important; margin-top: 24px !important; }
+  article h3 { font-size: 16px !important; }
+  article p { margin-bottom: 14px !important; }
+  article ul, article ol { padding-left: 20px !important; margin-bottom: 14px !important; }
+  article li { margin-bottom: 6px !important; }
+  
+  /* 表格 */
+  .principles-table { font-size: 11px; overflow-x: auto; }
+  .principle-row { grid-template-columns: 1fr !important; gap: 6px; font-size: 11px; padding: 8px; }
+  
+  /* 抽屉/面板 */
+  .panel { width: 95vw; max-height: 90vh; padding: 16px; }
+  
+  /* 浮动按钮 - 优化位置 */
+  .fab-home { width: 48px; height: 48px; right: 16px; bottom: 70px; font-size: 20px; }
+  .fab-search { width: 40px; height: 40px; right: 58px; font-size: 16px; }
+  .fab-top { width: 44px; height: 44px; right: 16px; bottom: 130px; font-size: 14px; }
+  
+  /* 问答卡片 - 增大触摸区域 */
+  .quiz-card { padding: 14px; }
+  .quiz-card .qc-q { font-size: 14px; }
+  .quiz-card .qc-btn { padding: 10px 12px; font-size: 13px; margin: 6px 0; }
+  
+  /* 侧边栏 */
+  .sidebar { width: 85vw; max-width: 300px; }
+  .side-link { padding: 10px 14px; font-size: 14px; }
+  .side-title { padding: 10px 14px; font-size: 13px; }
 }
 
 /* ── 响应式：平板 ───────────────────────────────── */
