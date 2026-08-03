@@ -5472,7 +5472,18 @@ function _flushQuizStreak() {
   quizStreak = 0;
   quizBestSession = 0;
 }
-function openFullQuiz(){const b=MANIFEST?.books.find(x=>x.id===currentBookId);const ch=b?.chapters[currentChapterIdx];if(!ch)return;const h2s=ch.h2s||[];if(!h2s.length){showToast('📝 本章暂无测试点', 2000);return;}}
+function openFullQuiz(){
+  const b=MANIFEST?.books.find(x=>x.id===currentBookId);
+  const ch=b?.chapters[currentChapterIdx];
+  if(!ch)return;
+  const h2s=ch.h2s||[];
+  if(!h2s.length){showToast('📝 本章暂无测试点', 2000);return;}
+  // v3.18.4 修复：原函数只弹 toast 不开面板，导致顶部"🧪 测验"按钮是死按钮
+  setupQuiz(ch);
+  const qs=$('quizSidebar');
+  if(qs)qs.style.display='block';
+  showToast(`🧪 本章 ${h2s.length} 个测试点 · 答对加 XP`, 1800);
+}
 function toggleQuizPanel(){const qs=$('quizSidebar');if(qs)qs.style.display=qs.style.display==='none'?'block':'none';}
 
 // ─── Markdown Parser ─────────────────────────────────
