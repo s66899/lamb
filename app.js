@@ -6309,7 +6309,13 @@ async function searchContent(ql, results, queryOrig) {
     }
     if (firstMatchLine > 0) {
       const raw = lines[firstMatchLine - 1];
-      const p = raw.length > 100 ? raw.slice(0, 100) + '…' : raw;
+      // v3.22.2 搜索预览扩上下文：除了首匹配行，再抓它前 1 行 + 后 1 行作为上下文，
+      // 让用户一眼能判断「这段是不是我要找的内容」，避免点进去才发现走偏。
+      // 严格裁剪 160 字以内，过长用 … 收尾，保持结果列表不撑爆。
+      const before = firstMatchLine > 1 ? lines[firstMatchLine - 2] : '';
+      const after = firstMatchLine < lines.length ? lines[firstMatchLine] : '';
+      const joined = [before, raw, after].filter(Boolean).join(' / ').replace(/\s+/g, ' ').trim();
+      const p = joined.length > 160 ? joined.slice(0, 160) + '…' : joined;
       results.push({ book, ch, preview: p, line: firstMatchLine, hits: totalHits });
     }
   };
