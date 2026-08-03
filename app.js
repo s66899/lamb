@@ -16,8 +16,8 @@ let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新
 let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"秒数
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.17.4';
-const APP_DATE = '2026-08-02';
+const APP_VERSION = 'v3.18.2';
+const APP_DATE = '2026-08-03';
 
 // ─── 全局错误边界（防白屏）─────────────────
 window.addEventListener('error', (e) => {
@@ -411,7 +411,10 @@ function renderCyclePlan() {
     `<div style="background:var(--bg3);padding:10px;border-radius:8px;border-left:3px solid ${g.color}">
        <div style="font-size:12px;font-weight:600;color:${g.color}">${g.label}</div>
        <div style="font-size:11px;color:var(--text2);margin-top:4px">${g.items.slice(0,3).join(' · ')}</div>
-       <div style="font-size:10px;color:var(--text3);margin-top:2px">+${g.items.length - 3} 项</div>
+       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+         <div style="font-size:10px;color:var(--text3)">+${g.items.length - 3} 项</div>
+         <button onclick="exOpenByGoal('${_selectedSegment}','${k}')" style="background:transparent;border:none;color:${g.color};font-size:10px;cursor:pointer;font-weight:600">动作库 →</button>
+       </div>
      </div>`).join('');
   const recovery = prog.recovery;
   body.innerHTML = `
@@ -438,6 +441,387 @@ function renderCyclePlan() {
 
 // 体能模块入口重写：打开时跳到周期规划器（保留原 book 章节作为深入阅读）
 function openStrengthHub() { openCyclePlanner(); }
+
+// ═══════════════════════════════════════════════════════════════════
+//  v3.18.2  体能动作库（EX_LIB） — 数据源：hasaneyldrm/exercises-dataset
+//  1,324 个动作 · 中文名 + 中文步骤 + 部位/器械/目标肌群中文映射
+//  加载策略：lazy fetch + sessionStorage 缓存（避免每次刷新重下 920KB）
+// ═══════════════════════════════════════════════════════════════════
+const EX_LIB_URL = 'books/exercises/ex-lib.json';
+const EX_LIB_CACHE_KEY = 'bk_exlib_cache_v1';
+const EX_LIB_TS_KEY    = 'bk_exlib_ts_v1';
+const EX_LIB_TTL_MS    = 7 * 24 * 3600 * 1000; // 7 天缓存
+
+let _EX = null;        // 动作数组（lazy load）
+let _EX_LOADING = null; // Promise（防止并发重复请求）
+
+async function loadExerciseLib(force = false) {
+  if (_EX && !force) return _EX;
+  if (_EX_LOADING && !force) return _EX_LOADING;
+  // 1) 先查 sessionStorage 缓存
+  try {
+    const ts = parseInt(sessionStorage.getItem(EX_LIB_TS_KEY) || '0', 10);
+    if (!force && ts && (Date.now() - ts) < EX_LIB_TTL_MS) {
+      const cached = sessionStorage.getItem(EX_LIB_CACHE_KEY);
+      if (cached) {
+        _EX = JSON.parse(cached);
+        return _EX;
+      }
+    }
+  } catch (_) {}
+  // 2) 网络拉取
+  _EX_LOADING = (async () => {
+    try {
+      const r = await fetch(EX_LIB_URL, { cache: 'force-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const data = await r.json();
+      _EX = data;
+      try {
+        sessionStorage.setItem(EX_LIB_CACHE_KEY, JSON.stringify(data));
+        sessionStorage.setItem(EX_LIB_TS_KEY, String(Date.now()));
+      } catch (_) {}
+      return data;
+    } catch (e) {
+      console.error('[EX_LIB] load failed:', e);
+      showToast?.('❌ 动作库加载失败：' + e.message);
+      throw e;
+    } finally {
+      _EX_LOADING = null;
+    }
+  })();
+  return _EX_LOADING;
+}
+
+// 简易索引：按身体部位/器械/训练目标分组（构建一次，复用多次）
+function buildExIndex(arr) {
+  const idx = {
+    byBP: {}, byEQ: {}, byGoal: {}, byLevel: {}, byTgt: {}, byMu: {},
+    allMuscles: new Set(), allEqs: new Set(), allGoals: new Set(), allLevels: new Set()
+  };
+  for (const ex of arr) {
+    (idx.byBP[ex.bp] ??= []).push(ex);
+    (idx.byEQ[ex.eq] ??= []).push(ex);
+    (idx.byGoal[ex.goal] ??= []).push(ex);
+    (idx.byLevel[ex.level] ??= []).push(ex);
+    (idx.byTgt[ex.tgt] ??= []).push(ex);
+    (idx.byMu[ex.mu] ??= []).push(ex);
+    idx.allEqs.add(ex.eq);
+    idx.allGoals.add(ex.goal);
+    idx.allLevels.add(ex.level);
+    for (const m of ex.sec || []) idx.allMuscles.add(m);
+    idx.allMuscles.add(ex.mu);
+  }
+  return idx;
+}
+
+// 体能动作库页面：搜索 + 多维筛选 + 卡片瀑布流
+async function openExerciseLib() {
+  showOverlay('panel panel-wide', '🏋️ 体能动作库 · 1,324 动作',
+    `<div style="padding:6px 2px">
+       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+         <input id="exSearch" type="search" placeholder="🔍 搜索动作名（中/英）、目标肌群…"
+           style="flex:2;min-width:200px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);
+                  border-radius:8px;color:var(--text);font-size:13px"
+           oninput="exSearchInput(this.value)">
+         <button class="h-btn" onclick="exResetFilters()" style="flex:0">🔄 重置</button>
+       </div>
+       <div id="exFiltersBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;font-size:11px"></div>
+       <div id="exStatsBar" style="font-size:11px;color:var(--text3);margin-bottom:8px"></div>
+       <div id="exGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px"></div>
+     </div>`);
+  try {
+    const arr = await loadExerciseLib();
+    _EX_IDX = buildExIndex(arr);
+    exRenderFilters();
+    exApplyAndRender();
+  } catch (e) {
+    document.getElementById('exGrid').innerHTML =
+      `<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--text3);font-size:12px">
+         ⚠️ 动作库加载失败，请检查网络或重试。
+       </div>`;
+  }
+}
+
+let _EX_IDX = null;
+let _EX_FILTER = { q: '', bp: '', eq: '', goal: '', level: '' };
+const BP_ORDER  = ['waist','upper legs','back','lower legs','chest','upper arms','cardio','shoulders','lower arms','neck'];
+const BP_LABEL  = { waist:'核心·腰腹','upper legs':'大腿','back':'背部','lower legs':'小腿','chest':'胸部','upper arms':'上臂',cardio:'心肺',shoulders:'肩部','lower arms':'前臂',neck:'颈部' };
+const EQ_LABEL  = { 'body weight':'徒手',dumbbell:'哑铃',barbell:'杠铃','olympic barbell':'奥杆','ez barbell':'EZ 杆',cable:'绳索','leverage machine':'固定器械','smith machine':'史密斯',kettlebell:'壶铃',band:'弹力带','resistance band':'弹力带','medicine ball':'药球','stability ball':'健身球','bosu ball':'波速球',sledmachine:'雪橇机','upper body ergometer':'上肢测功计','skiergmachine':'滑雪机',hammer:'锤式','tire':'轮胎','trap bar':'六角杠','stationary bike':'动感单车','elliptical machine':'椭圆机','stepmill machine':'踏步机',roller:'滚筒','wheelroller':'泡沫轴',assisted:'辅助',weighted:'负重',rope:'战绳' };
+const GOAL_LABEL = { core:'核心', strength:'力量', cardio:'心肺', arm:'手臂', leg:'腿部', back:'背部', chest:'胸部', shoulder:'肩部', full:'全身' };
+const LEVEL_LABEL = { beginner:'入门', intermediate:'进阶', expert:'高手' };
+
+function exRenderFilters() {
+  const bar = document.getElementById('exFiltersBar');
+  if (!bar || !_EX_IDX) return;
+  const bpChips = BP_ORDER.map(bp => {
+    const c = (bp === _EX_FILTER.bp) ? 'background:var(--green);color:#fff;border-color:var(--green)' : '';
+    return `<button class="h-btn" style="padding:4px 9px;font-size:11px;${c}" onclick="exSetFilter('bp','${bp}')">${BP_LABEL[bp]}</button>`;
+  }).join('');
+  const eqChips = [..._EX_IDX.allEqs].sort().slice(0, 10).map(eq => {
+    const c = (eq === _EX_FILTER.eq) ? 'background:var(--blue);color:#fff;border-color:var(--blue)' : '';
+    return `<button class="h-btn" style="padding:4px 9px;font-size:11px;${c}" onclick="exSetFilter('eq','${eq}')">${EQ_LABEL[eq] || eq}</button>`;
+  }).join('');
+  const goalChips = [..._EX_IDX.allGoals].sort().map(g => {
+    const c = (g === _EX_FILTER.goal) ? 'background:var(--purple);color:#fff;border-color:var(--purple)' : '';
+    return `<button class="h-btn" style="padding:4px 9px;font-size:11px;${c}" onclick="exSetFilter('goal','${g}')">${GOAL_LABEL[g] || g}</button>`;
+  }).join('');
+  const lvlChips = [..._EX_IDX.allLevels].sort().map(l => {
+    const c = (l === _EX_FILTER.level) ? 'background:var(--orange,#ff9f0a);color:#fff;border-color:var(--orange,#ff9f0a)' : '';
+    return `<button class="h-btn" style="padding:4px 9px;font-size:11px;${c}" onclick="exSetFilter('level','${l}')">${LEVEL_LABEL[l] || l}</button>`;
+  }).join('');
+  bar.innerHTML = `
+    <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+      <span style="color:var(--text3);margin-right:2px">部位:</span>${bpChips}
+    </div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+      <span style="color:var(--text3);margin-right:2px">器械:</span>${eqChips}
+    </div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+      <span style="color:var(--text3);margin-right:2px">目标:</span>${goalChips}
+      <span style="color:var(--text3);margin:0 4px 0 6px">水平:</span>${lvlChips}
+    </div>`;
+}
+
+function exSetFilter(k, v) {
+  _EX_FILTER[k] = (_EX_FILTER[k] === v) ? '' : v;
+  exRenderFilters();
+  exApplyAndRender();
+}
+
+function exResetFilters() {
+  _EX_FILTER = { q: '', bp: '', eq: '', goal: '', level: '' };
+  const inp = document.getElementById('exSearch');
+  if (inp) inp.value = '';
+  exRenderFilters();
+  exApplyAndRender();
+}
+
+let _EX_RENDER_TIMER = null;
+function exSearchInput(v) {
+  _EX_FILTER.q = v.trim();
+  clearTimeout(_EX_RENDER_TIMER);
+  _EX_RENDER_TIMER = setTimeout(exApplyAndRender, 180); // 180ms 防抖
+}
+
+function exApplyAndRender() {
+  const grid = document.getElementById('exGrid');
+  const stats = document.getElementById('exStatsBar');
+  if (!grid || !_EX || !_EX_IDX) return;
+  const q = _EX_FILTER.q.toLowerCase();
+  const f = _EX_FILTER;
+  let list = _EX;
+  if (f.bp)    list = list.filter(x => x.bp === f.bp);
+  if (f.eq)    list = list.filter(x => x.eq === f.eq);
+  if (f.goal)  list = list.filter(x => x.goal === f.goal);
+  if (f.level) list = list.filter(x => x.level === f.level);
+  if (q) {
+    list = list.filter(x =>
+      (x.n && x.n.toLowerCase().includes(q)) ||
+      (x.e && x.e.toLowerCase().includes(q)) ||
+      (x.mu_zh && x.mu_zh.toLowerCase().includes(q)) ||
+      (x.tgt_zh && x.tgt_zh.toLowerCase().includes(q))
+    );
+  }
+  if (stats) stats.textContent = `共 ${list.length} / ${_EX.length} 个动作`;
+  if (!list.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--text3);font-size:12px">未匹配到动作，换个关键词试试。</div>`;
+    return;
+  }
+  // 渲染：前 200 张卡片用 placeholder 缩略图（轻量），点击再加载 GIF
+  const MAX_CARDS = 200;
+  const slice = list.slice(0, MAX_CARDS);
+  grid.innerHTML = slice.map((x, i) => {
+    const lvlBg = x.level === 'beginner' ? '#30d158' : x.level === 'intermediate' ? '#ff9f0a' : '#ff453a';
+    return `<div class="ex-card" data-i="${i}" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer"
+                 onclick="openExerciseDetail('${x.id}')">
+      <div style="position:relative;width:100%;padding-top:100%;background:var(--bg3)">
+        <div class="ex-thumb" data-id="${x.id}" data-gif="${x.gif}"
+             style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--text3);background:linear-gradient(135deg,var(--bg3),var(--bg2))">🏋️</div>
+        <span style="position:absolute;top:6px;left:6px;background:${lvlBg};color:#fff;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600">${LEVEL_LABEL[x.level] || x.level}</span>
+        <span style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.45);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px">${BP_LABEL[x.bp] || x.bp}</span>
+      </div>
+      <div style="padding:8px 10px">
+        <div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.n}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎯 ${x.tgt_zh || x.tgt} · ${EQ_LABEL[x.eq] || x.eq}</div>
+      </div>
+    </div>`;
+  }).join('') + (list.length > MAX_CARDS ?
+    `<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:11px;padding:12px">
+       仅展示前 ${MAX_CARDS} 个，请细化筛选缩小范围（剩余 ${list.length - MAX_CARDS} 个）。
+     </div>` : '');
+  // 懒加载可视区域前 12 张 GIF（IntersectionObserver）
+  requestAnimationFrame(exLazyGifs);
+}
+
+let _EX_OBS = null;
+function exLazyGifs() {
+  const grid = document.getElementById('exGrid');
+  if (!grid) return;
+  if (_EX_OBS) _EX_OBS.disconnect();
+  _EX_OBS = new IntersectionObserver((entries) => {
+    for (const en of entries) {
+      if (!en.isIntersecting) continue;
+      const el = en.target;
+      const id = el.dataset.id;
+      const gif = el.dataset.gif;
+      if (!gif) continue;
+      // base64 id → CDN 路径：videos/0007-4IKbhHV.gif → CDN
+      // 注意：CDN 的视频文件没在仓库，需要回退到外网 gymvisual CDN
+      const cdnUrl = `https://gym-visual-cdn.b-cdn.net/${gif}`;
+      el.dataset.loaded = '1';
+      const img = new Image();
+      img.alt = id;
+      img.loading = 'lazy';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+      img.onload = () => { el.innerHTML = ''; el.appendChild(img); };
+      img.onerror = () => { el.innerHTML = '🏋️'; };
+      img.src = cdnUrl;
+      _EX_OBS.unobserve(el);
+    }
+  }, { rootMargin: '120px' });
+  grid.querySelectorAll('.ex-thumb[data-loaded=""]').forEach(el => _EX_OBS.observe(el));
+  // 标记所有未加载为已请求（防止二次进入时重复）
+  grid.querySelectorAll('.ex-thumb').forEach(el => { if (!el.dataset.loaded) el.dataset.loaded = ''; });
+}
+
+// 动作详情抽屉：GIF + 中文步骤 + 目标肌群 + 组数建议
+async function openExerciseDetail(id) {
+  if (!_EX) await loadExerciseLib();
+  const ex = _EX.find(x => x.id === id);
+  if (!ex) return;
+  const gifUrl = `https://gym-visual-cdn.b-cdn.net/${ex.gif}`;
+  const stepsHtml = (ex.steps || []).map((s, i) =>
+    `<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed var(--border)">
+       <span style="flex:0;width:22px;height:22px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">${i+1}</span>
+       <span style="flex:1;font-size:12px;line-height:1.6;color:var(--text)">${s}</span>
+     </div>`).join('');
+  const secHtml = (ex.sec && ex.sec.length) ?
+    `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">
+       ${ex.sec.map(s => `<span style="background:var(--bg3);font-size:10px;padding:2px 7px;border-radius:8px">${s}</span>`).join('')}
+     </div>` : '';
+  // 训练建议：根据 goal 推导
+  const rec = exRecommendSets(ex);
+  showOverlay('panel-md', `🏋️ ${ex.n}`,
+    `<div style="display:flex;flex-direction:column;gap:10px">
+       <div style="position:relative;width:100%;padding-top:100%;background:var(--bg3);border-radius:10px;overflow:hidden">
+         <img src="${gifUrl}" alt="${ex.n}" loading="lazy"
+              style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"
+              onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\\'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px\\'>🏋️</div>'">
+       </div>
+       <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:11px">
+         <span style="background:var(--bg3);padding:3px 8px;border-radius:6px">📍 ${BP_LABEL[ex.bp] || ex.bp}</span>
+         <span style="background:var(--bg3);padding:3px 8px;border-radius:6px">🎯 ${ex.tgt_zh || ex.tgt}</span>
+         <span style="background:var(--bg3);padding:3px 8px;border-radius:6px">🏋️ ${EQ_LABEL[ex.eq] || ex.eq}</span>
+         <span style="background:var(--bg3);padding:3px 8px;border-radius:6px">⭐ ${LEVEL_LABEL[ex.level] || ex.level}</span>
+       </div>
+       <div>
+         <div style="font-size:12px;font-weight:600;margin-bottom:4px">🎯 主要肌群</div>
+         <div style="font-size:13px;color:var(--green);font-weight:600">${ex.mu_zh || ex.mu}</div>
+         <div style="font-size:11px;color:var(--text3);margin-top:2px">次要肌群：</div>
+         ${secHtml}
+       </div>
+       <div>
+         <div style="font-size:12px;font-weight:600;margin-bottom:4px">📝 动作要点（${(ex.steps||[]).length} 步）</div>
+         ${stepsHtml || '<div style="color:var(--text3);font-size:11px">暂无步骤说明</div>'}
+       </div>
+       <div style="background:var(--bg3);padding:10px;border-radius:8px">
+         <div style="font-size:12px;font-weight:600;margin-bottom:4px">💡 组数 × 次数建议</div>
+         <div style="font-size:11px;color:var(--text2);line-height:1.6">${rec}</div>
+       </div>
+       <div style="display:flex;gap:8px">
+         <button class="h-btn" style="flex:1" onclick="exSaveFav('${ex.id}')">⭐ 收藏</button>
+         <button class="h-btn" onclick="exCopyLink('${ex.id}')">🔗 复制链接</button>
+       </div>
+       <div style="font-size:10px;color:var(--text3);text-align:center">📚 来源：Gym visual · exercises-dataset (1,324) · 仅供学习</div>
+     </div>`);
+}
+
+// 根据 goal / level 给出训练建议
+function exRecommendSets(ex) {
+  const g = ex.goal, lv = ex.level;
+  if (g === 'core') return lv === 'beginner'
+    ? '核心稳定性 · 3 组 × 30-45 秒 · 组间 30 秒'
+    : '核心耐力 · 3-4 组 × 45-60 秒 · 组间 45 秒';
+  if (g === 'strength') return lv === 'expert'
+    ? '力量极限 · 5 组 × 3-5 次 @ 85-90% 1RM · 组间 3 分钟'
+    : lv === 'intermediate'
+    ? '肌肥大 · 4 组 × 8-12 次 @ 70-80% · 组间 90 秒'
+    : '入门适应 · 3 组 × 12-15 次 · 组间 60 秒';
+  if (g === 'cardio') return lv === 'beginner'
+    ? '心肺入门 · 3 组 × 60-90 秒 · 组间 60 秒'
+    : '心肺高强 · 4 组 × 30-45 秒 HIIT · 组间 30 秒';
+  if (g === 'arm') return '手臂孤立 · 3-4 组 × 10-15 次 · 组间 60-90 秒';
+  if (g === 'leg') return lv === 'expert'
+    ? '腿部力量 · 5 组 × 5-8 次 · 组间 2-3 分钟'
+    : '腿部增肌 · 4 组 × 10-12 次 · 组间 90 秒';
+  if (g === 'back') return '背部厚度 · 4 组 × 8-12 次 · 组间 90 秒';
+  if (g === 'chest') return '胸部肌肥大 · 4 组 × 8-12 次 · 组间 90 秒';
+  if (g === 'shoulder') return '肩部三角肌 · 3-4 组 × 10-15 次 · 组间 60-90 秒';
+  return '综合训练 · 3 组 × 10-12 次 · 组间 60-90 秒';
+}
+
+// 收藏（localStorage）
+function exSaveFav(id) {
+  try {
+    const k = 'bk_ex_favs_v1';
+    const arr = JSON.parse(localStorage.getItem(k) || '[]');
+    if (!arr.includes(id)) arr.push(id);
+    localStorage.setItem(k, JSON.stringify(arr));
+    showToast?.('⭐ 已收藏动作 #' + id);
+  } catch (e) { console.error(e); }
+}
+
+function exCopyLink(id) {
+  const url = location.origin + location.pathname + '#ex-' + id;
+  try {
+    navigator.clipboard.writeText(url);
+    showToast?.('🔗 已复制锚点链接');
+  } catch {
+    showToast?.('复制失败：当前环境无剪贴板权限');
+  }
+}
+
+// NSCA/STRENGTH_PROGRAMS 目标 → EX_LIB 筛选映射
+// goal key → EX_LIB goal (核心/力量/心肺/手臂/腿部/背部/胸部/肩部/全身)
+const EX_GOAL_MAP = {
+  // 成人全面
+  power: 'strength', strength: 'strength', endurance: 'cardio', core: 'core',
+  // 成人专项
+  speed: 'cardio', hypertrophy: 'strength', peak: 'strength', aerobic: 'cardio',
+  // 中考体育
+  jump: 'leg', throw: 'shoulder',
+  // 高考体育
+  sprint: 'cardio', jump2: 'leg', throw2: 'shoulder', endur2: 'cardio'
+};
+async function exOpenByGoal(segmentKey, goalKey) {
+  const exGoal = EX_GOAL_MAP[goalKey] || '';
+  await openExerciseLib();
+  // 打开后再覆盖筛选
+  _EX_FILTER.goal = exGoal;
+  exRenderFilters();
+  exApplyAndRender();
+  showToast?.(`已跳转：${GOAL_LABEL[exGoal] || exGoal} 相关动作`);
+}
+
+// 周期规划器：在原有 layout 顶部加一行按钮，跳到动作库
+function openCyclePlanner() {
+  const segPicker = Object.entries(STRENGTH_PROGRAMS).map(([k, p]) =>
+    `<button class="h-btn" style="flex:1;${_selectedSegment === k ? 'background:var(--green);color:#fff' : ''}" onclick="setSegment('${k}')">${p.icon} ${p.label}</button>`).join('');
+  showOverlay('panel panel-wide', '📅 周期化训练规划器',
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+       <button class="h-btn" onclick="openExerciseLib()" style="background:var(--green);color:#fff">
+         🏋️ 体能动作库（1,324 动作）
+       </button>
+       <button class="h-btn" onclick="openFatigueCheck()">🩺 疲劳自检</button>
+     </div>
+     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${segPicker}</div>
+     <div id="cyclePlanBody"></div>
+     <div style="display:flex;gap:8px;margin-top:12px">
+       <button class="h-btn" style="flex:1" onclick="openExerciseLib()">📚 浏览动作库</button>
+       <button class="h-btn" onclick="this.closest('.overlay').remove()">关闭</button>
+     </div>`);
+  renderCyclePlan();
+}
 
 // 心理训练周期规划器
 let _selectedPsych = localStorage.getItem('bk_psych_segment') || 'competition-prep';
