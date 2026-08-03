@@ -5469,18 +5469,29 @@ function initBadmintonCursor() {
 }
 
 // 羽毛球击球动画 (2026-07-18) - 直接注入式
+// v3.19.0 体验优化: ① 排除 input/textarea/select/contentEditable 等文字输入场景,避免抢文字选区焦点
+// ② 排除模态遮罩内点击(避免与 toast/按钮反馈视觉冲突) ③ 绑定幂等性守卫,避免重复监听
 function playHitAnimation(e) {
   if (!document.body.classList.contains('badminton-cursor')) return;
-  
+  const t = e.target;
+  if (!t) return;
+  // 跳过文字输入场景
+  if (t.closest && t.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return;
+  // 跳过模态/侧边栏内部场景(交互动画会更乱)
+  if (t.closest && t.closest('.overlay, .modal, .toast, [role="dialog"]')) return;
+  // 跳过纯文本/段落点击(只在「可点击」元素上才有击球感)
+  const clickable = t.closest && t.closest('button, a, .module-card, .tool-card, .book-card, .side-link, .h-btn, .tb-btn, [role="button"]');
+  if (!clickable) return;
+
   const hit = document.createElement('div');
-  hit.id = 'hit-anim';
+  hit.className = 'hit-anim';
   hit.style.cssText = 'position:fixed;pointer-events:none;z-index:99999;font-size:28px;left:' + (e.clientX-16) + 'px;top:' + (e.clientY-16) + 'px;animation:hitPop 0.3s ease-out forwards';
   hit.textContent = '🏸';
   document.body.appendChild(hit);
   setTimeout(() => hit.remove(), 300);
 }
 
-// 注入动画关键帧
+// 注入动画关键帧(幂等)
 if (!document.getElementById('hit-anim-style')) {
   const style = document.createElement('style');
   style.id = 'hit-anim-style';
@@ -5488,11 +5499,13 @@ if (!document.getElementById('hit-anim-style')) {
   document.head.appendChild(style);
 }
 
+// 绑定幂等守卫: 防止多次调用导致重复监听(每次点击多次触发 🏸)
+let _hitAnimBound = false;
 function initHitAnimation() {
-  if (document.body.classList.contains('badminton-cursor')) {
-    document.addEventListener('click', playHitAnimation, true);
-    console.log('[羽毛球] 击球动画已启用');
-  }
+  if (_hitAnimBound) return;
+  _hitAnimBound = true;
+  document.addEventListener('click', playHitAnimation, true);
+  console.log('[羽毛球] 击球动画已启用');
 }
 function toggleReadMark() { const ch=getCurChapter(); if(!ch)return; if(isRead(currentBookId,ch.file)) unmarkRead(currentBookId,ch.file); else markRead(currentBookId,ch.file); $('readMarkBtn').textContent=isRead(currentBookId,ch.file)?'✅':'📌'; }
 function getCurChapter() { if(!currentBookId||currentChapterIdx<0) return null; const b=MANIFEST?.books.find(x=>x.id===currentBookId); return b?.chapters[currentChapterIdx]||null; }
