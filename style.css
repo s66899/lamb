@@ -2158,8 +2158,18 @@ header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
   .h-logo, .splash-icon { animation: none !important; }
 }
 
+/* v3.21.5 阅读器章节切换 fade 过渡 — prefers-reduced-motion 已在上面全局降级 */
+.article-fade-out { opacity: 0; transition: opacity .15s ease; }
+.article-fade-in  { animation: chFadeIn .25s ease both; }
+@keyframes chFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* 📖 首页继续阅读卡片 (v3.14.1) — 双主题兼容 */
 .continue-reading { margin: 4px 0 10px; }
+/* v3.21.5 多本书最近阅读：列表容器，卡片之间加一点气口 */
+.cr-list { display: flex; flex-direction: column; gap: 10px; }
 .cr-card {
   display: flex; align-items: center; gap: 14px;
   padding: 14px 16px;
