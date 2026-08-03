@@ -929,6 +929,106 @@ article .search-anchor {
   100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); background: transparent; }
 }
 
+/* v3.22.1 阅读器内搜索匹配导航栏：顶部浮起的小 1/N · ‹ › · 关键词 · ×
+   位置：贴 content 顶部上交的 12px 处，效仿阅读器顶部的 stats ；只在有匹配时挂载 */
+.search-nav-bar {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  font-size: 12px;
+  color: var(--text);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: searchNavBarIn 0.22s ease-out;
+}
+@keyframes searchNavBarIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.search-nav-bar .sn-btn,
+.search-nav-bar .sn-close {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.15s ease;
+}
+.search-nav-bar .sn-btn:hover,
+.search-nav-bar .sn-close:hover {
+  background: var(--bg3);
+}
+.search-nav-bar .sn-close {
+  color: var(--text3);
+  font-size: 16px;
+  margin-left: 2px;
+}
+.search-nav-bar .sn-cnt {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  min-width: 44px;
+  text-align: center;
+  color: var(--gold);
+  padding: 0 4px;
+}
+.search-nav-bar .sn-key {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--text3);
+  padding: 0 8px 0 4px;
+  border-left: 1px solid var(--border);
+  margin-left: 4px;
+}
+
+/* v3.22.1 阅读器内「当前」搜索匹配：脉动描边让用户一眼分清「现在在第几个」 */
+article .search-hl.search-hl-current {
+  background: rgba(255, 152, 0, 0.45);
+  color: var(--text);
+  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.7);
+  animation: searchHlCurrentPulse 1.4s ease-in-out infinite;
+}
+[data-theme="dark"] article .search-hl.search-hl-current {
+  background: rgba(255, 152, 0, 0.35);
+  color: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.85);
+}
+@keyframes searchHlCurrentPulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.7); }
+  50%      { box-shadow: 0 0 0 6px rgba(255, 152, 0, 0); }
+}
+
+/* 手机状态：导航栏压缩、隐藏关键词标签 */
+@media (max-width: 480px) {
+  .search-nav-bar {
+    top: 8px;
+    right: 8px;
+    padding: 3px 4px;
+    font-size: 11px;
+  }
+  .search-nav-bar .sn-key { display: none; }
+  .search-nav-bar .sn-cnt { min-width: 36px; }
+}
+
 /* ═══════════════════════════════════════
    Responsive：平板 + 手机 + 桌面 三端
    ═══════════════════════════════════════ */

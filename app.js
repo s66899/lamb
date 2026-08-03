@@ -10,6 +10,11 @@ let currentChapterIdx = -1;
 let navStack = []; // 导航栈：追踪用户从哪里来
 // 待定位的搜索匹配：{ bookId, file, line, query } — 章节渲染完后跳转并高亮
 let pendingSearchJump = null;
+// v3.22.1 搜索匹配导航：applySearchJump 高亮完所有匹配后，把 em 节点存进 _searchMatches，
+// 并用 _searchCurrIdx 跟踪「当前」匹配；n / Shift+N 在阅读器视图循环跳转
+// （紧跟 v3.22.0 按书分组：搜出来 N 条 hits 是「看得到」，本步是「走得到」）
+let _searchMatches = [];   // 当前章节里所有 <em class="search-hl"> 节点（按 DOM 顺序）
+let _searchCurrIdx = -1;   // 当前匹配序号（-1 = 无）；循环跳转时 wrap
 // v3.14.5 阅读时长追踪：进入章节时打点，scroll 监听里节流刷新，切换/离开时累加进 RP.totalReadSeconds
 let readStartTs = 0;        // 当前章节首次进入时间戳
 let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新）
@@ -6470,6 +6475,11 @@ function applySearchJump() {
   if (!jump) return;
   const article = $('article');
   if (!article) return;
+  // v3.22.1 切换章节 → 清理掉旧章节的搜索卡（导航栏 + 匹配节点 + 序号）
+  // 如果这次进入的就是同一章节（重复触发 applySearchJump），先重置避免重复 push
+  _searchMatches = [];
+  _searchCurrIdx = -1;
+  closeSearchNav();
   // 先清除上次的高亮与镉定
   article.querySelectorAll('.search-hl,.search-anchor').forEach(el => {
     const parent = el.parentNode;
@@ -6537,7 +6547,72 @@ function applySearchJump() {
       setTimeout(() => anchorEl && anchorEl.classList.remove('search-anchor'), 4000);
     });
   }
+  // v3.22.1 收集所有匹配节点 + 渲染导航栏：搜索跳进章节后用户可以 n / Shift+N 循环跳转
+  // 在「镉定动画」设置完后跑，确保首个匹配有足够突出 — 顶部匹配还有 scroll-anchor 描边
+  _searchMatches = Array.from(article.querySelectorAll('em.search-hl'));
+  if (_searchMatches.length > 0) {
+    _searchCurrIdx = 0;
+    _searchMatches[0].classList.add('search-hl-current');
+    renderSearchNavBar();
+  }
   pendingSearchJump = null;
+}
+
+/** 渲染/更新阅读器顶部搜索导航栏（1/N · ‹ ‹ › › · ×）。只在有匹配时显示。 */
+function renderSearchNavBar() {
+  let bar = document.getElementById('searchNavBar');
+  if (!_searchMatches.length) {
+    if (bar) bar.remove();
+    return;
+  }
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'searchNavBar';
+    bar.className = 'search-nav-bar';
+    bar.setAttribute('role', 'toolbar');
+    bar.setAttribute('aria-label', '搜索匹配导航');
+    bar.addEventListener('click', (e) => e.stopPropagation());
+    document.body.appendChild(bar);
+  }
+  const total = _searchMatches.length;
+  const idx = Math.max(0, _searchCurrIdx + 1);
+  bar.innerHTML = `
+    <button class="sn-btn" onclick="gotoSearchMatch(-1)" title="上一个匹配（Shift+N）" aria-label="上一个匹配">‹</button>
+    <span class="sn-cnt" title="第 ${idx} / ${total} 个匹配">${idx} / ${total}</span>
+    <button class="sn-btn" onclick="gotoSearchMatch(1)" title="下一个匹配（N）" aria-label="下一个匹配">›</button>
+    <span class="sn-key">科普 ${escapeHTML(pendingSearchJump?.query || '')}</span>
+    <button class="sn-close" onclick="closeSearchNav()" title="关闭（Esc）" aria-label="关闭搜索导航">×</button>
+  `;
+}
+
+/** 跳转搜索匹配；delta = +1 下一个 / -1 上一个，循环 wrap */
+function gotoSearchMatch(delta) {
+  if (!_searchMatches.length) return;
+  const n = _searchMatches.length;
+  const prev = _searchMatches[_searchCurrIdx];
+  if (prev) prev.classList.remove('search-hl-current');
+  _searchCurrIdx = ((_searchCurrIdx + delta) % n + n) % n; // 允许负数 wrap
+  const next = _searchMatches[_searchCurrIdx];
+  if (!next) return;
+  next.classList.add('search-hl-current');
+  // 滚动到当前匹配：让它出现在视口上方 20% 处（与初始 applySearchJump 同一规则）
+  const content = $('content');
+  if (content) {
+    const rect = next.getBoundingClientRect();
+    const cRect = content.getBoundingClientRect();
+    const offset = rect.top - cRect.top + content.scrollTop - content.clientHeight * 0.2;
+    content.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+  }
+  renderSearchNavBar();
+}
+
+/** 关闭搜索导航栏：清除状态 + 移除导航栏 + 恢复所以匹配为非“当前”态 */
+function closeSearchNav() {
+  const bar = document.getElementById('searchNavBar');
+  if (bar) bar.remove();
+  _searchMatches.forEach(el => el.classList.remove('search-hl-current'));
+  _searchMatches = [];
+  _searchCurrIdx = -1;
 }
 
 /** 遍历 article 内的文本节点（不进 script/style） */
@@ -7624,6 +7699,15 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
+  // v3.22.1 阅读器内 N / Shift+N 循环跳转搜索匹配：长章节搜「营养」可能命中 20+ 处，
+  // 只看首个高亮 = 退动滚轮；n 跳下一个 / Shift+N 上一个，不限修饰键干预 (与 j/k 风格一致)
+  // 只在阅读器视图 + 有匹配时生效；输入态已由 isTypingTarget 拦截；任何读者弹窗中不触发
+  if (currentModule === 'reader' && _searchMatches.length > 0 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'n' || e.key === 'N')) {
+    e.preventDefault();
+    gotoSearchMatch(e.shiftKey ? -1 : 1);
+    return;
+  }
+
   // Backspace 在非输入态 → 应用内后退
   if (e.key === 'Backspace' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
     if (typeof goBack === 'function') { e.preventDefault(); goBack(); }
@@ -7704,12 +7788,14 @@ document.addEventListener('keydown', (e) => {
 
 // ─── 快捷键帮助面板（? 键弹出）────────────────────
 // v3.21.4 补全：原列表漏掉了 j/k H2 跳转、Ctrl+Shift+S 报告、Ctrl+Shift+T 主题、Ctrl+Home 首页
+// v3.22.1 补 N / Shift+N 搜索匹配跳转
 // 按使用频率排序：搜索 / 关闭 / 翻页 / 跳转 / 工具
 const SHORTCUT_HELP = [
   { k: '/  or  Ctrl+K', d: '🔍 打开搜索' },
   { k: 'Esc', d: '✕ 关闭弹窗 / 侧边栏 / 返回' },
   { k: '←  /  →', d: '📖 上一节 / 下一节' },
   { k: 'J  /  K', d: '📑 阅读器内跳到 下一/上一节标题' },
+  { k: 'N  /  Shift+N', d: '🔍 搜索匹配 下一/上一个（仅阅读器）' },
   { k: 'Ctrl + Home', d: '🏠 回首页' },
   { k: 'Backspace  /  Alt+←', d: '← 后退' },
   { k: 'Ctrl + Shift + T', d: '🌓 切换主题' },
