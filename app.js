@@ -17,7 +17,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.21.4';
+const APP_VERSION = 'v3.21.5';
 const APP_DATE = '2026-08-03';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -2364,6 +2364,9 @@ function renderContinueReading() {
             <span class="cr-arrow">继续 →</span>
           </div>
         </div>
+        <button class="cr-dismiss" onclick="event.stopPropagation();_removeFromReadHistory('${book.id}')"
+                aria-label="从继续阅读移除《${escapeAttr(book.title || book.id)}》"
+                title="移除此书">✕</button>
       </div>`;
   }).join('');
 
@@ -2389,6 +2392,15 @@ function _getReadHistory() {
     return migrated;
   }
   return [];
+}
+
+// 从"继续阅读"历史移除单本书（不影响章节进度，仅清掉首页入口）。
+// 用于清理「打开过一次再也不读」的死条目，避免挤掉真正活跃的书。
+function _removeFromReadHistory(bookId) {
+  const list = _getReadHistory().filter(h => h && h.bookId !== bookId);
+  safeSet('bk_history', list);
+  renderContinueReading();
+  showToast('🗑️ 已从继续阅读移除', 1800);
 }
 
 // 记录一次阅读事件：把特定书推到历史最前（一次刷新同一书只挪位置，不重复占位）。

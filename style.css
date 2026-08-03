@@ -2207,6 +2207,40 @@ header, .view-header { backdrop-filter: var(--ios-blur-light) !important; }
 }
 .cr-arrow { color: var(--blue); font-weight: 600; font-size: 11px; }
 
+/* v3.21.5 继续阅读卡片移除按钮 — 右上角次要操作，hover 才显形避免误触 */
+.cr-dismiss {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: var(--text3);
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .18s ease, background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.cr-card:hover .cr-dismiss,
+.cr-card:focus-within .cr-dismiss,
+.cr-dismiss:focus-visible {
+  opacity: 1;
+}
+.cr-dismiss:hover, .cr-dismiss:focus-visible {
+  background: rgba(240,96,96,.10);
+  border-color: rgba(240,96,96,.30);
+  color: var(--red);
+  transform: scale(1.06);
+  outline: none;
+}
+.cr-dismiss:active { transform: scale(.92); }
+/* 移动端常显（hover 失效的场景） */
+@media (hover: none) {
+  .cr-dismiss { opacity: .55; }
+  .cr-dismiss:active { opacity: 1; }
+}
+
 @media (max-width: 480px) {
   .cr-card { padding: 12px 14px; gap: 10px; }
   .cr-icon { width: 40px; height: 40px; font-size: 26px; border-radius: 10px; }
