@@ -5365,7 +5365,11 @@ async function renderChapter() {
   $('content').scrollTo({top:0,behavior:'smooth'});
   updateProgress();
   // v3.18.5 阅读位置记忆：若该章节有上次保存的中间位置，layout 完成后自动滚回并提示
-  _restoreScrollPos();
+  // 但搜索跳转场景下必须跳过 — applySearchJump 已经把页面滚到匹配位置，
+  // 否则会被 saved position 拉回去，导致用户落在「离匹配很远的地方」+ 看到矛盾的「已回到上次位置」toast
+  if (!_searchMatches.length) {
+    _restoreScrollPos();
+  }
 }
 
 function buildToc(ch) {
