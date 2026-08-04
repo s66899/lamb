@@ -6044,10 +6044,18 @@ function removePinnedOne(q) {
   renderSearchHistory();
 }
 
-/** 防抖搜索：输入即查，避免每个按键都跑全文搜索 */
+/** 防抖搜索：输入即查，避免每个按键都跑全文搜索。
+ *  空查询走快路径（无防抖）—— 用户 ⌫ 清空时，立即恢复历史面板，250ms 等待会很扎眼。 */
 function scheduleSearch(input) {
-  clearTimeout(_srDebounceTimer);
   const q = input.value.trim();
+  // 空查询：取消待执行的搜索，恢复历史面板（不防抖，0 延迟）
+  if (!q) {
+    clearTimeout(_srDebounceTimer);
+    _srLastQuery = '';
+    doSearch('');
+    return;
+  }
+  clearTimeout(_srDebounceTimer);
   _srLastQuery = q;
   _srDebounceTimer = setTimeout(() => {
     if (_srLastQuery === q) doSearch(q);
@@ -6448,6 +6456,7 @@ function renderSearchResults(results, queryOrig) {
 async function doSearch(query) {
   query = query.trim();
   if (!query) {
+    _srSelIdx = -1;  // 输入清空后重置选中态，避免 ↑↓ 跳到历史项外的位置
     $('searchResults').innerHTML = renderSearchHistoryHTML();
     const meta = document.getElementById('searchMeta');
     if (meta) meta.textContent = '⌨️ ↑↓ 选 · ↵ 跳转 · Esc 关闭';
