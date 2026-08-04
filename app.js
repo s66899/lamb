@@ -22,7 +22,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.1';
+const APP_VERSION = 'v3.22.2';
 const APP_DATE = '2026-08-04';
 
 // ─── 全局错误边界（防白屏）─────────────────
