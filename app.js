@@ -12,9 +12,12 @@ let navStack = []; // 导航栈：追踪用户从哪里来
 let pendingSearchJump = null;
 // v3.22.1 搜索匹配导航：applySearchJump 高亮完所有匹配后，把 em 节点存进 _searchMatches，
 // 并用 _searchCurrIdx 跟踪「当前」匹配；n / Shift+N 在阅读器视图循环跳转
-// v3.22.1 搜索匹配导航：applySearchJump 高亮完所有匹配后，把 em 节点存进 _searchMatches，
 let _searchMatches = [];   // 当前章节里所有 <em class="search-hl"> 节点（按 DOM 顺序）
 let _searchCurrIdx = -1;   // 当前匹配序号（-1 = 无）；循环跳转时 wrap
+// v3.22.3 跨章节匹配链：用户从搜索面板点进一个章节时，把当前结果列表的「章节摘要」快照存起来
+// n 在当前章节底部 → 自动跳到下一个有命中的章节；Shift+N 反向。避免「找完一章就得手动退出再搜」的痛点
+let _searchChain = [];     // [{ bookId, bookTitle, file, chTitle, hits }] 按搜索结果顺序
+let _searchChainIdx = -1;  // 当前所在章节在链中的索引
 // v3.14.5 阅读时长追踪：进入章节时打点，scroll 监听里节流刷新，切换/离开时累加进 RP.totalReadSeconds
 let readStartTs = 0;        // 当前章节首次进入时间戳
 let lastTickTs = 0;         // 上一次节流 tick 时间戳（scroll 时刷新）
@@ -5989,6 +5992,8 @@ let _srLastQuery = '';
 let _srDebounceTimer = null;
 // v3.18.0 搜索范围：'all' | 'title' | 'module'
 let _srScope = 'all';
+// v3.22.3 保存最近一次搜索的完整结果列表：点击任一结果时据此生成「跨章节匹配链」
+let _srLastResults = [];
 
 // 📜 v3.9.3 搜索历史：去重 + 最新置顶 + 最多 8 条，关闭弹窗后保留
 const SEARCH_HISTORY_KEY = 'lamb_search_history_v1';
@@ -6484,9 +6489,29 @@ async function doSearch(query) {
   results.forEach(r => { r._score = scoreSearchResult(r, ql, contentHits); });
   results.sort((a, b) => b._score - a._score);
 
+  // v3.22.3 缓存本次结果列表：点进任何章节时保存为「跨章节匹配链」，n/Shift+N 在章节末尾可继续跨章节跳转
+  _srLastResults = results;
+
   renderSearchResults(results, query);
 }
-function goSearchResult(bid,file,line,query){pendingSearchJump={bookId:bid,file:file,line:line||0,query:query||''};goToBook(bid);const b=MANIFEST.books.find(x=>x.id===bid);const idx=b?.chapters.findIndex(c=>c.file===file);if(idx>=0)setTimeout(()=>openChapter(idx),300);}
+function goSearchResult(bid,file,line,query){
+  // v3.22.3 跨章节匹配链：点击结果时把当前搜索结果列表的「章节摘要」快照记下来
+  // 之后 n/Shift+N 在章节内循环到末尾时，自动跳到下一个/上一个有命中的章节
+  _searchChain = (_srLastResults || []).map(r => ({
+    bookId: r.book.id,
+    bookTitle: r.book.title,
+    bookEmoji: r.book.emoji,
+    file: r.ch.file,
+    chTitle: r.ch.title,
+    hits: r.hits || 1
+  }));
+  _searchChainIdx = _searchChain.findIndex(s => s.bookId === bid && s.file === file);
+  pendingSearchJump={bookId:bid,file:file,line:line||0,query:query||''};
+  goToBook(bid);
+  const b=MANIFEST.books.find(x=>x.id===bid);
+  const idx=b?.chapters.findIndex(c=>c.file===file);
+  if(idx>=0)setTimeout(()=>openChapter(idx),300);
+}
 
 /** 在章节渲染完成后定位搜索匹配：滚动到匹配行 + 高亮关键词 + 锚定标记 */
 function applySearchJump() {
@@ -6604,10 +6629,24 @@ function renderSearchNavBar() {
   `;
 }
 
-/** 跳转搜索匹配；delta = +1 下一个 / -1 上一个，循环 wrap */
+/** 跳转搜索匹配；delta = +1 下一个 / -1 上一个，循环 wrap
+ *  v3.22.3 在当前章节末尾/开头自动跨章节跳转：n 跳到下一章首个匹配；Shift+N 跳到上一章最后一个匹配
+ *  跨章节跳转用 pendingSearchJump + goSearchResult 复用高亮/滚动/导航栏渲染整条链路
+ */
 function gotoSearchMatch(delta) {
   if (!_searchMatches.length) return;
   const n = _searchMatches.length;
+  // 检测跨章节：正向 = 已经在最后一个；反向 = 已经在第一个
+  const wantCross = (delta > 0 && _searchCurrIdx >= n - 1) || (delta < 0 && _searchCurrIdx <= 0);
+  if (wantCross && _searchChain.length > 1 && _searchChainIdx >= 0) {
+    const nextIdx = _searchChainIdx + (delta > 0 ? 1 : -1);
+    // 链两端的 wrap：链尾 → 链头；链头 → 链尾，让用户能一直按 n 循环翻遍全部结果
+    const wrapped = (nextIdx + _searchChain.length) % _searchChain.length;
+    if (wrapped !== _searchChainIdx) {
+      jumpToSearchChainItem(wrapped, delta);
+      return;
+    }
+  }
   const prev = _searchMatches[_searchCurrIdx];
   if (prev) prev.classList.remove('search-hl-current');
   _searchCurrIdx = ((_searchCurrIdx + delta) % n + n) % n; // 允许负数 wrap
@@ -6623,6 +6662,17 @@ function gotoSearchMatch(delta) {
     content.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
   }
   renderSearchNavBar();
+}
+
+/** v3.22.3 跨章节跳转：复用 goSearchResult 同一条高亮/滚动链路，并用 toast 提示跨章事实 */
+function jumpToSearchChainItem(idx, delta) {
+  const item = _searchChain[idx];
+  if (!item) return;
+  showToast((delta > 0 ? '⏭️ 下一章：' : '⏮️ 上一章：') + `${item.bookEmoji || ''} ${item.chTitle}（${item.hits} 处匹配）`, 1600);
+  // 复用已有的跳转 + 跨章节链位置更新逻辑（不用 openChapter 直接调，避免链路索引漏更新）
+  goSearchResult(item.bookId, item.file, 0, pendingSearchJump?.query || '');
+  // goSearchResult 内部已经按 bid+file 落 correct 索引，这里保险再写一次
+  _searchChainIdx = idx;
 }
 
 /** 关闭搜索导航栏：清除状态 + 移除导航栏 + 恢复所有匹配为非“当前”态 */
