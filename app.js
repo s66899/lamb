@@ -25,7 +25,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.3';
+const APP_VERSION = 'v3.22.4';
 const APP_DATE = '2026-08-22';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -5428,7 +5428,9 @@ function _setupTocObserver() {
       if (!best || e.boundingClientRect.top < best.boundingClientRect.top) best = e;
     }
     if (!best) return;
-    const idx = h2s.indexOf(best.target);
+    // h2s 是 NodeList，没有 indexOf 方法；用 Array.prototype.indexOf.call 跨上下文查节点位置
+    // v3.22.4 修复「h2s.indexOf is not a function」— NodeList 不支持 indexOf，需走原型链
+    const idx = Array.prototype.indexOf.call(h2s, best.target);
     if (idx >= 0) {
       _tocActiveIdx = idx;
       _highlightTocByIdx(idx);
