@@ -25,8 +25,8 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.2';
-const APP_DATE = '2026-08-04';
+const APP_VERSION = 'v3.22.3';
+const APP_DATE = '2026-08-22';
 
 // ─── 全局错误边界（防白屏）─────────────────
 window.addEventListener('error', (e) => {
@@ -5363,8 +5363,10 @@ async function renderChapter() {
   } else {
     $('article').innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">❌ 加载失败</div>`;
   }
-  // v3.18.5 阅读位置记忆：刚进入新章节时先把上一节（残留）的位置清掉，避免 _scrollPosKey key 切换时误匹配
-  _clearScrollPosForCurrent();
+  // v3.22.3 阅读位置记忆：进入新章节后，让 _restoreScrollPos() 用新章节 key 去 localStorage 取 saved
+  // 并滚回上次位置 — 不再「先 clear 再 restore」（那个调用顺序 bug 在 _scrollPosKey() 已切到新章节的前提下
+  // 会把要恢复的 saved 提前删掉，导致 _restoreScrollPos 永远拿到 undefined 直接 return，
+  // 结果用户阅读长文章后切走/重进都被静默擦回顶部，看起来像「页面被强制刷新」）
   $('content').scrollTo({top:0,behavior:'smooth'});
   updateProgress();
   // v3.18.5 阅读位置记忆：若该章节有上次保存的中间位置，layout 完成后自动滚回并提示
@@ -6602,7 +6604,8 @@ function applySearchJump() {
   pendingSearchJump = null;
 }
 
-/** 渲染/更新阅读器顶部搜索导航栏（1/N · ‹ ‹ › › · ×）。只在有匹配时显示。 */
+/** 渲染/更新阅读器顶部搜索导航栏（1/N · ‹ ‹ › › · ×）。只在有匹配时显示。
+ *  v3.22.4 跨章节进度：在有搜索链时显示「第 X/Y 章」小徽标，让用户清楚自己在整条结果链中的位置 */
 function renderSearchNavBar() {
   let bar = document.getElementById('searchNavBar');
   if (!_searchMatches.length) {
@@ -6620,10 +6623,17 @@ function renderSearchNavBar() {
   }
   const total = _searchMatches.length;
   const idx = Math.max(0, _searchCurrIdx + 1);
+  // v3.22.4 跨章节位置：只在有「章节链」且超过 1 章时才显示，避免单章搜索多一个噪音
+  const chainTotal = _searchChain.length;
+  const showChain = chainTotal > 1 && _searchChainIdx >= 0;
+  const chainBadge = showChain
+    ? `<span class="sn-chain" title="在搜索结果中共 ${chainTotal} 章有匹配">第 ${_searchChainIdx + 1}/${chainTotal} 章</span>`
+    : '';
   bar.innerHTML = `
     <button class="sn-btn" onclick="gotoSearchMatch(-1)" title="上一个匹配（Shift+N）" aria-label="上一个匹配">‹</button>
     <span class="sn-cnt" title="第 ${idx} / ${total} 个匹配">${idx} / ${total}</span>
     <button class="sn-btn" onclick="gotoSearchMatch(1)" title="下一个匹配（N）" aria-label="下一个匹配">›</button>
+    ${chainBadge}
     <span class="sn-key">搜索 ${escapeHTML(pendingSearchJump?.query || '')}</span>
     <button class="sn-close" onclick="closeSearchNav()" title="关闭（Esc）" aria-label="关闭搜索导航">×</button>
   `;
