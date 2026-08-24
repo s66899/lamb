@@ -25,7 +25,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.13';
+const APP_VERSION = 'v3.22.14';
 const APP_DATE = '2026-08-25';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -2468,26 +2468,7 @@ function renderDashboard() {
   // ── 📖 继续阅读（如有最近阅读记录） ──
   renderContinueReading();
 
-  // ── v3.22.13 问卷 banner（最显眼的位置：首页 hero 区下方）
-  if (!document.getElementById('fitQuestionnaireBanner')) {
-    let dash = document.getElementById('dashboard') ||
-                document.getElementById('dashboardView') ||
-                document.getElementById('homeGrid') ||
-                document.querySelector('.view.dashboard');
-    if (!dash) dash = document.querySelector('#app, main, body');
-    if (dash && dash.querySelector) {
-      const banner = document.createElement('div');
-      banner.id = 'fitQuestionnaireBanner';
-      banner.style.cssText = 'background:linear-gradient(135deg,#4caf50,#2196f3);color:#fff;padding:14px 16px;border-radius:12px;margin:12px 0;cursor:pointer;box-shadow:0 4px 14px rgba(33,150,243,.35);display:flex;align-items:center;gap:12px;transition:transform .2s ease';
-      banner.onmouseenter = () => banner.style.transform = 'translateY(-2px)';
-      banner.onmouseleave = () => banner.style.transform = 'none';
-      banner.onclick = openFitnessQuestionnaire;
-      banner.innerHTML = '<div style="font-size:32px">🏋️</div><div style="flex:1"><div style="font-size:15px;font-weight:700;margin-bottom:2px">5 题问卷 → 您的专属训练方案</div><div style="font-size:11px;opacity:.92">回答 5 个问题（1 分钟）→ 自动生成 4 周计划 + 每个动作都能直接看 GIF 演示</div></div><div style="font-size:20px;opacity:.6">→</div>';
-      const cont = document.getElementById('continueReadingSection');
-      if (cont && cont.parentNode) cont.parentNode.insertBefore(banner, cont.nextSibling);
-      else dash.insertBefore(banner, dash.firstChild);
-    }
-  }
+  // v3.22.14 移除了 v3.22.13 的首页 banner（改放左侧工具栏子项，避免重复）
 
   // ── ⚡ 核心原则 ──
   $('principlesSection').innerHTML = `
@@ -3050,6 +3031,7 @@ function renderToolItems() {
     `<div class="side-link sub" onclick="openDiagnosis()"><span class="sl-icon">🔍</span> 训练诊断</div>`,
     `<div class="side-link sub" onclick="openWeeklyCheck()"><span class="sl-icon">✅</span> 周检查</div>`,
     `<div class="side-link sub" onclick="openLevelFinder()"><span class="sl-icon">📊</span> 级别定位</div>`,
+    `<div class="side-link sub" onclick="openFitnessQuestionnaire()"><span class="sl-icon">🏋️</span> 问卷训练方案</div>`,
   ].join('');
 }
 
@@ -8266,6 +8248,9 @@ function renderFitnessPlan(plan) {
 // 把按钮挂到工具栏（在工具面板显示）
 // 把问卷按钮挂到工具面板顶部（覆盖式插入，确保用户能看到）
 function attachFitnessBtnToTools() {
+  /* v3.22.14 禁用 banner 挂载，统一走左侧工具栏子项入口 */
+  return;
+  /*
   // 1) 尝试挂到 toolsSection 内部（最直观的位置）
   const toolsSection = document.getElementById('toolsSection');
   if (toolsSection && !document.getElementById('fitQuestionnaireBanner')) {
@@ -8300,7 +8285,7 @@ function attachFitnessBtnToTools() {
       banner.onclick = openFitnessQuestionnaire;
       dashboard.insertBefore(banner, dashboard.firstChild);
     }
-  }
+  }*/
 }
 
 // 每次打开工具面板时也确保 banner 已挂入
