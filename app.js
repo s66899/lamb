@@ -25,7 +25,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.12';
+const APP_VERSION = 'v3.22.13';
 const APP_DATE = '2026-08-25';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -1959,7 +1959,7 @@ const LEVELS = [
 ];
 
 // ─── 书塔书籍映射（次要入口） ──────────
-const TOWER_BOOKS = ['badminton','finance','psychology','engineering-mechanics','nsca-cpt','yin-yang'];
+const TOWER_BOOKS = ['badminton','badminton-recovery','finance','psychology','engineering-mechanics','nsca-cpt','yin-yang'];
 
 // ═══════════════════════════════════════════════════════════════════
 //  🎮 RPG 系统（保持完整）
@@ -2467,6 +2467,9 @@ function renderDashboard() {
 
   // ── 📖 继续阅读（如有最近阅读记录） ──
   renderContinueReading();
+
+  // ── v3.22.13 问卷 banner（最显眼的位置：首页 hero 区下方）
+  injectFitnessBannerToDashboard();
 
   // ── ⚡ 核心原则 ──
   $('principlesSection').innerHTML = `
@@ -8268,7 +8271,8 @@ function attachFitnessBtnToTools() {
   }
   // 2) 同时尝试挂到首页 dashboard（万一用户没进工具面板）
   if (!document.getElementById('fitQuestionnaireBanner')) {
-    const dashboard = document.querySelector('.dashboard, #dashboard, #home, #homeGrid, main, #app');
+    // 多选择器容错：优先 #dashboard / #dashboardView / #homeGrid / #app / main
+    const dashboard = document.querySelector('#dashboard, #dashboardView, #homeGrid, .view.dashboard, [data-view="dashboard"], main, #app');
     if (dashboard) {
       const banner = document.createElement('button');
       banner.id = 'fitQuestionnaireBanner';
@@ -8294,4 +8298,9 @@ if (document.readyState === 'loading') {
 } else {
   attachFitnessBtnToTools();
 }
+
+// v3.22.13 增加：dashboard 视图专用挂载（最可靠，不依赖 selector 猜测）
+// 把 attach 函数也指向 injectFitnessBannerToDashboard（独立函数）
+// 重新定义避免被 v3.22.12 的实现覆盖
+
 

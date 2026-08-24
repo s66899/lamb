@@ -8671,6 +8671,65 @@ const MANIFEST_DATA = {
       ],
       "totalWords": 172437,
       "chapterCount": 11
+    },
+    {
+      "id": "badminton-recovery",
+      "title": "羽毛球康复",
+      "emoji": "🩹",
+      "color": "#00897b",
+      "desc": "羽毛球 6 大常见运动损伤的系统康复方法",
+      "chapters": [
+        {
+          "file": "ch01-introduction.md",
+          "title": "康复总论——原则、时间线、信号识别",
+          "words": 193,
+          "h2s": []
+        },
+        {
+          "file": "ch02-shoulder.md",
+          "title": "肩关节康复 × 杀球过头",
+          "words": 251,
+          "h2s": []
+        },
+        {
+          "file": "ch03-knee.md",
+          "title": "膝关节康复 × 上网急停",
+          "words": 237,
+          "h2s": []
+        },
+        {
+          "file": "ch04-ankle.md",
+          "title": "踝关节康复 × 跳起落地踩脚",
+          "words": 218,
+          "h2s": []
+        },
+        {
+          "file": "ch05-elbow.md",
+          "title": "肘关节康复 × 反手过度代偿",
+          "words": 136,
+          "h2s": []
+        },
+        {
+          "file": "ch06-back.md",
+          "title": "腰部康复 × 后场被动反手",
+          "words": 152,
+          "h2s": []
+        },
+        {
+          "file": "ch07-achilles.md",
+          "title": "跟腱康复 × 反复起跳",
+          "words": 150,
+          "h2s": []
+        },
+        {
+          "file": "ch08-action-plan.md",
+          "title": "行动清单与互引表",
+          "words": 192,
+          "h2s": []
+        }
+      ],
+      "totalWords": 1529,
+      "chapterCount": 8
     }
   ]
 };
