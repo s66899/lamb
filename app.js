@@ -25,8 +25,8 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.10';
-const APP_DATE = '2026-08-24';
+const APP_VERSION = 'v3.22.11';
+const APP_DATE = '2026-08-25';
 
 // ─── 全局错误边界（防白屏）─────────────────
 window.addEventListener('error', (e) => {
@@ -7904,3 +7904,364 @@ document.addEventListener('keydown', (e) => {
     openShortcutHelp();
   }
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// v3.22.11 体能训练问卷式快速方案生成器
+// 5 道选择题 → 个性化 4 周训练计划（含 ex-lib 动作引用）
+// ═══════════════════════════════════════════════════════════════════
+
+// 4 种预设训练模板（基于 NSCA-CPT ch04-08 + 羽毛球 ch12）
+const FIT_TEMPLATES = {
+  // 初学者 / 1-2 次/周
+  beginner: {
+    title: '🟢 初学者模板',
+    desc: '适合每周打球 1-2 次、想打好基础的人群。3 天/周 × 4 周。',
+    weeks: [
+      { week: 1, focus: '适应期', sessions: [
+        { day: '周一', title: '基础力量 + 核心', actions: [
+          { name: '徒手深蹲', id: '0273', sets: 3, reps: 12 },
+          { name: '弹力带坐姿划船', id: '0990', sets: 3, reps: 12 },
+          { name: '死虫', id: '0276', sets: 3, reps: '10/侧' },
+          { name: '弹力带站姿肩外旋', id: '0235', sets: 2, reps: 15 },
+        ]},
+        { day: '周三', title: '下肢 + 棵', actions: [
+          { name: '徒手保加利亚分腿蹲', id: '0054', sets: 3, reps: '8/侧' },
+          { name: '弹力带直腿硬拉', id: '1010', sets: 3, reps: 12 },
+          { name: '弹力带单腿提踵', id: '0999', sets: 3, reps: '12/侧' },
+          { name: '踝背屈拉伸', id: '1377', sets: 2, reps: '45秒/侧' },
+        ]},
+        { day: '周五', title: '羽毛球专项 + 柔韧', actions: [
+          { name: '6 点位轮转（羽毛球步伐）', id: null, sets: 4, reps: '1 轮' },
+          { name: '米字跑（8 点位）', id: null, sets: 4, reps: '1 轮' },
+          { name: '高脚杯深蹲', id: '0275', sets: 3, reps: 10 },
+          { name: '臀桥', id: '1408', sets: 3, reps: 15 },
+        ]},
+      ]},
+      { week: 2, focus: '巩固期', sessions: [] }, // 复用 week 1 增量 5%
+      { week: 3, focus: '渐增期', sessions: [] },
+      { week: 4, focus: '减量周', sessions: [] },
+    ],
+  },
+  // 进阶 / 3-4 次/周
+  intermediate: {
+    title: '🟡 进阶模板',
+    desc: '适合每周打球 3-4 次、想提升比赛表现的爱好者。4 天/周 × 4 周。',
+    weeks: [
+      { week: 1, focus: '基础力量累积', sessions: [
+        { day: '周一', title: '下肢推 + 核心', actions: [
+          { name: '杠铃背蹲', id: '0038', sets: 4, reps: 8 },
+          { name: '杠铃卧推', id: '0025', sets: 4, reps: 8 },
+          { name: '帕洛夫推举(垂直)', id: '1015', sets: 3, reps: '10/侧' },
+          { name: '死虫', id: '0276', sets: 3, reps: '10/侧' },
+        ]},
+        { day: '周二', title: '爆发力 + 敏捷', actions: [
+          { name: '跳箱深蹲', id: '0514', sets: 5, reps: 5 },
+          { name: '单臂壶铃 snatch', id: '3888', sets: 5, reps: '3/侧' },
+          { name: '药球 3 点支撑推', id: '1303', sets: 5, reps: '5/侧' },
+        ]},
+        { day: '周四', title: '下肢拉 + 上肢拉', actions: [
+          { name: '罗马尼亚硬拉', id: '0085', sets: 4, reps: 8 },
+          { name: '单臂罗马尼亚硬拉', id: '0066', sets: 3, reps: '8/侧' },
+          { name: '俯身划船', id: '0039', sets: 4, reps: 8 },
+        ]},
+        { day: '周六', title: '羽毛球专项 + 肩袖', actions: [
+          { name: '6 点位轮转 + 米字跑', id: null, sets: 4, reps: '各 1 轮' },
+          { name: '哑铃侧卧肩外旋', id: '0863', sets: 3, reps: 15 },
+          { name: '药球过头顶砸', id: '1353', sets: 3, reps: 8 },
+        ]},
+      ]},
+      { week: 2, focus: '增加强度', sessions: [] },
+      { week: 3, focus: '峰值塑造', sessions: [] },
+      { week: 4, focus: '减量 + 比赛', sessions: [] },
+    ],
+  },
+  // 高水平 / 5+ 次/周
+  advanced: {
+    title: '🔴 高水平模板',
+    desc: '适合每周打球 5+ 次或参赛选手。5 天/周 × 4 周，含爆发力专项日。',
+    weeks: [
+      { week: 1, focus: '峰值塑造期', sessions: [
+        { day: '周一', title: '最大力量日', actions: [
+          { name: '杠铃背蹲', id: '0038', sets: 5, reps: 5 },
+          { name: '罗马尼亚硬拉', id: '0085', sets: 5, reps: 5 },
+          { name: '弹力带单腿提踵', id: '0999', sets: 3, reps: '12/侧' },
+        ]},
+        { day: '周二', title: '上肢推 + 肩袖', actions: [
+          { name: '杠铃卧推', id: '0025', sets: 5, reps: 5 },
+          { name: '站姿杠铃推举', id: '0080', sets: 4, reps: 6 },
+          { name: '哑铃站姿肩外旋', id: '0864', sets: 3, reps: 12 },
+        ]},
+        { day: '周三', title: '羽毛球专项 + 敏捷', actions: [
+          { name: '6 点位轮转（计时赛）', id: null, sets: 5, reps: '1 轮' },
+          { name: '米字跑（计时赛）', id: null, sets: 5, reps: '1 轮' },
+          { name: '跳深落地缓冲', id: '3543', sets: 4, reps: 5 },
+        ]},
+        { day: '周四', title: '爆发力专项', actions: [
+          { name: '跳箱深蹲', id: '0514', sets: 6, reps: 4 },
+          { name: '单臂壶铃 snatch', id: '3888', sets: 5, reps: '3/侧' },
+          { name: '药球过头顶砸', id: '1353', sets: 5, reps: 5 },
+          { name: '跳深落地缓冲', id: '3543', sets: 4, reps: 5 },
+        ]},
+        { day: '周六', title: '比赛或实战', actions: [
+          { name: '比赛/多球实战', id: null, sets: 1, reps: '60-90 分钟' },
+          { name: '赛后静态拉伸', id: null, sets: 1, reps: '15 分钟' },
+        ]},
+      ]},
+      { week: 2, focus: '维持强度', sessions: [] },
+      { week: 3, focus: '巩固峰值', sessions: [] },
+      { week: 4, focus: '减量 + 比赛', sessions: [] },
+    ],
+  },
+  // 康复 / 受伤后回归
+  recovery: {
+    title: '🩹 康复回归模板',
+    desc: '适合伤病恢复期或想预防损伤的人群。3 天/周 × 4 周，以柔韧 + 预防为主。',
+    weeks: [
+      { week: 1, focus: '基础评估', sessions: [
+        { day: '周一', title: '肩袖稳定 + 核心', actions: [
+          { name: '弹力带站姿肩外旋', id: '0235', sets: 3, reps: 15 },
+          { name: '帕洛夫推举(水平)', id: '0979', sets: 3, reps: '10/侧' },
+          { name: '死虫', id: '0276', sets: 3, reps: '10/侧' },
+          { name: '单腿平衡', id: null, sets: 3, reps: '30秒/侧' },
+        ]},
+        { day: '周三', title: '下肢稳定 + 棵', actions: [
+          { name: '弹力带单腿提踵', id: '0999', sets: 3, reps: '12/侧' },
+          { name: '臀桥', id: '1408', sets: 3, reps: 15 },
+          { name: '踝背屈拉伸', id: '1377', sets: 2, reps: '45秒/侧' },
+          { name: '小腿拉伸', id: '1377', sets: 2, reps: '45秒/侧' },
+        ]},
+        { day: '周五', title: '上肢 + 全身拉伸', actions: [
+          { name: '弹力带反握腕弯举', id: '0994', sets: 3, reps: 15 },
+          { name: '俯卧 Y-T-W', id: null, sets: 2, reps: '8 个' },
+          { name: '鸽子式', id: '1710', sets: 2, reps: '45秒/侧' },
+          { name: '髋屈肌弓步', id: '1564', sets: 2, reps: '45秒/侧' },
+        ]},
+      ]},
+      { week: 2, focus: '渐进激活', sessions: [] },
+      { week: 3, focus: '恢复强度', sessions: [] },
+      { week: 4, focus: '评估回归', sessions: [] },
+    ],
+  },
+};
+
+// 问卷 5 道题
+const FIT_QUESTIONS = [
+  {
+    key: 'age',
+    title: '你的年龄段？',
+    options: [
+      { label: '🔹 18 岁以下', value: 'junior', score: 0 },
+      { label: '🔹 18-29 岁', value: 'youth', score: 1 },
+      { label: '🔹 30-44 岁', value: 'mid', score: 0 },
+      { label: '🔹 45 岁以上', value: 'senior', score: -1 },
+    ],
+  },
+  {
+    key: 'freq',
+    title: '你每周打几次羽毛球？',
+    desc: '诚实回答，决定你的周训练量',
+    options: [
+      { label: '🔸 0 次（仅体能训练）', value: 0, score: 0 },
+      { label: '🔸 1-2 次（业余爱好者）', value: 2, score: 1 },
+      { label: '🔸 3-4 次（进阶爱好者）', value: 4, score: 2 },
+      { label: '🔸 5+ 次（参赛/校队）', value: 6, score: 3 },
+    ],
+  },
+  {
+    key: 'goal',
+    title: '你的训练首要目标？',
+    options: [
+      { label: '🏸 提升杀球力量', value: 'power', score: 0 },
+      { label: '🏃 提升全场移动速度', value: 'agility', score: 0 },
+      { label: '💪 打好体能基础', value: 'strength', score: 0 },
+      { label: '🩹 预防伤病 / 康复', value: 'recovery', score: 0 },
+    ],
+  },
+  {
+    key: 'exp',
+    title: '你有没有过系统训练经验？',
+    desc: '健身房或体育训练都行',
+    options: [
+      { label: '❌ 完全没有', value: 'none', score: 0 },
+      { label: '🔰 偶尔练练', value: 'casual', score: 1 },
+      { label: '✅ 有 3+ 月系统训练', value: 'experienced', score: 2 },
+    ],
+  },
+  {
+    key: 'pain',
+    title: '现在有没有伤痛？',
+    options: [
+      { label: '✅ 无伤痛', value: 'none', score: 1 },
+      { label: '🦴 肩/腰/棵旧伤（已过急性期）', value: 'old', score: 0 },
+      { label: '🚑 现在急性伤痛', value: 'acute', score: -2 },
+    ],
+  },
+];
+
+// 算法：根据 5 个答案 + 年龄生成模板 + 调整
+function recommendTemplate(answers) {
+  // 优先级 1：现在急性伤痛 → 康复模板
+  if (answers.pain === 'acute') return 'recovery';
+  // 优先级 2：目标是康复 → 康复模板
+  if (answers.goal === 'recovery') return 'recovery';
+  // 优先级 3：基于频率选模板
+  const f = answers.freq;
+  if (f <= 2) return 'beginner';
+  if (f <= 4) return 'intermediate';
+  return 'advanced';
+}
+
+function planSummary(answers) {
+  const t = recommendTemplate(answers);
+  return {
+    templateKey: t,
+    template: FIT_TEMPLATES[t],
+    answers,
+    createdAt: new Date().toISOString().slice(0, 10),
+  };
+}
+
+function openFitnessQuestionnaire() {
+  // 读取已保存的方案
+  const saved = localStorage.getItem('bk_fit_plan');
+  let savedHtml = '';
+  if (saved) {
+    try {
+      const p = JSON.parse(saved);
+      savedHtml = `<div style="background:var(--bg3);padding:10px;border-radius:8px;margin-bottom:12px;font-size:12px">
+        💾 上次方案：<b>${p.template.title}</b>（${p.createdAt}）
+        <button class="h-btn" style="float:right;padding:6px 10px" onclick="localStorage.removeItem('bk_fit_plan');this.parentNode.remove()">清除</button>
+        <button class="h-btn" style="float:right;padding:6px 10px;margin-right:6px;background:var(--blue);color:#fff" onclick="renderFitnessPlan(JSON.parse(localStorage.getItem('bk_fit_plan')||'{}'))">查看</button>
+      </div>`;
+    } catch (e) {}
+  }
+
+  const questionHtml = FIT_QUESTIONS.map((q, qi) => {
+    const opts = q.options.map((o, oi) =>
+      `<label class="fq-option" data-qkey="${q.key}" data-oval="${o.value}" style="display:block;padding:10px 12px;margin:6px 0;background:var(--bg2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px">
+         <input type="radio" name="fq_${q.key}" value="${o.value}" style="margin-right:8px">${o.label}
+       </label>`).join('');
+    return `<div class="fq-q" data-qi="${qi}" style="margin-bottom:16px">
+      <div style="font-weight:600;margin-bottom:6px;font-size:14px">${qi+1}. ${q.title}${q.desc ? `<div style="font-size:11px;color:var(--text3);font-weight:normal;margin-top:3px">${q.desc}</div>` : ''}</div>
+      ${opts}
+    </div>`;
+  }).join('');
+
+  const html = `${savedHtml}
+    <div style="margin-bottom:14px;padding:10px;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;border-radius:8px">
+      💡 5 道题（1 分钟）→ 自动推荐训练方案 → 所有动作都能直接跳到 ex-lib 演示
+    </div>
+    <form id="fitQForm" onsubmit="return false">
+      ${questionHtml}
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button type="button" class="h-btn" style="flex:1;background:var(--blue);color:#fff" onclick="submitFitQuestionnaire()">📋 生成我的训练方案</button>
+        <button type="button" class="h-btn" onclick="this.closest('.overlay').remove()">关闭</button>
+      </div>
+    </form>`;
+
+  showOverlay('panel-md', '🏋️ 体能训练方案快速指定（5 题问卷）', html);
+}
+
+function submitFitQuestionnaire() {
+  // 收集所有答案
+  const answers = {};
+  let valid = true;
+  FIT_QUESTIONS.forEach(q => {
+    const checked = document.querySelector(`input[name="fq_${q.key}"]:checked`);
+    if (!checked) {
+      valid = false;
+      return;
+    }
+    answers[q.key] = checked.value;
+  });
+  if (!valid) {
+    showToast('⚠️ 请回答所有问题');
+    return;
+  }
+  // freq 字段转数字
+  answers.freq = parseInt(answers.freq, 10);
+  // 生成方案
+  const plan = planSummary(answers);
+  // 保存到 localStorage
+  localStorage.setItem('bk_fit_plan', JSON.stringify(plan));
+  // 渲染
+  renderFitnessPlan(plan);
+}
+
+function renderFitnessPlan(plan) {
+  const t = plan.template;
+  // 生成周计划表
+  const weekBlocks = t.weeks.map(w => {
+    if (!w.sessions.length) {
+      // 复用 week 1 + 5% 增量
+      w.sessions = JSON.parse(JSON.stringify(t.weeks[0].sessions));
+    }
+    const dayBlocks = w.sessions.map(s => {
+      const actionItems = s.actions.map(a => {
+        const exLink = a.id
+          ? `<a href="#" onclick="event.preventDefault();openExerciseLib('${a.id}');return false" style="color:var(--blue);text-decoration:none">[ex:${a.id}]</a>`
+          : '<span style="color:var(--text3)">[配套]</span>';
+        return `<li style="padding:4px 0;border-bottom:1px dashed var(--border)">
+          <span style="font-size:13px">${a.name}</span>
+          <span style="font-size:11px;color:var(--text2);margin-left:6px">${a.sets}×${a.reps}</span>
+          <span style="font-size:10px;color:var(--text3);margin-left:6px">${exLink}</span>
+        </li>`;
+      }).join('');
+      return `<div style="background:var(--bg2);padding:10px;border-radius:6px;margin-bottom:8px">
+        <div style="font-weight:600;font-size:13px;color:var(--green)">${s.day} · ${s.title}</div>
+        <ul style="margin:6px 0 0;padding-left:20px;font-size:13px">${actionItems}</ul>
+      </div>`;
+    }).join('');
+    return `<div style="background:var(--bg);padding:14px;border:1px solid var(--border);border-radius:8px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h4 style="margin:0">第 ${w.week} 周 · ${w.focus}</h4>
+        <span style="font-size:11px;color:var(--text3)">${w.sessions.length} 次训练</span>
+      </div>
+      ${dayBlocks}
+    </div>`;
+  }).join('');
+
+  const html = `
+    <div style="background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;padding:14px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:16px;font-weight:600">${t.title}</div>
+      <div style="font-size:12px;opacity:0.9;margin-top:4px">${t.desc}</div>
+      <div style="font-size:11px;opacity:0.7;margin-top:6px">生成日期：${plan.createdAt} · 基于您的 5 题回答</div>
+    </div>
+    <div style="background:var(--bg3);padding:10px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--text2)">
+      💡 点击任何 <code style="color:var(--blue)">[ex:0000]</code> 编号 → 直接打开动作 GIF + 步骤演示<br>
+      ⚠️ 训练前请评估自身状态；有伤痛请咨询专业人士
+    </div>
+    ${weekBlocks}
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="h-btn" style="flex:1" onclick="openExerciseLib()">📚 浏览动作库</button>
+      <button class="h-btn" onclick="openFitnessQuestionnaire()">🔄 重新问卷</button>
+      <button class="h-btn" onclick="this.closest('.overlay').remove()">关闭</button>
+    </div>`;
+
+  showOverlay('panel-md', '🏋️ 您的专属 4 周训练方案', html);
+}
+
+// 把按钮挂到工具栏（在工具面板显示）
+function attachFitnessBtnToTools() {
+  // 找到工具按钮区域
+  const toolsBtn = document.querySelector('button[onclick*="openTools"]') ||
+                    document.querySelector('#toolsBtn') ||
+                    Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('🛠️ 工具'));
+  if (toolsBtn && !document.getElementById('fitQuestionnaireBtn')) {
+    const btn = document.createElement('button');
+    btn.id = 'fitQuestionnaireBtn';
+    btn.className = 'h-btn';
+    btn.style.cssText = 'background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;margin:6px';
+    btn.innerHTML = '🏋️ 问卷 → 训练方案（5 题 1 分钟）';
+    btn.onclick = openFitnessQuestionnaire;
+    toolsBtn.parentNode.insertBefore(btn, toolsBtn.nextSibling);
+  }
+}
+
+// 页面加载完成后挂按钮（仅一次）
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', attachFitnessBtnToTools);
+} else {
+  attachFitnessBtnToTools();
+}
+
