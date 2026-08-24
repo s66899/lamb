@@ -3438,7 +3438,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch12-physical-training.md",
           "title": "Physical Training",
-          "words": 13484,
+          "words": 16125,
           "h2s": [
             {
               "title": "本章导言",
@@ -6961,10 +6961,65 @@ const MANIFEST_DATA = {
               ]
             }
           ]
+        },
+        {
+          "file": "ch02-exercise-physiology.md",
+          "title": "运动生理学（v3.22.5 完整版）",
+          "words": 1416,
+          "h2s": []
+        },
+        {
+          "file": "ch03-anatomy.md",
+          "title": "运动解剖",
+          "words": 193,
+          "h2s": []
+        },
+        {
+          "file": "ch04-strength-training.md",
+          "title": "基础力量训练（v3.22.5 扩展，含 79 ex-lib 引用）",
+          "words": 510,
+          "h2s": []
+        },
+        {
+          "file": "ch05-power-training.md",
+          "title": "爆发力训练（v3.22.5 扩展，含 33 ex-lib 引用）",
+          "words": 478,
+          "h2s": []
+        },
+        {
+          "file": "ch06-agility.md",
+          "title": "敏捷性训练（v3.22.5 扩展）",
+          "words": 400,
+          "h2s": []
+        },
+        {
+          "file": "ch07-flexibility.md",
+          "title": "柔韧性与活动度（v3.22.5 扩展）",
+          "words": 335,
+          "h2s": []
+        },
+        {
+          "file": "ch08-periodization.md",
+          "title": "周期化训练（v3.22.7 扩展，含 31 ex-lib 引用）",
+          "words": 413,
+          "h2s": []
+        },
+        {
+          "file": "ch09-injury-prevention.md",
+          "title": "损伤预防与康复（v3.22.8 新增 6 大康复体系，含 60 ex-lib 引用）",
+          "words": 544,
+          "h2s": []
+        },
+        {
+          "file": "ch10-recovery.md",
+          "title": "恢复训练（待扩展）",
+          "words": 101,
+          "h2s": []
         }
+
       ],
-      "totalWords": 6816,
-      "chapterCount": 1
+      "totalWords": 11206,
+      "chapterCount": 10
     },
     {
       "id": "psychology",
