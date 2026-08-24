@@ -25,7 +25,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.11';
+const APP_VERSION = 'v3.22.12';
 const APP_DATE = '2026-08-25';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -2624,6 +2624,7 @@ function renderDashboard() {
     {icon:'✅',title:'状态自查',desc:'绿/黄/红码训练决策',action:'openWeeklyCheck()',color:'var(--green)'},
     {icon:'🔍',title:'训练诊断',desc:'60+症状→原因→方案',action:'openDiagnosis()',color:'var(--orange)'},
     {icon:'🧮',title:'计算工具',desc:'TDEE·水合·训练量计算',action:'openCalculators()',color:'var(--red)'},
+    {icon:'🏋️',title:'问卷训练方案',desc:'5 题 1 分钟 → 4 周个性化计划',action:'openFitnessQuestionnaire()',color:'var(--blue)'},
   ];
   $('toolsSection').innerHTML = TOOLS.map(t => `
     <div class="tool-card" onclick="${t.action}">
@@ -8242,21 +8243,50 @@ function renderFitnessPlan(plan) {
 }
 
 // 把按钮挂到工具栏（在工具面板显示）
+// 把问卷按钮挂到工具面板顶部（覆盖式插入，确保用户能看到）
 function attachFitnessBtnToTools() {
-  // 找到工具按钮区域
-  const toolsBtn = document.querySelector('button[onclick*="openTools"]') ||
-                    document.querySelector('#toolsBtn') ||
-                    Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('🛠️ 工具'));
-  if (toolsBtn && !document.getElementById('fitQuestionnaireBtn')) {
-    const btn = document.createElement('button');
-    btn.id = 'fitQuestionnaireBtn';
-    btn.className = 'h-btn';
-    btn.style.cssText = 'background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;margin:6px';
-    btn.innerHTML = '🏋️ 问卷 → 训练方案（5 题 1 分钟）';
-    btn.onclick = openFitnessQuestionnaire;
-    toolsBtn.parentNode.insertBefore(btn, toolsBtn.nextSibling);
+  // 1) 尝试挂到 toolsSection 内部（最直观的位置）
+  const toolsSection = document.getElementById('toolsSection');
+  if (toolsSection && !document.getElementById('fitQuestionnaireBanner')) {
+    const banner = document.createElement('div');
+    banner.id = 'fitQuestionnaireBanner';
+    banner.className = 'fit-q-banner';
+    banner.style.cssText = 'background:linear-gradient(135deg,#4caf50,#2196f3);color:#fff;padding:14px 16px;border-radius:10px;margin-bottom:12px;cursor:pointer;box-shadow:0 4px 12px rgba(33,150,243,.3);display:flex;align-items:center;gap:12px;transition:transform .2s ease';
+    banner.onmouseenter = () => banner.style.transform = 'translateY(-2px)';
+    banner.onmouseleave = () => banner.style.transform = 'none';
+    banner.onclick = openFitnessQuestionnaire;
+    banner.innerHTML = `
+      <div style="font-size:30px">🏋️</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700;margin-bottom:2px">5 题问卷 → 您的专属训练方案</div>
+        <div style="font-size:11px;opacity:.92">回答 5 个问题（1 分钟）→ 自动生成 4 周计划 + 每个动作都能直接看 GIF 演示</div>
+      </div>
+      <div style="font-size:18px;opacity:.6">→</div>
+    `;
+    // 插入到 toolsSection 第一个子元素之前
+    toolsSection.insertBefore(banner, toolsSection.firstChild);
+  }
+  // 2) 同时尝试挂到首页 dashboard（万一用户没进工具面板）
+  if (!document.getElementById('fitQuestionnaireBanner')) {
+    const dashboard = document.querySelector('.dashboard, #dashboard, #home, #homeGrid, main, #app');
+    if (dashboard) {
+      const banner = document.createElement('button');
+      banner.id = 'fitQuestionnaireBanner';
+      banner.className = 'h-btn';
+      banner.style.cssText = 'background:linear-gradient(135deg,#4caf50,#2196f3);color:#fff;margin:8px 0;padding:14px;width:100%;font-size:14px';
+      banner.innerHTML = '🏋️ 5 题问卷 → 您的专属训练方案（4 周计划）';
+      banner.onclick = openFitnessQuestionnaire;
+      dashboard.insertBefore(banner, dashboard.firstChild);
+    }
   }
 }
+
+// 每次打开工具面板时也确保 banner 已挂入
+const _origOpenToolsPanel = openToolsPanel;
+openToolsPanel = function() {
+  _origOpenToolsPanel.apply(this, arguments);
+  setTimeout(attachFitnessBtnToTools, 50);
+};
 
 // 页面加载完成后挂按钮（仅一次）
 if (document.readyState === 'loading') {
