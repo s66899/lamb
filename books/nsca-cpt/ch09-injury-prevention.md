@@ -213,7 +213,7 @@ NSCA-CPT 损伤预防 5 原则：
 | **急性期** | 0-2 周 | 仅等长收缩、肩胛骨回缩 | [ex:0080 standing military press]（无负荷）|
 | **恢复期** | 2-6 周 | 闭链肩胛稳定、外旋 | [ex:0235 cable standing shoulder external rotation] |
 | **强化期** | 6-12 周 | 外旋力量 70% 1RM、肩胛控制 | [ex:0864 dumbbell upright shoulder external rotation] |
-| **回归期** | 12+ 周 | 渐进过头顶动作、专项 | [ex:0876 dumbbell 90 degree external rotation] |
+| **回归期** | 12+ 周 | 渐进过头顶动作、专项 | [ex:0864 dumbbell upright shoulder external rotation]（库里无独立 90° id，借用最接近的 upright shoulder external rotation）|
 
 **关键动作库**（每个都标 ex-lib id）：
 

@@ -368,7 +368,7 @@ RPE 是 Borg 量表的核心概念，让运动员根据自己的主观感受来�
 | [ex:0038 barbell back squat] | 杠铃背蹲 | 下肢综合力量基�stone | 2次/周 |
 | [ex:0085 barbell romanian deadlift] | 罗马尼亚硬拉 | 后链力量，蹬地发力的源头 | 2次/周 |
 | [ex:0054 barbell lunge] | 杠铃弓步 | 单腿力量 + 跨步模式 | 2次/周 |
-| [ex:0273 bodyweight squat] | 徒手深蹲 | 基础动作，新手必练 | 每次热身 |
+| [ex:1685 squat to overhead reach]（库里无纯 bodyweight squat，借用此动作） | 徒手深蹲（举臂） | 基础动作，新手必练；举臂辅助躯干伸展 | 每次热身 |
 | [ex:1410 barbell lateral lunge] | 杠铃侧向箭步蹲 | 侧向移动力量（杀上网的侧步）| 1次/周 |
 
 **【上半身：挥拍发力的输出端】**
@@ -408,7 +408,7 @@ RPE 是 Borg 量表的核心概念，让运动员根据自己的主观感受来�
 
 ```
 周一（下肢+核心）：
-  1. [ex:0273 徒手深蹲] 3×12
+  1. [ex:1685 squat to overhead reach] 3×12
   2. [ex:1010 band straight leg deadlift] 3×12
   3. [ex:0987 band one arm single leg split squat] 3×10/侧
   4. [ex:0276 dead bug] 3×10/侧
@@ -421,7 +421,7 @@ RPE 是 Borg 量表的核心概念，让运动员根据自己的主观感受来�
   4. [ex:0235 cable standing shoulder external rotation] 2×15
 
 周五（下肢+核心 同周一变式）：
-  1. [ex:0275 goblet squat] 3×10
+  1. [ex:1760 dumbbell goblet squat] 3×10
   2. [ex:0085 barbell romanian deadlift] 3×10
   3. [ex:0054 barbell lunge] 3×8/侧
   4. [ex:3544 side plank] 3×20秒/侧
@@ -942,7 +942,7 @@ RPE 是 Borg 量表的核心概念，让运动员根据自己的主观感受来�
 日期：________  体重：______ kg  睡眠：____ 小时  RPE 总体：_____
 
 周一（下肢 + 核心）：
-  [ex:0273 徒手深蹲]              重量___ 组数___ 次数___ RPE___
+  [ex:1685 squat to overhead reach]  重量___ 组数___ 次数___ RPE___
   [ex:0085 罗马尼亚硬拉]           重量___ 组数___ 次数___ RPE___
   [ex:0054 杠铃弓步]              重量___ 组数___ 次数___ RPE___
   [ex:0276 dead bug]              组数___ 次数___ RPE___

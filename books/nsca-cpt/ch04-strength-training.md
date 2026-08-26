@@ -89,8 +89,8 @@
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 徒手深蹲 | `[ex:0273 bodyweight squat]` | 站距与肩同宽，膝盖沿脚尖方向 |
-| 高脚杯深蹲 | `[ex:0275 goblet squat]` | 双手抱哑铃于胸前，重心更稳 |
+| 徒手深蹲（举臂） | `[ex:1685 squat to overhead reach]` | 站距与肩同宽，膝盖沿脚尖方向；举臂辅助躯干伸展 |
+| 高脚杯深蹲 | `[ex:1760 dumbbell goblet squat]` | 双手抱哑铃于胸前，重心更稳 |
 | 单腿辅助深蹲 | `[ex:0987 单腿分腿蹲]` | 抓固定物辅助，培养单腿稳定 |
 
 **进阶动作**：
@@ -248,7 +248,7 @@
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
 | 哑铃站姿肩外旋 | `[ex:0864 dumbbell upright shoulder external rotation]` | 站姿，哑铃外旋，对抗更大阻力 |
-| 90/90 肩外旋 | `[ex:0876 dumbbell 90 degree external rotation]` | 肩外展 90°，再外旋——杀球发力角度 |
+| 90/90 肩外旋 | `[ex:0864 dumbbell upright shoulder external rotation]` | 肩外展 90°，再外旋——杀球发力角度（库里无独立 90° id，借用最接近的 upright shoulder external rotation） |
 
 **羽毛球专项应用**：
 - 杀球的"鞭打"末端 → 肩外旋的离心刹车
@@ -292,7 +292,7 @@
 
 | 顺序 | 动作 | ex-lib | 组数×次数 | 间歇 |
 |---|---|---|---|---|
-| 1 | 徒手深蹲 | `[ex:0273 bodyweight squat]` | 3×12 | 60 秒 |
+| 1 | 徒手深蹲（举臂） | `[ex:1685 squat to overhead reach]` | 3×12 | 60 秒 |
 | 2 | 弹力带直腿硬拉 | `[ex:1010 band straight leg deadlift]` | 3×12 | 60 秒 |
 | 3 | 弹力带单腿分腿蹲 | `[ex:0987 band one arm single leg split squat]` | 3×10/侧 | 60 秒 |
 | 4 | 臀桥 | `[ex:1408 band hip lift]` | 3×15 | 45 秒 |
@@ -313,7 +313,7 @@
 
 | 顺序 | 动作 | ex-lib | 组数×次数 | 间歇 |
 |---|---|---|---|---|
-| 1 | 高脚杯深蹲 | `[ex:0275 goblet squat]` | 3×10 | 60 秒 |
+| 1 | 高脚杯深蹲 | `[ex:1760 dumbbell goblet squat]` | 3×10 | 60 秒 |
 | 2 | 罗马尼亚硬拉 | `[ex:1009 band stiff leg deadlift]` | 3×10 | 60 秒 |
 | 3 | 单腿保加利亚蹲 | `[ex:0054 barbell lunge]` | 3×8/侧 | 60 秒 |
 | 4 | 侧平板抬髋 | `[ex:3544 bodyweight incline side plank]` | 3×20 秒/侧 | 45 秒 |
@@ -355,7 +355,7 @@
 |---|---|---|---|---|
 | 1 | 上斜卧推 | `[ex:0047 barbell incline bench press]` | 4×8 | 90 秒 |
 | 2 | 哑铃侧卧肩外旋 | `[ex:0863 dumbbell lying external shoulder rotation]` | 3×15 | 45 秒 |
-| 3 | 90/90 肩外旋 | `[ex:0876 dumbbell 90 degree external rotation]` | 3×12 | 45 秒 |
+| 3 | 90/90 肩外旋 | `[ex:0864 dumbbell upright shoulder external rotation]` | 3×12 | 45 秒 |
 | 4 | 弹力带反握腕弯举 | `[ex:0994 band reverse wrist curl]` | 3×15 | 45 秒 |
 | 5 | 农夫行走 | `[ex:1421 dumbbell farmer's walk]` | 3×30 米 | 60 秒 |
 
