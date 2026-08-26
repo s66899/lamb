@@ -25,7 +25,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.20';
+const APP_VERSION = 'v3.22.21';
 const APP_DATE = '2026-08-26';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -524,7 +524,10 @@ function buildExIndex(arr) {
 }
 
 // 体能动作库页面：搜索 + 多维筛选 + 卡片瀑布流
-async function openExerciseLib() {
+async function openExerciseLib(id) {
+  // v3.22.21: 传入 id 时直接跳转动作详情，跳过动作库面板
+  // 修复问卷方案中 [ex:0000] 链接只打开空动作库而不跳到对应动作的 bug
+  if (id) return openExerciseDetail(id);
   showOverlay('panel panel-wide', '🏋️ 体能动作库 · 1,324 动作',
     `<div style="padding:6px 2px">
        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
