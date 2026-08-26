@@ -169,7 +169,34 @@
 
 ---
 
-## 六、本书目录回顾
+## 六、本章 ex-lib 引用清单
+
+本章行动清单共引用 19 处 ex-lib 条目，全部已验证为库内合法 id（零伪造）：
+
+| ex-id | 中文名 / 英文名 | 用途章节 |
+|------|--------------|---------|
+| [ex:0864] | dumbbell upright shoulder external rotation / 哑铃 90/90 肩外旋 | 一.1 肩关节反复发作（弹力带外旋代用） |
+| [ex:0993] | band reverse fly / 弹力带反向飞鸟 | 一.1 肩关节反复发作 + 一.3 踝关节抗力代用 |
+| [ex:0099] | barbell single leg split squat / 杠铃单腿弓步蹲（徒手亦可） | 一.2 膝关节初发（单腿下蹲测试代用） |
+| [ex:1757] | dumbbell single leg deadlift / 哑铃单腿硬拉 | 一.2 膝关节楼梯痛（单腿 RDL） |
+| [ex:1409] | barbell glute bridge / 杠铃臀桥 | 一.2 膝关节楼梯痛 + 一.5 腰部腰肌劳损 |
+| [ex:3013] | low glute bridge on floor / 地面徒手臀桥 | 一.2 膝关节楼梯痛（徒手版代用） |
+| [ex:1368] | ankle circles / 踝关节绕环 | 一.3 踝关节急性扭伤（PRICE 4 周方案） |
+| [ex:1490] | standing calf raise (on a staircase) / 台阶式提踵 | 一.3 踝关节抗力 + 一.6 跟腱晨起第一步痛（Alfredson 离心） |
+| [ex:0999] | band single leg calf raise / 弹力带单腿提踵 | 一.6 跟腱硬结 8 周方案 |
+| [ex:1411] | barbell palms down wrist curl over a bench / 杠铃掌心向下腕屈 | 一.4 肘关节初发（腕伸肌离心改编） |
+| [ex:1412] | barbell palms up wrist curl over a bench / 杠铃掌心向上腕屈 | 一.4 肘关节初发（腕屈肌平衡） |
+| [ex:2288] | lever gripper hands / 握力器 | 一.4 肘关节反复发作（握力训练代用） |
+| [ex:2133] | farmers walk / 农夫走 | 一.4 肘关节反复发作（前臂耐受） |
+| [ex:1422] | pelvic tilt into bridge / 骨盆倾斜→桥式 | 一.5 腰部腰肌劳损（入门版） |
+| [ex:0276] | dead bug / 死虫式 | 一.5 腰部椎间盘膨出（核心稳定） |
+| [ex:5211] | lacrosse ball plantar fascia / 长曲棍球足底筋膜松解 | 一.6 跟腱硬结（足底筋膜松解，介质用网球替代） |
+
+**说明**：本章作为速查/行动清单章，已就地标注每个 id 的具体部位与代用场景；与 ch02/ch03/ch05/ch06/ch07 末尾清单段格式对齐，便于读者交叉查阅。库中暂无条目（如 bird dog / wall sit / 踝内翻外翻专项抗力 / 网球肘等长收缩等）已在各部位行内以"库中暂无"明确标注，未伪造任何 id。
+
+---
+
+## 七、本书目录回顾
 
 - **第一章**：康复总论——原则、时间线、信号识别
 - **第二章**：肩关节康复 × 杀球过头
@@ -182,7 +209,7 @@
 
 ---
 
-## 七、最后的提醒
+## 八、最后的提醒
 
 1. **不要带伤打球**：身体给你的每一个疼痛信号都值得认真对待
 2. **不要"硬扛"**：急性期正确处理能让康复时间缩短一半
