@@ -36,9 +36,9 @@
 **第 4 周**：评估低强度起跳
 
 **每天家庭训练**（10 分钟）：
-1. **小腿离心训练（Alfredson 方案改编，居家版）**：前脚掌站在台阶边缘，缓慢放下脚跟（4 秒），再撑起。可参考 ex-1490 standing calf raise on a staircase（台阶式提踵）或 ex-1373 徒手站姿提踵——居家无器械即可替代。每侧 15 次 × 2 组
-2. **足底筋膜松解**：网球踩脚底滚动 1 分钟；进阶可用 ex-5211 lacrosse ball plantar fascia（长曲棍球足底筋膜松解）——介质替换为筋膜球（库中暂无筋膜球专项条目，使用功能等价的长曲棍球条）
-3. **踝关节绕环**：参考 ex-1368 ankle circles，徒手即可，绕环幅度以不引踝前撞击为限，每方向 10 次
+1. **小腿离心训练（Alfredson 方案改编，居家版）**：前脚掌站在台阶边缘，缓慢放下脚跟（4 秒），再撑起。可参考 [ex:1490] standing calf raise on a staircase（台阶式提踵）或 [ex:1373] 徒手站姿提踵——居家无器械即可替代。每侧 15 次 × 2 组
+2. **足底筋膜松解**：网球踩脚底滚动 1 分钟；进阶可用 [ex:5211] lacrosse ball plantar fascia（长曲棍球足底筋膜松解）——介质替换为筋膜球（库中暂无筋膜球专项条目，使用功能等价的长曲棍球条）
+3. **踝关节绕环**：参考 [ex:1368] ankle circles，徒手即可，绕环幅度以不引踝前撞击为限，每方向 10 次
 
 ### 第二层：专业人士参考
 
@@ -46,7 +46,7 @@
 |---|------|------|------|
 | 1 | 冰敷；NSAIDs；护踝 | 停训 + 离心 | 自重 |
 | 2 | 离心训练每天 2 次 | 离心 15 × 2 | 自重 |
-| 3 | 弹力带抗力训练（ex-0999 band single leg calf raise / ex-1000 band single leg reverse calf raise） | 离心 + 抗力跖屈 | 弹力带 |
+| 3 | 弹力带抗力训练（[ex:0999] band single leg calf raise / [ex:1000] band single leg reverse calf raise） | 离心 + 抗力跖屈 | 弹力带 |
 | 4 | 评估回训练场 | 低强度起跳 | 30% |
 
 **离心训练是 Alfredson 方案** —— 这是国际公认的跟腱病一线治疗。
@@ -68,7 +68,7 @@
 - 离心训练**必须有疼痛**才算有效（在 5/10 以下）
 - 不要因为"怕痛"不做离心训练
 - 每天 2 次，每次 15 分钟，**不能省**
-- **离心练动作要点**：膝关节伸直 → 重点练胖肠肌（gastrocnemius）；膝关节微屈 20° → 重点练比目鱼肌（soleus）。居家版可参 ex-1377 calf stretch with hands against wall（靠墙小腿拉伸）作为前 2 周热身的补足动作。
+- **离心练动作要点**：膝关节伸直 → 重点练胖肠肌（gastrocnemius）；膝关节微屈 20° → 重点练比目鱼肌（soleus）。居家版可参 [ex:1377] calf stretch with hands against wall（靠墙小腿拉伸）作为前 2 周热身的补足动作。
 
 ### 第二层：专业人士参考
 
@@ -76,8 +76,8 @@
 |------|------|------|---------|
 | 急性 | Alfredson 离心 | 每天 2 次 | 90 次无痛 |
 | 恢复 | 足弓训练（短足训练） | 每天 100 次 | 维持 30s |
-| 恢复 | 弹力带抗力跖屈（ex-0999 单腿 / ex-1000 反向） | 每天 3 组 | 50N 力 |
-| 专项 | 单腿提踵（ex-1373 徒手或 ex-1397 standing calves） | 每天 3 组 | 25 次无痛 |
+| 恢复 | 弹力带抗力跖屈（[ex:0999] 单腿 / [ex:1000] 反向） | 每天 3 组 | 50N 力 |
+| 专项 | 单腿提踵（[ex:1373] 徒手或 [ex:1397] standing calves） | 每天 3 组 | 25 次无痛 |
 | 专项 | 低强度起跳 | 每周 3 次 | 50 次无痛 |
 
 ---
@@ -110,7 +110,7 @@
 
 1. **30cm 跳箱落地**：从 30cm 高跳箱跳下，**单脚落地**，主动屈膝屈踝缓冲
 2. **落地姿势**：髋、膝、踝三关节同时屈曲，跟腱不承受额外冲击
-3. **不要"砸"下去**：落地时想象"踩在鸡蛋上"。库中落类动作可参 ex-1374 box jump down with one leg stabilization（单腿跳箱下落稳定）—— 该动作要求单脚落地瞬间踝膝合控，是本章落地缓冲的核心训练。如无跳箱，可改用 30cm 高训练凳。
+3. **不要"砸"下去**：落地时想象"踩在鸡蛋上"。库中落类动作可参 [ex:1374] box jump down with one leg stabilization（单腿跳箱下落稳定）—— 该动作要求单脚落地瞬间踝膝合控，是本章落地缓冲的核心训练。如无跳箱，可改用 30cm 高训练凳。
 4. **每周 3 次**，每次 50 次落地
 
 **进阶**：
@@ -155,22 +155,22 @@
 
 ## 本章 ex-lib 引用清单
 
-本章共引用 13 处 ex-lib 条目，全部已验证为库内合法 id（零伪造）：
+本章共引用 29 处 ex-lib 条目，全部已验证为库内合法 id（零伪造）：
 
 | ex-id | 中文名/英文名 | 本章用途 |
 |------|--------------|---------|
-| ex-1490 | standing calf raise (on a staircase) / 台阶式提踵 | 4 周 / 12 周居家 Alfredson 离心台阶版 |
-| ex-1373 | 徒手站姿提踵 / bodyweight standing calf raise | 4 周 / 8 周无器械替代离心动作 |
-| ex-1368 | ankle circles / 踝关节绕环 | 4 周热身 |
-| ex-1397 | standing calves / 标准站姿提踵 | 8 周专项单腿提踵 |
-| ex-1377 | calf stretch with hands against wall / 靠墙小腿拉伸 | 8 周离心热身穿插 |
-| ex-1407 | calf push stretch with hands against wall / 靠墙推小腿拉伸 | 12 周辅助拉伸（温和，起步用） |
-| ex-1398 | standing calves calf stretch / 站姿小腿拉伸 | 12 周辅助拉伸 |
-| ex-1390 | seated calf stretch (male) / 坐姿小腿拉伸 | 12 周辅助拉伸（坐位腿部不负重） |
-| ex-1708 | assisted lying calves stretch / 仰卧辅助小腿拉伸 | 12 周辅助拉伸（息者卧位） |
-| ex-0999 | band single leg calf raise / 弹力带单腿提踵 | 4 周 W3 / 8 周恢复期 |
-| ex-1000 | band single leg reverse calf raise / 弹力带反向提踵 | 4 周 W3 / 8 周恢复期 |
-| ex-1374 | box jump down with one leg stabilization / 单腿跳箱下落稳定 | 8 / 12 周专项落地缓冲核心动作 |
-| ex-5211 | lacrosse ball plantar fascia / 长曲棍球足底筋膜松解 | 4 周脚底筋膜松解（筋膜球介质等价代用，见下方说明） |
+| [ex:1490] | standing calf raise (on a staircase) / 台阶式提踵 | 4 周 / 12 周居家 Alfredson 离心台阶版 |
+| [ex:1373] | 徒手站姿提踵 / bodyweight standing calf raise | 4 周 / 8 周无器械替代离心动作 |
+| [ex:1368] | ankle circles / 踝关节绕环 | 4 周热身 |
+| [ex:1397] | standing calves / 标准站姿提踵 | 8 周专项单腿提踵 |
+| [ex:1377] | calf stretch with hands against wall / 靠墙小腿拉伸 | 8 周离心热身穿插 |
+| [ex:1407] | calf push stretch with hands against wall / 靠墙推小腿拉伸 | 12 周辅助拉伸（温和，起步用） |
+| [ex:1398] | standing calves calf stretch / 站姿小腿拉伸 | 12 周辅助拉伸 |
+| [ex:1390] | seated calf stretch (male) / 坐姿小腿拉伸 | 12 周辅助拉伸（坐位腿部不负重） |
+| [ex:1708] | assisted lying calves stretch / 仰卧辅助小腿拉伸 | 12 周辅助拉伸（息者卧位） |
+| [ex:0999] | band single leg calf raise / 弹力带单腿提踵 | 4 周 W3 / 8 周恢复期 |
+| [ex:1000] | band single leg reverse calf raise / 弹力带反向提踵 | 4 周 W3 / 8 周恢复期 |
+| [ex:1374] | box jump down with one leg stabilization / 单腿跳箱下落稳定 | 8 / 12 周专项落地缓冲核心动作 |
+| [ex:5211] | lacrosse ball plantar fascia / 长曲棍球足底筋膜松解 | 4 周脚底筋膜松解（筋膜球介质等价代用，见下方说明） |
 
-**说明**：ex-lib 库中暂无"筋膜球 / foam roller 小腿"专项条目。SMR 类动作本章都走 ex-5211（长曲棍球足底筋膜松解），其按揉介质与筋膜球功能等价（均为球形硬质工具对肌筋膜施压）。库中也暂无跟腱专用离心动作，因此 Alfredson 方案其实动作由 ex-1373 / ex-1490 / ex-1368 等**小腿提踵 / 拉伸变体**代用，居家不需额外器械即可执行。
+**说明**：ex-lib 库中暂无"筋膜球 / foam roller 小腿"专项条目。SMR 类动作本章都走 [ex:5211]（长曲棍球足底筋膜松解），其按揉介质与筋膜球功能等价（均为球形硬质工具对肌筋膜施压）。库中也暂无跟腱专用离心动作，因此 Alfredson 方案其实动作由 [ex:1373] / [ex:1490] / [ex:1368] 等**小腿提踵 / 拉伸变体**代用，居家不需额外器械即可执行。

@@ -50,16 +50,16 @@
 
 日常三个动作（每天 10 分钟）：
 
-1. **踝绕环**：坐位脚画"米"字，每个方向 10 次 → 可参 [ex-1368] ankle circles（踝关节绕环）
-2. **弹力带抗阻**：4 个方向（背屈/跖屈/内翻/外翻），每方向 15 次 × 2 组。**注：库中暂无"弹力带 4 方向抗阻"专项条目**，居家可用弹力带绕脚掌做 4 向蹬伸；如需负重版可暂以 [ex-0999] band single leg calf raise（弹力带单腿提踵）代跖屈、[ex-1000] band single leg reverse calf raise（弹力带反向提踵）代背屈
-3. **提踵训练**：双脚 → 单脚渐进，3 组 × 15 次 → 进阶用 [ex-0727] single leg calf raise（单腿提踵），或台阶版 [ex-1490] standing calf raise on a staircase（台阶式提踵）
+1. **踝绕环**：坐位脚画"米"字，每个方向 10 次 → 可参 [ex:1368] ankle circles（踝关节绕环）
+2. **弹力带抗阻**：4 个方向（背屈/跖屈/内翻/外翻），每方向 15 次 × 2 组。**注：库中暂无"弹力带 4 方向抗阻"专项条目**，居家可用弹力带绕脚掌做 4 向蹬伸；如需负重版可暂以 [ex:0999] band single leg calf raise（弹力带单腿提踵）代跖屈、[ex:1000] band single leg reverse calf raise（弹力带反向提踵）代背屈
+3. **提踵训练**：双脚 → 单脚渐进，3 组 × 15 次 → 进阶用 [ex:0727] single leg calf raise（单腿提踵），或台阶版 [ex:1490] standing calf raise on a staircase（台阶式提踵）
 
 **第 7-8 周重点：本体感觉 + 平衡**
 
 平衡训练（每天 5 分钟）：
-- 单脚站立：30 秒 × 3（睁眼）→ 30 秒 × 3（闭眼） → 进阶加 [ex-1684] dumbbell step up single leg balance（单腿平衡上阶）作为负重版
-- **平衡垫**单脚站（进阶）→ 可参 [ex-0020] balance board（平衡盘）作为类似器械；若需 bosu 球可参 [ex-1705] squat on bosu ball（平衡球上深蹲）作为辅助
-- **跳跃落地**：从 10cm 跳箱跳下，**单脚落地**，5 次 × 3 组 → 核心动作 [ex-1374] box jump down with one leg stabilization（单腿跳箱下落稳定）
+- 单脚站立：30 秒 × 3（睁眼）→ 30 秒 × 3（闭眼） → 进阶加 [ex:1684] dumbbell step up single leg balance（单腿平衡上阶）作为负重版
+- **平衡垫**单脚站（进阶）→ 可参 [ex:0020] balance board（平衡盘）作为类似器械；若需 bosu 球可参 [ex:1705] squat on bosu ball（平衡球上深蹲）作为辅助
+- **跳跃落地**：从 10cm 跳箱跳下，**单脚落地**，5 次 × 3 组 → 核心动作 [ex:1374] box jump down with one leg stabilization（单腿跳箱下落稳定）
 
 ### 专项期（8-12 周）怎么回球场
 
@@ -188,16 +188,16 @@ CAI 患者再次扭伤风险**增加 3-5 倍**，必须按 12 周时间线完成
 
 | 本章内容 | NSCA-CPT ch09 对应 | ex-lib 动作 |
 |---------|-------------------|-----------|
-| 踝绕环 | ch09 §3 踝关节康复 | [ex-1368] ankle circles（踝关节绕环） |
-| 弹力带抗阻 跖屈 | ch09 §3 小腿力量 | [ex-0999] band single leg calf raise（弹力带单腿提踵）+ [ex-1000] band single leg reverse calf raise（弹力带反向提踵）；**库中暂无**4 方向专项 |
-| 平衡训练（地面/平衡盘） | ch09 §3 本体感觉 | [ex-1684] dumbbell step up single leg balance（单腿上阶平衡）；[ex-0020] balance board（平衡盘）；[ex-1705] squat on bosu ball（平衡球上深蹲） |
-| 跳箱落地 | ch09 §3 落地缓冲 | [ex-1374] box jump down with one leg stabilization（单腿跳箱下落稳定） |
-| 提踵 | ch09 §3 小腿力量 | [ex-0727] single leg calf raise（单腿提踵）+ [ex-1490] standing calf raise on a staircase（台阶式提踵） |
-| 小腿拉伸 | ch09 §3 拉伸 | [ex-1377] calf stretch with hands against wall（靠墙小腿拉伸）+ [ex-1390] seated calf stretch（坐姿小腿拉伸） |
-| 腓肠/胫后肌拉伸 | ch09 §3 拉伸 | [ex-1388] peroneals stretch（腓骨肌拉伸）+ [ex-1389] posterior tibialis stretch（胫后肌拉伸） |
+| 踝绕环 | ch09 §3 踝关节康复 | [ex:1368] ankle circles（踝关节绕环） |
+| 弹力带抗阻 跖屈 | ch09 §3 小腿力量 | [ex:0999] band single leg calf raise（弹力带单腿提踵）+ [ex:1000] band single leg reverse calf raise（弹力带反向提踵）；**库中暂无**4 方向专项 |
+| 平衡训练（地面/平衡盘） | ch09 §3 本体感觉 | [ex:1684] dumbbell step up single leg balance（单腿上阶平衡）；[ex:0020] balance board（平衡盘）；[ex:1705] squat on bosu ball（平衡球上深蹲） |
+| 跳箱落地 | ch09 §3 落地缓冲 | [ex:1374] box jump down with one leg stabilization（单腿跳箱下落稳定） |
+| 提踵 | ch09 §3 小腿力量 | [ex:0727] single leg calf raise（单腿提踵）+ [ex:1490] standing calf raise on a staircase（台阶式提踵） |
+| 小腿拉伸 | ch09 §3 拉伸 | [ex:1377] calf stretch with hands against wall（靠墙小腿拉伸）+ [ex:1390] seated calf stretch（坐姿小腿拉伸） |
+| 腓肠/胫后肌拉伸 | ch09 §3 拉伸 | [ex:1388] peroneals stretch（腓骨肌拉伸）+ [ex:1389] posterior tibialis stretch（胫后肌拉伸） |
 | 护踝选择 | ch09 §3 损伤管理 | （库中暂无护踝条目） |
 
-**库中暂无**说明：弹力带 4 方向抗阻（dorsiflexion/plantar/inversion/eversion 专项）、单脚闭眼本体感觉训练、跳跃落地专项 变体（仅 [ex-1374] 涵盖单腿跳箱下落稳定一种）、护踝选择。本章表中已严格以现有条目代替，未伪造任何 id。
+**库中暂无**说明：弹力带 4 方向抗阻（dorsiflexion/plantar/inversion/eversion 专项）、单脚闭眼本体感觉训练、跳跃落地专项 变体（仅 [ex:1374] 涵盖单腿跳箱下落稳定一种）、护踝选择。本章表中已严格以现有条目代替，未伪造任何 id。
 
 > 本章摘要版见《🐏的羽毛球》ch12 §4.4（踝关节扭伤——最常见的急性损伤）。
 

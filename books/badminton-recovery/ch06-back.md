@@ -170,22 +170,22 @@
 
 ## 本章 ex-lib 引用清单
 
-本章共引用 13 处 ex-lib 条目，全部已验证为库内合法 id（零伪造）：
+本章共引用 35 处 ex-lib 条目，全部已验证为库内合法 id（零伪造）：
 
 | ex-id | 中文名 / 英文名 | 本章用途 |
 |------|--------------|---------|
-| ex-0276 | dead bug / 死虫式（仰卧对侧手脚） | 4 周核心激活 / 8 周训练组合 / 后场前预先收紧 |
-| ex-3544 | bodyweight incline side plank / 徒手侧平板（斜面） | 4 周核心侧链稳定（起步低难度） |
-| ex-1408 | band hip lift / 弹力带臀桥 | 4 周核心基础（无带可用徒手桥式） |
-| ex-0979 | band horizontal pallof press / 弹力带水平抗旋推举 | 8 周抗旋训练（后场反手专项） |
-| ex-1015 | band vertical pallof press / 弹力带垂直抗旋推举 | 8 周抗旋进阶（6-8 周加入） |
-| ex-1422 | pelvic tilt into bridge / 骨盆倾斜→桥式 | 8 周训练组合 / 后场前专项髋铰链模式 |
-| ex-1341 | exercise ball lower back stretch (pyramid) / 健身球金字塔腰背拉伸 | 8 周拉伸（柔韧恢复） |
-| ex-1352 | lower back curl / 腰背卷曲 SMR | 4 周 W2 腰背筋膜松解 |
-| ex-0690 | seated lower back stretch / 坐姿腰背拉伸 | 8 / 12 周拉伸（避免久坐僵硬） |
-| ex-1559 | exercise ball hip flexor stretch / 健身球髋屈肌拉伸 | 8 / 12 周髋屈肌紧张缓解 |
-| ex-1511 | hamstring stretch / 腘绳肌拉伸 | 8 / 12 周腘绳肌柔韧（直腿抬高目标 > 70°） |
-| ex-1576 | leg up hamstring stretch / 抬腿腘绳肌拉伸 | 8 / 12 周腘绳肌拉伸替代版 |
-| ex-1709 | assisted lying glutes stretch / 仰卧辅助臀肌拉伸 | 12 周 W5-8 改善骨盆前倾 |
+| [ex:0276] | dead bug / 死虫式（仰卧对侧手脚） | 4 周核心激活 / 8 周训练组合 / 后场前预先收紧 |
+| [ex:3544] | bodyweight incline side plank / 徒手侧平板（斜面） | 4 周核心侧链稳定（起步低难度） |
+| [ex:1408] | band hip lift / 弹力带臀桥 | 4 周核心基础（无带可用徒手桥式） |
+| [ex:0979] | band horizontal pallof press / 弹力带水平抗旋推举 | 8 周抗旋训练（后场反手专项） |
+| [ex:1015] | band vertical pallof press / 弹力带垂直抗旋推举 | 8 周抗旋进阶（6-8 周加入） |
+| [ex:1422] | pelvic tilt into bridge / 骨盆倾斜→桥式 | 8 周训练组合 / 后场前专项髋铰链模式 |
+| [ex:1341] | exercise ball lower back stretch (pyramid) / 健身球金字塔腰背拉伸 | 8 周拉伸（柔韧恢复） |
+| [ex:1352] | lower back curl / 腰背卷曲 SMR | 4 周 W2 腰背筋膜松解 |
+| [ex:0690] | seated lower back stretch / 坐姿腰背拉伸 | 8 / 12 周拉伸（避免久坐僵硬） |
+| [ex:1559] | exercise ball hip flexor stretch / 健身球髋屈肌拉伸 | 8 / 12 周髋屈肌紧张缓解 |
+| [ex:1511] | hamstring stretch / 腘绳肌拉伸 | 8 / 12 周腘绳肌柔韧（直腿抬高目标 > 70°） |
+| [ex:1576] | leg up hamstring stretch / 抬腿腘绳肌拉伸 | 8 / 12 周腘绳肌拉伸替代版 |
+| [ex:1709] | assisted lying glutes stretch / 仰卧辅助臀肌拉伸 | 12 周 W5-8 改善骨盆前倾 |
 
-**说明**：ex-lib 库中暂无"foam roller 下背 / 筋膜球腰部"专项条目。本章腰部 SMR 类统一引用 ex-1352 lower back curl（腰背卷曲）作为替代，介质可用网球或长曲棍球置于腰方肌沿脊柱两侧滚动。库中也暂无"麦肯基伸展 / bird-dog 鸟狗式"专项条目，故这两项在 4 周 / 8 周方案中以文字描述保留，与 ex-lib 库内合法动作并存。
+**说明**：ex-lib 库中暂无"foam roller 下背 / 筋膜球腰部"专项条目。本章腰部 SMR 类统一引用 [ex:1352] lower back curl（腰背卷曲）作为替代，介质可用网球或长曲棍球置于腰方肌沿脊柱两侧滚动。库中也暂无"麦肯基伸展 / bird-dog 鸟狗式"专项条目，故这两项在 4 周 / 8 周方案中以文字描述保留，与 ex-lib 库内合法动作并存。
