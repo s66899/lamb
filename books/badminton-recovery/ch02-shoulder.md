@@ -239,14 +239,14 @@
 
 ## 十、本章 ex-lib 引用清单
 
-- 钟摆运动（warm-up-shoulder-001）
-- 爬墙运动（mobility-shoulder-002）
-- 弹力带外旋（rehab-shoulder-003）
-- 面拉（rehab-shoulder-004）
-- 俯身飞鸟（strength-shoulder-005）
-- 90/90 外旋（rehab-shoulder-006）
-- 闭链俯卧撑（rehab-shoulder-007）
-- 肩胛稳定性 Y-T-W（stability-shoulder-008）
-- 哑铃推举过头（strength-shoulder-009）
+- [ex:0235] cable standing shoulder external rotation 弹力带外旋（cable/band 等价；居家可用弹力带替换）
+- [ex:0225] cable standing cross-over high reverse fly 面拉代用（库中暂无 face pull 专项条目，cable 过头高位反向飞鸟功能最接近）
+- [ex:0383] dumbbell reverse fly 俯身飞鸟
+- [ex:0864] dumbbell upright shoulder external rotation 90/90 外旋代用
+- [ex:3011] incline scapula push up 闭链俯卧撑（肩胛控制）
+- [ex:0215] cable seated rear lateral raise 肩胛稳定性 Y-T-W 代用（库中暂无 prone Y/T/W 专项条目，cable 后侧平举可激活菱形/中下斜方肌）
+- [ex:0426] dumbbell standing overhead press 哑铃推举过头
+- 钟摆运动：库中暂无 pendulum / codman 专项条目，本章以文字描述保留（不引用任何伪造 id）
+- 爬墙运动：库中暂无 wall slide / wall climb 专项条目，本章以文字描述保留（不引用任何伪造 id）
 
-**所有动作在 ex-lib 库中均有完整演示视频**。
+**说明**：本章共 7 处 ex-lib 引用 + 2 项库中暂无条目，全部已验证为库内合法 id（零伪造）。与 ch06 / ch07 处理策略一致——库中缺什么就不引什么，绝不构造字符串式伪 id。
