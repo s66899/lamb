@@ -1,7 +1,8 @@
 ﻿# VERSION — 项目根 changelog（按版本号倒序排列；新版本在最上）
-# 当前 HEAD = v3.22.44, APP_VERSION (app.js) = v3.22.44
-# 历史叙事（v3.4.0 ~ v3.8.7）由原 VERSION 文件保留；本轮新增 v3.18.7 ~ v3.22.44 共 60 条 commit 摘要
+# 当前 HEAD = v3.22.45, APP_VERSION (app.js) = v3.22.45
+# 历史叙事（v3.4.0 ~ v3.8.7）由原 VERSION 文件保留；本轮新增 v3.18.7 ~ v3.22.45 共 61 条 commit 摘要
 
+v3.22.45 (2026-08-27) 成就文案脱节修复 — 「六艺精通 / 六本书全部完成」→「七艺精通 / 七本书全部完成」(manifest 7 本真相对齐);同步 NSCA-CPT README line 11「六本书写作计划」→「七本书写作计划」;APP_VERSION v3.22.44 → v3.22.45
 v3.22.44 (2026-08-27) manifest.json 补入 badminton-recovery 8 章 metadata（之前完全缺失）
 v3.22.43 (2026-08-27) 双 manifest totalWords 字段漂移修复（3+4 本书累加偏差 -963/-10613/-11080/-14265/-38595 归零）+ 4 埋点追平
 v3.22.42 (2026-08-27) 记录 v3.22.42 完成项（_bump_version.js 自举化兑现）+ 加入下轮候选（VERSION 同步 / commit message 模板自举化）

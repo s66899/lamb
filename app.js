@@ -25,7 +25,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.44';
+const APP_VERSION = 'v3.22.45';
 const APP_DATE = '2026-08-27';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -2230,7 +2230,7 @@ const ACHIEVEMENTS={
   quiz_master:{icon:'🧪',name:'测验大师',desc:'答对50道',check:(r)=>r.totalQuizCorrect>=50},
   quiz_guru:{icon:'🎯',name:'测验宗师',desc:'答对200道',check:(r)=>r.totalQuizCorrect>=200},
   full_book:{icon:'🎉',name:'完成一本书',desc:'读完一本书全部章节',check:(r)=>checkAnyBookComplete()},
-  all_books:{icon:'👑',name:'六艺精通',desc:'六本书全部完成',check:(r)=>checkAllBooksComplete()},
+  all_books:{icon:'👑',name:'七艺精通',desc:'七本书全部完成',check:(r)=>checkAllBooksComplete()},
   // v3.14.5 阅读时长：累计阅读满 30 分钟解锁
   focused_30min:{icon:'⏱️',name:'专注读者',desc:'累计阅读满 30 分钟',check:(r)=>(r.totalReadSeconds||0)>=1800},
   focused_3hr:{icon:'🕰️',name:'沉浸学者',desc:'累计阅读满 3 小时',check:(r)=>(r.totalReadSeconds||0)>=10800},
