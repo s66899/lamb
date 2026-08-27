@@ -3791,7 +3791,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch09-competition-psychology.md",
-          "title": "Competition Psychology",
+          "title": "Competition Psychology · 基础",
           "words": 9398,
           "h2s": [
             {
@@ -3890,7 +3890,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch10-competition-psychology.md",
-          "title": "Competition Psychology",
+          "title": "Competition Psychology · 专业级",
           "words": 24241,
           "h2s": [
             {
@@ -4934,7 +4934,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch02-axial-loading.md",
-          "title": "Axial Loading",
+          "title": "Axial Loading · 入门",
           "words": 14503,
           "h2s": [
             {
@@ -5105,7 +5105,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch03-axial-loading.md",
-          "title": "Axial Loading",
+          "title": "Axial Loading · 理论推导",
           "words": 19288,
           "h2s": [
             {
@@ -6063,7 +6063,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch09-dynamics.md",
-          "title": "Dynamics",
+          "title": "Dynamics · 入门",
           "words": 10797,
           "h2s": [
             {
@@ -6241,7 +6241,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch10-dynamics.md",
-          "title": "Dynamics",
+          "title": "Dynamics · 专题",
           "words": 13740,
           "h2s": [
             {
@@ -9076,7 +9076,7 @@ const MANIFEST_DATA = {
       "chapters": [
         {
           "file": "ch01-introduction.md",
-          "title": "Introduction",
+          "title": "NSCA-CPT 体系导论",
           "words": 6215,
           "h2s": [
             {
@@ -9201,7 +9201,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch02-exercise-physiology.md",
-          "title": "运动生理学（v3.22.5 完整版）",
+          "title": "运动生理学",
           "words": 15093,
           "h2s": [
             {
@@ -9651,7 +9651,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch04-strength-training.md",
-          "title": "基础力量训练（v3.22.5 扩展，含 79 ex-lib 引用）",
+          "title": "基础力量训练（含 ex-lib 引用）",
           "words": 5093,
           "h2s": [
             {
@@ -9775,7 +9775,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch05-power-training.md",
-          "title": "爆发力训练（v3.22.5 扩展，含 33 ex-lib 引用）",
+          "title": "爆发力训练（含 ex-lib 引用）",
           "words": 4247,
           "h2s": [
             {
@@ -9968,7 +9968,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch06-agility.md",
-          "title": "敏捷性训练（v3.22.5 扩展）",
+          "title": "敏捷性训练（含 ex-lib 引用）",
           "words": 3746,
           "h2s": [
             {
@@ -10080,7 +10080,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch07-flexibility.md",
-          "title": "柔韧性与活动度（v3.22.5 扩展）",
+          "title": "柔韧性与活动度（含 ex-lib 引用）",
           "words": 3614,
           "h2s": [
             {
@@ -10230,7 +10230,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch08-periodization.md",
-          "title": "周期化训练（v3.22.7 扩展，含 31 ex-lib 引用）",
+          "title": "周期化训练（含 ex-lib 引用）",
           "words": 3286,
           "h2s": [
             {
@@ -10397,7 +10397,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch09-injury-prevention.md",
-          "title": "损伤预防与康复（v3.22.8 新增 6 大康复体系，含 60 ex-lib 引用）",
+          "title": "损伤预防与康复（含 6 大康复体系）",
           "words": 4303,
           "h2s": [
             {
@@ -10524,7 +10524,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch10-recovery.md",
-          "title": "恢复训练（待扩展）",
+          "title": "恢复策略（v3.22.16 双层结构 + 12 ex-lib 已校对）",
           "words": 3398,
           "h2s": [
             {
