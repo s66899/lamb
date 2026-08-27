@@ -28,19 +28,42 @@ const FILES = {
   indexHtml:'index.html',
 };
 
-// 4 个埋点：{ file, find, replace } —— replace 中 {next} 占位（next 已含 v 前缀）
-const PLACEHOLDERS = [
-  // 1. app.js APP_VERSION 常量
-  { file: 'app.js', find: "const APP_VERSION = 'v3.22.40';",
+// 4 个埋点的「模板」：file + find 正则 + replace 模板（{next} 占位）
+// 用正则动态构造，避免对当前版本号字面量硬编码（自举关键）
+const PLACEHOLDER_TEMPLATES = [
+  { file: 'app.js',
+    // app.js 的 APP_VERSION 是 single source of truth，单独用反义匹配不依赖 g 标志
+    findRe: /const APP_VERSION = 'v\d+\.\d+\.\d+';/g,
     replace: "const APP_VERSION = '{next}';" },
-  // 2-4. index.html 三个 ?v= 缓存串（顺序与 index.html 内出现顺序一致）
-  { file: 'index.html', find: 'href="style.css?v=v3.22.40"',
-    replace: 'href="style.css?v={next}"' },
-  { file: 'index.html', find: 'src="manifest_data.js?v=v3.22.40"',
-    replace: 'src="manifest_data.js?v={next}"' },
-  { file: 'index.html', find: 'src="app.js?v=v3.22.40"',
-    replace: 'src="app.js?v={next}"' },
+  { file: 'index.html',
+    findRe: /(href="style\.css\?v=)v\d+\.\d+\.\d+(")/g,
+    replace: '$1{next}$2' },
+  { file: 'index.html',
+    findRe: /(src="manifest_data\.js\?v=)v\d+\.\d+\.\d+(")/g,
+    replace: '$1{next}$2' },
+  { file: 'index.html',
+    findRe: /(src="app\.js\?v=)v\d+\.\d+\.\d+(")/g,
+    replace: '$1{next}$2' },
 ];
+
+// 兼容旧版调用入口：探测 current 后，把 find 串从模板材料化为实际字面量
+// 为避免仅凭 replace 串字面特征做类型判断出错，干脆同时在模板上声明 find 串的骨架
+function materializePlaceholders(current) {
+  // 骨架：以 PLACEHOLDER_TEMPLATES 顺序一一对应的「裸字串」（不嵌入 current）
+  //     插入时只把中间版本号占位符 {current} 替换为当前版本号
+  const skeletons = [
+    `const APP_VERSION = '{current}';`,
+    `href="style.css?v={current}"`,
+    `src="manifest_data.js?v={current}"`,
+    `src="app.js?v={current}"`,
+  ];
+  return PLACEHOLDER_TEMPLATES.map((t, i) => ({
+    file: t.file,
+    find: skeletons[i].replace('{current}', current),
+    findRe: t.findRe,
+    replace: t.replace,
+  }));
+}
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -92,6 +115,9 @@ function main() {
   const current = m[1];
   const next = bumpVersion(current, opts);
 
+  // 1.5 自举关键：用探测到的 current 动态构造 find 串（不再硬编码 'v3.22.40' 之类的字面量）
+  const PLACEHOLDERS = materializePlaceholders(current);
+
   console.log(`当前版本号：${current}`);
   console.log(`目标版本号：${next}`);
   console.log(`模式：${opts.apply ? 'APPLY（落盘）' : 'DRY-RUN（仅预览）'}`);
@@ -102,7 +128,9 @@ function main() {
   for (const p of PLACEHOLDERS) {
     if (!fs.existsSync(p.file)) { errors.push(`文件不存在：${p.file}`); continue; }
     const text = fs.readFileSync(p.file, 'utf8');
-    const count = (text.match(p.find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g') || []).length;
+    // 用 matchAll() 遍历而非 text.match(..., 'g')，后者在含捕获组的正则上会重复计数
+    const matches = Array.from(text.matchAll(p.findRe));
+    const count = matches.length;
     if (count !== 1) {
       errors.push(`${p.file} 中埋点 ${p.find} 出现 ${count} 次（应为 1 次）`);
     }
@@ -121,10 +149,18 @@ function main() {
     const before = p.find;
     const after = p.replace.replace('{next}', next);
     const beforeBytes = raw.length;
-    const newText = text.replace(before, after);
+    // 重要：每次循环都要 new 一个新的 RegExp 实例，避免上次 g 标志 match 后的 lastIndex 状态残留
+    // （同一个 RegExp 对象在跨文件跨上下文重复调用 String.replace 时会跳过预期匹配）
+    const re = new RegExp(p.findRe.source, p.findRe.flags);
+    const newText = text.replace(re, after);
     const newRaw = Buffer.from(newText, 'utf8'); // Buffer.from 保留源字节序列，不改行尾
     const afterBytes = newRaw.length;
-    changes.push({ file: p.file, before, after, beforeBytes, afterBytes });
+    // 展示「落地后字面量」：从 newText 里反推首个匹配行（与原 before 同位置的那一行）
+    const beforeLines = text.split(/\r?\n/);
+    const afterLines = newText.split(/\r?\n/);
+    const idx = beforeLines.findIndex(l => l.includes(before));
+    const displayAfter = idx >= 0 ? (afterLines[idx] || after) : after;
+    changes.push({ file: p.file, before, after: displayAfter, beforeBytes, afterBytes });
     if (opts.apply) {
       fs.writeFileSync(p.file, newRaw);
     }
@@ -147,9 +183,12 @@ function main() {
     let ok = true;
     for (const p of PLACEHOLDERS) {
       const text = fs.readFileSync(p.file, 'utf8');
-      const expected = p.replace.replace('{next}', next);
-      const count = (text.match(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g') || []).length;
-      if (count !== 1) { console.error(`  ❌ 回读校验失败：${p.file} 中 "${expected}" 出现 ${count} 次`); ok = false; }
+      // 不靠 expected 字串（$1/$2 反向引用在 replace 模板里造成调试期字面字符串干扰）
+      // 直接用反构正则重新探测「当前应存在 next」的子串
+      // 把 findRe 中的 v\d+\.\d+\.\d+ 换成 next 字面量重新构造验证正则
+      const validateRe = new RegExp(p.findRe.source.replace(/v\\d+\\.\\d+\\.\\d\+/g, next.replace(/\./g, '\\.')), p.findRe.flags);
+      const count = (text.match(validateRe) || []).length;
+      if (count !== 1) { console.error(`  ❌ 回读校验失败：${p.file} 中埋点出现 ${count} 次（应为 1 次）`); ok = false; }
     }
     if (!ok) process.exit(1);
     console.log('✅ 回读校验通过（4 处埋点全部 = ' + next + '）');
