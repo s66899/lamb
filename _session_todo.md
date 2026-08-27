@@ -62,3 +62,26 @@
   2. **羽毛球 ch09 / ch10 + engineering-mechanics ch09 / ch10 + psychology ch03 manifest title 与实际章节主题不对位**：本轮扫 manifest title vs md H1，发现 badminton ch09 和 ch10 都叫「Competition Psychology」（实际一个讲赛前心理，一个讲赛后心理）；engineering-mechanics ch09/ch10 都叫「Dynamics」（实际一个讲运动学一个讲动力学）；psychology ch03 manifest title 是「Memory」但实际文件叫 ch03-thinking-and-language.md（思维与语言，根本不是记忆）。其中 psychology ch03 是最严重的功能性错位（用户点 ch03 看到的是记忆内容，但文件名/UI 显示是思维与语言，会严重困惑）。其余 4 处是同名但实际不同主题。修法：先修 psychology ch03 这一个（一行修改 manifest title），其余 4 处与下轮 5 章注册合并处理更高效。
 - **本轮事实修正（重要，给下轮避免重蹈）**：之前几轮 todo 反复出现「库里没有 foam roller / 筋膜球专项条目」的表述，**这是错的**。本轮扫描确认 `books/exercises/ex-lib.json` 库内 id `5202-5213` 共 12 条**全部真实存在**，英文名 foam roller quadriceps / hamstrings / it band / calves / glutes / upper back / latissimus / rotator cuff / thoracic spine / adductors + lacrosse ball forearm / plantar fascia，**覆盖了全部 12 个 SMR 动作**。NSCA ch10 §2.1 末尾的 SMR 引用表（v3.22.17 + v3.22.31 校对）引用 `[ex:5202]` 至 `[ex:5213]` 全部合法可用。**下轮如再涉及 SMR 条目，可直接用 5202-5213，无需新建动作或伪造 id**。此事实修正也清掉了候选里相关死信条目。
 
+## 本轮增量 (commit 3e3f4e2，未发版 — 同 v3.22.47 纯元数据口径)
+- **psychology ch03 manifest 改对 — 指向真文件 `ch03-thinking-and-language.md`**：上轮 _session_todo.md 第二候选「psychology ch03 manifest title『Memory』与实际章节主题不对位（实际文件是 ch03-thinking-and-language.md 思维与语言）」本轮落地。**问题事实**：磁盘 `books/psychology/` 下存在两个 ch03 文件——`ch02-memory.md`（动机心理学·记忆—大脑的信息银行，11912 字，7 h2s）+ `ch03-memory.md`（认知心理学·记忆，22384 字，11 h2s）+ `ch03-thinking-and-language.md`（认知心理学·思维与语言，24924 字，12 h2s）。manifest.json + manifest_data.js 里 psychology ch03 仍登记 `ch03-memory.md`（title=Memory，22384 字，11 h2s），**真正应当作为 ch03 的 `ch03-thinking-and-language.md`（24924 字、12 h2s）从未被 manifest 引用**——用户从 UI 点 ch03 看到「记忆」内容，但文件路径是 `ch03-thinking-and-language.md`、上下章（ch02 动机·记忆/ch04 动机）也是双层结构，**功能性错位严重**。
+- **修法（最小变更、单 commit、可独立回滚）**:
+  1. 两份 manifest ch03 段整段替换：`file=ch03-thinking-and-language.md`、`title=Thinking And Language`、`words=24924`（按 `_fix_manifest.js` 权威口径 = `md.length` 字符数）
+  2. h2s 从 11 段（记忆·第一节…第十一节）重算为 12 段（3.1 思维的本质与类型 / 3.2 推理：思维的逻辑之舞 / 3.3 问题解决：从困惑到突破 / 3.4 创造性思维 / 3.5 语言的认知基础 / 3.6 语言习得 / 3.7 语言与思维的关系 / 3.8 双语与认知 / 3.9 思维与语言的障碍 / 3.10 本章总结 / 🐏 的行动建议 / 参考文献），38 个 h3 全量回填
+  3. psychology.totalWords `172437 → 174977`（= sum 11 章 words）
+  4. **`ch03-memory.md` 文件保留未删**（224 行内容未来可能复用；删除属于不可逆架构变更，需用户授权）
+- **校验全过**:
+  - `python -m json.tool manifest.json` ✓
+  - `node --check manifest_data.js` ✓
+  - ch03 真实文件 vs manifest h2s/h3: 12/12 全等, 38/38 全等, mismatch=0
+  - 两份 manifest psychology 整块 byte-level 等价（重算后 `manifest.json:psychology` == `manifest_data.js:psychology`）
+  - CRLF 全程保留（manifest.json 11375 行 CRLF 完整, manifest_data.js 12051 行 CRLF 完整, 0 LF-only 污染）
+  - 4 处埋点文本（APP_VERSION + index.html 3 个 ?v=）未触（纯元数据修复，按 v3.22.47 nutrition/README 同口径不发版）
+  - 其他 6 本书（yin-yang/badminton/engineering-mechanics/finance/nsca-cpt/badminton-recovery）byte 级未动
+- **顺手清掉候选**「psychology ch03 manifest title 错位」一条 + 「5 章漏注册到 manifest」候选中第 4 项 `psychology/ch03-thinking-and-language.md` 一条（不再漏注册）。
+- **下轮候选**（重新按价值排序）:
+  1. **5 章漏注册剩余 4 项**（badminton/ch13 + engineering-mechanics/ch12 + finance/ch13 + psychology/ch12 — 上一轮 #1 候选的子集，本轮已兑现 psychology/ch03，剩余 4 项共 9.1 万字真实内容 UI 仍看不到）— 跟 v3.22.44 `_add_recovery_to_manifest.js` 同一模板，工作量 = 一次性脚本 + 4 章 metadata 生成 + 4 埋点 + VERSION 摘要。可独立 commit / 回滚。
+  2. **4 处 manifest title 同名但实际不同主题**（badminton ch09/ch10「Competition Psychology」/ engineering-mechanics ch09/ch10「Dynamics」）— 一行式 title 修复，独立小改进。注：psychology ch03 是「title 与文件不对位」（已修），这 4 处是「两章共用一个 title」（不同问题）。
+  3. **NSCA-CPT ch10 第七节总清单（12 条）与 §2.1 节 ex-lib（7 条）6 个 id 重叠 UX 标记** — 纯文字 UX 改进，优先级中。
+  4. **`ch03-memory.md` 处置决策**（224 行，删除 / 归档 / 整合到 ch02 哪条路径）— 等用户授权，不属本轮范围。
+  5. **yin-yang/badminton/nsca-cpt 两份 manifest 之间 totalWords 仍存预先存在漂移**（本轮确认非心理学段引起；与本轮 psychology 修复无关，可单独成轮）。
+
