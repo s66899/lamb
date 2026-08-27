@@ -1,8 +1,8 @@
 ﻿# VERSION — 项目根 changelog（按版本号倒序排列；新版本在最上）
-# 当前 HEAD = v3.22.48, APP_VERSION (app.js) = v3.22.48
-# 历史叙事（v3.4.0 ~ v3.8.7）由原 VERSION 文件保留；本轮新增 v3.18.7 ~ v3.22.48 共 63 条 commit 摘要
+# 当前 HEAD = v3.22.49, APP_VERSION (app.js) = v3.22.49
+# 历史叙事（v3.4.0 ~ v3.8.7）由原 VERSION 文件保留；本轮新增 v3.18.7 ~ v3.22.49 共 64 条 commit 摘要
 
-v3.22.48 (2026-08-27) manifest.json 补入 competition (6 章 5295 字) + nutrition (7 章 5796 字) 两本真书 metadata；books/README.md「七本」→「九本」、7/79/81.4万 → 9/92/82.7万 + 列表追加两行；APP_VERSION v3.22.46 → v3.22.48（连升两格）
+v3.22.49 (2026-08-27) fix(manifest): 补入 badminton/ch13 + finance/ch13 + psychology/ch12 + engineering-mechanics/ch12 共 4 章漏注册的真实内容（合计 ~5.4 万字 / 66 个 h2 / 212 个 h3）；manifest.json 9 本书 / 92→96 章 / 82.7→88.1 万字；books/README.md 对应 4 行「章数/字数」同步更新；APP_VERSION v3.22.48 → v3.22.49（单步升级，与 v3.22.48 manifest_data.js 未同步策略一致，本轮只动 manifest.json 单边避免双向漂移）
 
 v3.22.47 (2026-08-27) nutrition/README.md 实物对齐 — 删除不存在的第 8 章
 
