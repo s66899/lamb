@@ -140,3 +140,26 @@
   3. **NSCA-CPT ch10 第七节总清单与 §2.1 节 6 个 id 重叠 UX 标记** — 纯文字 UX 改进，优先级中。
   4. **`ch03-memory.md` 处置决策**（224 行，删除 / 归档 / 整合到 ch02 哪条路径）— 等用户授权，不属本轮范围。
   5. **yin-yang/badminton/nsca-cpt 两份 manifest 之间 totalWords 仍存预先存在漂移** — 沿用历史候选，可单独成轮。
+
+## 本轮增量 (v3.22.50 commit e083f49)
+
+- **NSCA-CPT ch10 第七节总清单「↗ 详见 2.1 节」交叉提示**: 真实问题 — 第七节总清单 12 条与 2.1 节「本节 ex-lib 引用表」7 条实际重叠 6 个 id (0669/1339/1560/1709/1377/1713),但读者看不到这层重复，会产生「这本书怎么又把同样动作跳出来讲一遍」的疑惑。在总清单重复行末尾加 `↗ 详见 2.1 节` 纯文字标记 + 末尾说明点明「6+6」分组。ex id 仍直接跳 ex-lib 演示，零功能性影响，纯阅读路径提示。
+- **选型原因**（为什么不做清单 1「manifest_data.js 17 章同步」或清单 4「ch03-memory 处置」）：
+  - 清单 1 工作量超单 commit（17 章 metadata + 5 本书 totalWords 重算 + byte 级追加），不属本轮小改进定义；
+  - 清单 4 需要用户授权；
+  - 本轮改动 = 14+/14- 单文件 + 4 埋点，git diff stat 干净，可独立回滚。
+- **校验全过**:
+  - 全库 335 处 `[ex:NNNN]` 引用零 broken（库内 1336 id）
+  - `node --check app.js` ✓（只动 const APP_VERSION 一行）
+  - `_bump_version.js --apply` 4 埋点 v3.22.49 → v3.22.50 ✓
+  - VERSION 文件追加一条 v3.22.50 changelog 同步
+  - `git push origin book` 成功（dc9ec6d..e083f49）
+- **顺手勾掉候选**:「NSCA-CPT ch10 第七节总清单与 §2.1 节 6 个 id 重叠 UX 标记」（v3.22.50 已兑现，可勾掉）
+- **下轮候选**（重新排序后）:
+  1. **manifest_data.js 同步补竞/营 2 本 + 4 章 = 共 6 项缺口**（累计 17 章 metadata 仍欠）— 优先级最高，UI 真正看到 9 本书 + 96 章承诺未兑现
+  2. **4 处 manifest title 同名但实际不同主题**（羽毛球 ch09/ch10「Competition Psychology」/ 力学 ch09/ch10「Dynamics」/ 羽毛球 ch02/ch03「Backhand Technique」相邻等）— 一行式 title 修复，独立小改进
+  3. **NSCA-CPT 其他章节是否也存在「总清单 vs 小节 ex 引用表」重叠未标记** — 类比本轮 ch10 模式，可扫其余 9 章
+  4. **`ch03-memory.md` 处置决策**（224 行）— 等用户授权
+  5. **羽毛球康复 ch03 / ch04 / ch05 inline 引用 vs 库内动作名详细比对**（id 全部合法，中文译名一致性未逐条复核）
+  6. **yin-yang/badminton/nsca-cpt 两份 manifest 之间 totalWords 预先存在漂移** — 沿用历史候选
+  7. **VERSION 文件「3+」表述与下文「64 条」是否对齐**（本轮已改 v3.18.7 ~ v3.22.50 = 64 条 + v3.22.50 = 65 条，注释 OK；但顶部头部「历史叙事 v3.4.0 ~ v3.8.7」措辞是否要更新「v3.18.7 ~ v3.22.50 共 65 条」需检查是否与表头一致）
