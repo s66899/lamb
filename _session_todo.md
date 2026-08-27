@@ -163,3 +163,29 @@
   5. **羽毛球康复 ch03 / ch04 / ch05 inline 引用 vs 库内动作名详细比对**（id 全部合法，中文译名一致性未逐条复核）
   6. **yin-yang/badminton/nsca-cpt 两份 manifest 之间 totalWords 预先存在漂移** — 沿用历史候选
   7. **VERSION 文件「3+」表述与下文「64 条」是否对齐**（本轮已改 v3.18.7 ~ v3.22.50 = 64 条 + v3.22.50 = 65 条，注释 OK；但顶部头部「历史叙事 v3.4.0 ~ v3.8.7」措辞是否要更新「v3.18.7 ~ v3.22.50 共 65 条」需检查是否与表头一致）
+
+## 本轮增量 (v3.22.53 commit 6bb8987)
+- **v3.22.53 完整收回 + 4 处工程不一致修复**（commit 6bb8987, push `a38fbb3..6bb8987`）:
+  - **A) 4 埋点统一 v3.22.53**:app.js APP_VERSION + index.html 3*?v=。之前 v3.22.51 → v3.22.53 已落盘但中断未 commit，本轮一次性收回
+  - **B) 6 处 chapter 副标题对齐**（双层结构偏好）:
+    - NSCA-CPT ch09 「Competition Psychology」→「Competition Psychology · 基础」
+    - NSCA-CPT ch10 「Competition Psychology」→「Competition Psychology · 专业级」
+    - 工程力学 ch02 「Axial Loading」→「Axial Loading · 入门」
+    - 工程力学 ch03 「Axial Loading」→「Axial Loading · 理论推导」
+    - 工程力学 ch09 「Dynamics」→「Dynamics · 入门」
+    - 工程力学 ch10 「Dynamics」→「Dynamics · 专题」
+    - 注:4 处在 manifest.json 已落盘；本轮补 2 处到 manifest_data.js（Axial Loading 是 manifest_data.js 缺漏）
+  - **C) NSCA-CPT 10 章 title 同步**:manifest_data.js 旧文本（带 v3.22.5/7/8 扩展尾巴）→ manifest.json 干净版,清掉 9 处「（v3.22.X ...）」尾巴。修了上一轮 v3.22.51 `a38fbb3` commit message 说「与 manifest.json 对齐」实际只对齐了 4 章 + 2 整本、漏 NSCA 10 章的尾巴
+  - **D) `_scan_exlib.js` 入库**:v3.22.46 留下来的 ex-lib 扫描工具,沿用 `_bump_version.js` 下划线前缀命名
+- **校验全过**:JSON OK / node --check × 2 OK / 两份 manifest 7 本书 chapter title byte-level 等价(0 diff) / 全库 107 md × 123 unique [ex:NNNN] vs 1336 id 库 broken = 0 / 4 埋点 v3.22.53 一致 / manifest_data.js CRLF 守恒 14622(无 BOM 污染)
+- **清掉的候选**:
+  - 「manifest_data.js NSCA 9/10 章 title 与 manifest.json 不一致」— 本轮全 10 章同步,可勾掉
+  - 「4 埋点未统一」— 本轮 v3.22.53 一致,可勾掉
+- **下轮候选**(重新排序):
+  1. **manifest_data.js 同步补竞/营 2 本 + 4 章 = 共 6 项缺口**(累计 17 章 metadata 仍欠)— 优先级最高,UI 真正看到 9 本书 + 96 章承诺未兑现
+  2. **羽毛球 ch02/ch03「Backhand Technique」相邻 title 排查**:NSCA 与工程力学都已「· 副标题」化,但 badminton ch02/ch03 是否同样相邻同名未审
+  3. **NSCA-CPT 其他章节是否也存在「总清单 vs 小节 ex 引用表」重叠未标记** — 类比 v3.22.50 ch10 模式,可扫其余 9 章
+  4. **`ch03-memory.md` 处置决策**(224 行)— 等用户授权
+  5. **羽毛球康复 ch03 / ch04 / ch05 inline 引用 vs 库内动作名详细比对**(id 全部合法,中文译名一致性未逐条复核)
+  6. **yin-yang/badminton/nsca-cpt 两份 manifest 之间 totalWords 预先存在漂移** — 沿用历史候选(实际 v3.22.43 已修过 5 本,需复查是否真还有漂移)
+  7. **VERSION 文件 v3.22.51/v3.22.53 两条 changelog 是否需追加**(本轮 bump 跨过 2 个版本号,VERSION 历史条目需补齐 v3.22.51/v3.22.52/v3.22.53 三条)
