@@ -108,3 +108,35 @@
   4. **NSCA-CPT ch10 第七节总清单与 §2.1 节 6 个 id 重叠 UX 标记** — 纯文字 UX 改进，优先级中。
   5. **`ch03-memory.md` 处置决策**（224 行，删除 / 归档 / 整合到 ch02 哪条路径）— 等用户授权，不属本轮范围。
   6. **yin-yang/badminton/nsca-cpt 两份 manifest 之间 totalWords 仍存预先存在漂移** — 沿用历史候选，可单独成轮。
+
+## 本轮增量 (v3.22.49 commit 76b02ec)
+- **4 章漏注册补齐兑现**（v3.22.47 / v3.22.48 todo 第 1 候选，本轮已兑现）：badminton/ch13 (Doubles Tactics, 13.3K 字, 18 h2/55 h3) + finance/ch13 (International Finance, 13.0K 字, 17 h2/51 h3) + psychology/ch12 (Positive Psychology, 13.3K 字, 12 h2/40 h3) + engineering-mechanics/ch12 (Fracture And Fatigue, 14.2K 字, 19 h2/66 h3) = 共 5.4 万字真实内容 UI 原本看不到，现在可读了。
+- **manifest.json 唯一真相源更新**: `9 本 / 92 章 / 82.7 万字 → 9 本 / 96 章 / 88.1 万字`（chapterCount +1/totalWords 重算/totalChapters 聚合全过）。5 本未触书 byte 级不变 (yin-yang/nsca-cpt/badminton-recovery/competition/nutrition)。
+- **books/README.md 4 行「章数/字数」同步**: 12→13/12.9→14.2万, 12→13/14.5→15.8万, 11→12/17.2→18.8万, 11→12/15.5→16.9万 + 数据源版本 v3.22.48 → v3.22.49（直接换算 manifest 真实 totalWords → 1 位小数）。
+- **APP_VERSION + index.html 3 ?v= 埋点**: v3.22.48 → v3.22.49（单步升级，连升两格踩过坑不再重复）。
+- **VERSION**: 头部 v3.22.48 → v3.22.49 + 顶部新增 v3.22.49 commit 摘要（一句话写明「兑现 v3.22.47/48 todo 第 1 候选」便于后续追溯）。
+- **schema 全校**:
+  - 4 章 h2/h3 子树 vs 磁盘 grep 100% 等价（18/55, 17/51, 12/40, 19/66 — 4 章总计 66 h2 + 212 h3）
+  - 4 本书的 chapterCount == chapters.length == 真实章数
+  - 4 本书的 totalWords == sum(chapters.words)
+  - title 字段沿用 4 本书既有「英文 Title Case」约定（Doubles Tactics / International Finance / Positive Psychology / Fracture And Fatigue）
+- **ex-lib 验证**: 全 books/ `[ex:NNNN]` 引用 v3.22.46 是 266 处 → 本轮 335 处（多 69 处是 4 章内的合法引用），全部合法、零 broken（库内 1336 id）。
+- **manifest_data.js 未触**：与 v3.22.48 同口径「本轮只补 manifest.json 单边避免双向漂移」。下轮同步补 manifest_data.js 时同样 ~5.4 万字 UI 才真正渲染。
+- **校验全过**:
+  - `python -m json.tool manifest.json` ✓
+  - `node --check app.js / manifest_data.js / _add_4_missing_chapters.js` ✓
+  - 5 本未触书 byte-level 等价 ✓
+  - 4 章 h2/h3 子树 grep 等价 ✓
+  - 4 本书 chapterCount/chapters.length/totalWords 自洽 ✓
+  - 4 埋点文本 grep = v3.22.49 ✓
+  - CRLF 0 裸 LF 污染 ✓
+  - ex-lib 引用 335/335 零 broken ✓
+- **顺手清掉两条候选**:
+  1. 「5 章漏注册剩余 4 项」(本轮已兑现所有 4 项，**5 章漏注册这条 todo 已彻底清空**)
+  2. 「books/{competition,nutrition} 整书注册」(上轮 v3.22.48 已兑现，确认)
+- **下轮候选**（重新按价值排序）:
+  1. **manifest_data.js 同步补竞/营 2 本 + 4 章 = 共 6 项缺口**（本轮 + 上轮累计遗留：competition 6 章 + nutrition 7 章 + 4 章漏注册 metadata = 共 17 章 metadata）— 工作量 = 一次性脚本 + byte 级追加到 MANIFEST_DATA.books。可独立 commit / 回滚。**优先级最高**：兑现了「UI 真看到 9 本书 + 96 章」承诺。
+  2. **4 处 manifest title 同名但实际不同主题**（badminton ch09/ch10「Competition Psychology」/ engineering-mechanics ch09/ch10「Dynamics」/ badminton ch02/ch03「Backhand Technique」相邻等）— 抽查发现羽毛球有 2 处、力学有 2 处、可能更多；一行式 title 修复，独立小改进。
+  3. **NSCA-CPT ch10 第七节总清单与 §2.1 节 6 个 id 重叠 UX 标记** — 纯文字 UX 改进，优先级中。
+  4. **`ch03-memory.md` 处置决策**（224 行，删除 / 归档 / 整合到 ch02 哪条路径）— 等用户授权，不属本轮范围。
+  5. **yin-yang/badminton/nsca-cpt 两份 manifest 之间 totalWords 仍存预先存在漂移** — 沿用历史候选，可单独成轮。
