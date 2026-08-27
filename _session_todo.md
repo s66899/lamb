@@ -7,7 +7,8 @@
 - 羽毛球康复 ch03 / ch04 / ch05 inline 引用 vs 库内动作名详细比对（id 全部合法，但中文译名一致性未逐条复核）
 - NSCA-CPT ch10 第七节总清单（12 条）与 2.1 节本节 ex-lib（7 条）有 6 个 id 重叠（颈 1403/肩 0669/上背 1339/大腿后 1560/大腿前 1713/臀 1709/小腿 1377）；可在总清单加"已被 2.1 节引用"标记 → 读者一键跳转
 - 其他书扫描是否有"数字声明 vs 实际不符"或"承诺了引用表但未实现"的瑕疵（如 ch06-back / ch07-achilles 的 H3 子节较少，可考虑加互引表/双层结构细化，但内容字数并不薄）
-- **新发现**：app.js 中 `APP_VERSION` 常量与 `_bump_version.js` PLACEHOLDERS 字面量耦合（harcoded 'v3.22.40' 字符串）—— 下次 bump 到 v3.22.42 时 PLACEHOLDERS 里的 find 也会因 'v3.22.40' 不存在而**失败**。需要把 PLACEHOLDERS 改成正则匹配（如 `/(?<=const APP_VERSION = ')(v\d+\.\d+\.\d+)(?=';)/`）或每次 bump 后自动重写 PLACEHOLDERS 中的字面量，让工具真正"自举"。
+- `VERSION` 文件历史从未更新（最新为 v3.8.7，实际已到 v3.22.42），跟 APP_VERSION 完全脱节 — 下轮可考虑 `_bump_version.js` 加一个 --changelog 模式或 VERSION 同步选项（依赖人工提交历史，不一定要自动化）
+- `_bump_version.js` commit message 模板未自举化（仍硬编码 'chore(release): v' + next.slice(1)）— 重要性低，下轮可顺手改
 
 ## 参考：manifest words 计算公式（已验证与历史值 100% 一致）
 `_update_manifest.js` 的口径 = CJK 字符数 + 含字母数字的 token 数；用 yin-yang 前 4 章验证：8103/9300/8363/1864 全部逐字复现。h2s 结构 = `[{title, subs:[{title, level:3}]}]`。
