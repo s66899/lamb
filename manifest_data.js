@@ -2665,7 +2665,7 @@ const MANIFEST_DATA = {
           ]
         }
       ],
-      "totalWords": 142825,
+      "totalWords": 143788,
       "chapterCount": 15
     },
     {
@@ -4340,7 +4340,7 @@ const MANIFEST_DATA = {
           ]
         }
       ],
-      "totalWords": 114817,
+      "totalWords": 129082,
       "chapterCount": 12
     },
     {
@@ -6167,7 +6167,7 @@ const MANIFEST_DATA = {
           ]
         }
       ],
-      "totalWords": 143638,
+      "totalWords": 154718,
       "chapterCount": 11
     },
     {
@@ -7740,7 +7740,7 @@ const MANIFEST_DATA = {
           ]
         }
       ],
-      "totalWords": 134136,
+      "totalWords": 144749,
       "chapterCount": 12
     },
     {
@@ -9290,7 +9290,7 @@ const MANIFEST_DATA = {
           ]
         }
       ],
-      "totalWords": 11206,
+      "totalWords": 49801,
       "chapterCount": 10
     },
     {
