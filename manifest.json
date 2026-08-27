@@ -11370,6 +11370,1358 @@
       ],
       "totalWords": 20073,
       "chapterCount": 8
+    },
+    {
+      "id": "competition",
+      "title": "比赛策略",
+      "emoji": "🎯",
+      "color": "#c62828",
+      "desc": "羽毛球比赛制胜策略指南——从赛前准备到赛后复盘的全流程",
+      "chapters": [
+        {
+          "file": "ch01-pre-match-prep.md",
+          "title": "ch01-pre-match-prep",
+          "words": 964,
+          "h2s": [
+            {
+              "title": "赛前准备的重要性",
+              "subs": []
+            },
+            {
+              "title": "赛前一周倒计时",
+              "subs": [
+                {
+                  "title": "D-7：基础准备期",
+                  "level": 3
+                },
+                {
+                  "title": "D-5~D-3：减负期",
+                  "level": 3
+                },
+                {
+                  "title": "D-2：储备期",
+                  "level": 3
+                },
+                {
+                  "title": "D-1：最后准备",
+                  "level": 3
+                },
+                {
+                  "title": "比赛日：D-Day",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "赛前饮食策略",
+              "subs": [
+                {
+                  "title": "比赛日早餐",
+                  "level": 3
+                },
+                {
+                  "title": "赛前2-3小时",
+                  "level": 3
+                },
+                {
+                  "title": "赛前1小时",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "热身流程",
+              "subs": [
+                {
+                  "title": "完整热身流程（30-45分钟）",
+                  "level": 3
+                },
+                {
+                  "title": "热身检查清单",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "心理准备",
+              "subs": [
+                {
+                  "title": "赛前心理暗示",
+                  "level": 3
+                },
+                {
+                  "title": "心理调节技巧",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "特殊情况处理",
+              "subs": [
+                {
+                  "title": "赛前紧张",
+                  "level": 3
+                },
+                {
+                  "title": "赛前失眠",
+                  "level": 3
+                },
+                {
+                  "title": "赛前感冒/不适",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "file": "ch02-serve-receive.md",
+          "title": "ch02-serve-receive",
+          "words": 758,
+          "h2s": [
+            {
+              "title": "发球的重要性",
+              "subs": []
+            },
+            {
+              "title": "正手发高远球",
+              "subs": [
+                {
+                  "title": "技术要点",
+                  "level": 3
+                },
+                {
+                  "title": "战术应用",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "正手发小球（短球）",
+              "subs": [
+                {
+                  "title": "技术要点",
+                  "level": 3
+                },
+                {
+                  "title": "战术应用",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "反手发球",
+              "subs": [
+                {
+                  "title": "技术要点",
+                  "level": 3
+                },
+                {
+                  "title": "战术优势",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "接发球策略",
+              "subs": [
+                {
+                  "title": "基本站位",
+                  "level": 3
+                },
+                {
+                  "title": "接发球技术选择",
+                  "level": 3
+                },
+                {
+                  "title": "对手发高远球",
+                  "level": 3
+                },
+                {
+                  "title": "对手发小球",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "发接发组合战术",
+              "subs": [
+                {
+                  "title": "发球后的跟进",
+                  "level": 3
+                },
+                {
+                  "title": "典型发球得分组合",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "不同对手的发球策略",
+              "subs": [
+                {
+                  "title": "对手类型应对",
+                  "level": 3
+                },
+                {
+                  "title": "比分策略",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "file": "ch03-opponent-analysis.md",
+          "title": "ch03-opponent-analysis",
+          "words": 771,
+          "h2s": [
+            {
+              "title": "赛前情报收集",
+              "subs": [
+                {
+                  "title": "信息来源",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "对手类型分析",
+              "subs": [
+                {
+                  "title": "1. 进攻型选手",
+                  "level": 3
+                },
+                {
+                  "title": "2. 防守型选手",
+                  "level": 3
+                },
+                {
+                  "title": "3. 全面型选手",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "技术弱点分析",
+              "subs": [
+                {
+                  "title": "常见技术短板",
+                  "level": 3
+                },
+                {
+                  "title": "针对性战术",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "比赛中观察",
+              "subs": [
+                {
+                  "title": "关键观察点",
+                  "level": 3
+                },
+                {
+                  "title": "局间调整观察",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "临场应对",
+              "subs": [
+                {
+                  "title": "落后时策略",
+                  "level": 3
+                },
+                {
+                  "title": "相持时策略",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "file": "ch04-mental-strategy.md",
+          "title": "ch04-mental-strategy",
+          "words": 972,
+          "h2s": [
+            {
+              "title": "比赛心理的重要性",
+              "subs": []
+            },
+            {
+              "title": "比赛各阶段心理特点",
+              "subs": [
+                {
+                  "title": "开局阶段",
+                  "level": 3
+                },
+                {
+                  "title": "中局阶段",
+                  "level": 3
+                },
+                {
+                  "title": "关键分阶段",
+                  "level": 3
+                },
+                {
+                  "title": "收官阶段",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "常见心理问题与应对",
+              "subs": [
+                {
+                  "title": "1. 赛前紧张",
+                  "level": 3
+                },
+                {
+                  "title": "2. 比赛中走神",
+                  "level": 3
+                },
+                {
+                  "title": "3. 失误后急躁",
+                  "level": 3
+                },
+                {
+                  "title": "4. 裁判误判",
+                  "level": 3
+                },
+                {
+                  "title": "5. 比分落后",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "心理调节技巧",
+              "subs": [
+                {
+                  "title": "呼吸调节",
+                  "level": 3
+                },
+                {
+                  "title": "肌肉放松",
+                  "level": 3
+                },
+                {
+                  "title": "自我暗示",
+                  "level": 3
+                },
+                {
+                  "title": "想象训练",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "心理体能训练",
+              "subs": [
+                {
+                  "title": "抗压能力训练",
+                  "level": 3
+                },
+                {
+                  "title": "专注力训练",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "file": "ch05-physical-pacing.md",
+          "title": "ch05-physical-pacing",
+          "words": 1068,
+          "h2s": [
+            {
+              "title": "羽毛球比赛的体能特点",
+              "subs": []
+            },
+            {
+              "title": "比赛体能消耗分析",
+              "subs": [
+                {
+                  "title": "能量系统供能",
+                  "level": 3
+                },
+                {
+                  "title": "体能消耗阶段",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "体能分配策略",
+              "subs": [
+                {
+                  "title": "整体分配原则",
+                  "level": 3
+                },
+                {
+                  "title": "局内体能分配",
+                  "level": 3
+                },
+                {
+                  "title": "关键分处理",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "节奏控制",
+              "subs": [
+                {
+                  "title": "什么是比赛节奏？",
+                  "level": 3
+                },
+                {
+                  "title": "节奏变换技巧",
+                  "level": 3
+                },
+                {
+                  "title": "进攻节奏",
+                  "level": 3
+                },
+                {
+                  "title": "防守节奏",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "不同对手的体能策略",
+              "subs": [
+                {
+                  "title": "对手进攻型",
+                  "level": 3
+                },
+                {
+                  "title": "对手防守型",
+                  "level": 3
+                },
+                {
+                  "title": "对手体能好",
+                  "level": 3
+                },
+                {
+                  "title": "对手体能差",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "局间休息利用",
+              "subs": [
+                {
+                  "title": "休息时间利用",
+                  "level": 3
+                },
+                {
+                  "title": "局间调整",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "体能下降应对",
+              "subs": [
+                {
+                  "title": "疲劳信号识别",
+                  "level": 3
+                },
+                {
+                  "title": "应对方法",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "长期体能储备",
+              "subs": [
+                {
+                  "title": "训练与比赛结合",
+                  "level": 3
+                },
+                {
+                  "title": "比赛后恢复",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "file": "ch06-post-match-review.md",
+          "title": "ch06-post-match-review",
+          "words": 762,
+          "h2s": [
+            {
+              "title": "局间调整的重要性",
+              "subs": []
+            },
+            {
+              "title": "局间休息利用",
+              "subs": [
+                {
+                  "title": "单打局间规则",
+                  "level": 3
+                },
+                {
+                  "title": "局间任务清单",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "局间调整策略",
+              "subs": [
+                {
+                  "title": "领先时的调整",
+                  "level": 3
+                },
+                {
+                  "title": "落后时的调整",
+                  "level": 3
+                },
+                {
+                  "title": "相持时的调整",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "赛后复盘",
+              "subs": [
+                {
+                  "title": "复盘的重要性",
+                  "level": 3
+                },
+                {
+                  "title": "复盘内容",
+                  "level": 3
+                },
+                {
+                  "title": "复盘记录模板",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "常见问题与改进",
+              "subs": [
+                {
+                  "title": "技术问题",
+                  "level": 3
+                },
+                {
+                  "title": "战术问题",
+                  "level": 3
+                },
+                {
+                  "title": "心理问题",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "长期改进计划",
+              "subs": [
+                {
+                  "title": "周期性总结",
+                  "level": 3
+                },
+                {
+                  "title": "训练改进闭环",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "totalWords": 5295,
+      "chapterCount": 6
+    },
+    {
+      "id": "nutrition",
+      "title": "营养恢复",
+      "emoji": "🥗",
+      "color": "#ef6c00",
+      "desc": "羽毛球运动员科学营养指南，基于NSCA运动营养学标准",
+      "chapters": [
+        {
+          "file": "ch01-tdee.md",
+          "title": "ch01-tdee",
+          "words": 436,
+          "h2s": [
+            {
+              "title": "什么是TDEE？",
+              "subs": []
+            },
+            {
+              "title": "羽毛球运动员的TDEE特点",
+              "subs": [
+                {
+                  "title": "典型消耗估算",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "TDEE计算公式",
+              "subs": [
+                {
+                  "title": "方法一：Mifflin-St Jeor公式（推荐）",
+                  "level": 3
+                },
+                {
+                  "title": "方法二：活动系数法",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "羽毛球运动员的TDEE估算",
+              "subs": [
+                {
+                  "title": "示例：25岁男性，75kg，175cm，高强度训练",
+                  "level": 3
+                },
+                {
+                  "title": "训练周期调整",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "实际应用",
+              "subs": [
+                {
+                  "title": "体重目标调整",
+                  "level": 3
+                },
+                {
+                  "title": "营养素分配建议",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "注意事项",
+              "subs": []
+            }
+          ]
+        },
+        {
+          "file": "ch02-macronutrients.md",
+          "title": "ch02-macronutrients",
+          "words": 1000,
+          "h2s": [
+            {
+              "title": "羽毛球运动员的营养素框架",
+              "subs": []
+            },
+            {
+              "title": "一、碳水化合物——能量主力",
+              "subs": [
+                {
+                  "title": "为什么碳水是羽毛球运动员的首要营养素？",
+                  "level": 3
+                },
+                {
+                  "title": "碳水摄入量",
+                  "level": 3
+                },
+                {
+                  "title": "碳水质量分级",
+                  "level": 3
+                },
+                {
+                  "title": "训练日碳水时机",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "二、蛋白质——修复与建设",
+              "subs": [
+                {
+                  "title": "羽毛球运动员蛋白质需求",
+                  "level": 3
+                },
+                {
+                  "title": "蛋白质来源选择",
+                  "level": 3
+                },
+                {
+                  "title": "蛋白质时机",
+                  "level": 3
+                },
+                {
+                  "title": "常见误区",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "三、脂肪——被误解的重要营养素",
+              "subs": [
+                {
+                  "title": "脂肪的生理作用",
+                  "level": 3
+                },
+                {
+                  "title": "羽毛球运动员脂肪摄入",
+                  "level": 3
+                },
+                {
+                  "title": "Omega-3对运动员的特殊价值",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "四、营养素配比示例",
+              "subs": [
+                {
+                  "title": "增肌期（75kg运动员，3000千卡/天）",
+                  "level": 3
+                },
+                {
+                  "title": "减脂期（75kg运动员，2200千卡/天）",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "五、实用技巧",
+              "subs": [
+                {
+                  "title": "1. 估算食物营养",
+                  "level": 3
+                },
+                {
+                  "title": "2. 一天三餐示例（训练日）",
+                  "level": 3
+                },
+                {
+                  "title": "3. 外出就餐选择",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "file": "ch03-nutrient-timing.md",
+          "title": "ch03-nutrient-timing",
+          "words": 895,
+          "h2s": [
+            {
+              "title": "什么是营养窗口？",
+              "subs": [
+                {
+                  "title": "窗口期时间",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "训练前营养",
+              "subs": [
+                {
+                  "title": "训练前饮食原则",
+                  "level": 3
+                },
+                {
+                  "title": "训练前饮食时间表",
+                  "level": 3
+                },
+                {
+                  "title": "训练前食谱示例",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "训练中营养",
+              "subs": [
+                {
+                  "title": "训练中补液原则",
+                  "level": 3
+                },
+                {
+                  "title": "补液量计算",
+                  "level": 3
+                },
+                {
+                  "title": "训练中碳水补充",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "训练后营养——最关键窗口",
+              "subs": [
+                {
+                  "title": "为什么训练后营养最重要？",
+                  "level": 3
+                },
+                {
+                  "title": "训练后即时补充（0-30分钟）",
+                  "level": 3
+                },
+                {
+                  "title": "训练后正餐（30-60分钟）",
+                  "level": 3
+                },
+                {
+                  "title": "训练后餐时间线",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "不同训练目标的窗口期策略",
+              "subs": [
+                {
+                  "title": "增肌目标",
+                  "level": 3
+                },
+                {
+                  "title": "减脂目标",
+                  "level": 3
+                },
+                {
+                  "title": "耐力目标",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "常见问题",
+              "subs": [
+                {
+                  "title": "Q：晨练怎么吃？",
+                  "level": 3
+                },
+                {
+                  "title": "Q：晚上训练怎么吃？",
+                  "level": 3
+                },
+                {
+                  "title": "Q：没胃口怎么办？",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "file": "ch04-protein-strategy.md",
+          "title": "ch04-protein-strategy",
+          "words": 902,
+          "h2s": [
+            {
+              "title": "蛋白质——运动员的基石营养素",
+              "subs": []
+            },
+            {
+              "title": "羽毛球运动员蛋白质需求",
+              "subs": [
+                {
+                  "title": "每日摄入量",
+                  "level": 3
+                },
+                {
+                  "title": "训练强度与蛋白质关系",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "蛋白质来源",
+              "subs": [
+                {
+                  "title": "动物蛋白（完整蛋白）",
+                  "level": 3
+                },
+                {
+                  "title": "植物蛋白",
+                  "level": 3
+                },
+                {
+                  "title": "蛋白质质量评分(PDCAAS)",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "蛋白质摄入时机",
+              "subs": [
+                {
+                  "title": "关键时间窗口",
+                  "level": 3
+                },
+                {
+                  "title": "每日分布建议",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "蛋白质类型选择",
+              "subs": [
+                {
+                  "title": "快速蛋白（训练后）",
+                  "level": 3
+                },
+                {
+                  "title": "中速蛋白",
+                  "level": 3
+                },
+                {
+                  "title": "缓释蛋白（睡前/全天）",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "常见问题",
+              "subs": [
+                {
+                  "title": "Q：蛋白粉要不要吃？",
+                  "level": 3
+                },
+                {
+                  "title": "Q：吃多了会伤肾？",
+                  "level": 3
+                },
+                {
+                  "title": "Q：素食运动员怎么补蛋白？",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "实践指南",
+              "subs": [
+                {
+                  "title": "一天蛋白质摄入示例",
+                  "level": 3
+                },
+                {
+                  "title": "省钱技巧",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "file": "ch05-hydration.md",
+          "title": "ch05-hydration",
+          "words": 868,
+          "h2s": [
+            {
+              "title": "水合——被忽视的运动表现因素",
+              "subs": []
+            },
+            {
+              "title": "脱水的影响",
+              "subs": [
+                {
+                  "title": "脱水程度与表现下降",
+                  "level": 3
+                },
+                {
+                  "title": "羽毛球运动的水分流失",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "每日水需求计算",
+              "subs": [
+                {
+                  "title": "基本公式",
+                  "level": 3
+                },
+                {
+                  "title": "训练额外补充",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "电解质——维持平衡的关键",
+              "subs": [
+                {
+                  "title": "关键电解质功能",
+                  "level": 3
+                },
+                {
+                  "title": "运动员电解质需求",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "训练中的补液策略",
+              "subs": [
+                {
+                  "title": "补液原则",
+                  "level": 3
+                },
+                {
+                  "title": "补液量计算",
+                  "level": 3
+                },
+                {
+                  "title": "不同场景的补液",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "运动饮料DIY",
+              "subs": [
+                {
+                  "title": "基础运动饮料配方",
+                  "level": 3
+                },
+                {
+                  "title": "高强度训练配方",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "监测水合状态",
+              "subs": [
+                {
+                  "title": "尿液颜色法",
+                  "level": 3
+                },
+                {
+                  "title": "尿量监测",
+                  "level": 3
+                },
+                {
+                  "title": "体重监测",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "特殊情况处理",
+              "subs": [
+                {
+                  "title": "高温天气",
+                  "level": 3
+                },
+                {
+                  "title": "赛前水合",
+                  "level": 3
+                },
+                {
+                  "title": "赛后恢复",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "常见误区",
+              "subs": [
+                {
+                  "title": "❌ 运动中大量喝水",
+                  "level": 3
+                },
+                {
+                  "title": "❌ 只喝白开水",
+                  "level": 3
+                },
+                {
+                  "title": "❌ 感到口渴才喝水",
+                  "level": 3
+                },
+                {
+                  "title": "❌ 运动后喝冰水",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "file": "ch06-supplements.md",
+          "title": "ch06-supplements",
+          "words": 962,
+          "h2s": [
+            {
+              "title": "运动补剂概述",
+              "subs": []
+            },
+            {
+              "title": "补剂分级体系",
+              "subs": []
+            },
+            {
+              "title": "A级推荐补剂",
+              "subs": [
+                {
+                  "title": "1. 乳清蛋白",
+                  "level": 3
+                },
+                {
+                  "title": "2. 肌酸",
+                  "level": 3
+                },
+                {
+                  "title": "3. 咖啡因",
+                  "level": 3
+                },
+                {
+                  "title": "4. 维生素D",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "B级可能有效的补剂",
+              "subs": [
+                {
+                  "title": "5. 谷氨酰胺",
+                  "level": 3
+                },
+                {
+                  "title": "6. 鱼油/Omega-3",
+                  "level": 3
+                },
+                {
+                  "title": "7. 复合维生素",
+                  "level": 3
+                },
+                {
+                  "title": "8. 锌",
+                  "level": 3
+                },
+                {
+                  "title": "9. 镁",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "C级效果存疑的补剂",
+              "subs": [
+                {
+                  "title": "10. 支链氨基酸(BCAA)",
+                  "level": 3
+                },
+                {
+                  "title": "11. 氮泵(Citrulline)",
+                  "level": 3
+                },
+                {
+                  "title": "12. 左旋肉碱",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "不推荐的补剂",
+              "subs": [
+                {
+                  "title": "❌ 合成类固醇",
+                  "level": 3
+                },
+                {
+                  "title": "❌ 生长激素",
+                  "level": 3
+                },
+                {
+                  "title": "❌ 麻黄类",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "补剂使用原则",
+              "subs": [
+                {
+                  "title": "1. 优先饮食",
+                  "level": 3
+                },
+                {
+                  "title": "2. 看成分而非品牌",
+                  "level": 3
+                },
+                {
+                  "title": "3. 避免叠加",
+                  "level": 3
+                },
+                {
+                  "title": "4. 关注来源",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "羽毛球运动员补剂方案",
+              "subs": [
+                {
+                  "title": "基础方案（必选）",
+                  "level": 3
+                },
+                {
+                  "title": "进阶方案",
+                  "level": 3
+                },
+                {
+                  "title": "特殊方案",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "常见问题",
+              "subs": [
+                {
+                  "title": "Q：补剂有副作用吗？",
+                  "level": 3
+                },
+                {
+                  "title": "Q：需要 cycling 吗？",
+                  "level": 3
+                },
+                {
+                  "title": "Q：国产还是进口？",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "file": "ch07-weight-management.md",
+          "title": "ch07-weight-management",
+          "words": 733,
+          "h2s": [
+            {
+              "title": "羽毛球运动员的体重管理",
+              "subs": []
+            },
+            {
+              "title": "体脂率与运动表现",
+              "subs": [
+                {
+                  "title": "羽毛球运动员理想体脂",
+                  "level": 3
+                },
+                {
+                  "title": "体脂率自测",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "减脂原则",
+              "subs": [
+                {
+                  "title": "安全减脂速度",
+                  "level": 3
+                },
+                {
+                  "title": "热量赤字",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "减脂期营养策略",
+              "subs": [
+                {
+                  "title": "碳水循环法",
+                  "level": 3
+                },
+                {
+                  "title": "蛋白质保底",
+                  "level": 3
+                },
+                {
+                  "title": "脂肪摄入",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "减脂饮食示例",
+              "subs": [
+                {
+                  "title": "75kg男性运动员减脂期",
+                  "level": 3
+                },
+                {
+                  "title": "一天食谱示例",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "增肌期体重管理",
+              "subs": [
+                {
+                  "title": "增肌不增脂",
+                  "level": 3
+                },
+                {
+                  "title": "干净增肌 vs 脏增肌",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "体重称量与分析",
+              "subs": [
+                {
+                  "title": "称重时间",
+                  "level": 3
+                },
+                {
+                  "title": "体重波动原因",
+                  "level": 3
+                },
+                {
+                  "title": "趋势分析",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "特殊情况处理",
+              "subs": [
+                {
+                  "title": "赛前减重",
+                  "level": 3
+                },
+                {
+                  "title": "体重停滞",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "totalWords": 5796,
+      "chapterCount": 7
     }
   ]
 }

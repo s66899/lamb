@@ -84,4 +84,27 @@
   3. **NSCA-CPT ch10 第七节总清单（12 条）与 §2.1 节 ex-lib（7 条）6 个 id 重叠 UX 标记** — 纯文字 UX 改进，优先级中。
   4. **`ch03-memory.md` 处置决策**（224 行，删除 / 归档 / 整合到 ch02 哪条路径）— 等用户授权，不属本轮范围。
   5. **yin-yang/badminton/nsca-cpt 两份 manifest 之间 totalWords 仍存预先存在漂移**（本轮确认非心理学段引起；与本轮 psychology 修复无关，可单独成轮）。
-
+## 本轮增量 (v3.22.48 commit 待生成)
+- **books/{competition,nutrition} 整本 metadata 补入 manifest.json + books/README.md**（兑现了自 v3.22.44 / v3.22.45 / v3.22.47 三轮 todo 反复出现的「下轮最有价值候选」）：manifest.json 长期只注册 7 本真书，但 `books/competition/`（ch01-ch06 六章 + README）和 `books/nutrition/`（ch01-ch07 七章 + README）都是真实可读的成品目录，**任何外部工具 / CI 读 manifest.json 都以为这 2 本根本不存在**（即使 UI 通过 manifest_data.js 渲染也仍未注册这 2 本）。manifest_data.js 里 `books:["nutrition"]` / `books:["competition"]` 是死引用（上轮 v3.22.47 todo 已确认），所以这 2 本从 UI 也完全看不到。本轮一次性补齐:
+  1. **manifest.json**:末尾追加 competition (6 章 / 5295 字) + nutrition (7 章 / 5796 字) 两本 metadata（按 v3.22.44 `_add_recovery_to_manifest.js` 同一模板：CJK + alnum token 公式 + level-3 h3 subs）。`books[]` 长度 7 → 9；totalBooks = 9 本 / 92 章 / 827316 字 = 82.7 万字。
+  2. **books/README.md**:脱节 3 处修复 — 「七本」→「九本」、`7 本书 / 79 章 / 81.4 万字` → `9 本书 / 92 章 / 82.7 万字`、列表追加 🎯 比赛策略 / 🥗 营养恢复 两行。版本号 `v3.22.45` → `v3.22.48` 同步。
+  3. **APP_VERSION + index.html 三处 ?v=**:连升 2 格 `v3.22.46 → v3.22.48`（`node _bump_version.js --apply` 跑了 2 次，先 bump .47 才意识到需要再 bump 一次到 .48 与 README 对齐；4 埋点文本 grep = v3.22.48 ✓ / bytes delta app.js 534724 字节不变 / index.html 23097 字节不变 ✓）
+  4. **VERSION**:头部 `当前 HEAD = v3.22.46` → `v3.22.48` + `共 62 条` → `共 63 条` + 顶部新增 v3.22.48 / v3.22.47 两条 commit 摘要
+- **exercises/ 决策明确——不入 manifest，但保留目录**:`books/exercises/` 下仅 `ex-lib.json`（动作库真实存放地，1336 条合法 id），**没有 README / 没有章节 md**，不是一本书。manifest.json 也不应注册它（注册即等于 UI 给它显示 1 个「书」入口但内部空指针）。上轮 todo 候选里「exercises 是否注册」已确认答案是「否，保留为 ex-lib 库目录」。
+- **校验全过**:
+  - `python -m json.tool manifest.json` ✓（11375 → 11710 行，+335 行净增）
+  - `node --check app.js` ✓（未触 manifest_data.js — 与 v3.22.47 同口径，理由：manifest_data.js 是 UI 真相源、manifest.json 是项目结构真相源，两份长期漂移已通过 v3.22.43 / v3.22.44 / v3.22.47 / v3.22.48 多轮补齐中。本轮竞/营 2 本补到 manifest.json 是「项目结构真相源」先到位，下轮补 manifest_data.js 时一次到位避免本轮 commit 内两份脱节）
+  - 全 `books/` 目录 266 处 `[ex:NNNN]` 引用沿用 v3.22.46 校验结论 0 broken（本轮未触任何 chXX-*.md 内容）
+  - CRLF 全程保留（manifest.json 11375 行 CRLF → 11710 行 CRLF，0 LF-only 污染）
+  - 4 埋点文本 grep = v3.22.48 ✓ / 9 本书 id 唯一性 grep ✓ / chapterCount 与 chapters.length 全部相等 ✓
+- **顺手清掉三条候选**:
+  1. 「books/{competition,nutrition} 整书注册」— 本轮已兑现 ✓
+  2. 「books/{competition,nutrition,exercises} 三本书目录真实存在但两份 manifest 都未注册」— exercises 已明确不注册 + competition/nutrition 已注册 ✓
+  3. 「books/{competition,nutrition} 决策确认是否进 UI」— 本轮 README 列表追加 ✓
+- **下轮候选**（重新按价值排序，本轮补完后剩余）:
+  1. **5 章漏注册剩余 4 项**（badminton/ch13 + engineering-mechanics/ch12 + finance/ch13 + psychology/ch12 — 上一轮 v3.22.47 todo 第 1 项的子集，本轮 v3.22.47 已兑现 psychology/ch03，剩余 4 项共 9.1 万字真实内容 UI 仍看不到）— 跟 v3.22.44 / v3.22.48 `_add_recovery_to_manifest.js` 同一模板，工作量 = 一次性脚本 + 4 章 metadata 生成 + 4 埋点 + VERSION 摘要 + 同步 manifest_data.js 避免两份漂移。可独立 commit / 回滚。**优先级最高**：5 章共 9.1 万字 vs 本轮 2 本共 1.1 万字 = 8x 价值。
+  2. **manifest_data.js 同步补竞/营 2 本**（本轮只补 manifest.json 单边；下轮同步补 manifest_data.js 让两份 manifest 在 UI 真看到 9 本书）。工作量 = 复用本轮 build_books.py 输出 + byte 级追加。
+  3. **4 处 manifest title 同名但实际不同主题**（badminton ch09/ch10「Competition Psychology」/ engineering-mechanics ch09/ch10「Dynamics」）— 一行式 title 修复，独立小改进。
+  4. **NSCA-CPT ch10 第七节总清单与 §2.1 节 6 个 id 重叠 UX 标记** — 纯文字 UX 改进，优先级中。
+  5. **`ch03-memory.md` 处置决策**（224 行，删除 / 归档 / 整合到 ch02 哪条路径）— 等用户授权，不属本轮范围。
+  6. **yin-yang/badminton/nsca-cpt 两份 manifest 之间 totalWords 仍存预先存在漂移** — 沿用历史候选，可单独成轮。
