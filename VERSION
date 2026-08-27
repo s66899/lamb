@@ -1,6 +1,10 @@
 ﻿# VERSION — 项目根 changelog（按版本号倒序排列；新版本在最上）
-# 当前 HEAD = v3.22.51, APP_VERSION (app.js) = v3.22.51
-# 历史叙事（v3.4.0 ~ v3.8.7）由原 VERSION 文件保留；本轮新增 v3.18.7 ~ v3.22.51 共 66 条 commit 摘要
+# 当前 HEAD = v3.22.53, APP_VERSION (app.js) = v3.22.53
+# 历史叙事（v3.4.0 ~ v3.8.7）由原 VERSION 文件保留；本轮新增 v3.18.7 ~ v3.22.53 共 68 条 commit 摘要
+
+v3.22.53 (2026-08-27) chore(todo): 记录本轮 4 处不一致修复 + 下轮候选（_scan_exlib.js 入库作为常驻工具；下轮候选：VERSION 文件本轮补齐 + 6 处 chapter 副标题 'Axial Loading·入门/理论推导' 已被工程力学 ch09 Dynamics 章节沿用，待校验一致性）
+
+v3.22.52 (2026-08-27) fix(manifest): 收回被中断的 v3.22.53 发版 + 6 处 chapter 副标题对齐（NSCA-CPT ch09/ch10 'Competition Psychology · 基础/专业级' + 工程力学 ch02/ch03 'Axial Loading · 入门/理论推导' + 工程力学 ch09/ch10 'Dynamics · 入门/专题'，4 埋点 v3.22.51 → v3.22.53）+ NSCA-CPT 10 章 title 同步（ch01-ch10 旧 'v3.22.x 扩展尾巴' → 干净版 '含 ex-lib 引用'，与 manifest.json 完全一致）+ _scan_exlib.js scratch 入库（v3.22.46 留下来的 ex-lib 扫描工具，沿用 _bump_version.js 命名）；9 本书 chapter title 两份 manifest 0 diff；107 md / 123 unique [ex:NNNN] / 0 broken；json/node 校验 OK
 
 v3.22.51 (2026-08-27) fix(manifest_data): 与 manifest.json 对齐 — 补 badminton/ch13 + finance/ch13 + psychology/ch12 + engineering-mechanics/ch12 共 4 章 (5.4 万字/66 h2/212 h3) + 整本补 competition (6 章) + nutrition (7 章)；9 本书/96 章完全双向一致；兑现 v3.22.49 「下轮单独 commit 同步 manifest_data.js」承诺；app.js / index.html / VERSION 头部 v3.22.50 → v3.22.51；ex-lib 335 处零 broken；json/node 校验 OK
 
