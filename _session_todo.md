@@ -44,3 +44,24 @@
   - **羽毛球康复书 ch05 (肘) 末段 ex-lib 引用清单措辞统一**(优先级低):ch05 L221-230 末段只列 5 个 unique id,无总述数字「X 处 inline / Y 个 unique」,与已修齐的 ch02/ch06/ch07/ch08 不一致;实测 14 处 inline / 5 unique,可加一行声明对齐
   - **NSCA ch04 §0 末段 L15 「[ex:0000-中文名]」格式说明里的占位 0000 误导扫描器**(优先级低):是真实风险但目前 0 命中,可把示例改成 `[ex:0099 单腿分腿蹲]` 之类真实 id 让未来误用占位的人抄到合法示例
 - **commit hash**: `8e82c77`,push `d223086..8e82c77`,GitHub Pages 自动部署中
+
+## 本轮增量 (commit 17e11cf — 上轮候选第 2 条兑现)
+
+- **本轮目标**:兑现上轮「羽毛球康复书 ch05 (肘) 末段 ex-lib 引用清单措辞统一」— ch05 第九节只有 5 行 unique id 表格,无「X 处 inline / Y 个 unique」总述句,与已定型的 ch02 (v3.22.55) / ch06 / ch07 (8e82c77) 口径脱节
+- **改动**(仅 +2 行,单文件):
+  - `books/badminton-recovery/ch05-elbow.md` L223 新增总述声明:「本章共引用 14 处 ex-lib inline 引用(折合 5 个 unique id)」+ 分布细分(正文离心训练 / 前臂 SMR 段 6 处 + 清单 5 处 + 说明段 1 处 + 第十一节转诊案例 2 处)+ 沿用 ch06/ch07「一个动作多场景通用」措辞
+- **校验**:
+  - grep 逐行定位 ch05 全部 14 处 inline 行号(L131/133/134/163/170/173 正文 + L225-229 清单 + L231 说明 + L255/L262 案例),分布细分逐项对得上 ✓
+  - 改后复测 14 inline / 5 unique 不变(声明段未引入新 id)✓
+  - `node _scan_exlib.js`:1336 ids / 344 refs / 0 broken(与 8e82c77 完全一致)✓
+  - `node --check app.js` OK / `node --check manifest_data.js` OK / `python -m json.tool manifest.json` OK ✓
+  - git diff stat: `1 file changed, 2 insertions(+)` ✓
+- **本轮排查后作废/修正的候选**:
+  - 「ch02 声明 23 处 vs 实测 32 处疑似脱节」— **实为正确**:全文 32 处含 L253 说明段自身 9 处引用,32 − 9 = 23,v3.22.55 的「正文(不含说明/修订说明)共 23 处」口径精确,不需改 ✓
+  - 「badminton-recovery 薄章节」— 8 章体量均衡(175~277 行 / 8.9~12.9 KB),README 54 行属正常索引页,无薄章节可挖 ✓
+  - `VERSION.new` 路径 — fast_context 子代理返回的该文件在 git 与工作树中均不存在(幻觉引用),忽略 ✓
+- **新增/保留下轮候选**:
+  - **ch08-action-plan.md 末段同样缺总述声明**(优先级中,本轮新发现):上轮 todo 以为 ch08 是「模板来源」,实测 `grep 本章共引用` 只命中 ch06/ch07,ch08 自己并无该声明句;实测 35 inline / 16 unique,是目前 6 章里唯一还缺口径声明的(ch02 用的是另一种「说明」句式)。下轮补齐即可让全书 8 章口径 100% 统一
+  - **羽毛球 ch12 §9.8 互引表「30 个 ex-lib 引用」措辞口径微调**(优先级低,继承两轮):正文 inline 仅 1 处,建议首句改为「第九节以原则为主 / 配套 30 个 ex-lib 查表入口」消除心理落差
+  - **NSCA ch04 §0 L15「[ex:0000-中文名]」占位示例**(优先级低,继承):目前 0 命中无实害,可换成真实合法 id 示例防未来照抄
+- **commit hash**: `17e11cf`,push `6d5f714..17e11cf`,GitHub Pages 自动部署中
