@@ -1450,7 +1450,7 @@
 ## 2026-08-30 第 39 轮
 
 ### 本轮做了什么
-- **commit (pending)** `fix(manifest): psychology 漏注册 ch02-memory-textbook.md（配套教材版 432 行 / 16,722 字）补回 manifest` — 发现真实 bug：v3.22.46 提交 d0173ae 把 ch03-memory.md 重命名为 ch02-memory-textbook.md 当作「配套教材版」挂在 ch02-memory.md 旁边，工程力学书的同模式对照（ch02-axial-loading.md + ch02-axial-loading-deep-dive.md）双文件双双注册在 manifest，但心理学只改了文件名 / 没改 manifest，结果磁盘 13 ch*.md vs manifest chapterCount=12，本章对用户完全不可见
+- **commit `e02330a`** `fix(manifest): psychology 漏注册 ch02-memory-textbook.md（配套教材版 432 行 / 16,722 字）补回 manifest` — 发现真实 bug：v3.22.46 提交 d0173ae 把 ch03-memory.md 重命名为 ch02-memory-textbook.md 当作「配套教材版」挂在 ch02-memory.md 旁边，工程力学书的同模式对照（ch02-axial-loading.md + ch02-axial-loading-deep-dive.md）双文件双双注册在 manifest，但心理学只改了文件名 / 没改 manifest，结果磁盘 13 ch*.md vs manifest chapterCount=12，本章对用户完全不可见
 - **修复策略**：用 python json.loads/dumps 原子改写 manifest.json + manifest_data.js（同源思路与 v3.22.49 _add_4_missing_chapters.js 模板一致），在 psychology.chapters 数组中 `ch02-memory.md` 之后插入新条目 `ch02-memory-textbook.md`（title=`Memory · 教材版` / words=16722 / 11 个 H2 / 39 个 H3，从磁盘 grep ## 与 ### 实时抽取）；同步刷新 psychology.chapterCount 12 → 13 / psychology.totalWords 188315 → 205037；新条目位置与 EM 同模式（ch02-axial-loading-deep-dive 紧跟 ch02-axial-loading）一致
 - **零业务代码改动**：app.js / index.html / VERSION / books/**/*.md 全部不动（仅 manifest 字段补漏）
 - **改动**：`2 files changed, 0 insertions(+), 0 deletions(-)`（git diff 行数不变；字节数 manifest.json +6666 / manifest_data.js +6329）
@@ -1482,4 +1482,4 @@
 - **(继承远期，优先级低)** ch04 L202 12 个 unique 加权精细化 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / `_session_todo.md` 1450+ 行归档 / 其他书籍 orphan .md 扫表
 
 ### commit hash
-- `pending`（本轮改完，待 `git add` + `git commit`，push 仍因本地 ISP 拦截 GitHub 443 阻塞，等网络恢复后单次 push 即可，沿用「N commit 累计 push 成功」先例）
+- `e02330a`（本地已落，`book` 分支 HEAD，领先 `origin/book` 5 commits；**push 未成功**，等网络恢复后单次 push 即可，沿用「N commit 累计 push 成功」先例）
