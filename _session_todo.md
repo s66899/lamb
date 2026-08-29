@@ -900,5 +900,42 @@
 - **(优先级中,继承远期)** foam roller / 筋膜球腰部专项入库:ch06/ch08 都标"库中暂无",如要做需先建 id 命名 + 多语字段规范(SMR 12 条 ex-5202~ex-5213 可作模板,补充 1 条"腰部 foam roller"即可解决 ch06 末段声称)
 - **(本轮新发现,优先级低)** manifest_data.js 与 manifest.json 上次同步在 commit a188a14 路径里(commit 6bb8987 v3.22.53 chapter 副标题对齐),本次 README 已对齐,下次如果两者漂移需 cross-check 一致性
 
+## 2026-08-30 第 20 轮 (commit e028439)
+
+### 本轮做了什么
+
+- **修复 `books/nsca-cpt/README.md` 章节表头与实际 10 章严重不对齐**(本轮新发现真问题,继承自「其他薄弱章节校对」候选):旧表把 ch01-ch10 主题全部错记为「客户评估/营养学/FITT-VP/柔韧/抗阻/特殊人群/教练伦理等 NSCA 官方十大领域」,实际章节 H1 是按训练闭环重组:导论/生理/解剖/力量/爆发/敏捷/柔韧/周期/防伤/恢复;所有 10 行状态由 🔜 改 ✅;按需查阅入口(原指「第五章设计计划」/「第三章评估」)改指真实章节(第八章/第十章);末尾「2/10 完成 (20%)」→「10/10 完成 (100%)」;唯一一处「如何使用」第 1-2-3 章跳转保持不动(第九章正确)
+- 18 行改 18 行增,文件 4460→4671 字节
+- 零业务代码改动 / 零 ex-lib id 改动(1336 ids / 521 refs / 0 broken 不变)/ app.js+index.html+manifest.json+manifest_data.js+VERSION 全部不动(纯 README 文案对齐)
+- APP_VERSION 不 bump(本次只修 README,版本号仍 v3.22.61,本轮 commit 未发版)
+
+### 校验
+- `node _scan_exlib.js` → 1336 ids / 521 refs / 0 broken(未动任何 [ex:XXXX],与上轮一致)✓
+- `python -m json.tool manifest.json` exit 0 ✓(未动)
+- `node --check app.js` exit 0 ✓(未动)
+- `wc -c books/nsca-cpt/README.md` → 4671 B(原 4460 B,Δ +211 B,与 18 行改 18 行增一致)✓
+- `wc -l _session_todo.md` → 904(本轮记账前)/ 95728 B 起点 ✓
+- `git diff --cached --stat` → 1 file changed, 18 insertions(+), 18 deletions(-) ✓
+- NSCA README 全 10 章 L23-L32 行逐一对照 ch0X H1:`第一章 NSCA-CPT 体能训练体系与羽毛球整合导论` ✓ / `第二章 运动生理学——理解身体如何应对训练刺激` ✓ / `第三章 运动解剖与肌肉系统` ✓ / `第四章 基础力量训练` ✓ / `第五章 爆发力训练` ✓ / `第六章 敏捷性与灵敏训练` ✓ / `第七章 柔韧性与关节活动度` ✓ / `第八章 周期化训练` ✓ / `第九章 损伤预防与康复` ✓ / `第十章 恢复策略` ✓,10/10 准确
+
+### 上轮候选清算 (本轮重扫)
+- ❌ **books/README.md L11 版本号 v3.22.49 脱节** — 已由 commit 98cbde0 v3.22.61 修复,候选作废
+- ❌ **_session_todo.md 文件 540+ 行 → 归档前 N 轮** (远期) — 本轮文件 904 行 / 95728 B,确实仍偏大,但本轮要做单个 README fix 无空间连带推进,继续远期继承
+- ❌ **VERSION 头部「v3.4.0 ~ v3.8.7 由原 VERSION 文件保留」查 `VERSION.archive`** — 本轮未查(同等远期继承)
+- ❌ **foam roller / 筋膜球腰部专项入库** (远期继承):ch06/ch08 仍标"库中暂无",需先建 id 命名规范(SMR 12 条 ex-5202~ex-5213 模板)再补 ex-5214,本轮不做
+- ✅ **4 条候选全部作废**,本轮启动新扫描 → 发现 NSCA README 章节表头错位作为本轮唯一真问题(继承自用户已确认的「其他薄弱章节校对」队列)
+
+### Push 状态
+- ✅ 本轮 push 成功!`a6fa92f..e028439` 已推 `origin book`(host 443 直连有效,`git -c http.proxy= -c https.proxy= push origin book` → exit 0),GitHub Pages 自动部署中
+
+### 新增下轮候选
+- **(本轮新发现,优先级中)** `books/finance/` / `books/psychology/` / `books/engineering-mechanics/` / `books/yin-yang/` / `books/competition/` / `books/nutrition/` 各书的 `README.md` 同样需要按本轮模式核对章节表头与实际章节 H1 是否对齐;`books/README.md` 总目录的 9 行字数(14.2 / 15.8 / 18.8 / 16.9 / 14.3 / 5.0 / 2.0 / 0.5 / 0.6 万字)声明是否与各章实际字数一致 — 本轮只动了 NSCA 一本,剩余 7 本书可能存在同型错位(书籍越多越大越是潜在真问题区)
+- **(本轮新发现,优先级低)** 20 轮累计记账块从 L500+ 一路加到 L900+,文件 95628 B;与上次(540 行候选)远期继承叠加考虑归档窗口可以提前
+- **(本轮新发现,优先级低)** `books/badminton-recovery/README.md` 与 `books/badminton/README.md` 章节结构表是否与 `manifest.json` 一致:本轮未扫,但羽毛球康复 8 章 ✅ 状态、引用关系、章节标题按 v3.22.55/v3.22.57 等历史已修过,优先于其他子书但仍需核实
+- **(远期继承)** VERSION 头部原文件快照保留/foam roller 入库/_session_todo.md 归档 — 来自上轮第 19 轮 4 条作废候选
+
+### commit hash
+- `e028439`(已 push `a6fa92f..e028439`),GitHub Pages 自动部署中
+
 ### commit hash
 - `98cbde0`(已 push `9fd712a..98cbde0`),GitHub Pages 自动部署中
