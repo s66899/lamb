@@ -202,3 +202,36 @@
   - **GitHub Pages push 走 git -c http.proxy= 直连**(操作项):~/.gitconfig 中 `proxy = http://127.0.0.1:7890` 端口不通,本轮通过 `git -c http.proxy= -c https.proxy= push origin book` 临时绕开,可在 .gitconfig 永久改为空或注释掉
   - **README/TOC 加「每章 ex-lib 分布细分速查表」**(可选增强):便于读者一眼看全书覆盖度
 - **commit hash**: `7db0c91`,push `b06e308..7db0c91`,GitHub Pages 自动部署中
+
+---
+
+## 2026-08-29 第 16 轮(v3.22.61 commit 46fbdf2)
+
+### 本轮做了什么
+- **commit `46fbdf2`** `chore(release): v3.22.61 4 埋点统一 v3.22.58→v3.22.61`
+- 真实问题: 最近 3 条 commit 标题(v3.22.59 `50ee76b` / v3.22.60 `53483f7` / v3.22.61 `7db0c91`)叙事已领先于代码,APP_VERSION 仍是 v3.22.58 → 4 个版本埋点真实存在漂移
+- 用 `_bump_version.js --set=v3.22.61 --apply` 一步落地: APP_VERSION + index.html 三处 ?v= 全部 v3.22.61, 回读校验 4/4 命中
+- VERSION 头注释「当前 HEAD = v3.22.58 → v3.22.61」+ 顶部新增 v3.22.61 changelog 一条
+
+### 校验
+- `node --check app.js` OK
+- `grep APP_VERSION app.js` → v3.22.61
+- `grep -cE "\?v=v3\.22\.61" index.html` → 3(3 处 ?v= 全部命中)
+- `head -5 VERSION` 头注释与新 changelog 一致
+- 零业务代码改动; 零 ex-lib id 改动
+
+### Push 状态
+- 本轮 host 网络仍 443 失败(`Failed to connect to github.com port 443`),与第 15 轮同因
+- commit `46fbdf2` 已留本地 `book` 分支,下次网络通时 `git push origin book` 即可
+
+### 上轮候选清算(本轮全数排查)
+- ❌ 康复书 ch05 末段分布细分 — **实际 v3.22.59 已实现**(9 节 ex-lib 清单 5 unique / 14 处 / 4 段分布细分),候选作废
+- ❌ NSCA ch10 SMR 入库 — **实际 v3.22.17 已入库** 12 条 ex-5202~ex-5213,本章末段 v3.22.57 已加 31 inline / 25 unique / 0 broken 声明,候选作废
+- ⚠️ 旧候选「羽毛球 ch12 §9.8『30 个 ex-lib 引用』措辞」继承多轮,优先级低,继续保留为远期
+
+### 下轮候选(已重新扫描,选真实可推进项)
+- **ch03-knee 末段补「本章 ex-lib 引用现状」总述声明**(小 / 低风险): 实测 14 匹配 / 9 unique,补一句口径让 8 章分布细分 100% 覆盖
+- **羽毛球 ch12 §9.8「30 个 ex-lib 引用」措辞微调**(继承候选):首句改「第九节以原则为主 / 配套 30 个 ex-lib 查表入口」消除心理落差
+- **NSCA ch04 §0「[ex:0000-中文名]」占位示例换真实合法 id**(防未来照抄):改 [ex:0038] 或类似, 0 命中无实害,纯防误
+- **GitHub Pages push 网络层**: host 443 直连仍失败,本轮跳过 push;如需加速可让用户侧配 http_proxy 端口
+
