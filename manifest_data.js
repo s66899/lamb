@@ -4715,8 +4715,7 @@ const MANIFEST_DATA = {
             },
             {
               "title": "本章小结——它不是两个单打选手的简单组合，而是需要全新思维方式和训练模式的运动形式。本章从双打与单打的本质差异出发，系统讲解了双打的基础轮转体系（进攻前后、防守平行、攻防转换）、发球与接发球体系、核心战术体系（攻中路、攻人、攻边线、防守反击、混双特殊战术），以及轮转技巧、专项技术、比赛战术部署、训练体系等。",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "十三、双打运动员的饮食与营养策略",
@@ -4762,8 +4761,7 @@ const MANIFEST_DATA = {
             },
             {
               "title": "本章小结",
-              "subs": [
-              ]
+              "subs": []
             }
           ]
         }
@@ -6951,8 +6949,7 @@ const MANIFEST_DATA = {
             },
             {
               "title": "本章小结",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "ʮ",
@@ -7061,13 +7058,11 @@ const MANIFEST_DATA = {
             },
             {
               "title": "本章思考题",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "延伸阅读指导",
-              "subs": [
-              ]
+              "subs": []
             }
           ]
         }
@@ -8977,13 +8972,11 @@ const MANIFEST_DATA = {
             },
             {
               "title": "本章思考题",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "延伸阅读推荐",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "十、个人投资者的国际资产配置（补充与常见误区）",
@@ -9058,8 +9051,7 @@ const MANIFEST_DATA = {
             },
             {
               "title": "本章小结",
-              "subs": [
-              ]
+              "subs": []
             }
           ]
         }
@@ -10871,6 +10863,224 @@ const MANIFEST_DATA = {
           ]
         },
         {
+          "file": "ch02-memory-textbook.md",
+          "title": "Memory · 教材版",
+          "words": 16722,
+          "h2s": [
+            {
+              "title": "第一节 记忆的定义与功能",
+              "subs": [
+                {
+                  "title": "一、什么是记忆",
+                  "level": 3
+                },
+                {
+                  "title": "二、记忆的基本功能",
+                  "level": 3
+                },
+                {
+                  "title": "三、记忆的进化意义",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "第二节 记忆的三级加工模型",
+              "subs": [
+                {
+                  "title": "一、感觉记忆：信息的瞬时登记",
+                  "level": 3
+                },
+                {
+                  "title": "二、工作记忆：意识的舞台",
+                  "level": 3
+                },
+                {
+                  "title": "三、长时记忆：知识的仓库",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "第三节 记忆的编码",
+              "subs": [
+                {
+                  "title": "一、编码的层次与水平",
+                  "level": 3
+                },
+                {
+                  "title": "二、编码的具体策略",
+                  "level": 3
+                },
+                {
+                  "title": "三、影响编码效率的因素",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "第四节 记忆的存储",
+              "subs": [
+                {
+                  "title": "一、记忆痕迹与神经基础",
+                  "level": 3
+                },
+                {
+                  "title": "二、存储的组织原则",
+                  "level": 3
+                },
+                {
+                  "title": "三、存储的动态性",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "第五节 记忆的提取",
+              "subs": [
+                {
+                  "title": "一、提取的类型",
+                  "level": 3
+                },
+                {
+                  "title": "二、提取线索与编码特异性",
+                  "level": 3
+                },
+                {
+                  "title": "三、影响提取的因素",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "第六节 遗忘",
+              "subs": [
+                {
+                  "title": "一、艾宾浩斯遗忘曲线",
+                  "level": 3
+                },
+                {
+                  "title": "二、遗忘的原因",
+                  "level": 3
+                },
+                {
+                  "title": "三、遗忘的积极功能",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "第七节 记忆的种类",
+              "subs": [
+                {
+                  "title": "一、感觉记忆、工作记忆与长时记忆",
+                  "level": 3
+                },
+                {
+                  "title": "二、陈述性记忆与程序性记忆",
+                  "level": 3
+                },
+                {
+                  "title": "三、前瞻性记忆与回溯性记忆",
+                  "level": 3
+                },
+                {
+                  "title": "四、闪灯记忆",
+                  "level": 3
+                },
+                {
+                  "title": "五、集体记忆与文化记忆",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "第八节 记忆的偏差与扭曲",
+              "subs": [
+                {
+                  "title": "一、误导信息效应",
+                  "level": 3
+                },
+                {
+                  "title": "二、源监控错误",
+                  "level": 3
+                },
+                {
+                  "title": "三、虚假记忆",
+                  "level": 3
+                },
+                {
+                  "title": "四、自我一致性偏差",
+                  "level": 3
+                },
+                {
+                  "title": "五、高峰-终末规则",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "第九节 记忆策略",
+              "subs": [
+                {
+                  "title": "一、基础性记忆策略",
+                  "level": 3
+                },
+                {
+                  "title": "二、精细性记忆策略",
+                  "level": 3
+                },
+                {
+                  "title": "三、系统化记忆策略",
+                  "level": 3
+                },
+                {
+                  "title": "四、元记忆策略：知道\"如何知道\"",
+                  "level": 3
+                },
+                {
+                  "title": "五、日常生活与老龄化中的记忆策略",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "第十节 记忆研究的现实应用",
+              "subs": [
+                {
+                  "title": "一、教育中的应用",
+                  "level": 3
+                },
+                {
+                  "title": "二、临床心理学中的应用",
+                  "level": 3
+                },
+                {
+                  "title": "三、目击证词与法律心理学",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "第十一节 小结与回顾",
+              "subs": [
+                {
+                  "title": "记忆的整合框架",
+                  "level": 3
+                },
+                {
+                  "title": "记忆的脆弱与韧韧",
+                  "level": 3
+                },
+                {
+                  "title": "从理论到行动",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
           "file": "ch03-thinking-and-language.md",
           "title": "Thinking And Language",
           "words": 24924,
@@ -12490,8 +12700,8 @@ const MANIFEST_DATA = {
           ]
         }
       ],
-      "totalWords": 188315,
-      "chapterCount": 12
+      "totalWords": 205037,
+      "chapterCount": 13
     },
     {
       "id": "badminton-recovery",
@@ -13267,8 +13477,7 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "赛前准备的重要性",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "赛前一周倒计时",
@@ -13364,8 +13573,7 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "发球的重要性",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "正手发高远球",
@@ -13534,8 +13742,7 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "比赛心理的重要性",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "比赛各阶段心理特点",
@@ -13626,8 +13833,7 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "羽毛球比赛的体能特点",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "比赛体能消耗分析",
@@ -13749,8 +13955,7 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "局间调整的重要性",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "局间休息利用",
@@ -13849,8 +14054,7 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "什么是TDEE？",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "羽毛球运动员的TDEE特点",
@@ -13902,8 +14106,7 @@ const MANIFEST_DATA = {
             },
             {
               "title": "注意事项",
-              "subs": [
-              ]
+              "subs": []
             }
           ]
         },
@@ -13914,8 +14117,7 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "羽毛球运动员的营养素框架",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "一、碳水化合物——能量主力",
@@ -14120,8 +14322,7 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "蛋白质——运动员的基石营养素",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "羽毛球运动员蛋白质需求",
@@ -14222,8 +14423,7 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "水合——被忽视的运动表现因素",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "脱水的影响",
@@ -14358,13 +14558,11 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "运动补剂概述",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "补剂分级体系",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "A级推荐补剂",
@@ -14510,8 +14708,7 @@ const MANIFEST_DATA = {
           "h2s": [
             {
               "title": "羽毛球运动员的体重管理",
-              "subs": [
-              ]
+              "subs": []
             },
             {
               "title": "体脂率与运动表现",
@@ -14619,4 +14816,4 @@ const MANIFEST_DATA = {
       "chapterCount": 7
     }
   ]
-};
+}

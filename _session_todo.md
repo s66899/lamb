@@ -1446,3 +1446,40 @@
 
 ### commit hash
 - `19eb83b`(本地已落,`book` 分支 HEAD,领先 `origin/book` 1 commit;**push 未成功**,等网络恢复),GitHub Pages 暂未自动部署本轮
+
+## 2026-08-30 第 39 轮
+
+### 本轮做了什么
+- **commit (pending)** `fix(manifest): psychology 漏注册 ch02-memory-textbook.md（配套教材版 432 行 / 16,722 字）补回 manifest` — 发现真实 bug：v3.22.46 提交 d0173ae 把 ch03-memory.md 重命名为 ch02-memory-textbook.md 当作「配套教材版」挂在 ch02-memory.md 旁边，工程力学书的同模式对照（ch02-axial-loading.md + ch02-axial-loading-deep-dive.md）双文件双双注册在 manifest，但心理学只改了文件名 / 没改 manifest，结果磁盘 13 ch*.md vs manifest chapterCount=12，本章对用户完全不可见
+- **修复策略**：用 python json.loads/dumps 原子改写 manifest.json + manifest_data.js（同源思路与 v3.22.49 _add_4_missing_chapters.js 模板一致），在 psychology.chapters 数组中 `ch02-memory.md` 之后插入新条目 `ch02-memory-textbook.md`（title=`Memory · 教材版` / words=16722 / 11 个 H2 / 39 个 H3，从磁盘 grep ## 与 ### 实时抽取）；同步刷新 psychology.chapterCount 12 → 13 / psychology.totalWords 188315 → 205037；新条目位置与 EM 同模式（ch02-axial-loading-deep-dive 紧跟 ch02-axial-loading）一致
+- **零业务代码改动**：app.js / index.html / VERSION / books/**/*.md 全部不动（仅 manifest 字段补漏）
+- **改动**：`2 files changed, 0 insertions(+), 0 deletions(-)`（git diff 行数不变；字节数 manifest.json +6666 / manifest_data.js +6329）
+- **新增一次性脚本** `_add_psy_memory_textbook.js`（162 行）留档备查，沿用 v3.22.49 模板思路 + python 实现替换为更稳的 JSON 改写（避免 JS 字符串切片法碰 CRLF/裸 LF 等老坑，详见脚本注释）
+
+### 校验
+- `python -c "import json; m=json.load(open('manifest.json')); psy=next(b for b in m['books'] if b['id']=='psychology'); print(psy['chapterCount'], psy['totalWords'], len(psy['chapters']))"`：**13 205037 13** ✓（改前 12 / 188315 / 12）
+- `python -m json.tool manifest.json > /dev/null`：exit 0 ✓
+- `node --check manifest_data.js`：exit 0 ✓
+- `node _scan_exlib.js`：1336 ids / 524 refs / 0 broken（不动 ex-lib）✓
+- `git diff --stat HEAD`：`2 files changed, 0 insertions(+), 0 deletions(-)` ✓（纯字段补漏）
+- 跨文件一致性：manifest.json 与 manifest_data.js 的 psychology 块**完全相等**（实测 `pa == pb` True，cc/tw/chapters[2].file 全对齐）
+- 磁盘 vs manifest 同步：books/psychology/ 13 个 ch*.md 文件 全部在 manifest psychology.chapters 中找到对应条目 ✓
+- 零业务代码改动（app.js / index.html / VERSION / books/**/*.md 全部不动）
+- APP_VERSION 不 bump（纯 manifest 字段补漏，不发版）
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(38 轮新增，优先级低)** competition+nutrition README 是否与 manifest 同步 → 经扫表确认 competition+nutrition README 已经是规范中文标题（无 chapter 表格），与 manifest.title 一致，**无需改**
+- ✅ **(37 轮新增，优先级中)** competition 6 章 + nutrition 7 章 manifest 用裸文件名作 title 字段 → 38 轮 19eb83b 已修
+- ✅ **(本轮新发现，优先级中)** psychology manifest 漏注册 ch02-memory-textbook.md → 本轮补回，与 EM 同模式对齐
+- ⏭️ **(继承远期，优先级低)** ch04 L202 12 个 unique 加权精细化（纯文字统计表述）
+- ⏭️ **(继承远期，优先级中)** manifest.json 与 manifest_data.js 在 yin-yang / badminton / engineering-mechanics / finance / psychology 等多本书已存在预存的字段漂移（words 数 / h2s 数 / 标题顺序不等），属历史欠账 — 实测 v3.22.46 起即如此（git stash baseline 验证），非本轮引入 → 远期单独清理
+- ⏭️ **(继承远期，优先级低)** ch06 foam roller 信息补偿 / ch04 H2 vs H3 切分级别 / `_session_todo.md` 1450+ 行归档 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / 5 本书 README 表头对齐剩余 / 其他书籍 orphan .md 扫表（沿 EM/PSY 模式）
+
+### 新增下轮候选
+- **(本轮新发现，优先级中)** 扫 books/*/ch*.md vs manifest 时还发现 `engineering-mechanics` 实际 12 个 ch*.md 文件已对齐（v3.22.46 d0173ae 同步修了 ch02-axial-loading-deep-dive 注册），但 `competition` / `nutrition` 旧 README 目录（02 轮候选扫表时已确认对齐）— 仍需扫表确认 `finance` 13 章 / `yin-yang` 15 章 / `badminton` 13 章 三本书的 README 章节表头与 manifest.title 是否一致（README vs manifest title 一致性核对，纯字段对齐，低风险）
+- **(本轮新发现，优先级中)** ch08-palmistry-basics.md 是 yin-yang 书中 H2 切层最特别的（用「###」作首段标题，正文才用「## 8.1」，其他章都是 H2 直起）— 是否需对齐其他章节的层级一致性？纯排版风格选择，建议远期登记
+- **(继承远期，优先级低)** ch04 L202 12 个 unique 加权精细化 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / `_session_todo.md` 1450+ 行归档 / 其他书籍 orphan .md 扫表
+
+### commit hash
+- `pending`（本轮改完，待 `git add` + `git commit`，push 仍因本地 ISP 拦截 GitHub 443 阻塞，等网络恢复后单次 push 即可，沿用「N commit 累计 push 成功」先例）
