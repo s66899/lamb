@@ -1,4 +1,50 @@
 
+## 2026-08-29 第 23 轮 (commit a1515f8)
+
+### 本轮做了什么
+- **commit `a1515f8`** `fix(nsca-cpt): README L11「七本书写作计划」→「九本书写作计划」脱节修复`
+- **真实问题**:`books/nsca-cpt/README.md` L11 顶部声明 `本书是「七本书写作计划」的第五本`,与 manifest.json 实际 9 本书 / books/README.md L5「九本书持续更新」 / books/README.md L11「manifest.json v3.22.61 · 总计 9 本书 / 96 章 / 88.1 万字」三方不一致;历史 v3.22.45 (commit `09b8735` 前 14 个版本) 同步时 manifest 仅 7 本书,此后经 v3.22.46 NSCA-CPT 整本 metadata 补齐 + v3.22.51 competition+nutrition 整本补入 + v3.22.53 6 处 chapter 副标题对齐,manifest 现已 9 本书,但 nsca-cpt/README.md L11「七本」表述未随之刷新,差 2 本书口径
+- 单文件 1 行 sed:「七本书写作计划」→「九本书写作计划」;与 books/README.md L5/L11 + manifest.json 三方对齐 ✓
+
+### 校验
+- 改前 grep 「七本\|八本\|九本」: nsca-cpt/README.md L11「七本」 + books/README.md L5「九本」(2 处不一致)
+- 改后 grep 「七本\|八本\|九本」: nsca-cpt/README.md L11「九本」 + books/README.md L5「九本」(2 处完全一致 ✓)
+- `git diff books/nsca-cpt/README.md`: 1 行改「七」→「九」(`+1/-1` 最小改动 ✓)
+- `python -m json.tool manifest.json` exit 0 ✓
+- `python -m json.tool books/exercises/ex-lib.json` exit 0 ✓
+- `node --check app.js` exit 0 ✓
+- `node _scan_exlib.js` → 1336 ids / 351 refs / 0 broken(与上轮完全一致,本次未动任何 [ex:XXXX]) ✓
+- APP_VERSION 不 bump(本次只修文案口径,版本号仍 v3.22.61,与历史 VERSION L3 / README v3.22.61 / ch10 L301 v3.22.61 同型「文字口径微调」一致)
+
+### 上轮候选清算 (本轮重扫)
+- ❌ **450+ 行 _session_todo.md 文件归档**(本轮 559 行, 比上轮 540 行又多 19 行): 优先级低, 纯文件管理, 继续留为远期
+- ❌ **VERSION 历史快照检查**(本轮未跑, 与本轮修复无关): `find . -name "VERSION*"` 可独立扫, 优先级低
+- ❌ **foam roller 腰部入库**(持续多轮用户偏好, 远期继承): 仍需先建 id 命名 + 多语字段规范
+- ❌ **manifest_data.js 与 manifest.json 漂移检测**(本轮新发现, 优先级低): 本轮用临时脚本 _check_manifest_drift.py/2 扫过,发现 62 处字段差异(主要在 yin-yang 书 `words` 字段 manifest.json 偏大 + `h2s` 结构 manifest_data.js 更详细),属于独立演化产物非简单同步可修,远超单行 sed 范畴,继续留为远期
+- ✅ **4 条候选全部作废**(本轮启动新扫描)→ 找到 nsca-cpt/README.md L11「七本」→「九本」脱节作为本轮唯一真问题
+
+### Push 状态
+- ✅ 本轮 push 成功!`1eeecd6..a1515f8` 已推 `origin book`(host 443 直连有效,`git -c http.proxy= -c https.proxy= push origin book` → exit 0),GitHub Pages 自动部署中
+
+### 新增下轮候选 (本轮真扫)
+- **本轮未扫到下一处显著脱节**: 所有 7 本书 README 顶部声明 + APP_VERSION + APP_DATE + manifest.json/books/README.md v3.22.61 全部对齐;ex-lib 库 1336 ids / 351 refs / 0 broken
+- **继承远期(本轮重提)**:
+  - 450+ 行 _session_todo.md 文件归档(559 行,远超 5 轮可见窗口)
+  - foam roller 腰部入库(ch06/ch08 都标「库中暂无」,如要做需先建命名规范)
+  - manifest_data.js 与 manifest.json 漂移检测(本轮新扫描发现 62 处字段差异,主要为 yin-yang 书 + h2s 结构,远超单 commit 范围,可考虑下一轮开「manifest 一致性专题」分章节处理)
+- **(本轮新发现,优先级低)** books/README.md 表头「🐏的羽毛球 | 13 | 14.2 万」等的字数 / 章节数是否与 manifest.json 一致:本轮 grep 「九本」同时扫到 books/README.md L5,粗看表里 9 行书名是否完全对得上 manifest.json 9 本书待下轮核对(优先级低,纯文案对齐)
+
+### commit hash
+- `a1515f8`(已 push `1eeecd6..a1515f8`),GitHub Pages 自动部署中
+
+---
+
+## 2026-08-29 第 22 轮 (commit 1eeecd6)
+
+### 本轮做了什么
+- **commit `1eeecd6`** `chore(todo): 记录本轮 README v3.22.49→v3.22.61 同步 commit 98cbde0 + 上轮 7 条候选全部清算(...)`
+
+---
 ## 2026-08-29 第 21 轮 (commit 09b8735)
 
 ### 本轮做了什么
