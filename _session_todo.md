@@ -43,9 +43,7 @@
 - **羽毛球康复书 ch06 / ch07 末段「清单 13 unique」措辞补强**(低优先,继承上轮):虽然声明数字与实测全部对齐(36/33 inline + 13 unique,逐段扫 4 位数字验证),但措辞「下方清单 13 unique / 13 行不重复」与 ch02-shoulder 「速查表按部位一行一条共 19 处」+ ch08-action-plan 「速查表 19 + 清单 16 = 35 处」同型口径可一次性补一句,在下轮做
 - **_session_todo.md 现 699 行远期归档**(低优先,本轮 619 → 699):可考虑归档前 18 轮至 `_session_todo.md.archive`(commit message + 摘要保留,正文截断)
 - **foam roller / 筋膜球腰部专项入库**(远期继承):同前
-- **本轮新发现(优先级低)**:round-25 重复块删除后,文件中其他 round 块顺序紧接 L110 round-24,过渡处 `---
-
-## 2026-08-29 第 24 轮...` 视觉清爽 ✓;还有 `git log --oneline` L# 前 10 条全部正常,git status clean ✓
+- **本轮新发现(优先级低)**:round-25 重复块删除后,文件中其他 round 块顺序紧接 L110 round-24,过渡处 `---` + 空行 + `## 2026-08-29 第 24 轮...` 视觉清爽 ✓;还有 `git log --oneline` L# 前 10 条全部正常,git status clean ✓
 
 ### commit hash
 - `ba93e8e`(已 push `0015224..ba93e8e`),GitHub Pages 自动部署中
