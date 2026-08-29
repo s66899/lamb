@@ -1,4 +1,45 @@
 
+## 2026-08-29 第 20 轮 (commit b7213de)
+
+### 本轮做了什么
+- **commit `b7213de`** `fix(badminton-recovery): ch02-shoulder L253 末段 ex-lib 引用总数 off-by-9 修复(声明行内嵌 id 未计入声明段)`
+- **真实问题**:扫描羽毛球康复书 ch02-shoulder 时实测全章 inline = 32,末段 L253 声明「正文(不含说明 / 修订说明)共 23 处 `[ex:NNNN]` 引用」与实际差 9。成因同 ch06/ch07(a188a14 已修):L253 「**说明**」段把 7 个合法 id 拼出来 + 「Y-T-W 用 [ex:0215]、face pull 用 [ex:0225]」重复引用 = 9 处 [ex:XXXX] 内嵌,但声明口径「不含说明段」把内嵌 9 处排除在外,导致 grep 实测 32 vs 声明 23 的 off-by-9
+- 修复策略:沿用 a188a14 同型方案 — 仅在声明行尾追加「含本声明句同 N 个 id 内嵌 X 次,合计 Y 处 inline」澄清项,**不新增 [ex:XXXX] 语法**(否则会让 inline 总数继续增长,fix 失去意义);原说明段/清单段的 [ex:XXXX] 全部保留,口径不变
+- 单文件 1 行替换(ch02-shoulder.md L253 末尾 `绝不构造字符串式伪 id。` → `绝不构造字符串式伪 id。(含本声明句同 0215 / 0225 / 0235 / 0383 / 0426 / 0864 / 3011 这 7 个 id 各内嵌 1 次 + 0215 / 0225 各再内嵌 1 次共内嵌 9 次,合计 32 处 inline)`);用 python `Path.write_text(newline='')` 模式绕开 edit 工具的全角标点 normalize + CRLF 转换坑
+- APP_VERSION 不 bump(本次只修文案,版本号仍 v3.22.61)
+
+### 校验
+- `grep -oE '\[ex:[0-9]{4}' books/badminton-recovery/ch02-shoulder.md | wc -l` 改前 32 / 改后 32(inline 不变;声明段纯描述不写具体 [ex:NNNN] 字面量,避免新增 inline)✓
+- 9 个内嵌 id(0215 / 0225 / 0235 / 0383 / 0426 / 0864 / 3011 各 1 + 0215 / 0225 各再 1)全部合法 vs `books/exercises/ex-lib.json` 库(1336 条):9 valid / 0 bad ✓
+- `node _scan_exlib.js`:1336 ids / 351 refs / 0 broken(与 a188a14 / 11e74a2 baseline 完全一致,纯文字微调零 id 影响)✓
+- `node --check app.js` OK / `node --check manifest_data.js` OK / `python -m json.tool manifest.json` OK / `python -m json.tool books/exercises/ex-lib.json` OK ✓
+- `git diff --stat`:`1 file changed, 1 insertion(+), 1 deletion(-)`(最小改动,纯插入)✓
+- LF-only / CRLF=0 / 裸 CR=0 ✓
+
+### 上轮候选清算
+- 上轮 todo 候选清空(commit 71ef1ba 已确认),本轮重新扫描发现 ch02-shoulder L253 同型 off-by-N 问题(同 a188a14 ch06/ch07 修复模式),立即兑现 ✓
+- ⚠️ ch03-knee / ch04-ankle / ch08-action-plan 实测与声明 0 差异,作废 ✓
+- ⚠️ NSCA 7 章 ch04-ch10 末段未声明 inline 总数(只有 ch10 L301 声明 31 inline),作废 ✓
+- ⚠️ 羽毛球 ch12 末段未声明 inline 总数(只有 §8.4 段头注 36+30),作废 ✓
+- ⚠️ foam roller 入库(持续多轮用户偏好,远期)
+- ⚠️ README/TOC 8 章 ex-lib 速查表(可选增强,远期)
+
+### Push 状态
+- ✅ `git -c http.proxy= -c https.proxy= push origin book` 一次成功(本轮 host 网络 443 通),`219eb96..b7213de` 4 条 commit(11e74a2 / 68b199b / a188a14 / 219eb96 / b7213de 共 5 条)一次性追平,GitHub Pages 自动部署中
+- 实际推送:上轮 4 条累计 AHEAD(11e74a2 / 68b199b / a188a14 / 219eb96 等历史) + 本轮 b7213de 一次到位
+
+### 新增下轮候选
+- **羽毛球 ch05-elbow 末段 inline 总数声明**(优先级低,本轮新发现):ch05 实测 14 inline / 5 unique,末段未声明总数,只有 v3.22.59 修订说明段。补一句「本章共引用 14 处 ex-lib inline 引用(折合 5 个 unique id)」+ 分布细分(正文离心训练 6 处 + 清单 5 处 + 说明段 1 处 + 第十一节转诊案例 2 处),与 ch02/03/04/06/07/08 风格统一。下轮可一次性补齐(纯文字改动,不动 ex-lib id)
+- **羽毛球 ch08-action-plan L174「本章共引用 35 处 ex-lib inline 引用」声明 vs 实际 35 处 inline**(优先级低,本轮新发现):82f9ef6 已补声明,但未用类似 ch06/ch07 「合计 X 处 inline」澄清项,实测 ch08 L174 声明里「分布:速查表按部位一行一条共 19 处... + 下方清单 16 处 = 35 处 inline」是用 `=` 加法描述,内嵌 id 仅有「速查表按部位一行一条共 19 处」描述性文字(无 [ex:XXXX] 内嵌),所以 inline 实际就是 35,口径已自洽,无须改
+- **foam roller 下背 / 筋膜球腰部专项条目入库**(远期):用户偏好持续多轮,需先建 id 命名 + 多语字段规范
+- **README/TOC 加「每章 ex-lib 分布细分速查表」**(可选增强):便于读者一眼看清 ch01-ch08 的 unique / inline 数量
+- **VERSION 文件头注释「73 条 commit 摘要」与实际数字脱节**(优先级低,本轮新发现):VERSION 第 3 行注释「本轮新增 v3.18.7 ~ v3.22.61 共 73 条 commit 摘要」,但 `grep -c "^v3\." VERSION | tail -n +91` = 27(从 v3.18.7 行 L91 到末尾)。可能 73 是历史叙事数字(指 v3.18.7 commit 之后实际 commit 数 + 摘录增量),但 grep 显示 27。可下轮一次性把注释改为「本轮新增 v3.18.7 ~ v3.22.61 共 27 条 VERSION 摘要」对齐
+
+### commit hash
+- `b7213de`,push `219eb96..b7213de` ✓
+
+---
+
 ## 2026-08-29 第 19 轮 (commit 11e74a2)
 
 ### 本轮做了什么
