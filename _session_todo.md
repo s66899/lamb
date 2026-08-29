@@ -1,4 +1,45 @@
 
+## 2026-08-29 第 21 轮 (commit 09b8735)
+
+### 本轮做了什么
+- **commit `09b8735`** `fix(meta): VERSION L3 头注释「v3.18.7 ~ v3.22.61 共 73 条 commit 摘要」→ 27`
+- **真实问题**:兑现上轮候选第 4 条 — `VERSION` 文件 L3 注释写「本轮新增 v3.18.7 ~ v3.22.61 共 73 条 commit 摘要」,但实测 `awk 'NR>=91' VERSION | grep -c '^v3\.' = 27`(注释明确指向 v3.18.7 ~ v3.22.61 这段,即 L91 起的新增叙事),差 46 条属纯文字叙事漂移(同 APP_DATE / ch10 L301 / ch02 W8 同步型)。100 条总 `^v3.` 中,L4-L90 是 v3.4.0 ~ v3.17.x 老叙事(73 条),L91 起的 v3.18.7 ~ v3.22.61 新增叙事实际只有 27 条,注释误用「73」应为「27」
+- 修复策略:同 b7213de / a188a14 / 11e74a2 同步型 — 仅改数字叙事,不动版本号、不动业务代码、不动 ex-lib id
+- 单文件 1 行替换(VERSION L3):「本轮新增 v3.18.7 ~ v3.22.61 共 **73** 条 commit 摘要」→「本轮新增 v3.18.7 ~ v3.22.61 共 **27** 条 commit 摘要」;用 python `io.open(newline='')` 模式绕开 edit 工具的全角标点 normalize + CRLF 转换坑
+- APP_VERSION 不 bump(本次只改头注释叙事数字,版本号仍 v3.22.61)
+
+### 校验
+- 改前 `awk 'NR>=91' VERSION | grep -c '^v3\.'` = 27(实测 L91 起 v3.18.7 ~ v3.22.61 新增叙事段共 27 条),改后 = 27 ✓(注释数字与实测完全对齐)
+- 改前 `grep "73 条 commit 摘要" VERSION` = 1(命中 L3 错误声明),改后 = 0 ✓
+- 改后 `grep "27 条 commit 摘要" VERSION` = 1(命中 L3 修正后声明)✓
+- `node _scan_exlib.js`:1336 ids / 351 refs / 0 broken(与 b7213de / a188a14 / 11e74a2 baseline 完全一致,纯文字叙事零 id 影响)✓
+- `node --check app.js` OK / `node --check manifest_data.js` OK / `python -m json.tool manifest.json` OK / `python -m json.tool books/exercises/ex-lib.json` OK ✓
+- `git diff --stat VERSION`:`1 file changed, 0 insertions(+), 0 deletions(-)`(同字节行内替换 `73` → `27`,git 把同字节行内替换报告为零增量,`git diff --text` 可看到真实 -73/+27 单字符替换)✓
+- LF-only / CRLF=0 / 裸 CR=0 / 保持 UTF-8 BOM / 18162 字节不变 ✓
+- 文件类型:`VERSION: Unicode text, UTF-8 (with BOM) text, with very long lines (498)`(与改前一致)✓
+
+### 上轮候选清算
+- ❌ VERSION L3 注释「73」 → 27 — **本轮已修** ✓
+- ⚠️ ch05-elbow / ch06-back / ch07-achilles 末段「W# 累加 vs 实际表内 inline」一致性 — **本轮重扫**:三章末段修订说明里都没有「W# = 共 N 处」型声明(grep `W[0-9].*处.*=` = 0),v3.22.59 / d6305d5 修订段是「清单 5 处 / 12 处」等纯数字描述,与 a593beb 修的 ch02 「W1-W8 表内 15 处」累加型不同口径,作废
+- ⚠️ ch05-elbow 末段补总述声明(沿用 ch02 / ch03 / ch04 / ch06 / ch07 / ch08 风格)— 候选保留,远期
+- ⚠️ ch08-action-plan L174「35 处 inline」声明 — 上轮已查实口径自洽(速查表 19 + 清单 16 = 35,内嵌无具体 [ex:XXXX]),无须改
+- ⚠️ foam roller 入库(用户偏好持续多轮,远期)
+- ⚠️ README/TOC 加 8 章 ex-lib 速查表(可选增强,远期)
+
+### Push 状态
+- ✅ `git -c http.proxy= -c https.proxy= push origin book` 一次成功(`47b6d65..09b8735`),本轮 host 网络 443 通,GitHub Pages 自动部署中
+
+### 新增下轮候选
+- **ch05-elbow 末段补总述声明**(沿用 ch02 / ch03 / ch04 / ch06 / ch07 / ch08 风格):ch05 实测 14 inline / 5 unique,末段只有 v3.22.59 修订说明段未声明「本章共引用 N 处 / 折合 X unique」+ 分布细分。下轮可一次性补齐(纯文字改动,不动 ex-lib id),与 7 章口径 100% 覆盖(8/8 章到位,仅 ch01 导言无 ex-lib 引用)
+- **ch08-action-plan L174 「35 处 inline」拆分速查表 19 + 清单 16 = 35 处 inline + ch05「速查表按部位一行一条共 X 处」描述**(可选,优先级低):为补齐 ch05 末段做预演,先确认 ch08 L174 「速查表 19 / 清单 16」分布数字实测是否严格一致
+- **foam roller 下背 / 筋膜球腰部专项条目入库**(远期,用户偏好):需先建 id 命名 + 多语字段规范,跨多轮才推进
+- **README/TOC 加 8 章 ex-lib 分布细分速查表**(可选增强,远期)
+
+### commit hash
+- `09b8735`,push `47b6d65..09b8735` ✓
+
+---
+
 ## 2026-08-29 第 20 轮 (commit b7213de)
 
 ### 本轮做了什么
