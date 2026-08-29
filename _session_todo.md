@@ -1089,3 +1089,39 @@
 
 ### commit hash
 - `d0173ae`(已 push `78711a5..d0173ae`,3 commits 累计),GitHub Pages 自动部署中
+
+---
+
+## 2026-08-30 第 33 轮 (commit 4e4500c)
+
+### 本轮做了什么
+- **commit `4e4500c`** `fix(manifest): 修正 d0173ae 遗留的 ch03-axial-loading 死链` — 上轮 d0173ae 把 engineering-mechanics `ch03-axial-loading.md` 重命名为 `ch02-axial-loading-deep-dive.md`,但 manifest.json / manifest_data.js 第 2 个 chapter 条目("Axial Loading · 理论推导")的 `file` 字段仍写 `ch03-axial-loading.md`(磁盘已不存在)。导致这条 chapter 在站点加载时会 404。
+- **本轮 fix**:`manifest.json:4429` + `manifest_data.js:5107` 各 1 处字符串 `ch03-axial-loading.md` → `ch02-axial-loading-deep-dive.md`(对应 "Axial Loading · 理论推导" 条目)。两文件同步改动,运行时 `fetch(MANIFEST_URL)` 不会再打 404。
+- **psychology 不动**:d0173ae 把 `ch03-memory.md` 重命名为 `ch02-memory-textbook.md` 后,manifest 对应位置写的是 `ch02-memory.md`(主章),`ch02-memory-textbook.md` 是有意保留的 orphan 配套教材版 — 主章 L387 已加配套链接,manifest 不收录是预期设计(否则 12 章会变成 13 章 + 一章双文件冗余)。
+- **校验**:
+  - `python -m json.tool manifest.json` ✓ 通过
+  - `node --check manifest_data.js` ✓ 语法 OK
+  - `node _scan_exlib.js` → `ex-lib 1336 ids / 521 refs / 0 broken` 不变
+  - 9 本书 manifest vs 磁盘:仅剩 psychology `ch02-memory-textbook.md`(预期 orphan)+ 其他 8 本 OK
+  - 改前改后 CRLF 一致(manifest.json 是 CRLF,本轮 edit 未引入 CR 也未改变 LF/CRLF 比例;`git diff --text` 干净 1 行修改)
+  - 字节数:manifest.json 427862 → 427872(+10);manifest_data.js 450182 → 450192(+10)— 10 个字符净增 = `"ch02-axial-loading-deep-dive.md"`(32 字符) - `"ch03-axial-loading.md"`(22 字符) = +10 ✓
+  - APP_VERSION 不 bump(纯 manifest 字段对齐)
+  - 零业务代码改动(app.js/index.html/manifest_data.js 仅 1 处 string 改)
+  - 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(本次完成)** `engineering-mechanics ch03 孤儿文件处理中` → 实际是 d0173ae 改文件名后 manifest 没跟上,本次 4e4500c 修复 manifest
+- ⏭️ `psychology ch03 孤儿文件处理中` → 不适用,psychology 那边 d0173ae 设计是保留 orphan 配套教材版,主章已有链接,manifest 不收
+- ⏭️ `_session_todo.md` 1030+ 行归档 → 远期继承,本轮未触发
+- ⏭️ 末尾裸 hash 块历史清理 → 远期继承
+
+### 新增下轮候选
+- **foam roller / 筋膜球专项条目入库** → 远期,需要新设计条目 + 校对其在 ch02-ch07 内的引用路径(目前 ch06/ch07 都标注"库中暂无")
+- **ch06 ch07 措辞微调**(声明段 + 分布细分末尾 + 合计行逻辑)→ 远期继承;其实数学都对(35+1=36 / 29+4=33),只是文字略 awkward
+- **`_session_todo.md` 1091 行归档**(累计 7 轮 1030→1091 行)→ 远期,可考虑拆 `_session_todo.archive.md`
+- **末尾裸 commit hash 残留清理**(d0173ae 上轮记账段曾被推到中段)→ 远期继承
+- **app.js APP_VERSION v3.22.61 vs 实际最新** → 本轮未动,但 `app.js:34` 当前写 `v3.22.61` 与 `app.js:35` `2026-08-29`,若要 bump 需同时校验所有书籍 README 的版本号(上轮 e028439 已校验 nsca-cpt,其他 8 本未做)
+- **L# 表述改进**(L640-L642 等多处「L# 含义」表述继承)→ 远期
+
+### commit hash
+- `4e4500c`(已 push `32e7cbd..4e4500c`,本轮 1 commit),GitHub Pages 自动部署中
