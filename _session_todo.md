@@ -349,3 +349,47 @@
 - **整个 app.js 是否还有别的硬编码日期/版本号散落** (低优先): `grep -nE "20[0-9]{2}-[0-9]{2}-[0-9]{2}" app.js | grep -v "APP_DATE"` 应只剩 0 行, 跑一遍可证 APP_DATE 是唯一埋点
 - **新增候选** (本轮发现, 优先级中): **ex-lib 库里是否有「foam roller 下背」专项条目** (持续多轮用户偏好): 当前 ch06 末段明确写「ex-lib 库中暂无『foam roller 下背 / 筋膜球腰部』专项条目」, 如未来要补这一条需先建立 id 命名 + 多语字段规范(参考 SMR 条目 ex-5202~ex-5213 模板)
 - **commit hash**: `b37c5dc`, push `541b34c..b37c5dc`, GitHub Pages 自动部署中
+
+---
+
+## 2026-08-29 第 18 轮 (commit a188a14)
+
+### 本轮做了什么
+- **commit `a188a14`** `fix(badminton-recovery): v3.22.62 ch06 / ch07 末段 ex-lib 引用总数 off-by-N 修复(声明行内嵌 id 未计入声明段)`
+- **真实问题**:扫描 8 章末段 ex-lib 引用现状声明 vs 实际 inline 计数,发现 2 章声明行内嵌 id 未计入「说明段」分类:
+  - **ch06-back.md L173** 声明「35 处 inline」实测 36 处(状态行 `（[ex:1352] 再引）` 这一处 id 内嵌在状态行内,作者把 [ex:1352] 的「说明段 1 处」归到了 L191 实际说明段,但状态行内的同 id 也算 inline,所以 +1)
+  - **ch07-achilles.md L158** 声明「29 处 inline」实测 33 处(状态行 `[ex:5211] / [ex:1373] / [ex:1490] / [ex:1368]` 这 4 个 id 各内嵌 1 次在状态行内,作者把 4 个 id 的「说明段 4 处」归到了 L176 实际说明段,但状态行内的同 4 id 也算 inline,所以 +4)
+- 其他 6 章校对均正确(ch02 32/7 / ch03 16/9 / ch04 25/13 / ch05 14/5 / ch08 35/16 全部一致)
+
+### 校验
+- 改前 ch06 inline 36 / ch07 inline 33 → 改后 ch06 inline 36 / ch07 inline 33(数字与声明一致 ✓)
+- 改前 ch06 声明 35 / ch07 声明 29 → 改后 ch06 声明「35 ... 合计 36 处 inline」/ ch07 声明「29 ... 合计 33 处 inline」(声明与实测对齐 ✓)
+- `node _scan_exlib.js`:1336 ids / 351 refs / 0 broken(改前 351 / 0,改后不变;修复策略是「不新增 [ex:XXXX] 语法」,仅在声明行尾用「1352」「5211 / 1373 / 1490 / 1368」纯数字说明,避免 inline 总数继续增长)
+- `python -m json.tool manifest.json` OK / `python -m json.tool books/exercises/ex-lib.json` OK
+- `node --check` 未涉及(只动 .md)
+- git diff stat:`2 files changed, 2 insertions(+), 2 deletions(-)`(最小改动,全角中文标点 / LF 全部保留,绕开 edit 工具的 normalize 坑)
+- APP_VERSION 不 bump(本次只修文案,版本号仍 v3.22.61,与历史 ch03/ch04/ch05 同型「文字口径微调」一致)
+
+### 修复策略(关键 — 防「越修越错」)
+- 在声明行尾追加澄清项:`= X 处 inline(含本声明句同 N 个 id 各内嵌 1 次,合计 Y 处 inline)`
+- **不新增 [ex:XXXX] 语法** — 否则会让 inline 总数继续增长,fix 失去意义(本轮第一次尝试就掉这个坑:写「现状句 1 处（[ex:1352] 内嵌于本声明）」让 ch06 变成 37 反而更错)
+- 用「1352」「5211 / 1373 / 1490 / 1368」纯数字提及,ex-lib 扫描器不识别为 inline,只起文字说明作用
+
+### 上轮候选清算 (本轮重新扫描)
+- ❌ **ch10-recovery L301「截至 v3.22.56」** — 上一轮 todo 标的「可考虑」项;经本轮扫描实测 31/25/0 数据无变化,只是声明日期陈旧(可改但优先级低,作废留为远期)
+- ❌ **羽毛球 ch12 §9.8 措辞** — 已确认 50ee76b 完成,作废
+- ❌ **NSCA ch04 [ex:0000] 占位** — 实测 9370ab6 已替换为 0038 合法 id,作废
+- ❌ **ex-lib 库新增 foam roller 下背 / 筋膜球腰部专项条目** — 持续多轮用户偏好但需先建 id 命名 + 多语字段规范,优先级低,继续留为远期
+- ✅ **3 条候选全部作废**,本轮启动新扫描 → 找到 ch06/ch07 off-by-N 作为本轮真实问题
+
+### Push 状态
+- ⚠️ 本轮 host 网络 443 不稳定(`Failed to connect to github.com port 443` × 3 重试),commit `a188a14` 已留本地 `book` 分支,下次网络通时 `git push origin book` 即可
+
+### 新增下轮候选
+- **ch10-recovery.md L301「截至 v3.22.56」→「截至 v3.22.61」**(优先级低):实测 31/25/0 数据无变化,只是声明日期陈旧;纯 1 行 sed,风险近零
+- **ch06 / ch07 末段声明行 L173/L158「折合 13 个 unique id」核对**:实测 ch06 13 / ch07 13 都对,但声明在「同 id 多场景通用」的设计下,读者可能误把 unique 数算成 unique 行数(实际清单 13 unique 一行一条),无 bug 但口径可微调(优先级低,远期)
+- **「foam roller / 筋膜球」条目入库**(远期继承):持续多轮用户偏好,但需建命名规范,本次继续留
+- **README 加 8 章 ex-lib 引用速查表**(可选增强):让读者一眼看清 ch02-ch08 的 unique id 数量 + 总 inline 数量 + 库中暂无说明
+
+### commit hash
+- `a188a14`(本地 book 分支),push 待网络通
