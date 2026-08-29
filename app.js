@@ -8235,7 +8235,7 @@ function renderFitnessPlan(plan) {
       <div style="font-size:11px;opacity:0.7;margin-top:6px">生成日期：${plan.createdAt} · 基于您的 5 题回答</div>
     </div>
     <div style="background:var(--bg3);padding:10px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--text2)">
-      💡 点击任何 <code style="color:var(--blue)">[ex:0000]</code> 编号 → 直接打开动作 GIF + 步骤演示<br>
+      💡 点击任何 <code style="color:var(--blue)">[ex:1234]</code> 编号 → 直接打开动作 GIF + 步骤演示<br>
       ⚠️ 训练前请评估自身状态；有伤痛请咨询专业人士
     </div>
     ${weekBlocks}
