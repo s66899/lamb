@@ -13262,7 +13262,7 @@ const MANIFEST_DATA = {
       "chapters": [
         {
           "file": "ch01-pre-match-prep.md",
-          "title": "ch01-pre-match-prep",
+          "title": "赛前准备与倒计时",
           "words": 964,
           "h2s": [
             {
@@ -13359,7 +13359,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch02-serve-receive.md",
-          "title": "ch02-serve-receive",
+          "title": "发接发战术体系",
           "words": 758,
           "h2s": [
             {
@@ -13457,7 +13457,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch03-opponent-analysis.md",
-          "title": "ch03-opponent-analysis",
+          "title": "对手分析与应对",
           "words": 771,
           "h2s": [
             {
@@ -13529,7 +13529,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch04-mental-strategy.md",
-          "title": "ch04-mental-strategy",
+          "title": "比赛心理策略",
           "words": 972,
           "h2s": [
             {
@@ -13621,7 +13621,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch05-physical-pacing.md",
-          "title": "ch05-physical-pacing",
+          "title": "体能分配与节奏控制",
           "words": 1068,
           "h2s": [
             {
@@ -13744,7 +13744,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch06-post-match-review.md",
-          "title": "ch06-post-match-review",
+          "title": "局间调整与赛后复盘",
           "words": 762,
           "h2s": [
             {
@@ -13844,7 +13844,7 @@ const MANIFEST_DATA = {
       "chapters": [
         {
           "file": "ch01-tdee.md",
-          "title": "ch01-tdee",
+          "title": "TDEE 每日总能耗计算",
           "words": 436,
           "h2s": [
             {
@@ -13909,7 +13909,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch02-macronutrients.md",
-          "title": "ch02-macronutrients",
+          "title": "三大营养素科学分配",
           "words": 1000,
           "h2s": [
             {
@@ -14010,7 +14010,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch03-nutrient-timing.md",
-          "title": "ch03-nutrient-timing",
+          "title": "训练前后营养窗口",
           "words": 895,
           "h2s": [
             {
@@ -14115,7 +14115,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch04-protein-strategy.md",
-          "title": "ch04-protein-strategy",
+          "title": "蛋白质摄入策略",
           "words": 902,
           "h2s": [
             {
@@ -14217,7 +14217,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch05-hydration.md",
-          "title": "ch05-hydration",
+          "title": "水合与电解质平衡",
           "words": 868,
           "h2s": [
             {
@@ -14353,7 +14353,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch06-supplements.md",
-          "title": "ch06-supplements",
+          "title": "运动补剂速查",
           "words": 962,
           "h2s": [
             {
@@ -14505,7 +14505,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch07-weight-management.md",
-          "title": "ch07-weight-management",
+          "title": "体重管理与减脂策略",
           "words": 733,
           "h2s": [
             {
