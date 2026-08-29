@@ -1,4 +1,57 @@
 
+## 2026-08-29 第 26 轮 (commit ba93e8e)
+
+### 本轮做了什么
+- **commit `ba93e8e`** `fix(todo): _session_todo.md 第 25 轮块重复 (commit 0015224 botched — 同块粘贴 2 次,4889 字节 / 54 行) 删一处`
+- **真实问题**:`_session_todo.md` 在 v3.22.61 commit `0015224`(上一轮 `chore(todo)` 记录 ch12 §8.4 修复)里把「第 25 轮」记账块**整段粘贴了 2 次**——md5 hash `8dd8797f1d8601af0616d6e5312616ac`,4885 字节完全相同,夹在 L2-L54 和 L56-L109 之间,中间夹一个 `\---
+
+` 分隔符
+- **实测**:
+  - 文件原 80639 字节 / 753 行(LF);grep 扫到 `^## 2026-08-29 第 25 轮` 共 2 次;Python `re.findall` 也确认 2 次
+  - 仅「第 25 轮」块被粘 2 次;round 16/17/18/19/20/21/22/23/24 块都唯一;11 个 `## 本轮增量` 老块也都唯一
+  - 起始字节 4889 块头 = `
+## 2026-08-29 第 25 轮 (commit 0b7b78a)
+`;终止字节 9778 = round-24 头前 `
+---
+
+` 的尾部
+- **修复策略**:沿用本项目「纯文字叙事修正」模式 — 只删一段冗余的块,不动业务内容、不动 commit hash 列表、不动 APP_VERSION;用 Python `io.open(newline='')` 模式保留 LF(避免 edit 工具的 CRLF 转换坑,沿用 0b7b78a 教训)
+- 单文件 1 个块删除:raw[0:4889] + raw[9778:] → 75750 字节 / 699 行;54 行删除,0 行新增
+
+### 校验
+- `git diff --stat`: `1 file changed, 54 deletions(-)` ✓
+- `python -c "raw.count(b'\r\n')"`: 0 (无 CRLF 污染)✓
+- `python -c "raw.count(b'\r')"`: 0 (无裸 CR)✓
+- `grep -c "^## 2026-08-29 第 25 轮"`: 2 → **1** ✓
+- `grep -c "^## "`: 23 → **22** ✓
+- 文件结尾保留 `
+`,75750 字节,LF-only ✓
+- `node --check` / `python -m json.tool` 不适用(纯 md 文件,零业务代码改动)✓
+- 零业务代码改动; 零 ex-lib id 改动; APP_VERSION 不 bump
+
+### 上轮候选清算 (本轮真扫)
+- ✅ **_session_todo.md 第 25 轮块重复粘贴 bug** — **本轮已修**(commit 0015224 botched 造成的 4885 字节双胞胎删除一处)
+- ⚠️ **羽毛球康复书 ch06 / ch07 末段「清单 13 unique」同型口径对齐**(继承远期):本轮 python 实测 ch06 末段声明 35 inline + 13 unique 与 36 / 13 实测一致;ch07 末段声明 29 inline + 13 unique 与 33 / 13 实测一致;声明数字全部正确,**无差可改**;措辞混淆「清单 13 unique」 vs 「13 unique 行内重复」问题已在 ch06/ch07 末段段头陈述中以括号说明形式区分,优先级降低为远期观察
+- ⚠️ **_session_todo.md 现 699 行远期归档**(本轮 619 → 699,优先级低):纯文件管理,可考虑将前 20 轮记录归档到 `_session_todo.md.archive`
+- ⚠️ **foam roller / 筋膜球腰部专项入库**(远期,继承多轮用户偏好):ch06 / ch08 都标「库中暂无」,如要做需先建 id 命名 + 多语字段规范,跨多轮才推进
+- ⚠️ **books/README.md 表头 9 行字数 / 章节数核对**(本轮未扫,留为远期)
+
+### Push 状态
+- ✅ 本轮 push 成功!`0015224..ba93e8e` 已推 `origin book`(host 443 一次性直连 OK,前面 3 次 retry 都是 schannel/connection reset 抖动,最终无 proxy 直连 `git push origin book` → exit 0),GitHub Pages 自动部署中
+
+### 新增下轮候选
+- **羽毛球康复书 ch06 / ch07 末段「清单 13 unique」措辞补强**(低优先,继承上轮):虽然声明数字与实测全部对齐(36/33 inline + 13 unique,逐段扫 4 位数字验证),但措辞「下方清单 13 unique / 13 行不重复」与 ch02-shoulder 「速查表按部位一行一条共 19 处」+ ch08-action-plan 「速查表 19 + 清单 16 = 35 处」同型口径可一次性补一句,在下轮做
+- **_session_todo.md 现 699 行远期归档**(低优先,本轮 619 → 699):可考虑归档前 18 轮至 `_session_todo.md.archive`(commit message + 摘要保留,正文截断)
+- **foam roller / 筋膜球腰部专项入库**(远期继承):同前
+- **本轮新发现(优先级低)**:round-25 重复块删除后,文件中其他 round 块顺序紧接 L110 round-24,过渡处 `---
+
+## 2026-08-29 第 24 轮...` 视觉清爽 ✓;还有 `git log --oneline` L# 前 10 条全部正常,git status clean ✓
+
+### commit hash
+- `ba93e8e`(已 push `0015224..ba93e8e`),GitHub Pages 自动部署中
+
+---
+
 ## 2026-08-29 第 25 轮 (commit 0b7b78a)
 
 ### 本轮做了什么
