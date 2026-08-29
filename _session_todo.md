@@ -1,3 +1,51 @@
+## 2026-08-30 第 37 轮 (commit PENDING)
+
+### 本轮做了什么
+- **commit `PENDING`** `fix(badminton-recovery-ch06): L191 说明段「库中暂无 foam roller 下背/筋膜球腰部」措辞错位与现实脱节` — v3.22.17 已入库 ex-5202~5213 共 12 条 SMR/foam roller/筋膜球专项条目,ch05 L233 / ch07 L40/L174/L176 已统一改「库内已有」(commit 09bf747 / 第 35 轮),但 ch06-back L191 说明段「ex-lib 库中暂无 foam roller 下背 / 筋膜球腰部 专项条目」仍写「库中暂无」,与 ch05/ch07 措辞风格脱节;实测库内 12 条 foam roller 中 back 系列只有 5207 upper back / 5208 latissimus / 5212 thoracic spine,**腰部 foam roller 专项确实暂无**(背 3 条全无 lumbar)
+- **真实问题**:L191 措辞模糊,「库中暂无 foam roller 下背」读起来像「库中整体暂无 foam roller」,但实际上是「库内有 foam roller 整体,只是腰部专项暂无」;与 ch05/ch07 同轮入库后已统一为「库内已有」明显不一致
+- **修复策略**:沿用本项目「纯文字叙事修正」模式 — L191 说明段改写为「库内**已有**foam roller / 筋膜球系列专项条目(v3.22.17 入库 ex-5202~ex-5213 共 12 条覆盖各部位),但腰部 foam roller 专项**确实暂无**(库内 back 系列为 5207 upper back / 5208 latissimus / 5212 thoracic spine,无 lumbar 专项)」+ 补 3 处合法 id 引用 [ex:5207] / [ex:5212] / [ex:5208] 给邻近部位 foam roller;不动业务内容、不动 commit hash 列表、不动 APP_VERSION、不动 L53 表格(表格中「库中暂无 foam roller 下背专项条目」本身属实,腰部专项确实暂无,保留)
+- 用 Python `io.open(newline='')` 模式保留 LF(沿用 ba93e8e / 28431f2 / 8c2b500 / 09bf747 / 0a70b91 教训)
+- 单文件 L191 单行文字改写:原 10024 字节 → 改后 10374 字节(纯文字 +350 字节,因加「库内已有 + 3 处新 id + 解释」);1 行删除 + 1 行新增
+
+### 校验
+- `git diff --stat`: `1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+- `node _scan_exlib.js` → 1336 ids / **524 refs**(+3 来自新增 [ex:5207] / [ex:5212] / [ex:5208])/ 0 broken(改前 521/0)✓
+- 新增 id 合法性逐条校验:`[ex:1352]` / `[ex:5207]` / `[ex:5208]` / `[ex:5212]` 全部库内合法 ✓
+- L53 表格「库中暂无 foam roller 下背专项条目」原话保留(腰部专项确实暂无,不可改写为「库内已有」;与 L191 改写后的「库内已有,腰部专项暂无」语义互补)
+- L191 改写后句式对齐 ch05 L233 / ch07 L40/L174/L176 的「库内已有」措辞 ✓
+- `python -c "raw.count(b'\\r\\n')"`: 0(无 CRLF 污染)✓
+- `python -c "raw.count(b'\\r')"`: 0(无裸 CR)✓
+- `python -c "raw.endswith(b'\\n')"`: False(改前改后一致,本轮未引入 LF 状态变化;沿用 commit a9bb9ea / 09bf747 教训)✓
+- `python -m json.tool manifest.json` OK / `python -m json.tool books/exercises/ex-lib.json` OK(改前一致)✓
+- `node --check` 未涉及(纯 .md 文字修改)✓
+- 零业务代码改动;APP_VERSION 不 bump
+
+### 上轮候选清算 (本轮重扫)
+- ✅ **(上轮登记,本轮已修)ch06 foam roller 信息补偿** — L191「库中暂无 foam roller 下背/筋膜球腰部」措辞模糊与现实脱节,已改写为「库内已有 foam roller 系列,腰部专项确实暂无」+ 补 3 处邻近部位 foam roller 合法 id 引用;候选作废
+- ✅ **(上轮 0a70b91 已修)ch04 L202 子项统计校验** — 上轮已修,继续作废
+- ✅ **(上轮 09bf747 已修)ch05 / ch07「库中暂无筋膜球」措辞** — 上轮已修,继续作废
+- ✅ **(继承远期,优先级低)** _session_todo.md 现 1284 行远期归档 — 仍未做,继续留
+- ✅ **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库 — 库内 back 系列 5207/5208/5212 全是 upper/thoracic/lats,腰部 foam roller 专项**确实暂无**且非本轮能解决(需另起 ID 命名 + 多语字段规范),继续留为远期观察
+- ✅ **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强 — 实测对齐无差可改,继续留为远期观察
+- ✅ **(继承远期,优先级低)** APP_VERSION bump — 远期继承
+- ✅ **(继承远期,优先级低)** L# 改进 — 远期继承
+
+### Push 状态
+- 待 push(本轮 git commit 后再做 git push origin book,GitHub Pages 自动部署)
+
+### 新增下轮候选
+- **(本轮新发现,优先级低)** ch06-back.md L53 表格「库中暂无 foam roller 下背专项条目」与本轮改写后的 L191 措辞存在语义重叠 — L53 表格的「库中暂无」指腰部 foam roller 专项,L191 改写后也明确「腰部专项确实暂无」,两者语义一致。但表格用语「foam roller 下背专项条目」更窄,L191 用「腰部 foam roller 专项」更口语;两者并存不冲突,但若追求彻底一致可将 L53 表格用语对齐为「库中暂无 foam roller 腰部/下背专项」,优先级低纯文字细节,可远期处理
+- **(继承远期,优先级低)** _session_todo.md 现 1284 行远期归档:沿用本轮 + 上轮 + 上上轮「文件管理」型候选
+- **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库:需先建 id 命名 + 多语字段规范
+- **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强:实测对齐无差可改
+- **(继承远期,优先级低)** APP_VERSION bump:远期继承
+- **(继承远期,优先级低)** L# 改进:远期继承
+
+### commit hash
+- `PENDING`(本轮 commit 后回填)
+
+---
+
 ## 2026-08-30 第 29 轮 (commit fd699aa)
 
 ### 本轮做了什么

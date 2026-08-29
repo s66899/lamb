@@ -188,4 +188,4 @@
 | [ex:1576] | leg up hamstring stretch / 抬腿腘绳肌拉伸 | 8 / 12 周腘绳肌拉伸替代版 |
 | [ex:1709] | assisted lying glutes stretch / 仰卧辅助臀肌拉伸 | 12 周 W5-8 改善骨盆前倾 |
 
-**说明**：ex-lib 库中暂无"foam roller 下背 / 筋膜球腰部"专项条目。本章腰部 SMR 类统一引用 [ex:1352] lower back curl（腰背卷曲）作为替代，介质可用网球或长曲棍球置于腰方肌沿脊柱两侧滚动。库中也暂无"麦肯基伸展 / bird-dog 鸟狗式"专项条目，故这两项在 4 周 / 8 周方案中以文字描述保留，与 ex-lib 库内合法动作并存。
+**说明**：ex-lib 库内**已有**foam roller / 筋膜球系列专项条目（v3.22.17 入库 ex-5202~ex-5213 共 12 条覆盖各部位），但腰部 foam roller 专项**确实暂无**（库内 back 系列为 5207 upper back / 5208 latissimus / 5212 thoracic spine，无 lumbar 专项）。本章腰部 SMR 类因此仍引用 [ex:1352] lower back curl（腰背卷曲）作为替代，介质可用网球或长曲棍球置于腰方肌沿脊柱两侧滚动；如需 upper-back / thoracic / lat 等邻近部位 foam roller 专项可分别引 [ex:5207] / [ex:5212] / [ex:5208]（库内合法 id）。库中也暂无"麦肯基伸展 / bird-dog 鸟狗式"专项条目，故这两项在 4 周 / 8 周方案中以文字描述保留，与 ex-lib 库内合法动作并存。
