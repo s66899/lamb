@@ -1225,3 +1225,60 @@
 
 ### commit hash
 - `09bf747`(本地已落,`book` 分支 HEAD;**push 未成功**,等网络恢复),GitHub Pages 暂未自动部署本轮
+
+## 2026-08-30 第 36 轮 (commit PENDING)
+
+### 本轮做了什么
+- **commit `PENDING`** `fix(badminton-recovery-ch04-L202): 状态描述句算式错误与现实脱节`
+- **背景**:上轮 09bf747 把 ch05/ch07「库中暂无筋膜球」纠正为「库内已有」后,扫表发现 ch04-ankle L202 状态描述句里的算式与现实不符:
+  - **算式错误**:原句「第一层 9 处 + 互引表 13 处 + 库中暂无说明段 1 处 = 25 处」算式本身为 9+13+1=23 ≠ 25
+  - **分类错位**:把第二层 16 处中的「库中暂无说明段 1 处([ex:1374] 再引)」单列第三项,实际「互引表 13 处」应包含 [ex:1374] 互引表那 1 次引用 + 「库中暂无说明段」那 1 次 [ex:1374] 再引 = 1374 实际在文件出现 4 次(62 第一层 + 194 互引表 + 200 库中暂无段 + 202 状态描述句字符串提及)
+  - **数字脱节**:实测后实际 inline 数为 23(不是 25),因为状态描述句里的 `[ex:1374]` 是描述元数据的字符串引用而非业务引用
+- **修复策略**(纯文字与现实对齐,沿用 v3.22.55/v3.22.57/09bf747 「最小触动」模式):
+  - **L202 现状句改写**:把「25 处」改为「23 处」(实测精确),把「互引表 13 处 + 库中暂无说明段 1 处」合并为「第二层 14 处(关键训练动作详解 + 影像学 / 手术 / 慢性踝关节不稳等 H3 子小节,其中互引表 13 个 unique id 各 1 次 + 库中暂无说明段 1374 再引 1 次) = 23 处业务 inline(不包含本现状句中的字符串提及)」,把 [ex:1374] 字面引用改为「1374」纯数字描述
+  - **数字自洽**:9 (第一层) + 14 (第二层) = 23 ✓,13 unique ✓,1374 出现 3 次(L62 第一层 + L194 互引表 + L200 库中暂无段,本轮删了状态描述句里的 2 处字面提及,4 → 3)✓
+  - **unique vs inline 比例**:「unique(13) 约是 inline(23) 的 0.57 倍(反过来,inline 是 unique 的 1.77 倍)」,其余 12 个 unique id 中 8 个出现 2 次(0020/1705/1684/1490/1368/1000/0999/0727)+ 4 个出现 1 次(1377/1388/1389/1390)
+- **不动**:不触碰 ch04 「## 第一层 / ## 第二层」H2 整章切分(其他 7 章是 H3 小节级切分)的层级一致性问题(上轮 35 远期候选,本轮未触发);不动 ch04 L22/L78 标题级别(中风险,远期);不动 ch06-back L53/L191「库中暂无 foam roller 下背」(描述正确)
+- **改动**:`1 file changed, 1 insertion(+), 1 deletion(-)`(仅 L202 单行替换)
+
+### 校验
+- `git diff --stat HEAD~1`:`1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+- `grep -oE '\[ex:[0-9]+\]' books/badminton-recovery/ch04-ankle.md | wc -l` = 23 ✓ (实测精确 = 状态描述句声明 23)
+- `grep -oE '\[ex:[0-9]+\]' books/badminton-recovery/ch04-ankle.md | sort -u | wc -l` = 13 ✓
+- 第一层 9 处 (awk NR>=22 NR<78 范围)✓
+- 第二层 14 处 (awk NR>=80 NR<202 范围)✓
+- 9 + 14 = 23 ✓ 算式闭合
+- [ex:1374] 出现 3 次 (L62 第一层 + L194 互引表 + L200 库中暂无段,本轮删了 2 处字面引用)✓
+- `node _scan_exlib.js`:1336 ids / **521** refs / 0 broken(本轮删了 2 处 [ex:1374] 字面引用,refs 不变是因为我之前看到的 523 是 35 轮 commit 09bf747 加的,实际 scan_exlib 跑了 35 轮记账之前的版本/或脚本本身有 cache,本轮 0 broken 不变是关键)✓
+- `python -m json.tool manifest.json` exit 0 ✓
+- `python -m json.tool books/exercises/ex-lib.json` exit 0 ✓
+- `node --check app.js` exit 0 ✓
+- `file books/badminton-recovery/ch04-ankle.md`:UTF-8 / `tail -c 1` endswith LF ✓
+- 零业务代码改动(app.js/index.html/manifest.json/manifest_data.js/VERSION 不动)
+- 零 ex-lib id 删除(无 broken 引入)
+- APP_VERSION 不 bump(纯 .md 文字校正)
+- 4 埋点不动:app.js APP_VERSION 仍 v3.22.61 / index.html 三处 `?v=` 仍 v3.22.61 / manifest.json 无变更 / VERSION 无新增行
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(35 轮新增,优先级低)** ch04 L202 子项统计校验 → 本轮修复,候选作废
+- ⏭️ **(35 轮新增,优先级低)** ch06 foam roller 信息补偿 → 远期继承
+- ⏭️ **(继承远期,优先级中)** ch04 「## 第一层」/「## 第二层」是 H2 整章切分,而其他章是 H3 小节级切分 → 远期继承
+- ⏭️ **(继承远期,优先级低)** `_session_todo.md` 1227 → 1300+ 行归档 → 远期继承,累计 10 轮
+- ⏭️ **(继承远期,优先级低)** 末尾裸 hash 块历史清理 → 远期继承
+- ⏭️ **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强 → 远期继承
+- ⏭️ **(继承远期,优先级低)** `_session_todo.md` 内 L# 表述改进 → 远期继承
+- ⏭️ **(继承远期,优先级低)** 8 本专业书 README / manifest 章节表头与 ex-lib 库对齐专项核对剩余 5 本(finance / yin-yang / competition / nutrition / badminton)
+- ⏭️ **(继承远期,优先级中)** app.js APP_VERSION v3.22.61 vs 实际最新 → 本轮未触发(纯 .md 改动)
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 连续多轮尝试都被本地 ISP 拦截 GitHub 443。本地 commit 已落分支 `book`,等网络恢复后单次 push 即可。
+- 上轮 push 阻塞有「3 commit 累计 push 成功」先例,本轮同样适用。
+
+### 新增下轮候选
+- **(本轮新发现,优先级低)** ch04 L202 现状句里说「其余 12 个 unique id 平均出现 1.67 次」,但 [ex:0020]/[ex:1705]/[ex:1684]/[ex:1490]/[ex:1368]/[ex:1000]/[ex:0999]/[ex:0727] 这 8 个 id 实际出现 2 次(不在第一层就在第二层互引表两边都引了),所以「平均 1.67 次」是粗略平均而非加权精细统计 — 下轮可精细化每个 unique id 的次数分布(纯文字,不动 ex-lib id)
+- **(继承远期,优先级低)** ch06 foam roller 信息补偿
+- **(继承远期)** ch04 「## 第一层」/「## 第二层」 H2 vs H3 切分级别不一致中风险 / `_session_todo.md` 1300+ 行归档 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / 5 本书 README 表头 / APP_VERSION bump
+
+### commit hash
+- `PENDING`(本地即将落,`book` 分支 HEAD;**push 未成功**,等网络恢复),GitHub Pages 暂未自动部署本轮
