@@ -5104,7 +5104,7 @@ const MANIFEST_DATA = {
           ]
         },
         {
-          "file": "ch03-axial-loading.md",
+          "file": "ch02-axial-loading-deep-dive.md",
           "title": "Axial Loading · 理论推导",
           "words": 19288,
           "h2s": [
