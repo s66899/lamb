@@ -1,7 +1,7 @@
-## 2026-08-30 第 37 轮 (commit PENDING)
+## 2026-08-30 第 37 轮 (commit cd12f97)
 
 ### 本轮做了什么
-- **commit `PENDING`** `fix(badminton-recovery-ch06): L191 说明段「库中暂无 foam roller 下背/筋膜球腰部」措辞错位与现实脱节` — v3.22.17 已入库 ex-5202~5213 共 12 条 SMR/foam roller/筋膜球专项条目,ch05 L233 / ch07 L40/L174/L176 已统一改「库内已有」(commit 09bf747 / 第 35 轮),但 ch06-back L191 说明段「ex-lib 库中暂无 foam roller 下背 / 筋膜球腰部 专项条目」仍写「库中暂无」,与 ch05/ch07 措辞风格脱节;实测库内 12 条 foam roller 中 back 系列只有 5207 upper back / 5208 latissimus / 5212 thoracic spine,**腰部 foam roller 专项确实暂无**(背 3 条全无 lumbar)
+- **commit `cd12f97`** `fix(badminton-recovery-ch06): L191 说明段「库中暂无 foam roller 下背/筋膜球腰部」措辞错位与现实脱节` — v3.22.17 已入库 ex-5202~5213 共 12 条 SMR/foam roller/筋膜球专项条目,ch05 L233 / ch07 L40/L174/L176 已统一改「库内已有」(commit 09bf747 / 第 35 轮),但 ch06-back L191 说明段「ex-lib 库中暂无 foam roller 下背 / 筋膜球腰部 专项条目」仍写「库中暂无」,与 ch05/ch07 措辞风格脱节;实测库内 12 条 foam roller 中 back 系列只有 5207 upper back / 5208 latissimus / 5212 thoracic spine,**腰部 foam roller 专项确实暂无**(背 3 条全无 lumbar)
 - **真实问题**:L191 措辞模糊,「库中暂无 foam roller 下背」读起来像「库中整体暂无 foam roller」,但实际上是「库内有 foam roller 整体,只是腰部专项暂无」;与 ch05/ch07 同轮入库后已统一为「库内已有」明显不一致
 - **修复策略**:沿用本项目「纯文字叙事修正」模式 — L191 说明段改写为「库内**已有**foam roller / 筋膜球系列专项条目(v3.22.17 入库 ex-5202~ex-5213 共 12 条覆盖各部位),但腰部 foam roller 专项**确实暂无**(库内 back 系列为 5207 upper back / 5208 latissimus / 5212 thoracic spine,无 lumbar 专项)」+ 补 3 处合法 id 引用 [ex:5207] / [ex:5212] / [ex:5208] 给邻近部位 foam roller;不动业务内容、不动 commit hash 列表、不动 APP_VERSION、不动 L53 表格(表格中「库中暂无 foam roller 下背专项条目」本身属实,腰部专项确实暂无,保留)
 - 用 Python `io.open(newline='')` 模式保留 LF(沿用 ba93e8e / 28431f2 / 8c2b500 / 09bf747 / 0a70b91 教训)
@@ -31,7 +31,7 @@
 - ✅ **(继承远期,优先级低)** L# 改进 — 远期继承
 
 ### Push 状态
-- 待 push(本轮 git commit 后再做 git push origin book,GitHub Pages 自动部署)
+- 待 push(即将 git push origin book,GitHub Pages 自动部署)
 
 ### 新增下轮候选
 - **(本轮新发现,优先级低)** ch06-back.md L53 表格「库中暂无 foam roller 下背专项条目」与本轮改写后的 L191 措辞存在语义重叠 — L53 表格的「库中暂无」指腰部 foam roller 专项,L191 改写后也明确「腰部专项确实暂无」,两者语义一致。但表格用语「foam roller 下背专项条目」更窄,L191 用「腰部 foam roller 专项」更口语;两者并存不冲突,但若追求彻底一致可将 L53 表格用语对齐为「库中暂无 foam roller 腰部/下背专项」,优先级低纯文字细节,可远期处理
@@ -42,7 +42,7 @@
 - **(继承远期,优先级低)** L# 改进:远期继承
 
 ### commit hash
-- `PENDING`(本轮 commit 后回填)
+- `cd12f97`(本轮已 commit)
 
 ---
 
