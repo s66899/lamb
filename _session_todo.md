@@ -1,3 +1,55 @@
+## 2026-08-29 第 27 轮 (commit 28431f2)
+
+### 本轮做了什么
+- **commit `28431f2`** `fix(todo): _session_todo.md 第 26 轮记账块 L48 误生成虚假 ## 二级标题` — 上轮 e6d4654 botched 把 round-25 重复块删除后的「视觉清爽」描述写成跨行 inline code,导致 L48 行首 `## 2026-08-29 第 24 轮...` 落成 markdown 二级标题,grep `^## ` 误识别(总数 22 → 25,差 3);本轮合并 L46-L48 为单行 bullet,内嵌 `` `---` + `## 2026-08-29 第 24 轮...` `` 两个独立 inline code,虚假 heading 消除
+- **真实问题**:`_session_todo.md` 在 commit `e6d4654`(上轮 `chore(todo)` 记录 ba93e8e 修复)里把 round-25 重复块删除后的「视觉清爽描述」写成跨行反引号 inline code,但 markdown 反引号不能跨行(CommonMark 规范),导致 L46 末尾的 `` ` `` 试图跨过 L47 空行直到 L48 第一个 `` ` `` 才闭合,而 L48 行首 `## ` 在这个**未闭合的反引号对中间**——L48 一整行就成了「inline code 起始 + markdown heading」混合体,被 grep `^## ` 误识别为二级标题
+- **实测**(修复前):
+  - L46 byte len = 130,内容 `- **本轮新发现(优先级低)**:...过渡处 ` + `` ` `` + `---`
+  - L47 byte len = 0(空行)
+  - L48 byte len = 119,内容 `## 2026-08-29 第 24 轮...` + `` ` `` + ` 视觉清爽 ✓;还有 `git log --oneline` L# 前 10 条全部正常,git status clean ✓`
+  - `grep -c "^## "`:22 → **25**(+3,其中一个是 round 标题,第 25 轮重复块已修,所以原 22 现在又变 25,差 3 即 L48 这个虚假 heading + L46 跨行反引号没引入新 `## ` 但 L48 引入了 1 个)
+  - 实际确认:`grep -nE "^## 2026-08-29 第 24 轮\.\.\."` 命中 L48 第 26 轮记账块内,标题内容 `## 2026-08-29 第 24 轮...` 是虚假行首 heading
+- **修复策略**:沿用本项目「纯文字叙事修正」模式 — 合并 L46 + L47 + L48 为单行 bullet,把 inline code 拆成两个独立反引号对(`` `---` `` + `` `## 2026-08-29 第 24 轮...` ``),不再跨行,L48 行首不再以 `## ` 开头 → 虚假 heading 消失;不动业务内容、不动 commit hash 列表、不动 APP_VERSION
+- 用 Python `io.open(newline='')` 模式保留 LF(沿用 ba93e8e / 0b7b78a 教训)
+- 单文件 1 个 bullet 合并:raw[3852:4103](251 字节 / 3 行)→ raw 替换为 263 字节 / 1 行;3 行删除,1 行新增;文件净 79946 → 79958 字节
+
+### 校验
+- `git diff --stat`: `1 file changed, 1 insertion(+), 3 deletions(-)` ✓
+- `grep -nE "^## 2026-08-29 第 24 轮\.\.\."`: **0 命中**(虚假 heading 消除)✓
+- `grep -c "^## "`: 25 → **24** ✓
+- `grep -c "^## 2026-08-29 第"`: 14 → **13** ✓
+- `grep -c "^## 本轮增量"`: 11 → **11**(老块不动)✓
+- L107 `## 2026-08-29 第 24 轮 (commit 559cacf)` 真 round-24 标题保留 ✓
+- `python -c "raw.count(b'\r\n')"`: 0 (无 CRLF 污染)✓
+- `python -c "raw.count(b'\r')"`: 0 (无裸 CR)✓
+- `python -c "raw.endswith(b'\n')"`: True ✓
+- `node _scan_exlib.js` → 1336 ids / 521 refs / 0 broken(改前一致,因只动 .md 纯文字)✓
+- `python -m json.tool manifest.json` OK / `python -m json.tool books/exercises/ex-lib.json` OK(改前一致)✓
+- `node --check` 未涉及(纯 .md 文字修改)✓
+- 零业务代码改动; 零 ex-lib id 改动; APP_VERSION 不 bump
+
+### 上轮候选清算 (本轮重扫)
+- ✅ **_session_todo.md 第 25 轮块重复粘贴 bug** — 上轮已由 `ba93e8e` 修,候选作废
+- ✅ **_session_todo.md 现 699 行远期归档**(本轮新增 L46-L48 合并 -2 行 → 752 → 750) — 仍未做,优先级低纯文件管理,继续留
+- ✅ **羽毛球康复书 ch06 / ch07 末段「清单 13 unique」措辞补强**(低优先) — 实测 36/33 inline + 13 unique 与声明完全对齐,无差可改,继续留为远期观察
+- ✅ **foam roller / 筋膜球腰部专项入库**(远期继承多轮用户偏好) — 仍未做(需先建 id 命名 + 多语字段规范),继续留
+- ✅ **books/README.md 表头 9 行字数 / 章节数核对**(本轮未扫,留为远期)
+- ✅ **(本轮新发现)** `_session_todo.md` 第 26 轮记账块 L48 行首虚假 `## ` heading — **本轮已修**(commit `28431f2`)
+
+### Push 状态
+- ✅ 本轮 push 成功!`e6d4654..28431f2` 已推 `origin book`(host 443 直连一次性 OK,`git -c http.proxy= -c https.proxy= push origin book` → exit 0),GitHub Pages 自动部署中
+
+### 新增下轮候选
+- **(本轮新发现,优先级低)** `_session_todo.md` 现在 750 行,已 27 轮历史记账;可考虑归档前 22 轮(round 1-20 + 增量块 1-10)至 `_session_todo.md.archive`,只保留最近 6 轮可见 — 沿用本轮 + 上轮 ba93e8e「文件管理」型候选,优先级低
+- **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库:需先建 id 命名 + 多语字段规范
+- **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强:实测对齐,但措辞可微调,与 ch02-shoulder + ch08-action-plan 同型口径
+- **(本轮新发现,优先级低)** `_session_todo.md` 中还有 `git log --oneline L#` 这种表述(L48 老内容,L46 修复后保留),`L#` 含义不清(原文意思应为「前 N 条」),下轮可改成 `前 10 条 commit hash 全部正常` 更精确
+
+### commit hash
+- `28431f2`(已 push `e6d4654..28431f2`),GitHub Pages 自动部署中
+
+---
+
 
 ## 2026-08-29 第 26 轮 (commit ba93e8e)
 
