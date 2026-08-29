@@ -1,4 +1,44 @@
 
+## 2026-08-29 第 24 轮 (commit 559cacf)
+
+### 本轮做了什么
+- **commit `559cacf`** `fix(tool): _scan_exlib.js regex STRICT → LOOSE — 同步识别 [ex:NNNN 中文名] 表格格式`
+- **真实问题**：项目工具链常驻文件 `_scan_exlib.js`（v3.22.53 由 scratch 入库）使用 STRICT 正则 `\[ex:(\d{4})\]`，要求 4 位数字后**紧跟** `]`。但羽毛球 ch12 / NSCA ch04-ch09 大量使用表格格式 `[ex:NNNN 中文名]`（`]` 前带中文说明），STRICT 模式把它们全部盲区忽略。本轮用 LOOSE 正则 `\[ex:(\d{4})[^\]]*\]` 重新扫描：351 refs → **521 refs**（+170），0 broken 不变（全部库内合法）。属长期工具盲区 — 历史上每一轮都基于"351 / 0"数据校验羽毛球 ch12 / NSCA 章节是否 broken，实际上这 170 处根本没被扫到；现在工具覆盖率 100%。
+- **修复**：单文件 `_scan_exlib.js`，1 行 regex + 3 行注释（说明 LOOSE 必要性 + 历史背景），零业务代码改动，零 ex-lib id 改动，零 manifest 改动
+
+### 校验
+- `node --check _scan_exlib.js` exit 0 ✓
+- `python -m json.tool manifest.json` exit 0 ✓
+- `python -m json.tool books/exercises/ex-lib.json` exit 0 ✓
+- `node _scan_exlib.js` → `ex-lib total ids 1336 / total refs 521 / broken 0`（STRICT 时期 351 / 0，LOOSE 上线后增量 170 处 0 broken）
+- 各章节分布（LOOSE 模式下 13 个有 ex-lib 引用的 .md）:
+  - 羽毛球康复书 ch02 32 / ch03 16 / ch04 25 / ch05 14 / ch06 36 / ch07 33 / ch08 35（8 章全部 0 broken）
+  - 羽毛球 ch12 62（其中 41 unique）
+  - NSCA ch04 79 / ch05 49 / ch06 6 / ch07 9 / ch08 34 / ch09 60 / ch10 31
+  - 13 章合计 521 refs / 0 broken，与 STRICT 时期 351 refs / 0 broken 相比 +170 处全合法
+- APP_VERSION 不 bump（工具改动，非业务）
+
+### 上轮候选清算
+- ✅ **450+ 行文件归档继承** — 仍未做（_session_todo.md 现 605 行，可分阶段归档远期历史）
+- ✅ **foam roller / 筋膜球腰部入库继承** — 仍未做（ch06/ch08 仍标"库中暂无"，等命名规范）
+- ✅ **manifest_data 与 manifest 漂移检测** — 本轮已实测：9 本书 / 章节数 / 字数 / chapter title 全 0 diff（python 脚本），无问题可修 → 候选作废
+- ✅ **450+ 行 `_session_todo.md` 归档**（本轮新发现，优先级低）：本轮扫到 605 行 / 66 KB，纯文件管理，远期
+- ✅ **羽毛球 ch12 / NSCA ch04-ch09 表格格式被 STRICT 扫描器盲区忽略**（本轮新发现，本轮已修）：170 处 0 broken 历史全漏；本轮 LOOSE 上线解决
+
+### Push 状态
+- ✅ 本轮 push 成功!`68bd738..559cacf` 已推 `origin book`（host 443 直连首次失败 6 次后 `git push -v origin book`（不显式设 proxy）→ exit 0），GitHub Pages 自动部署中
+
+### 新增下轮候选
+- **(本轮新发现，优先级中)** 羽毛球 ch12 §8.4 末段「45 unique / 71 处列表项」声明 — 用 LOOSE regex 重测 ch12 = 62 inline / 41 unique，与 §8.4 声明 45 unique 差 4，差 26 inline。本轮先确认 LOOSE 上线后各章真实数字，下轮可扫每章"声明 vs 实测"是否还有遗留
+- **(继承远期)** _session_todo.md 现 605 行，未来可归档前 N 轮历史到 `_session_todo.md.archive`，纯文件管理
+- **(继承远期)** foam roller / 筋膜球腰部专项入库：需先建命名规范 + 多语字段
+- **(本轮新发现，优先级低)** 康复书 ch06 / ch07 末段"分布细分"中"下方清单 13 unique"歧义（写"unique"指 unique id 数 = inline 数但读者易误读）；ch04 / ch06 / ch07 三章声明 vs 实测 sum 仍有 1-13 处差异，但作者在句末有澄清（"合计 X 处 inline"），下轮可逐字校对
+
+### commit hash
+- `559cacf`（已 push `68bd738..559cacf`），GitHub Pages 自动部署中
+
+---
+
 ## 2026-08-29 第 23 轮 (commit a1515f8)
 
 ### 本轮做了什么
