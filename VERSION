@@ -1,6 +1,6 @@
 ﻿# VERSION — 项目根 changelog（按版本号倒序排列；新版本在最上）
 # 当前 HEAD = v3.22.61, APP_VERSION (app.js) = v3.22.61
-# 历史叙事（v3.4.0 ~ v3.8.7）由原 VERSION 文件保留；本轮新增 v3.18.7 ~ v3.22.61 共 73 条 commit 摘要
+# 历史叙事（v3.4.0 ~ v3.8.7）由原 VERSION 文件保留；本轮新增 v3.18.7 ~ v3.22.61 共 27 条 commit 摘要
 
 v3.22.61 (2026-08-29) chore(release): 4 埋点 v3.22.58 → v3.22.61（_bump_version.js --set=v3.22.61 --apply 一步到位，追平最近 3 条 commit 标题里 v3.22.59 / v3.22.60 / v3.22.61 叙事领先于代码的欠账；APP_VERSION + index.html 三处 ?v= 全部 v3.22.61，回读校验通过）+ VERSION 头注释同步到 v3.22.61；零业务代码改动；零 ex-lib id 改动
 
