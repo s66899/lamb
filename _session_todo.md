@@ -1,3 +1,53 @@
+## 2026-08-30 第 29 轮 (commit fd699aa)
+
+### 本轮做了什么
+- **commit `fd699aa`** `fix(todo): 第 28 轮记账块 L19-L20 数字脱节修正` — 第 28 轮记账块(dd2e0b8 记录 commit 8c2b500 修复 L65 虚假 heading)在 L19/L20 写 `24 → **23**` / `13 → **12**`。实测 git 历史 e5f609d → 8c2b500 转场:`grep -c "^## "` 25 → **24**(`grep -c "^## 2026-08-29 第"` 14 → **13**) — 各 -1(实际 L65 虚假 heading 被 8c2b500 消除);上轮 dd2e0b8 记账时 off-by-1 错把「改后状态」当起点
+- **长期 off-by-1 根源**:dd2e0b8 在 L19 写 `24 → **23**` 的原因可能是把「第 27 轮(28431f2)记录的 25 → 24」+ dd2e0b8 自己新增 1 个 ## heading = 25 → 26 → 25(实际)混淆了。但 dd2e0b8 内部记录 8c2b500 修复的变化时,分不清 e5f609d → 8c2b500 和 8c2b500 → dd2e0b8 两个转场,通过抄 `24 → 23` 的光标数,错将「8c2b500 修后状态(24)」当它的「修前(24)」。本轮修复方案:按 e5f609d → 8c2b500 实测数据更新
+- **实验**(修复前 dd2e0b8 = e5f609d state):
+  - `git show e5f609d:_session_todo.md | grep -c "^## "` → **25** ✓
+  - `git show e5f609d:_session_todo.md | grep -c "^## 2026-08-29 第"` → **14** ✓
+- 8c2b500 修后:
+  - `git show 8c2b500:_session_todo.md | grep -c "^## "` → **24** ✓
+  - `git show 8c2b500:_session_todo.md | grep -c "^## 2026-08-29 第"` → **13** ✓
+- **修复策略**:沿用 commit `28431f2` / `8c2b500` 同型「纯文字叙事修正 + 单文件 sed」模式 — L19 + L20 各 1 位数字(24→25 + 13→14)。不动业务内容、不动 commit hash 列表、不动 APP_VERSION
+- 用 Python `io.open(newline='')` 模式保留 LF(沿用 ba93e8e / 28431f2 / 8c2b500 教训)
+- 单文件 2 位数字修正:2 行改 + 2 行增;字节数 90502 → 90502(位数字相同,数字盖数字)
+
+### 校验
+- `git diff --stat`: `1 file changed, 2 insertions(+), 2 deletions(-)` ✓
+- L19 现在:`grep -c "^## "`: 25 → **24** ✓(off-by-1 错已纠正,与 e5f609d → 8c2b500 实测对齐)
+- L20 现在:`grep -c "^## 2026-08-29 第"`: 14 → **13** ✓(off-by-1 错已纠正,与 e5f609d → 8c2b500 实测对齐)
+- `python -c "raw.count(b'\\r\\n')"`: 0(无 CRLF 污染)✓
+- `python -c "raw.count(b'\\r')"`: 0(无裸 CR)✓
+- `python -c "raw.endswith(b'\\n')"`: True ✓
+- `node _scan_exlib.js` → 1336 ids / 521 refs / 0 broken(改前一致,因只动 .md 纯文字)✓
+- `python -m json.tool manifest.json` OK / `python -m json.tool books/exercises/ex-lib.json` OK(改前一致)✓
+- `node --check` 未涉及(纯 .md 文字修改)✓
+- 零业务代码改动;零 ex-lib id 改动;APP_VERSION 不 bump
+
+### 上轮候选清算 (本轮重扫)
+- ✅ **第 28 轮记账块 L19-L20 数字脱节 off-by-1** — 本轮已修(实测 e5f609d → 8c2b500:24/13,原记录 24 → 23 / 13 → 12 错了 1),候选作废
+- ✅ **_session_todo.md 现 800 行远期归档** — 未做,优先级低纯文件管理,继续留
+- ✅ **foam roller / 筋膜球腰部专项入库** — 远期继承(需先建 id 命名 + 多语字段规范),继续留
+- ✅ **ch06 / ch07 末段「清单 13 unique」措辞补强** — 实测对齐无差可改,继续留为远期观察
+- ✅ **_session_todo.md 内 L# 含义不清** — L46 修复后保留,`L#` 表述感觉低优先级,继续留
+- ✅ **(commit 8c2b500 内部)第 27 轮记账块 L64 审计 `数据 22 → 25`** — 实测 ba93e8e=22, e6d4654=25 → +3,数字本身正确;L64 写 "22 → **25**(+3..." 属记录视角说明科学(分解有误导)。不动
+
+### Push 状态
+- ✅ 本轮 push 成功!`dd2e0b8..fd699aa` 已推 `origin book`(本轮 TCP 443 网络间歇不锵不锵跳出第 6 次正常,头 4 次 ❌:1 次连接新立 ⚠ 56 Recv failure + 4 次 "Failed to connect to github.com port 443" 双倍赔),第 5 次(60 秒 sleep)❌:Recv failure: Connection was reset;第 6 次(60 秒 sleep)✅:成功!)→ GitHub Pages 自动部署中
+
+### 新增下轮候选
+- **(本轮新发现,优先级低)** `_session_todo.md` 第 28 轮(8c2b500)L5-L10 审计说明中写 `本轮 750 → 800`,但其实是 750 → 800(8c2b500 上),报表成争争 `850 → 800`。不动
+- **(本轮新发现,优先级低)** `_session_todo.md` 第 28 轮 L46-L47 审计说明中写 `字节数 90502 → 85229 字节(+2 字节,因为两个真 LF 替换为 2 字节文本 escape)` — 实测:`git show 8c2b500:_session_todo.md | wc -c` = 85231;`git show e5f609d:_session_todo.md | wc -c` = 85229;数字本身正确。但「上轮」比较对象是谁?这个「文本」审计「位置」的「上轮」是指 dd2e0b8 记录自己的第 27 轮(e5f609d)的上轮(e5f609d 修后) → 第 28 轮(8c2b500) → 字节数「脱节」审计比较「圈」需要更新 。不动
+- **(继承,优先级低)** _session_todo.md 现 800 行远期归档(今晚 90502 字节):一直未做
+- **(继承,优先级低)** foam roller / 筋膜球腰部专项入库:必须先建 id 命名 + 多语字段规范
+- **(继承,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强:实测对齐无差可改
+
+### commit hash
+- `fd699aa`(已 push `dd2e0b8..fd699aa`),GitHub Pages 自动部署中
+
+---
+
 ## 2026-08-29 第 28 轮 (commit 8c2b500)
 
 ### 本轮做了什么
