@@ -1330,3 +1330,58 @@
 
 ### commit hash
 - `PENDING`(本地即将落,`book` 分支 HEAD;**push 未成功**,等网络恢复),GitHub Pages 暂未自动部署本轮
+
+## 2026-08-30 第 37 轮 (commit 0d322db)
+
+### 本轮做了什么
+- **commit `0d322db`** `fix(utf8-bom): 清除 engineering-mechanics ch11 + psychology ch11 文件首 BOM`
+- **背景**:扫表时发现 2 个 chapter 文件首各含 1 个 UTF-8 BOM (EF BB BF) — 扫表命令:`find books -name "*.md" | while read f; do head -c 3 "$f" | od -An -c | grep -q "357 273 277" && echo "BOM: $f"; done`,73 个 .md 中只命中 2 个:
+  - `books/engineering-mechanics/ch11-vibration-analysis.md` — 首字节为 `EF BB BF`,去除后第 1 字符才到 `#`
+  - `books/psychology/ch11-psychotherapy.md` — 首字节为 `EF BB BF`,去除后第 1 字符才到 `#`
+- **危害**:UTF-8 BOM 在 HTML 渲染时显示为不可见字符 U+FEFF,破坏 `#` 选择器解析与 `grep '^# 第十一章'` 类脚本锚定;用户浏览器看到第 1 行有奇怪不可见字符(虽然大多数浏览器/编辑器会隐藏)
+- **修复策略**(沿用 v3.22.55/57/0a70b91/09bf747 「最小触动」模式):
+  - 每文件用 Python 二进制模式打开,跳过前 3 字节 BOM,其余字节 1:1 写入原路径
+  - 不触动文件其他任何字节(确认每文件 BOM 仅出现 1 次,无中段 BOM 残留;`data.count(b'\xef\xbb\xbf')` 都返回 1)
+  - eng ch11 改前就不 endswith LF,本轮未引入 LF 状态变化;psy ch11 endswith LF 保留
+- **不动**:不动 ch11 两章的 H1 标题内容(标题本身正确:`第十一章:振动分析...` / `第十一章:心理治疗...` 与 manifest 期望一致);不动 manifest;不动 app.js;不动 ex-lib;不动 VERSION(纯 BOM 字节清除,不发版)
+- **改动**:`2 files changed, 2 insertions(+), 2 deletions(-)`(每文件 H1 行 -1 +1 字节 BOM)
+
+### 校验
+- `git diff --stat HEAD~1`:`2 files changed, 2 insertions(+), 2 deletions(-)` ✓
+- `find books -name "*.md" | xargs -I{} sh -c 'head -c 3 "$1" | od -An -c | grep -q "357 273 277" && echo BOM' _`:空输出,73 个 .md 全部无 BOM ✓
+- `data.count(b'\xef\xbb\xbf')` eng = 1 (改前),0 (改后)✓;psy = 1 (改前),0 (改后)✓
+- `node _scan_exlib.js`:1336 ids / 524 refs / 0 broken(纯 BOM 字节清除,refs/broken 不变)✓
+- `python -m json.tool manifest.json` exit 0 ✓
+- `python -m json.tool books/exercises/ex-lib.json` exit 0 ✓
+- `node --check app.js` exit 0 ✓
+- `file books/engineering-mechanics/ch11-vibration-analysis.md`:UTF-8 ✓(改后首字节 0x23 = '#')
+- `file books/psychology/ch11-psychotherapy.md`:UTF-8 ✓(改后首字节 0x23 = '#')
+- 零业务代码改动(app.js/index.html/manifest.json/manifest_data.js/VERSION 不动)
+- 零 ex-lib id 删除(无 broken 引入)
+- APP_VERSION 不 bump(纯 BOM 字节清除)
+- 4 埋点不动:app.js APP_VERSION 仍 v3.22.61 / index.html 三处 `?v=` 仍 v3.22.61 / manifest.json 无变更 / VERSION 无新增行
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(36 轮新增,优先级低)** ch04 L202 现状句「其余 12 个 unique id 平均出现 1.67 次」粗略统计 → 本轮未做精细化(优先级低,本轮换成 BOM 修复),候选保留
+- ⏭️ **(继承远期,优先级低)** ch06 foam roller 信息补偿
+- ⏭️ **(继承远期,优先级中)** ch04 「## 第一层」/「## 第二层」是 H2 整章切分,而其他章是 H3 小节级切分 → 远期继承
+- ⏭️ **(继承远期,优先级低)** `_session_todo.md` 1284 → 1333 行归档 → 远期继承,累计 10 轮
+- ⏭️ **(继承远期,优先级低)** 末尾裸 hash 块历史清理 → 远期继承
+- ⏭️ **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强 → 远期继承
+- ⏭️ **(继承远期,优先级低)** `_session_todo.md` 内 L# 表述改进 → 远期继承
+- ⏭️ **(继承远期,优先级低)** 8 本专业书 README / manifest 章节表头与 ex-lib 库对齐专项核对剩余 5 本(finance / yin-yang / competition / nutrition / badminton)
+- ⏭️ **(继承远期,优先级中)** app.js APP_VERSION v3.22.61 vs 实际最新 → 本轮未触发(纯 BOM 清除)
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 仍被本地 ISP 拦截 GitHub 443(`Failed to connect to github.com port 443 via 127.0.0.1 after 2088 ms`)。本地 commit 已落 `book` 分支,等网络恢复后单次 push 即可。
+- 上轮 push 阻塞有「3 commit 累计 push 成功」先例,本轮同样适用。
+
+### 新增下轮候选
+- **(本轮新发现,优先级中)** 用扫表脚本(已写 `_tmp_drift_check.py` 思路可改名为 `_scan_title_drift.py` 入库)扫 manifest.json vs 磁盘 chapter title 时发现 96 处标题漂移,其中 2 类是真实设计/质量问题(非「第N章」前缀 vs 无前缀这类纯命名风格差异):
+  - **`competition` (6 章)** 与 **`nutrition` (7 章)** manifest 中 chapter `title` 字段直接用裸文件名(如 `ch01-pre-match-prep`),不是中文标题,而 `finance`/`yin-yang`/`psychology` 等其他 7 本都用规范中文标题 — 这是 v3.22.52 修订 6 处 chapter 副标题对齐时漏掉的 13 章,补齐后 manifest 一致性提升 → 下轮可一次性把这两本 13 个 chapter title 改成中文标题(纯 manifest 字段更新,零业务代码改动)
+  - **`engineering-mechanics/ch11-vibration-analysis.md` / `psychology/ch11-psychotherapy.md`** BOM 已修(本轮 0d322db);其他 94 处标题漂移是「第N章 中文标题」 vs 「中文标题」或「中文标题」 vs 「English Title」风格差异,属于设计选择(manifest 用于清单显示短标题,disk 文件 H1 用长标题),**不修**
+- **(继承远期,优先级低)** ch06 foam roller 信息补偿 / ch04 12 个 unique 加权精细化 / 8 本书 README 表头 / ch04 H2 vs H3 切分级别中风险 / `_session_todo.md` 1333 → 1400+ 行归档 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump
+
+### commit hash
+- `0d322db`(本地已落,`book` 分支 HEAD;**push 未成功**,等网络恢复),GitHub Pages 暂未自动部署本轮
