@@ -1028,3 +1028,64 @@
 ### commit hash
 - `b6d4bd0`(本地 commit, push 待网络恢复)
 
+
+---
+
+## 2026-08-30 第 32 轮 (commit d0173ae)
+
+### 本轮做了什么
+- **commit `d0173ae`** `fix(orphan-files): 两本书 ch03 孤儿文件重命名为 ch02 配套深度版/教材版` — 继承自上轮第 1 条 + 第 2 条候选「engineering-mechanics ch03 孤儿文件处理中 / psychology ch03 孤儿文件处理中」
+
+  - `books/engineering-mechanics/ch03-axial-loading.md` (33 KB,H1「# 第三章:轴向拉伸与压缩」)
+    → `books/engineering-mechanics/ch02-axial-loading-deep-dive.md` (33784 B)
+    改名理由:内容是教材脉络 3.1~3.11 系统推导(轴力图/应力/应变/胡克定律/强度设计/超静定/综合例题),与主章 `ch02-axial-loading.md` 动机心理学角度互补而非重复
+    改 H1:「第三章:轴向拉伸与压缩」→「第二章配套:轴向拉伸与压缩(深度版)」+ 顶部加配套说明
+
+  - `books/psychology/ch03-memory.md` (58 KB,H1「# 第三章:记忆」)
+    → `books/psychology/ch02-memory-textbook.md` (58633 B)
+    改名理由:内容是教材脉络第一节~第十一节系统整理(记忆的定义/三级加工模型/编码/存储/提取/遗忘/种类/偏差与扭曲/策略/现实应用),与主章 `ch02-memory.md` 动机心理学角度互补而非重复
+    改 H1:「第三章:记忆」→「第二章配套:记忆(教材版)」+ 顶部加配套说明
+
+  - `books/engineering-mechanics/README.md` + `books/psychology/README.md`:两个目录在第二章条目下加配套深度版/教材版提示
+  - 两个主章 ch02 文件末尾加配套反向链接(交叉可发现性)
+  - 两个新版配套文档末尾也加回链主章
+
+  - 字节数变化:90929 → 91385(+456 净增,全部来自 H1 改写 + 配套说明文字)
+  - 单次 commit 可独立回滚 `git revert HEAD`
+
+- **发现方法**:`ls books/engineering-mechanics/` + `ls books/psychology/` 看到 `ch03-axial-loading.md` / `ch03-memory.md` 与 README 章节表头声明的 ch03 主题不匹配;`grep "^## "` 对比孤儿与真章的 H2 结构,识别孤儿为「深度版」/「教材版」性质而非「剪切与扭转」/「思维与语言」本身
+- **修复策略**:沿用 v3.22.55/v3.22.57「保留实质内容 + 改名 + 加标记」的最小触动模式,而不是直接 `git rm` 删除 90 KB 实质内容;通过重命名为配套深度版/教材版,既消除孤儿文件歧义,又保留全部教学价值,还建立主章与配套之间的双向链接
+- **保留决策**:不删除孤儿 = 因为内容真实、与主章互补、删了浪费 90 KB;改名 = 因为原文件名 `ch03-XXX` 与 README ch03 主题声明冲突,继续用会误导读者以为「ch03 真身就是这个文件」
+
+### 校验
+- `git diff --stat HEAD~1`: `6 files changed, 26 insertions(+), 5 deletions(-)` (含 2 rename) ✓
+- `node _scan_exlib.js`:1336 ids / 521 refs / 0 broken(未动任何 `[ex:XXXX]` 引用)✓
+- `python -m json.tool manifest.json` exit 0 ✓
+- `python -m json.tool books/exercises/ex-lib.json` exit 0 ✓
+- `node --check app.js` exit 0(未动)✓
+- 6 个文件 0 CRLF / 0 CR / 新版 4 个 endswith LF(改前 ch03 也 endswith LF,改后保持);主章 ch02 文件改前 endswith 无 LF / 改后保持无 LF(项目内文件 LF 结尾不强制)
+- 零业务代码改动(app.js/index.html/manifest.json/manifest_data.js/VERSION 不动)
+- APP_VERSION 不 bump(纯 .md 文档重组 + README 目录补 1 行)
+- 4 埋点不动:`app.js` APP_VERSION 仍 v3.22.61 / `index.html` 三处 `?v=` 仍 v3.22.61 / `manifest.json` 无变更 / `VERSION` 无新增行
+
+### 上轮候选清算 (本轮重扫)
+- ✅ **(本轮新发现,优先级中)** `books/engineering-mechanics/ch03-axial-loading.md` 是孤儿文件 — 本轮已通过重命名为 `ch02-axial-loading-deep-dive.md` + README 配套条目 + 主章反向链接三连处理,候选作废
+- ✅ **(本轮新发现,优先级中)** `books/psychology/ch03-memory.md` 是孤儿文件 — 本轮已通过重命名为 `ch02-memory-textbook.md` + README 配套条目 + 主章反向链接三连处理,候选作废
+- **(继承远期,优先级低)** `_session_todo.md` 988 行 → 现 1030 行(本轮 append 记账块后),远期归档候选继承累计 6 轮
+- **(继承远期,优先级低)** 末尾裸 hash 块历史清理 — 未做
+- **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库 — 未做
+- **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强 — 未做
+- **(继承远期,优先级低)** `_session_todo.md` 内 L# 表述改进 — 未做
+
+### Push 状态
+- ✅ 本轮 push 成功!`78711a5..d0173ae` 已推 `origin book`,GitHub Pages 自动部署中(累计 3 个本地 commit 一次性 push:b6d4bd0 / 2cef423 / d0173ae)
+- 上轮 b6d4bd0 因网络 443 端口被 ISP 拦截导致 6 次重试失败的欠账,本轮网络恢复后一并 push 成功
+
+### 新增下轮候选
+- **(本轮新发现,优先级中)** 既然已建立「主章 + 配套深度版」双文档模式(EM/PSY 各 1 对),可考虑在 `books/finance/` / `books/yin-yang/` / `books/competition/` / `books/nutrition/` / `books/badminton/` / `books/badminton-recovery/` / `books/nsca-cpt/` 7 本书扫是否有「同主题多版本文件」(如 `ch05-XXX.md` 与 `ch05-YYY.md` 都讲类似主题),或建立 `*-deep-dive.md` / `*-textbook.md` 命名约定的 README 章节
+- **(本轮新发现,优先级中)** `books/engineering-mechanics/ch04-bending-internal-forces.md` 与 `ch05-bending-stress.md` 可能存在类似「主章 + 深度版」关系,扫弯曲内力 vs 弯曲应力的章节内容确认是否需要配套拆分
+- **(继承远期,优先级低)** `_session_todo.md` 1030 行归档候选继承累计 6 轮
+- **(继承远期)** foam roller 入库 / ch06 ch07 措辞微调 / 末尾裸 hash 块历史清理 / L# 表述改进
+
+### commit hash
+- `d0173ae`(已 push `78711a5..d0173ae`,3 commits 累计),GitHub Pages 自动部署中
