@@ -1,4 +1,30 @@
 
+## 本轮增量 (commit a593beb — ch02-shoulder 修订说明 W8 分布细分 off-by-one 修复)
+
+- **本轮目标**:扫描 todo 候选队列时,意外发现 ch02-shoulder v3.22.33 修订说明段 L255 分布细分「W8 1 处」与实际不符 — 实际 W8 时间线表内有 2 处 ex-lib 引用(L148 `[ex:0864]` + L149 `[ex:0426]`),与累加 1+2+3+3+2+1+1+2=15 一致
+- **改动**(只动 1 行,L255):
+  - `books/badminton-recovery/ch02-shoulder.md` L255 v3.22.33 修订说明段: 「W1 1 处 + W2 2 处 + W3 3 处 + W4 3 处 + W5 2 处 + W6 1 处 + W7 1 处 + **W8 1 处** = 共 15 处表内」→ 「W1 1 处 + W2 2 处 + W3 3 处 + W4 3 处 + W5 2 处 + W6 1 处 + W7 1 处 + **W8 2 处** = 共 15 处表内」
+  - 主说明段(L253)「正文(不含说明 / 修订说明)共 23 处 `[ex:NNNN]` 引用(W1-W8 时间线表内 15 处 + 文字旁注 1 处 + 清单本身 7 处)」+ 累加 16+7=23 已正确,无需改
+- **校验**:
+  - python 按 W# 逐行统计 ch02 W1-W8 表内 `[ex:XXXX]` 命中数:W1=1 / W2=2 / W3=3 / W4=3 / W5=2 / W6=1 / W7=1 / **W8=2**,累加 15 ✓(改后累加 = 15 与「W1-W8 时间线表内 15 处」一致)
+  - sed 1,252p ch02 | grep -c = 23 ✓(主说明段「正文 23 处」口径正确,排除了 L253 说明段 + L255 修订说明段自身引用)
+  - `node _scan_exlib.js`:1336 ids / 351 refs / 0 broken(与 d461311 baseline 完全一致,纯文字微调零 id 影响)✓
+  - git diff stat:`1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+  - LF-only / CRLF=0(沿用 7db0c91 / d461311 python 脚本模式,绕开 edit 工具的全角中文标点 normalize 坑)✓
+  - APP_VERSION 不 bump(与 d461311 / 7db0c91 等同型口径微调一致,纯文字内容对齐)
+- **上轮候选队列清算**(本轮重新扫描,以下过时候选全部作废):
+  - ❌ 「ch03-knee 末段补总述声明」— **已在 d461311 完成**(实测 ch03 L230 末段已含「本章共引用 16 处 / 9 unique」+「分布:4 周时间线表内 2 处 + 8 周时间线表内 2 处 + 7.2 清单段 12 处 = 16 处 inline」完整声明)
+  - ❌ 「羽毛球 ch12 §9.8『30 个 ex-lib 引用』措辞口径微调」— **已在 50ee76b 完成**(实测 ch12 L1014 已改为「第九节配套的 30 个 ex-lib 查表入口」+「第九节正文以原则/生物力学为主、本节 0 处 inline 引用」)
+  - ❌ 「NSCA ch04 §0 L15 [ex:0000-中文名] 占位示例」— **实际占位文本是 `[ex:0038-中文名]`** 且 0038 是真实合法 id(同章 L100 `[ex:0038 barbell back squat]` 可证),非误导占位,无须改
+  - ❌ 「羽毛球 ch12 §8.4『36+30 unique 41』注脚」— **§8.4 标题 L1002 已是「本节列表共 45 unique id / 71 处列表项,含训练类 4 段合并 36 unique / 41 处 + 康复专项段 30 行内去重 24 unique / 30 处」**, 候选源已陈旧
+- **新增下轮候选**:
+  - **ch02-shoulder 修订说明段 「W1-W8 时间线表内 15 处」自身校验通过后,同型抽查 ch05-elbow / ch06-back / ch07-achilles 末段修订说明段**(优先级中):这 3 章 v3.22.59 / d6305d5 / d6305d5 都做了分布细分,可能也存在类似 off-by-one。建议下轮用一个通用 python 脚本批量校验 3 章「W# 累加 vs 实际表内 inline 数」一致性
+  - **ch02-shoulder 「15 处表内」vs 实际 15 处已自洽后,可顺手把 §十「本章 ex-lib 引用清单」7 条合法 id 改为单行有序列表格式,与 ch04-ankle / ch05-elbow 清单风格统一**(可选,优先级低)
+  - **GitHub Pages push 网络层**(持续):本轮 host 网络仍 443 失败(Connection was reset / Could not connect to server),与第 15 / 16 / 17 轮同因;commit `a593beb` 已留本地 `book` 分支,网络通时一次 `git push origin book` 即可追平
+- **commit hash**: `a593beb`,push 未通(本轮同 541b34c / 46fbdf2 / d461311 留本地),GitHub Pages 仍运行 541b34c 上一个版本
+
+---
+
 ## 本轮增量 (commit d461311 — 兑现上轮 28de688 todo 第 1 条候选「ch03-knee 末段补总述声明」)
 
 - **本轮目标**:兑现 todo 第 1 条「ch03-knee 末段补总述声明」 — ch03 实测 16 inline / 9 unique,缺 ch02 / ch04 / ch05 / ch06 / ch07 / ch08 已定型的「本章共引用 N 处 / 折合 X unique」+「分布细分」口径,补齐让 8 章口径 100% 覆盖(8/8 章到位,仅 ch01 导言无 ex-lib 引用)
