@@ -1125,3 +1125,49 @@
 
 ### commit hash
 - `4e4500c`(已 push `32e7cbd..4e4500c`,本轮 1 commit),GitHub Pages 自动部署中
+
+---
+
+## 2026-08-30 第 34 轮 (commit 966bc04)
+
+### 本轮做了什么
+- **commit `966bc04`** `fix(badminton-recovery-ch04): 「损伤分级」 H3 子小节降为加粗行内文字` — 8 章里**唯一**在「## 本章导言」下挂 H3 子小节的章节。awk 扫表确认 ch04 之前唯一匹配,其他 7 章(ch01/02/03/05/06/07/08)「## 本章导言」下 H3 子小节数 = 0。
+- **触发发现**:本轮 grep -cE "第一层|第二层" 全章统计时,发现 ch04 是 2/1(其他章普遍 3-5/3-5),逐节 grep 发现 ch04 的 L22/L78 是 **## 级**(H2 整章切分),其他章是 **### 级**(H3 小节级切分) —— 视觉结构与其他 5 章不一致。再用 awk 扫「## 本章导言」下 H3 子小节,定位到 ch04 L14 唯一有 `### 损伤分级`。
+- **修复策略**:保留 L14 表格内容(Ⅰ°/Ⅱ°/Ⅲ° 三档分级不变),把标题从 H3 (`### 损伤分级`) 改为加粗行内文字(`**损伤分级速查(导言辅助,非双层切分)**`)。理由:① 表格内容实用,不能删;② 原 H3 标题在「## 本章导言」下被解析为导言子小节,但定位上更接近「## 第一层」前的「速查表」 —— 降为加粗文字最稳;③ 与上轮 a9bb9ea(ch03 双层标签补齐)同性质「修双层结构视觉一致性」最小触动。
+- **字节数**:11756 → 11798(+42 净增:新增 22 个字符「速查(导言辅助,非双层切分)」 - 删除 0 个原字符 - 增加「**」2 个 + 减 0 个 = 净 +22 个字符;实测 +42 字节 = 22 字符 × UTF-8 中文字符 3 字节 - ASCII 字符 1 字节,约等)。
+- **改动**:1 file changed, 1 insertion(+), 1 deletion(-) ✓
+
+### 校验
+- `git diff --stat HEAD~1`: `1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+- `awk '/^## 本章导言/{flag=1; next} flag && /^## /{flag=0} flag && /^### /'` 8 章扫描:全部为空 ✓ ch04 已对齐其他 7 章
+- `node _scan_exlib.js`:1336 ids / 521 refs / 0 broken(未动任何 `[ex:XXXX]` 引用)✓
+- `python -m json.tool manifest.json` exit 0 ✓
+- `python -m json.tool books/exercises/ex-lib.json` exit 0 ✓
+- `node --check app.js` exit 0 ✓
+- 0 CRLF / 0 CR / `file` 报告 UTF-8 / diff 干净 1 行修改
+- 零业务代码改动(app.js/index.html/manifest.json/manifest_data.js/VERSION 不动)
+- APP_VERSION 不 bump(纯 .md 标题级别调整)
+- 4 埋点不动:`app.js` APP_VERSION 仍 v3.22.61 / `index.html` 三处 `?v=` 仍 v3.22.61 / `manifest.json` 无变更 / `VERSION` 无新增行
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(本轮新发现,优先级中)** badminton-recovery ch04「## 本章导言」下孤立 H3 子小节「损伤分级」 → 本轮 966bc04 修复,候选作废
+- ⏭️ **(继承远期,优先级低)** `_session_todo.md` 1091 → 1128 行归档(本轮 append 记账块后)→ 远期继承,累计 8 轮
+- ⏭️ **(继承远期,优先级低)** 末尾裸 hash 块历史清理 → 远期继承
+- ⏭️ **(继承远期,优先级低)** foam roller / 筋膜球专项条目入库 → 远期继承
+- ⏭️ **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强 → 远期继承
+- ⏭️ **(继承远期,优先级低)** `_session_todo.md` 内 L# 表述改进 → 远期继承
+- ⏭️ **(继承远期,优先级中)** app.js APP_VERSION v3.22.61 vs 实际最新 → 本轮未触发
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 连续 7 次尝试都被本地 ISP 拦截 GitHub 443(`Failed to connect to github.com port 443 via 127.0.0.1 after 2089-2103 ms`)。本地 commit `966bc04` 已落分支 `book`,等网络恢复后单次 push 即可。
+- 上轮 push 阻塞有「3 commit 累计 push 成功」先例(32e7cbd / 4e4500c 等 3 commit 累计 push 在 d0173ae 段成功),本轮同样适用。
+
+### 新增下轮候选
+- **(本轮新发现,优先级中)** ch04 「## 第一层」/「## 第二层」是 H2 整章切分,而 ch01/02/03/05/06/07 是 H3 小节级切分 —— 本轮修了 L14 孤立 H3,但 ch04 整章的"层切分级别不一致"问题未解决。若要进一步统一,需把 ch04 L22/L78 `## 第一层`/`## 第二层` 降为 `###`,并把现有 H3 子小节(信号识别/急性期/恢复期/专项期/4周/8周/12周/关键训练动作/影像学/手术/CAI)全部 H4 化,改动 ~10 个标题级别、风险中等,可作下轮小修候选。
+- **(本轮新发现,优先级低)** 8 本专业书 README / manifest 章节表头与 ex-lib 库对齐专项核对已完成 engineering-mechanics / psychology / badminton-recovery 3 本(上轮 b6d4bd0 / 4e4500c),剩余 finance / yin-yang / competition / nutrition / badminton / nsca-cpt 6 本未做 —— 上轮 e028439 校验 nsca-cpt 时已对齐,实际剩余 5 本
+- **(继承远期,优先级低)** `_session_todo.md` 1128+ 行归档 → 远期,累计 8 轮
+- **(继承远期)** foam roller 入库 / ch06 ch07 措辞微调 / 末尾裸 hash 块历史清理 / L# 表述改进
+
+### commit hash
+- `966bc04`(本地已落,`book` 分支 HEAD;**push 未成功**,等网络恢复),GitHub Pages 暂未自动部署本轮
