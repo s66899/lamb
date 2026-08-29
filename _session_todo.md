@@ -1,4 +1,62 @@
 
+## 本轮增量 (commit d461311 — 兑现上轮 28de688 todo 第 1 条候选「ch03-knee 末段补总述声明」)
+
+- **本轮目标**:兑现 todo 第 1 条「ch03-knee 末段补总述声明」 — ch03 实测 16 inline / 9 unique,缺 ch02 / ch04 / ch05 / ch06 / ch07 / ch08 已定型的「本章共引用 N 处 / 折合 X unique」+「分布细分」口径,补齐让 8 章口径 100% 覆盖(8/8 章到位,仅 ch01 导言无 ex-lib 引用)
+- **改动**(2 个文件,+2 行):
+  - `books/badminton-recovery/ch03-knee.md` L230 后、7.3 H3 前新增 1 段声明:`**本章共引用 16 处 ex-lib inline 引用(折合 9 个 unique id)...分布:4 周时间线表内 2 处 + 8 周时间线表内 2 处 + 7.2 清单段 12 处 = 16 处 inline。**本章清单段已对齐 ch02 / ch04 / ch05 / ch06 / ch07 / ch08 末段口径(声明段 + 分布细分)。`
+  - `_add_ch03_status.py`(python 脚本,沿用 7db0c91 模式):anchor 定位 + 最小插入;绕开 edit 工具的中文标点 normalize + CRLF 转换坑
+- **校验**:
+  - `grep -oE '\[ex:[0-9]{4}' ch03` 改前 16 / 改后 16(inline 不变;声明段纯描述不写具体 [ex:NNNN] 字面量,避免新增 inline)✓
+  - `grep -oE ... | sort -u` 改前 9 / 改后 9(unique 不变)✓
+  - 9 unique id 全部合法 vs `books/exercises/ex-lib.json`:1001/1002/0054/0099/0411/1564/1713/1759/3533 全部 OK ✓
+  - `node _scan_exlib.js`:1336 ids / 351 refs(+2)/ 0 broken(增量 2 来自声明段 inline code `` [ex:0411] `` + 「[ex:0411]」描述,均为合法 id)✓
+  - `node --check app.js` OK / `node --check manifest_data.js` OK / `python -m json.tool manifest.json` OK ✓
+  - `git diff --stat`: `2 files changed, 2 insertions(+)`(纯插入,无 deletions,无 CRLF 改写)✓
+  - git diff 显示插入点在 L229-233 之间,L230 诚实原则 blockquote 之后、L232 7.3 H3 之前 ✓
+  - 零业务代码改动;零 ex-lib id 改动;APP_VERSION 不 bump(纯文字内容口径统一)
+- **本轮踩坑与修复**(重要 — 后续脚本模板):
+  - **坑 1**:首次 python 脚本用 `io.open(path, "r/w", encoding="utf-8")` 不带 `newline=""`,windows python 默认 text mode 把 LF 转 CRLF,导致 246 行全文件 diff(+490/-244)
+  - **修复**:read/write 都加 `newline=""`,保留 LF 一致,验证 newline 0 CRLF / 246 LF / 0 CR,git diff stat 干净 `2 +0`
+  - **坑 2**:首次声明段用 inline code `` `[ex:0411]` `` 包裹仍被 `grep -oE '\[ex:[0-9]{4}'` 抓到(裸 `[` 在反引号内也匹配),导致 inline 16 → 17
+  - **修复**:声明段不再写任何具体 `[ex:NNNN]` 字面量,改用「单腿下蹲 id」「侧步代用 id」「对应股四 id」描述性文字,inline 保持 16
+- **ch03 分布细分验证**(grep -oE 逐行):
+  - L48 `[ex:3533]` 4周表 ✓
+  - L56 `[ex:1002]` 4周表 ✓
+  - L85 `[ex:0054]` 8周表 ✓
+  - L86 `[ex:0411]` 8周表 ✓
+  - L219 `[ex:1002]` 7.2 清单 ✓
+  - L220 `[ex:0411]` 7.2 清单 ✓
+  - L221 `[ex:1759]` 7.2 清单 ✓
+  - L222 `[ex:0099]` 7.2 清单(行内 2 次:表格 id + 「最接近为 [ex:0099]」描述)✓
+  - L223 `[ex:0054]` 7.2 清单 ✓
+  - L224 `[ex:3533]` 7.2 清单(行内 2 次:表格 id + 「最贴近条目 [ex:3533]」描述)✓
+  - L225 `[ex:1713]` 7.2 清单 ✓
+  - L226 `[ex:1564]` 7.2 清单 ✓
+  - L227 `[ex:0411]` 库中暂无代用段 ✓
+  - L228 `[ex:1001]` 库中暂无代用段 ✓
+  - 合计 14 行 / 16 匹配 / 9 unique ✓
+- **本书末段措辞统一 + 分布细分全章进度(8/8 章到位)**:
+  - ch01-introduction: 0 inline(导言无引用),无需声明 ✓
+  - ch02-shoulder(v3.22.55): ✅ 7 unique / 23 处 / 时间线表+清单分布细分
+  - **ch03-knee(d461311 本轮): ✅ 9 unique / 16 处 / 3 段分布细分** ← 新增声明 + 分布细分
+  - ch04-ankle(7db0c91): ✅ 13 unique / 25 处 / 3 段分布细分
+  - ch05-elbow(v3.22.59): ✅ 5 unique / 14 处 / 4 段分布细分
+  - ch06-back(d6305d5): ✅ 13 unique / 35 处 / 5 段分布细分
+  - ch07-achilles(d6305d5): ✅ 13 unique / 29 处 / 5 段分布细分
+  - ch08-action-plan(82f9ef6): ✅ 16 unique / 35 处 / 6 部位分布细分
+- **过时候候选清理**:
+  - 「ch03-knee 末段加总述声明」(上轮新增) — 本轮已修 ✓
+- **新增下轮候选**:
+  - **羽毛球 ch12 §8.4 标题「本章 36+30 个 ex-lib 引用清单」括号里的「按类别」可加「跨段 unique 41」注脚**(继承多轮,优先级低):读者第一眼看到 36+30 = 66 容易误以为全章 unique 66,实际 unique 41(力量段和康复段、柔韧段有重叠 id)。改「按类别」为「按类别(全章 unique 41 个)」单行,可独立 commit
+  - **NSCA ch04 §0 L15 「[ex:0000-中文名]」占位示例换真实合法 id**(优先级低):目前 0 命中无实害,可把示例改成 `[ex:0038]` / `[ex:0099 单腿分腿蹲]` 之类真实合法 id 防未来照抄占位
+  - **README/TOC 加「每章 ex-lib 分布细分速查表」**(可选增强):8 章口径 100% 统一后,做一份读者侧速查索引(如「ch02-shoulder: 7 unique / 23 处」一表)便于一眼看全书覆盖度
+  - **VERSION 文件头注释 commit 计数更新**:当前是 `v3.18.7 ~ v3.22.61 共 73 条`,本轮 `d461311` 是第 74 条,下次 VERSION 文件变更时同步更新即可(本轮不动)
+- **commit hash**: `d461311`,push `13f0460..d461311`(一次性把上轮 2 条 AHEAD + 本轮 1 条全推上去,GitHub Pages 自动部署中)✓
+
+---
+
+## 本轮增量 (commit 28de688 — 上一轮 todo 记账)
+
 ## 本轮增量 (commit 53483f7 — app.js 用户可见 tip 文字 [ex:0000] 占位 bug 修复)
 
 - **本轮目标**:兑现 todo 列表里「NSCA ch04 §0 末段 L15 占位 0000」候选的本意(防止读者把 0000 当合法 id 抄走) — 扫描发现 app.js L8238 用户可见问卷方案 tip 文字里直接渲染 `<code>[ex:0000]</code>` 给读者看,这是真实用户可见的坏示例;NSCA ch04 L15 是合法说明性占位(不在用户 UI 里),可保留
