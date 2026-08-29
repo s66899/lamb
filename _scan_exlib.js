@@ -1,4 +1,6 @@
-// 一次性扫描：books/**/*.md 里的 [ex:NNNN] 引用 vs books/exercises/ex-lib.json 库
+// 一次性扫描：books/**/*.md 里的 [ex:NNNN] / [ex:NNNN 中文名] 引用 vs books/exercises/ex-lib.json 库
+// 关键：regex 用 LOOSE 形式 \[ex:(\d{4})[^\]]*\]，同时识别「[ex:NNNN]」标准式与「[ex:NNNN 中文名]」表格式（羽毛球 ch12 / NSCA ch04-ch09 大量使用）
+// 历史：v3.22.62 之前用 STRICT \[ex:(\d{4})\] 仅识别标准式，导致 170 处「[ex:NNNN 中文名]」被扫描器盲区忽略；LOOSE 上线后总引用数 351 → 521，0 broken 不变（库内合法）
 const fs = require('fs');
 const path = require('path');
 
@@ -15,7 +17,8 @@ function walk(dir) {
     if (f.isDirectory()) walk(p);
     else if (f.name.endsWith('.md')) {
       const t = fs.readFileSync(p, 'utf8');
-      const ms = t.match(/\[ex:(\d{4})\]/g) || [];
+      // LOOSE: 识别 [ex:NNNN] 与 [ex:NNNN 中文名] 两种格式
+      const ms = t.match(/\[ex:(\d{4})[^\]]*\]/g) || [];
       for (const m of ms) {
         const id = m.slice(4, 8);
         total++;
