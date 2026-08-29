@@ -510,3 +510,50 @@
 
 ### commit hash
 - `a188a14`(本地 book 分支),push 待网络通
+
+---
+
+## 2026-08-29 第 19 轮 (commit 98cbde0)
+
+### 本轮做了什么
+- **commit `98cbde0`** `fix(books): README v3.22.49 → v3.22.61 数据源版本号脱节修复`
+- **真实问题**:`books/README.md` L11 顶部声明 `> 数据源:manifest.json v3.22.49 · 总计 **9 本书 / 96 章 / 88.1 万字**` — 这个 v3.22.49 来自 commit 76b02ec(v3.22.49 fix manifest 4 章补齐),此后 manifest.json 经过两轮二次同步:
+  1. v3.22.51 (commit 5e3dbc9 实际是 v3.22.44 + a188a14 链路里 e5cdcb9 v3.22.48 补 competition+nutrition 整本 metadata → 6bb8987 v3.22.53 6 处 chapter 副标题对齐)
+  2. v3.22.53 (commit 6bb8987 chapter title 同步 + 4 埋点统一)
+  - 但 README L11 从 v3.22.49 e5cdcb9 后再未刷新 — 差 12 个发版口径的"数据源版本号",与 app.js APP_VERSION 'v3.22.61' / VERSION 文件头部 'v3.22.61' 三方不全对齐
+- 单文件 1 行 sed:`v3.22.49` → `v3.22.61`;「9 本书 / 96 章 / 88.1 万字」真实数字本就与 manifest.json 实际一致(本轮 `python -c "import json; m=json.load(open('manifest.json')); print(sum(len(b.get('chapters',[])) for b in m['books']), sum(b.get('totalWords',0) for b in m['books'])/10000)"` → `96 88.1万` 确认),纯文字口径同步
+
+### 校验
+- `git diff books/README.md` → 1 行改:`v3.22.49` → `v3.22.61`(`+1/-1` 最小改动 ✓)
+- `sed -n '11p' books/README.md | cat -A` 末尾 `$` 唯一,LF 保留无 CRLF 污染 ✓
+- `python -m json.tool manifest.json` exit 0 ✓
+- `python -m json.tool books/exercises/ex-lib.json` exit 0 ✓
+- `node _scan_exlib.js` → 1336 ids / 351 refs / 0 broken(与上轮一致,因未动任何 [ex:XXXX]) ✓
+- `node --check app.js` exit 0 ✓
+- `grep -rn "v3.22.49" books/ --include="*.md"` → 0 命中(全清零) ✓
+- `grep -rn "v3.22" books/README.md` → 1 行命中 = L11 = 改后 v3.22.61 ✓
+- `grep -nE "20[0-9]{2}-[0-9]{2}-[0-9]{2}" app.js | grep -v "APP_DATE"` → 仍为空(确认 APP_DATE 是 app.js 唯一埋点) ✓
+- 羽毛球康复书 8 章 ex-lib 引用实测:ch02 32/7 / ch03 16/9 / ch04 25/13 / ch05 14/5 / ch06 36/13 / ch07 33/13 / ch08 35/16 + ch01 intro 0/0,与各章末段声明完全一致 ✓
+- APP_VERSION 不 bump(本次只修文案口径,版本号仍 v3.22.61,与历史 ch02 L253 / ch10 L301 同型「文字口径微调」一致)
+
+### 上轮候选清算 (本轮重扫)
+- ❌ **ch10 L301 「截至 v3.22.56」→「截至 v3.22.61」** — 实际已由 commit 11e74a2 完成,L301 现写「截至 v3.22.61」与 APP_VERSION 对齐,候选作废
+- ❌ **ch03-knee 末段总述声明** — 实际已由 commit d461311 v3.22.61 补齐(「本章共引用 16 处 inline 引用 / 折合 9 个 unique id」完整 + 分布细分),候选作废
+- ❌ **羽毛球 ch12 §9.8「30 个 ex-lib」措辞** — 已由 commit 50ee76b v3.22.59 完成,候选作废
+- ❌ **NSCA ch04 [ex:0000] 占位** — 实际已由 9370ab6 + 53483f7 修复(「[ex:0000-中文名]」与「[ex:1234] tip 占位」都换合法 id),候选作废
+- ❌ **ch06 / ch07 unique 口径微调** — 仍 commit a188a14 v3.22.62 状态,声明已与实测对齐,候选作废
+- ❌ **README ex-lib 8 章速查表** (远期):本轮新增「本体已 8 章声明在各自章节末段」可证,无需集中速查表
+- ❌ **foam roller / 筋膜球腰部专项入库** (远期继承):ch06 末段明确写「库中暂无」,未来建 id 命名 + 多语字段规范,本次继续留
+- ✅ **7 条候选全部作废**,本轮启动新扫描 → 找到 books/README.md L11 v3.22.49 脱节作为本轮唯一真问题
+
+### Push 状态
+- ✅ 本轮 push 成功!`9fd712a..98cbde0` 已推 `origin book`(host 443 直连有效,`git -c http.proxy= -c https.proxy= push origin book` → exit 0),GitHub Pages 自动部署中
+
+### 新增下轮候选
+- **(本轮新发现)** `_session_todo.md` 文件全文已 540+ 行,包含 18 轮历史记录 + 大量候选池;**未来可考虑**:归档前 N 轮记录到 `_session_todo.md.archive`,只保留最近 5 轮可见,文件大小可减半(README/AGENTS.md 里说明归档路径) — 优先级低,纯文件管理
+- **(本轮新发现,优先级低)** VERSION 头部「历史叙事(v3.4.0 ~ v3.8.7)由原 VERSION 文件保留」 — 检查是否 `VERSION.archive` 老文件存在,如未保留应补一个原始快照保留链路
+- **(优先级中,继承远期)** foam roller / 筋膜球腰部专项入库:ch06/ch08 都标"库中暂无",如要做需先建 id 命名 + 多语字段规范(SMR 12 条 ex-5202~ex-5213 可作模板,补充 1 条"腰部 foam roller"即可解决 ch06 末段声称)
+- **(本轮新发现,优先级低)** manifest_data.js 与 manifest.json 上次同步在 commit a188a14 路径里(commit 6bb8987 v3.22.53 chapter 副标题对齐),本次 README 已对齐,下次如果两者漂移需 cross-check 一致性
+
+### commit hash
+- `98cbde0`(已 push `9fd712a..98cbde0`),GitHub Pages 自动部署中
