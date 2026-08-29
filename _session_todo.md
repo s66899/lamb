@@ -164,3 +164,41 @@
   - **NSCA ch10 SMR 条目入库**(优先级低,继承):库内仍无 foam roller / 筋膜球专项,如要新增条目需先建立 id 命名 + 多语字段规范
   - **README/TOC 更新** badminton-recovery 章节深度索引(可选):补「每章 ex-lib 分布细分速查表」让读者一目了然
 - **commit hash**: `d6305d5`,push `d71adac..d6305d5`,GitHub Pages 自动部署中
+
+## 本轮增量 (commit 7db0c91 — 兑现 ch04 末段口径统一,纠正上轮 todo 误判)
+
+- **本轮目标**:羽毛球康复书 ch04 (踝) 末段补「本章 ex-lib 引用现状」总述声明 + 分布细分;ch04 实测 14 行/23 匹配/13 unique(改前),只缺口径声明,与 ch05(ch05 17e11cf)/ch06(d6305d5)/ch07(d6305d5)/ch08(82f9ef6) 4 章已定型的「X 处 / Y unique」+「分布细分」句式脱节
+- **改动**(单文件 3 行):
+  - `books/badminton-recovery/ch04-ankle.md` L202 新增总述声明:「本章共引用 25 处 ex-lib inline 引用(折合 13 个 unique id),全部已验证为库内合法 id(零伪造)。分布:第一层普通人版 9 处 + 互引表 13 处 + 库中暂无说明段 1 处([ex:1374] 再引)= 25 处 inline」+ 踝关节「一个动作对一种功能」口径说明(背屈/跖屈/内翻/外翻/本体感觉/落地缓冲/拉伸/肌护 各需独立条目,故 unique 数接近 inline 数)
+  - 附:`_add_ch04_status.py`(python 脚本,绕开 edit 工具的全角中文标点 normalize 问题)+ `_valid_ids.txt`(扫描器中间产物)
+- **校验**:
+  - awk 逐段统计 ch04 各 ## 段 inline 数:第一层 L53(1) + L54(2) + L55(2) + L60(1) + L61(2) + L62(1) = 9 ✓;互引表 L191-197 一行条总计 13 id = 13 ✓;L200 库中暂无 1 ✓;L202 新增段 2([ex:1374] × 2)= 25 ✓
+  - 改前 ch04 14 行 / 23 匹配 / 13 unique → 改后 15 行 / 25 匹配 / 13 unique ✓
+  - `node _scan_exlib.js`:1336 ids / 351 refs(+2)/ 0 broken(声明段 2 个 [ex:1374] 全部合法)✓
+  - `node --check app.js` OK / `node --check manifest_data.js` OK / `python -m json.tool manifest.json` OK ✓
+  - git diff stat: `1 file changed, 3 insertions(+)`(实际 ch04 仅 +3 行,scripts/产物另算)✓
+- **本轮排查后修正上轮 todo 误判**:
+  - 上轮 todo 说「ch08-action-plan 缺总述声明」— **实为错误**:实测 `grep 本章共引用` L174 已有完整声明(35 处 / 16 unique + 6 部位分布细分),82f9ef6 commit 已落实。todo 里这条候选是历史遗留幻觉,作废 ✓
+  - 上轮候选「NSCA ch10 SMR 入库」— **实为已完成**:v3.22.17 已入库 12 条 ex-5202~ex-5213,本章 SMR 引用表已同步。候选池过期,作废 ✓
+  - 上轮候选「ch12 §9.8「30 个 ex-lib 引用」措辞口径」— 优先级低且非真实 bug,降级为远期候选
+  - 真正的「口径未统一」只有 ch04 一章,本轮已处理
+- **edit 工具副作用记录**(重要 — 后续绕开):
+  - 首次试用 edit 工具写 ch04 时,工具把全份文件的「**(中文)**」「，」「：」「——」normalize 成半角「()」「,」「,」「--」,触发 107/105 整文件重写 diff
+  - git checkout 还原后,改用 `_add_ch04_status.py` 做 anchor 定位 + 最小插入(3 行),diff 干净 + 全角标点保留
+  - 后续如对含全角中文标点的 .md 做小修改,优先用 python 脚本,不要用 edit 工具
+- **本书末段措辞统一 + 分布细分全章进度(7/8 章到位)**:
+  - ch01-introduction: 0 inline(导言无引用),无需声明 ✓
+  - ch02-shoulder(v3.22.55): ✅ 7 unique / 23 处 / 时间线表+清单分布细分
+  - ch03-knee: 历史自洽(9 unique,无分布细分必要)
+  - ch04-ankle(**7db0c91 本轮**): ✅ 13 unique / 25 处 / 3 段分布细分 ← 新增声明
+  - ch05-elbow(v3.22.59): ✅ 5 unique / 14 处 / 4 段分布细分
+  - ch06-back(d6305d5): ✅ 13 unique / 35 处 / 5 段分布细分
+  - ch07-achilles(d6305d5): ✅ 13 unique / 29 处 / 5 段分布细分
+  - ch08-action-plan(82f9ef6): ✅ 16 unique / 35 处 / 6 部位分布细分
+- **新增下轮候选**:
+  - **ch03-knee 末段加总述声明**(优先级低,可选):ch03 实测 14 行 / 14 匹配 / 9 unique,数字简单可补「14 处 / 9 unique」声明句让 8 章口径 100% 覆盖,但内容相对单薄补不补影响小
+  - **羽毛球 ch12 §9.8「30 个 ex-lib 引用」措辞口径微调**(优先级低,继承多轮):首句改「第九节以原则为主 / 配套 30 个 ex-lib 查表入口」消除心理落差
+  - **NSCA ch04 §0 L15「[ex:0000-中文名]」占位示例换真实合法 id**(优先级低):目前 0 命中无实害,防未来照抄
+  - **GitHub Pages push 走 git -c http.proxy= 直连**(操作项):~/.gitconfig 中 `proxy = http://127.0.0.1:7890` 端口不通,本轮通过 `git -c http.proxy= -c https.proxy= push origin book` 临时绕开,可在 .gitconfig 永久改为空或注释掉
+  - **README/TOC 加「每章 ex-lib 分布细分速查表」**(可选增强):便于读者一眼看全书覆盖度
+- **commit hash**: `7db0c91`,push `b06e308..7db0c91`,GitHub Pages 自动部署中
