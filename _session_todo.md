@@ -939,3 +939,49 @@
 
 ### commit hash
 - `98cbde0`(已 push `9fd712a..98cbde0`),GitHub Pages 自动部署中
+
+---
+
+## 2026-08-30 第 30 轮 (commit 844d64a)
+
+### 本轮做了什么
+- **commit `844d64a`** `fix(badminton-ch12): L128 标题孤立英文单引号移除` — `## 二'、基础体能训练` → `## 二、基础体能训练`(孤立英文单引号 typo,与 L321 `## 二、羽毛球专项体能训练` 格式对齐;全章 2 个 `'` 字符,本轮移除 1 个,L405 `farmer's walk`(英文所有格)保留)
+- **发现方法**:python3 全文扫所有 `^#+ ` 标题 + `'` 字符,定位到 1 处孤立 typo(L128)+ 1 处英文所有格(L405),最小修复 1 字符
+- **修复策略**:沿用 v3.22.56「棵→踝」同型单字符 typo 修复模式(单文件 sed 即可,无业务连带)
+- 用 edit 工具精确替换;bytes 64399 → 64398(净 -1,纯 1 字符删除)
+- L128 现在:`## 二、基础体能训练(原版内容 — 体能概述)` ✓ 与 L321 同结构
+- L405 现在:`[ex:1421 dumbbell farmer's walk]` ✓ 英文所有格保留
+
+### 校验
+- `git diff --stat`: `1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+- python `text.count('\r\n')`: 0(无 CRLF 污染)✓
+- python `text.count('\r')`: 0(无裸 CR)✓
+- python `text.endswith('\n')`: True ✓
+- `node _scan_exlib.js` → 1336 ids / 521 refs / 0 broken(改前一致,因只动 .md 纯文字)✓
+- `python -m json.tool manifest.json` OK / `python -m json.tool books/exercises/ex-lib.json` OK(改前一致)✓
+- `node --check` 未涉及(纯 .md 文字修改)✓
+- 零业务代码改动;零 ex-lib id 改动;APP_VERSION 不 bump
+
+### 上轮候选清算 (本轮重扫)
+- ✅ **badminton ch12 L128 标题孤立 `'` typo** — 本轮已修,候选作废
+- ✅ **(本轮新发现,优先级中)** books/README.md L11 总数声明 — 实测对齐:9 本 / 96 章 / 881205 字(88.1 万字);9 本字数 14.3/14.2/16.9/15.8/5.0/18.8/2.0/0.5/0.6 万 全对齐;9 本章数 15/13/12/13/10/12/8/6/7 全对齐;无差可改,候选作废
+- ✅ **(本轮新发现,优先级低)** NSCA-CPT 章节表头对齐 — 上轮 e028439 已修,候选作废
+- ✅ **foam roller / 筋膜球腰部专项入库** — 远期继承(需先建 id 命名 + 多语字段规范),继续留
+- ✅ **_session_todo.md 现 941 行远期归档** — 未做,优先级低纯文件管理,继续留
+- ✅ **ch06 / ch07 末段「清单 13 unique」措辞补强** — 实测对齐无差可改,继续留为远期观察
+- ✅ **(本轮新发现,优先级低)** `_session_todo.md` 末尾两个**裸 `### commit hash` 块**残留(`e028439` + `98cbde0` 各对应一个孤立 hash 行,无对应 `## YYYY-MM-DD 第 N 轮` 块头) — 真实脏数据,本轮记账 append 后会被推到中段(不影响新块阅读),但**未做专门清理**,留为下轮候选
+- ✅ **(本轮新发现,优先级低)** `_session_todo.md` 第 29 轮记账块「新增下轮候选」第 1 条「报表成争争」+ 第 2 条「字节数 90502 → 85229」(实测 8c2b500 字节 85231,不是 90502)是本轮记账自己的措辞/数据错乱 — 不修(候选本来就以低优先级标记),继续留
+
+### Push 状态
+- ✅ 本轮 push 成功!`ea71a28..844d64a` 已推 `origin book`,GitHub Pages 自动部署中
+
+### 新增下轮候选
+- **(本轮新发现,优先级中)** `_session_todo.md` 末尾两个**裸 `### commit hash` 块**残留 — 内容是 `e028439` (某次) + `98cbde0` (README v3.22.49→v3.22.61 同步) 两个独立 hash 描述,无对应 `## YYYY-MM-DD 第 N 轮` 块头,可独立 commit 清理(本轮记账 append 后已被推到中段,但仍属脏数据)
+- **(本轮新发现,优先级中)** 其他 7 本书 README 与 `manifest.json` 字数一致性核对:`books/finance/` / `books/psychology/` / `books/engineering-mechanics/` / `books/yin-yang/` / `books/competition/` / `books/nutrition/` / `books/badminton-recovery/` README 章节表头与字数声明可能存在同型错位(本轮只动了 badminton ch12,剩余 7 本书可能存在真问题)
+- **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库:需先建 id 命名 + 多语字段规范
+- **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强:实测对齐,但措辞可微调
+- **(继承远期,优先级低)** `_session_todo.md` 941 行远期归档:一直未做
+- **(继承远期,优先级低)** `_session_todo.md` 内 L# 表述改进:沿用历史
+
+### commit hash
+- `844d64a`(已 push `ea71a28..844d64a`),GitHub Pages 自动部署中
