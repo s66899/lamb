@@ -319,3 +319,33 @@
 - **NSCA ch04 §0「[ex:0000-中文名]」占位示例换真实合法 id**(防未来照抄):改 [ex:0038] 或类似, 0 命中无实害,纯防误
 - **GitHub Pages push 网络层**: host 443 直连仍失败,本轮跳过 push;如需加速可让用户侧配 http_proxy 端口
 
+
+## 2026-08-29 第 17 轮 (commit b37c5dc)
+
+### 本轮做了什么
+- **commit `b37c5dc`** `fix(app): APP_DATE 2026-08-27 → 2026-08-29 — 页脚版本日期与最近代码更新脱节 2 天`
+- 真实问题: `app.js` L29 `const APP_DATE = '2026-08-27'` 卡在 8月27日已 2 天未动,但最近代码 commit (46fbdf2 v3.22.61) 在 2026-08-29,用户视觉上看页脚版本日期陈旧(8月27日),与版本号 v3.22.61 的「最新感」脱节
+- 单文件 1 行 sed 替换: `2026-08-27` → `2026-08-29`; APP_VERSION 不 bump(本次只同步日期,版本号仍 v3.22.61)
+- 整个项目 `grep -rn "2026-08-27"` 在 .js/.html/.json/.md 中只剩 `app.js:29` 一处(扣掉 _session_todo / VERSION 历史 changelog 后),定位干净无遗漏
+
+### 校验
+- `node --check app.js` exit 0 ✓
+- `python -c "import re; print(re.findall(r'APP_(VERSION|DATE)\s*=\s*[\"\']([^\"\']+)[\"\']', open('app.js',encoding='utf-8').read()))"` → `[('VERSION', 'v3.22.61'), ('DATE', '2026-08-29')]` ✓
+- `node _scan_exlib.js` → 351 refs / 0 broken(与上轮一致,因未动任何 [ex:XXXX]) ✓
+- `git diff --stat app.js` 显示 binary 模式 0 +/- 行 — 与历史 commit 46fbdf2 / 295d2b2 提交 app.js 时一致(app.js 因 CRLF 被 git 当 binary 处理是已知行为)
+
+### 上轮候选清算 (本轮全数排查)
+- ❌ **ch03-knee 末段补总述声明** — 实际 v3.22.61 commit 46fbdf2 已补齐 (`本章共引用 16 处 ex-lib inline 引用(折合 9 个 unique id)` + 分布细分),候选作废
+- ❌ **羽毛球 ch12 §9.8「30 个 ex-lib 引用」措辞** — 实测 L1014 已写「第九节配套的 30 个 ex-lib 查表入口, v3.22.46 已移除库内不存在的 0876/1998/2010/2012/2015 共 5 个 id; 第九节正文以原则/生物力学为主、本节 0 处 inline 引用, 本表是其按 6 部位归类的查表入口」,措辞已经准确(30 个查表项 = 膝7+肩6+踝4+肘3+腰5+跟腱5 = 30, 数字真实),候选作废
+- ❌ **NSCA ch04 §0 L15 [ex:0000-中文名] 占位示例** — 实测 `grep -n "ex:0000" books/nsca-cpt/ch04-strength-training.md` 0 命中,实际已在上一轮 commit 9370ab6 替换为 [ex:0038],候选作废
+- ✅ **3 条候选全部作废**, 本轮启动新扫描 → 找到 APP_DATE 脱节作为本轮真实问题
+
+### Push 状态
+- ✅ 本轮 push 成功!`541b34c..b37c5dc` 已推 `origin book`(顺手把上轮 4 条 AHEAD 全部追上:`541b34c / d461311 / 28de688 / 46fbdf2 / b37c5dc`), GitHub Pages 自动部署中
+- 上轮遗留的「push 走 git -c http.proxy= 直连」技巧本轮仍然有效,本轮 host 网络 443 直连成功(`git -c http.proxy= -c https.proxy= push origin book` → `To https://github.com/s66899/lamb.git`, exit 0)
+
+### 新增下轮候选 (本轮真扫)
+- **VERSION 文件夹的「v3.22.61」commit 摘要里应加一条 APP_DATE 同步叙事** (低优先): 本轮未 bump 版本号, VERSION 文件 changelog 未追加; 如未来要把这次 APP_DATE 同步留档可单独 commit「chore(version): 补 APP_DATE 2026-08-29 同步条目」
+- **整个 app.js 是否还有别的硬编码日期/版本号散落** (低优先): `grep -nE "20[0-9]{2}-[0-9]{2}-[0-9]{2}" app.js | grep -v "APP_DATE"` 应只剩 0 行, 跑一遍可证 APP_DATE 是唯一埋点
+- **新增候选** (本轮发现, 优先级中): **ex-lib 库里是否有「foam roller 下背」专项条目** (持续多轮用户偏好): 当前 ch06 末段明确写「ex-lib 库中暂无『foam roller 下背 / 筋膜球腰部』专项条目」, 如未来要补这一条需先建立 id 命名 + 多语字段规范(参考 SMR 条目 ex-5202~ex-5213 模板)
+- **commit hash**: `b37c5dc`, push `541b34c..b37c5dc`, GitHub Pages 自动部署中
