@@ -1385,3 +1385,64 @@
 
 ### commit hash
 - `0d322db`(本地已落,`book` 分支 HEAD;**push 未成功**,等网络恢复),GitHub Pages 暂未自动部署本轮
+
+## 2026-08-30 第 38 轮 (commit 19eb83b)
+
+### 本轮做了什么
+- **commit `19eb83b`** `fix(manifest): competition 6 章 + nutrition 7 章 chapter title 字段改规范中文`
+- **背景**:承接 37 轮候选(优先级中),用 `grep -n '"title": "ch[0-9][0-9][^"]*"' manifest.json manifest_data.js` 扫表,实测命中 **26 处 = 13 章 × 2 文件**(manifest.json + manifest_data.js),全部集中在 `competition` (6 章) 与 `nutrition` (7 章) 两本:
+  - `competition`:`ch01-pre-match-prep` / `ch02-serve-receive` / `ch03-opponent-analysis` / `ch04-mental-strategy` / `ch05-physical-pacing` / `ch06-post-match-review` (6 处)
+  - `nutrition`:`ch01-tdee` / `ch02-macronutrients` / `ch03-nutrient-timing` / `ch04-protein-strategy` / `ch05-hydration` / `ch06-supplements` / `ch07-weight-management` (7 处)
+  - 其他 7 本书(yin-yang / badminton / engineering-mechanics / finance / nsca-cpt / psychology / badminton-recovery)chapter title 已是规范中文标题(零裸文件名),不动
+- **修复策略**(沿用「最小触动」模式):取各章 H1 去「第N章：」前缀作为新 title,manifest.json 与 manifest_data.js 同步:
+  - competition ch01: `ch01-pre-match-prep` → **赛前准备与倒计时** (H1: `第一章：赛前准备与倒计时`)
+  - competition ch02: `ch02-serve-receive` → **发接发战术体系** (H1: `第二章：发接发战术体系`)
+  - competition ch03: `ch03-opponent-analysis` → **对手分析与应对** (H1: `第三章：对手分析与应对`)
+  - competition ch04: `ch04-mental-strategy` → **比赛心理策略** (H1: `第四章：比赛心理策略`)
+  - competition ch05: `ch05-physical-pacing` → **体能分配与节奏控制** (H1: `第五章：体能分配与节奏控制`)
+  - competition ch06: `ch06-post-match-review` → **局间调整与赛后复盘** (H1: `第六章：局间调整与赛后复盘`)
+  - nutrition ch01: `ch01-tdee` → **TDEE 每日总能耗计算** (H1: `第一章：TDEE每日总能耗计算`)
+  - nutrition ch02: `ch02-macronutrients` → **三大营养素科学分配** (H1: `第二章：三大营养素科学分配`)
+  - nutrition ch03: `ch03-nutrient-timing` → **训练前后营养窗口** (H1: `第三章：训练前后营养窗口`)
+  - nutrition ch04: `ch04-protein-strategy` → **蛋白质摄入策略** (H1: `第四章：蛋白质摄入策略`)
+  - nutrition ch05: `ch05-hydration` → **水合与电解质平衡** (H1: `第五章：水合与电解质平衡`)
+  - nutrition ch06: `ch06-supplements` → **运动补剂速查** (H1: `第六章：运动补剂速查`)
+  - nutrition ch07: `ch07-weight-management` → **体重管理与减脂策略** (H1: `第七章：体重管理与减脂策略`)
+- **不动**:不动 books/competition/ 与 books/nutrition/ 下 13 个 .md 文件 H1 内容(改 manifest 字段不改源文);不动其他 7 本书 chapter title;不动 ex-lib;不动 app.js;不动 VERSION(纯 manifest 字段更新,不发版)
+- **改动**:`2 files changed, 0 insertions(+), 0 deletions(-)`(纯行内替换,git diff 行数不变;字节数 manifest.json +63、manifest_data.js +63)
+
+### 校验
+- `grep -n '"title": "ch[0-9][0-9][^"]*"' manifest.json manifest_data.js | wc -l`:**0** ✓(改前 26 → 改后 0)
+- `grep -nE '"title": "(赛前准备与倒计时|发接发战术体系|对手分析与应对|比赛心理策略|体能分配与节奏控制|局间调整与赛后复盘|TDEE 每日总能耗计算|三大营养素科学分配|训练前后营养窗口|蛋白质摄入策略|水合与电解质平衡|运动补剂速查|体重管理与减脂策略)"' manifest.json manifest_data.js | wc -l`:**26** ✓(13 章 × 2 文件)
+- `python -m json.tool manifest.json > /dev/null`:exit 0 ✓
+- `node --check manifest_data.js`:exit 0 ✓
+- `node _scan_exlib.js`:1336 ids / 524 refs / 0 broken(纯 title 字段改名,refs/broken 不变)✓
+- `git diff manifest.json manifest_data.js | grep -E '^\+.*\[ex:'`:空(零 ex-lib id 新增/删除)✓
+- `git ls-files -s --eol manifest.json manifest_data.js`:`i/crlf w/crlf attr/-text`(改前改后均为 CRLF,本轮未引入 LF/CRLF 状态变化)✓
+- `git diff --stat HEAD~1`:`2 files changed, 0 insertions(+), 0 deletions(-)` ✓
+- 零业务代码改动(app.js / index.html / VERSION / books/**/*.md 全部不动)
+- APP_VERSION 不 bump(纯 manifest 字段更新,不发版)
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(37 轮新增,优先级中)** competition 6 章 + nutrition 7 章 manifest 用裸文件名作 title 字段 → 本轮 19eb83b 全部改为规范中文标题,manifest 一致性对齐其他 7 本
+- ⏭️ **(继承远期,优先级低)** ch04 L202 12 个 unique 加权精细化(纯文字统计表述)
+- ⏭️ **(继承远期,优先级低)** ch06 foam roller 信息补偿
+- ⏭️ **(继承远期,优先级中)** ch04 「## 第一层」/「## 第二层」 H2 vs H3 切分级别不一致
+- ⏭️ **(继承远期,优先级低)** `_session_todo.md` 1388 → 1450+ 行归档(累计 12 轮)
+- ⏭️ **(继承远期,优先级低)** 末尾裸 hash 块历史清理
+- ⏭️ **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强
+- ⏭️ **(继承远期,优先级低)** L# 表述改进
+- ⏭️ **(继承远期,优先级低)** 8 本专业书 README / manifest 章节表头对齐专项核对剩余 5 本(finance / yin-yang / competition / nutrition / badminton — 其中 competition / nutrition 本轮已对齐 manifest title,README 表头待核)
+- ⏭️ **(继承远期,优先级中)** app.js APP_VERSION v3.22.61 vs 实际最新(本轮未触发,纯 manifest 字段更新)
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 仍被本地网络拦截 GitHub 443(`Failed to connect to github.com port 443 via 127.0.0.1 after 2094 ms`,curl 同主机同 proxy 可 200,git proxy 协议层拒接)。本地 commit 已落 `book` 分支领先 `origin/book` 1 个 commit(19eb83b),等网络恢复后单次 push 即可。沿用上轮「3 commit 累计 push 成功」先例。
+
+### 新增下轮候选
+- **(本轮新发现,优先级低)** ch04 L202 现状句「其余 12 个 unique id 平均出现 1.67 次」粗略统计(继承 36 轮)→ 下轮可精细化为加权统计(纯文字表述,不动 ex-lib id)
+- **(本轮新发现,优先级低)** manifest title 改完后,books/competition/README.md 与 books/nutrition/README.md 是否也用「章名 / 主题」风格(本轮只动了 manifest,未动 README),需扫表确认是否与 manifest 同步 → 低优先级纯字段一致性核对
+- **(继承远期,优先级低)** ch06 foam roller 信息补偿 / ch04 H2 vs H3 切分级别 / `_session_todo.md` 远期归档 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / 5 本书 README 表头对齐剩余(本轮 manifest 已对齐 competition+nutrition 2 本,剩 finance / yin-yang / badminton 3 本)
+
+### commit hash
+- `19eb83b`(本地已落,`book` 分支 HEAD,领先 `origin/book` 1 commit;**push 未成功**,等网络恢复),GitHub Pages 暂未自动部署本轮
