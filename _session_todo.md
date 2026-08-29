@@ -985,3 +985,46 @@
 
 ### commit hash
 - `844d64a`(已 push `ea71a28..844d64a`),GitHub Pages 自动部署中
+
+---
+
+## 2026-08-30 第 31 轮 (commit b6d4bd0)
+
+### 本轮做了什么
+- **commit `b6d4bd0`** `fix(readme): 三本专业书目录补全缺失章节 — finance 10→13 / psychology 10→12 / engineering-mechanics 10→12 (与实际 chXX-*.md 文件 + manifest.json 完全对齐)` — 继承自上轮「下轮候选」第 2 条「其他 7 本书 README 与 manifest 字数一致性核对」
+  - `books/finance/README.md` 加 ch11 金融市场与工具 / ch12 衍生品与风险管理 / ch13 国际金融与外汇市场(实际 `ch11-financial-market.md` / `ch12-derivatives-and-risk.md` / `ch13-international-finance.md` 三个文件早就在,只是 README 目录没列;3 个 H1 原文照搬)
+  - `books/psychology/README.md` 加 ch11 心理治疗与干预方法 / ch12 积极心理学(实际 `ch11-psychotherapy.md` H1「第十一章:心理治疗与干预方法」/ `ch12-positive-psychology.md` H1「第十二章:积极心理学——幸福的科学」原文照搬)
+  - `books/engineering-mechanics/README.md` 加 ch11 振动分析 / ch12 断裂力学与疲劳分析(实际 `ch11-vibration-analysis.md` H1「第十一章:振动分析——系统对激励的响应」/ `ch12-fracture-and-fatigue.md` H1「第十二章:断裂力学与疲劳分析」原文照搬)
+  - 3 文件 7 行增 0 行删,byte 数 1048→1219 / 919→1026 / 952→1065
+  - 零 CRLF 污染 / 末尾 LF 保留 / 零业务代码改动 / APP_VERSION 不 bump(纯 README 文案)
+- **发现方法**:`for f in books/X/README.md; do head -50; done` 读 7 本书 README 目录,逐本与 `python3 -c "import json; print([len(b['chapters']) for b in json.load(open('manifest.json'))['books']])"` 对比,识别 3 本存在目录严重少章节
+- **修复策略**:最小触动,只补全目录条目,不动文件结构(不动 ch03 孤儿文件 / 不动 ch11+ 真身内容),单次 commit 可独立回滚 `git revert HEAD`
+
+### 校验
+- `node _scan_exlib.js` → 1336 ids / 521 refs / 0 broken(未动任何 [ex:XXXX],与上轮一致)✓
+- `python -m json.tool manifest.json` exit 0 ✓(未动)
+- `git diff --stat` → `3 files changed, 7 insertions(+)` ✓
+- `tail -c1 X/README.md | xxd` → 3 个文件末尾都是 `0a`(LF)✓
+- 3 个 README 新增条目逐一与对应 chXX-*.md H1 对照:finance ch11/ch12/ch13 + psychology ch11/ch12 + engineering-mechanics ch11/ch12,共 7 条全部一致
+- 7 本书中其余 4 本(competition 6/6 ✓ + nutrition 7/7 ✓ + badminton-recovery 8/8 ✓ + yin-yang 15/15 n/a 无 README.md)上一轮已经实测对齐,本轮未重复扫
+
+### 上轮候选清算 (本轮重扫)
+- ❌ **(本轮新发现,优先级中)** `_session_todo.md` 末尾两个裸 `### commit hash` 块残留(`e028439` + `98cbde0`)— 本轮记账 append 后被推到中段 L938-L941(实际位于「第 20 轮」记账块末尾),但**这是历史 commit `78711a5` 已记录的脏数据,改它等于篡改历史**,本轮**不动**,候选升级为远期保留(等专门清理 commit 时整体处理或保留作历史叙事)
+- ✅ **(本轮新发现,优先级中)** 其他 7 本书 README 与 `manifest.json` 字数一致性核对 — 本轮已对 7 本做扫,发现 finance / psychology / engineering-mechanics 三本目录少章节(10→13 / 10→12 / 10→12),本轮 commit `b6d4bd0` 修复,候选作废
+- **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库 — 未做,继续留
+- **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强 — 未做,继续留
+- **(继承远期,优先级低)** `_session_todo.md` 941 行远期归档 — 本轮文件 988 行,继续留
+- **(继承远期,优先级低)** `_session_todo.md` 内 L# 表述改进 — 沿用历史
+
+### Push 状态
+- ❌ 本轮 push **未成功** — `git -c http.proxy= -c https.proxy= push origin book` 6 次重试均失败(`Failed to connect to github.com port 443` / `Recv failure: Connection was reset`),curl 验证 `https://github.com/` 正常返回 200,DNS 解析 `github.com → 20.205.243.166` 正常,TCP 443 层被 ISP / 防火墙拦截(可能在测试环境或非工作时间)。commit `b6d4bd0` 已落本地,等网络恢复用户手动 `git push origin book` 或下轮重试;**未做声明性 push 成功**
+
+### 新增下轮候选
+- **(本轮新发现,优先级中)** `books/engineering-mechanics/ch03-axial-loading.md` 是孤儿文件(题目「# 第三章:轴向拉伸与压缩」与 ch02 同主题,README 当前 ch03 写「剪切与扭转」但实际没有 `ch03-shear-and-torsion.md` 文件)— 真问题,需要决定是删除孤儿 + 改 README,还是新建真 `ch03-shear-and-torsion.md` 内容;本轮不动
+- **(本轮新发现,优先级中)** `books/psychology/ch03-memory.md` 是孤儿文件(题目「# 第三章:记忆」与 ch02 同主题,ch03 真身是 `ch03-thinking-and-language.md`,README 当前 ch03 写「思维与语言」是真身的正确标题)— 同型,可独立 commit 删除孤儿文件
+- **(本轮新发现,优先级低)** `_session_todo.md` 988 行 / ~104 KB,远期归档候选继承累计 5 轮;可考虑下次先在 commit message 里加 `(本轮记账前 987 行 → 988 行,文件 104386 B → 估算 +4 KB)` 数据锚点
+- **(继承远期)** foam roller 入库 / ch06 ch07 措辞微调 / 末尾裸 hash 块历史清理 / L# 表述改进
+
+### commit hash
+- `b6d4bd0`(本地 commit, push 待网络恢复)
+
