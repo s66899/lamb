@@ -1,4 +1,39 @@
 
+## 2026-08-29 第 19 轮 (commit 11e74a2)
+
+### 本轮做了什么
+- **commit `11e74a2`** `fix(nsca): ch10-recovery L301 ex-lib 引用现状声明日期 v3.22.56 → v3.22.61`
+- **真实问题**:上轮 todo 第 1 条候选兑现 — `books/nsca-cpt/ch10-recovery.md` L301 末段声明「截至 v3.22.56」已陈旧,但实测 31 inline / 25 unique / 0 broken 数据完全未变,只是声明日期未跟上最近代码版本(同 APP_DATE 同步逻辑 — 文档叙事漂移)
+- 单文件 1 行 sed 替换:`截至 v3.22.56` → `截至 v3.22.61`(用 python `io.open(newline='')` 模式绕开 edit 工具的全角标点 normalize 坑)
+- APP_VERSION 不 bump(本次只同步章节末段声明,版本号仍 v3.22.61)
+
+### 校验
+- 改前/改后实测 ch10 inline / unique 数完全一致:31 inline / 25 unique(用 python `re.findall(r'\[ex:(\d{4})', text)` 验证,与声明「31 / 25」一致 ✓)
+- 改后 `grep "v3.22.56" books/` = 0 命中(全清)✓
+- 改后 `grep "v3.22.61" books/nsca-cpt/ch10-recovery.md` = 1 命中(L301 新日期)✓
+- `node _scan_exlib.js`:1336 ids / 351 refs / 0 broken(与 68b199b / a188a14 baseline 完全一致,纯文字同步零 id 影响)✓
+- `git diff --stat`:`1 file changed, 1 insertion(+), 1 deletion(-)`(最小改动,LF 全部保留)✓
+- CRLF 数 = 0 / 裸 CR 数 = 0 ✓
+
+### 上轮候选清算
+- ❌ ch10 L301 v3.22.56 过期日期同步 — **本轮已修** ✓
+- ❌ ch06 / ch07 unique 口径微调 — **实为过期候选**:a188a14 已 off-by-N 修复,实测 ch06 13 unique / ch07 13 unique 与「折合 13 个 unique id」声明完全一致,无 off-by-N,口径已自洽,作废
+- ⚠️ foam roller 入库 — 持续多轮用户偏好但需先建 id 命名 + 多语字段规范,留为远期
+- ⚠️ README 加 8 章 ex-lib 速查表 — 可选增强,远期
+
+### Push 状态
+- ⚠️ 本轮 host 网络 443 仍不通(`curl 28 Failed to connect to github.com port 443 after 21079 ms`),与 a188a14 / 68b199b 同因
+- commit `11e74a2` 已留本地 `book` 分支,下次网络通时 `git -c http.proxy= -c https.proxy= push origin book` 即可追平
+
+### 新增下轮候选 (本轮重新扫描)
+- **羽毛球 ch12 §9.8「30 个 ex-lib 引用」措辞微调**(继承 3 轮):实测 L1014 已是「第九节配套的 30 个 ex-lib 查表入口 ... 本节 0 处 inline 引用」措辞,数字 30 = 膝7+肩6+踝4+肘3+腰5+跟腱5 全部对得上,实质上已自洽;但「30 个 ex-lib 引用」老措辞在 git history 早期版本仍有,无 bug 不强求,远期
+- **NSCA ch04 §0「[ex:0038]」占位**(继承 2 轮):实测 9370ab6 已替换为合法 id,作废
+- **foam roller 下背 / 筋膜球腰部专项条目入库**(远期):用户偏好持续多轮,需先建 id 命名 + 多语字段规范
+- **README/TOC 加 8 章 ex-lib 分布细分速查表**(可选增强):便于读者一眼看清 ch01-ch08 的 unique / inline 数量
+
+### commit hash
+- `11e74a2`(本地 book 分支),push 待网络通
+
 ## 本轮增量 (commit a593beb — ch02-shoulder 修订说明 W8 分布细分 off-by-one 修复)
 
 - **本轮目标**:扫描 todo 候选队列时,意外发现 ch02-shoulder v3.22.33 修订说明段 L255 分布细分「W8 1 处」与实际不符 — 实际 W8 时间线表内有 2 处 ex-lib 引用(L148 `[ex:0864]` + L149 `[ex:0426]`),与累加 1+2+3+3+2+1+1+2=15 一致
