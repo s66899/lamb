@@ -88,3 +88,36 @@
   - **羽毛球 ch12 §9.8 互引表「30 个 ex-lib 引用」措辞口径微调**(优先级低,继承两轮):正文 inline 仅 1 处,建议首句改为「第九节以原则为主 / 配套 30 个 ex-lib 查表入口」消除心理落差
   - **NSCA ch04 §0 L15「[ex:0000-中文名]」占位示例**(优先级低,继承):目前 0 命中无实害,可换成真实合法 id 示例防未来照抄
 - **commit hash**: `17e11cf`,push `6d5f714..17e11cf`,GitHub Pages 自动部署中
+
+---
+
+## 本轮增量 (commit d6305d5 — 兑现上轮 d71adac 第 1 条候选 ch06/ch07 补「分布细分」)
+
+- **本轮目标**:兑现 d71adac todo「ch06/ch07 末段措辞统一(35/16 措辞) + 新增「分布细分」」中的「分布细分」子项 — ch06/ch07 末段已有「本章共引用 X 处(折合 Y 个 unique id)」+「一个动作多场景通用」措辞(8e82c77 已统一),但与 ch05 / ch08 一致补的「分布:...= X 处 inline」细项缺失,本轮补齐
+- **改动**(只动 2 行):
+  - `books/badminton-recovery/ch06-back.md` L173 末段: 「...不重复计入 unique 数。」 → 「...不重复计入 unique 数。分布:4 周时间线 4 处 + 8 周时间线 9 处 + 12 周时间线 4 处 + 后场力学纠正 4 处 + 下方清单 13 unique + 说明段 1 处([ex:1352] 再引)= 35 处 inline。」
+  - `books/badminton-recovery/ch07-achilles.md` L158 末段: 「...不重复计入 unique 数。」 → 「...不重复计入 unique 数。分布:4 周时间线 6 处 + 8 周时间线 5 处 + 12 周时间线 0 处 + 杀球落地缓冲训练 1 处 + 下方清单 13 unique + 说明段 4 处([ex:5211] / [ex:1373] / [ex:1490] / [ex:1368])= 29 处 inline。」
+- **校验**:
+  - awk 逐段统计 ch06 各 ## 段 inline 数:4 周 4 + 8 周 9 + 12 周 4 + 力学纠正 4 + 清单段 14(含说明段 1)= 35 ✓
+  - awk 逐段统计 ch07 各 ## 段 inline 数:4 周 6 + 8 周 5 + 12 周 0 + 落地缓冲 1 + 清单段 17(含说明段 4)= 29 ✓
+  - 改后复测 ch06 inline 36(原 35 + 分布行提及 [ex:1352] 1 个)/ unique 13 不变 ✓
+  - 改后复测 ch07 inline 33(原 29 + 分布行提及 4 个)/ unique 13 不变 ✓
+  - `node _scan_exlib.js`:1336 ids / 349 refs(+5)/ 0 broken(分布行提及 5 个合法 id,与说明段/正文已存在的 id 完全重合,零伪造)✓
+  - `node --check` / `python -m json.tool` 未涉及 ✓
+  - git diff stat: `2 files changed, 2 insertions(+), 2 deletions(-)` ✓
+- **本书末段措辞统一 + 分布细分全章进度**:
+  - ch02-shoulder(v3.22.55): ✅ 7 unique id + 23 处分布细分
+  - ch03-knee: 历史已自洽(仅有 1 个 unique id,无分布细分必要)
+  - ch04-ankle: 历史已自洽(0 个 unique id)
+  - ch05-elbow(v3.22.59): ✅ 5 unique id + 14 处分布细分
+  - **ch06-back(d6305d5 本轮): ✅ 13 unique id + 35 处 + 5 段分布细分** ← 新增分布细分
+  - **ch07-achilles(d6305d5 本轮): ✅ 13 unique id + 29 处 + 5 段分布细分** ← 新增分布细分
+  - ch08-action-plan(82f9ef6): ✅ 16 unique id + 35 处 + 6 部位分布细分
+  - **6/8 章末段全部到位**,剩 ch01(导言,无 ex-lib 引用)、ch03(1 unique)/ ch04(0 unique) 历史自洽无需求
+- **下轮候选**(优先级中→低):
+  - **ch02/ch03/ch04 末段同样补「分布细分」**:ch02 已 23 处细分,但 ch03/ch04 因 unique 极少(ch03 1 / ch04 0)历史自洽,不强求;**作废**「ch02 二次细分」设想(ch02 v3.22.55 已细到位)
+  - **羽毛球 ch12 §9.8 互引表「30 个 ex-lib 引用」措辞口径微调**(优先级低,继承两轮):正文 inline 仅 1 处,建议首句改为「第九节以原则为主 / 配套 30 个 ex-lib 查表入口」消除心理落差
+  - **NSCA ch04 §0 L15「[ex:0000-中文名]」占位示例**(优先级低,继承):目前 0 命中无实害,可换成真实合法 id 示例防未来照抄
+  - **NSCA ch10 SMR 条目入库**(优先级低,继承):库内仍无 foam roller / 筋膜球专项,如要新增条目需先建立 id 命名 + 多语字段规范
+  - **README/TOC 更新** badminton-recovery 章节深度索引(可选):补「每章 ex-lib 分布细分速查表」让读者一目了然
+- **commit hash**: `d6305d5`,push `d71adac..d6305d5`,GitHub Pages 自动部署中
