@@ -1171,3 +1171,57 @@
 
 ### commit hash
 - `966bc04`(本地已落,`book` 分支 HEAD;**push 未成功**,等网络恢复),GitHub Pages 暂未自动部署本轮
+
+---
+
+## 2026-08-30 第 35 轮 (commit 09bf747)
+
+### 本轮做了什么
+- **commit `09bf747`** `fix(badminton-recovery-ch05-ch07): 末段「库中暂无筋膜球」与现实脱节` — 重新扫描时发现用户偏好「ex-lib 库里没有 foam roller / 筋膜球专项条目」已**与现实脱节**:v3.22.17 已入库 ex-5202~ex-5213 共 12 条 SMR/foam roller/筋膜球专项条目(实测:ex-5202~5209 foam roller 8 条覆盖股四/腘绳/髂胫束/小腿/臀/上背/背阔/肩袖 + ex-5210~5211 lacrosse ball 2 条覆盖前臂/足底 + ex-5212~5213 foam roller 2 条覆盖胸椎/内收肌),但 ch05 L233 + ch07 L40/L174/L176 共 4 处仍写「库中暂无筋膜球」,与 5210/5211 实际 eq_zh=筋膜球的事实不符。
+- **修复策略**(沿用 v3.22.55/v3.22.57「最小触动」模式,纯文字与现实对齐,不引入业务架构变化):
+  1. **ch05-elbow L233**:「ex-lib 库中暂无『筋膜球』专项条目」→「ex-lib 库中**已有**筋膜球专项条目 [ex:5210] lacrosse ball forearm(eq_zh=筋膜球;命名虽为长曲棍球前臂伸肌松解,介质即筋膜球 / 长曲棍球球形硬质工具)。本章前臂 SMR 类统一引用 [ex:5210],居家无筋膜球可用网球替代功能等价」
+  2. **ch07-achilles L40**:「介质替换为筋膜球(库中暂无筋膜球专项条目,使用功能等价的长曲棍球条)」→「库内即筋膜球条目,介质即筋膜球/长曲棍球球形硬质工具」
+  3. **ch07-achilles L174**:「筋膜球介质等价代用」→「eq_zh=筋膜球,库内即筋膜球条目」
+  4. **ch07-achilles L176 末段说明**:「ex-lib 库中暂无『筋膜球 / foam roller 小腿』专项条目」→「ex-lib 库内**已有**筋膜球 / foam roller 系列专项条目(v3.22.17 入库 ex-5202~ex-5213 共 12 条覆盖各部位)。本章足底 SMR 类引用 [ex:5211] lacrosse ball plantar fascia(eq_zh=筋膜球,介质即筋膜球/长曲棍球/网球球形硬质工具);小腿 SMR 如有需要可引 [ex:5205] foam roller calves(库内小腿 foam roller 专项条目),居家无器械可用网球替代功能等价」+ 保留「库中也暂无跟腱专用离心动作」事实陈述不动
+- **不动 ch06-back L53/L191**「库中暂无 foam roller 下背专项条目」:**经核查属实**(库里 5207 = 上背,5212 = 胸椎,无下背专项条目),不动以免误改正确描述。
+- **新增 1 处 [ex:5205] 引用**(ch07 L176 末段说明),库内合法,foam roller calves(小腿后侧松解),eq_zh=泡沫轴。
+- **改动**:`2 files changed, 4 insertions(+), 4 deletions(-)` ✓
+  - ch05-elbow.md 11327 → 11387(+60 字节,1 行替换)
+  - ch07-achilles.md 9277 → 9561(+284 字节,3 行替换:1 行精简替换 + 2 行扩展替换)
+
+### 校验
+- `git diff --stat HEAD~1`: `2 files changed, 4 insertions(+), 4 deletions(-)` ✓
+- `node _scan_exlib.js`:1336 ids / **523** refs / 0 broken(+2 refs 是新增 [ex:5210] 在 ch05 + [ex:5211] [ex:5205] 在 ch07 共 3 处 inline 提及,实际加 2 处是因为 5210/5211 之前已存在只是被误称;0 broken 不变)✓
+- `node -e "JSON.parse(fs.readFileSync('books/exercises/ex-lib.json'))"` 5205/5210/5211 全部 OK(id 字段、n 字段、eq_zh 字段核对一致)✓
+- `python -m json.tool manifest.json` exit 0 ✓
+- `node --check app.js` exit 0 ✓
+- `file` 报告 UTF-8(无 BOM)/ `tail -c` ch05 endswith LF / ch07 endswith no LF(本轮未引入 LF/CRLF 变化,沿袭历史状态)✓
+- 零业务代码改动(app.js/index.html/manifest.json/manifest_data.js/VERSION 不动)
+- 零 ex-lib id 删除(无 broken 引入)
+- APP_VERSION 不 bump(纯 .md 文字校正)
+- 4 埋点不动:app.js APP_VERSION 仍 v3.22.61 / index.html 三处 `?v=` 仍 v3.22.61 / manifest.json 无变更 / VERSION 无新增行
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(本轮新发现,优先级中)** badminton-recovery ch05 L233「库中暂无筋膜球」与 ch07 L40/L174/L176 三处错位声明 → 本轮 09bf747 修复(库里 v3.22.17 已入库 12 条 SMR/foam roller/筋膜球专项条目),候选作废
+- ⏭️ **(继承远期,优先级中)** ch04 「## 第一层」/「## 第二层」是 H2 整章切分,而其他章是 H3 小节级切分 → 远期继承(需 ~10 个标题级别调整)
+- ⏭️ **(继承远期,优先级低)** `_session_todo.md` 1128 → 1174 行归档(本轮 append 记账块后)→ 远期继承,累计 9 轮
+- ⏭️ **(继承远期,优先级低)** 末尾裸 hash 块历史清理 → 远期继承
+- ⏭️ **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强 → 远期继承(本轮只改了 SMR 描述段,未改清单数量声明)
+- ⏭️ **(继承远期,优先级低)** `_session_todo.md` 内 L# 表述改进 → 远期继承
+- ⏭️ **(继承远期,优先级低)** 8 本专业书 README / manifest 章节表头与 ex-lib 库对齐专项核对剩余 5 本(finance / yin-yang / competition / nutrition / badminton)
+- ⏭️ **(继承远期,优先级中)** app.js APP_VERSION v3.22.61 vs 实际最新 → 本轮未触发(纯 .md 改动)
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 连续 2 次尝试都被本地 ISP 拦截 GitHub 443(`Failed to connect to github.com port 443 via 127.0.0.1 after 2083-2095 ms`)。本地已落 `f886e49..09bf747` 共 4 个 commit(966bc04 / f886e49 / 09bf747 + 上轮 todo 记账块已落),等网络恢复后单次 push 即可。
+- 上轮 push 阻塞有「3 commit 累计 push 成功」先例(32e7cbd / 4e4500c 等 3 commit 累计 push 在 d0173ae 段成功),本轮同样适用。
+
+### 新增下轮候选
+- **(本轮新发现,优先级中)** 既然 ch05 L233 / ch07 L176 已纠正为「库内已有筋膜球」,ch04 L202 末段「本章共引用 25 处 ex-lib inline 引用(折合 13 个 unique id)...第一层普通人版 9 处(踝绕环 1 + 弹力带抗阻 2 + 提踵训练 2 + 单脚平衡 1 + 平衡盘/平衡球 2 + 跳箱落地 1)」可能与更新后的现实一致,但未做实测核对 → 下轮可一次性实测 ch04 L202 各子项「踝绕环 1」等是否仍准确(纯统计校验,不动 ex-lib id)
+- **(本轮新发现,优先级低)** ch06-back L53「库中暂无 foam roller 下背专项条目」+ L191「库中暂无『foam roller 下背 / 筋膜球腰部』专项条目」描述正确(库里无下背/腰部专项条目),但读者可能误以为「库里没有 foam roller」而避开使用 foam roller 类器材 → 下轮可考虑加一句「foam roller 上背/胸椎已有 [ex:5207]/[ex:5212] 可引,下背/腰部专项暂缺」做信息补偿(纯文字,不动 ex-lib id)
+- **(继承远期,优先级中)** ch04 「## 第一层」/「## 第二层」是 H2 整章切分,而其他章是 H3 小节级切分 → 远期继承
+- **(继承远期,优先级低)** `_session_todo.md` 1174 行归档 → 远期继承,累计 9 轮
+- **(继承远期)** 末尾裸 hash 块历史清理 / ch06 ch07 措辞微调 / L# 表述改进 / 8 本专业书 README 与 ex-lib 对齐专项核对
+
+### commit hash
+- `09bf747`(本地已落,`book` 分支 HEAD;**push 未成功**,等网络恢复),GitHub Pages 暂未自动部署本轮
