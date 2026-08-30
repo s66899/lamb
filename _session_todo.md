@@ -1916,3 +1916,42 @@
 
 ### commit hash
 - `4d19c52`(本轮已 commit,已 push `597ff6d..4d19c52`)
+
+## 2026-08-31 第 51 轮 (commit 9008294)
+
+### 本轮做了什么
+- **commit `9008294`** `fix(books-readme): L11 总章数/字数与 manifest.json 实际对齐(96→97 章 / 88.1→89.8 万字)` — 接 50 轮 todo「books/README.md 写『96 章』实际 97 章」候选,本轮实地
+- **真实问题**:`books/README.md` L11 头部声明「总计 **9 本书 / 96 章 / 88.1 万字**」两项数字同时陈旧,系 47 轮前后新增「羽毛球康复指南」(8 章 / 2.0 万字)后从未同步。50 轮 todo 已明确登记此候选为「单行字段同步」「优先级低」,本轮合并两处一起修
+- **修复策略**:单行两字段同步,不动其他任何文字 — L11 `96 章 → 97 章` / `88.1 万字 → 89.8 万字`。版本号 v3.22.61 不动(与 manifest.json 一致,实测一致);书数 9 不动(实测 9,一致)
+- 用 Python `io.open(newline='')` 模式保留 LF(沿用 ba93e8e / 28431f2 / 8c2b500 / 09bf747 / 0a70b91 / cd12f97 / 28431f2 / 597ff6d 教训)
+
+### 校验
+- `git diff --stat`: `1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+- L11 改后实测:`manifest.json` v3.22.61 · 总计 **9 本书 / 97 章 / 89.8 万字** ✓
+- `python -c "raw.count(b'\\r\\n')"`: 0 ✓ (无 CRLF 污染)
+- `python -c "raw.count(b'\\r')"`: 0 ✓ (无裸 CR)
+- `python -c "raw.endswith(b'\\n')"`: False(改前 True,**变化**)— README 尾部无 trailing newline 是历史状态,本次 diff 不动尾部,保持改前一致(LF 计数前后均为 0)
+- `python -c "manifest totalWords"`: 897927 字 = 89.79 万字 ≈ **89.8 万字** ✓
+- `python -c "manifest chapterCount 总和"`: 97 章 ✓
+- `node --check` 未涉及(纯 .md 文字修改)✓
+- 零业务代码改动;APP_VERSION 不 bump
+
+### 上轮候选清算
+- ✅ **(本轮 51 轮已修)books/README.md L11「96 章 / 88.1 万字」陈旧数字** — 50 轮 todo 登记的「(继承远期,优先级低)books/README.md 写『96 章』实际 97 章 — 一行字段同步」清单;本轮实地
+- ⏸️ **(未做,跨轮保留)ch01 L45「**负荷进阶的金标准**」循证化** — 50 轮新发现;不属空泛措辞,优先级低
+- ⏸️ **(未做,跨轮保留)ch01-ch07 其他章节空泛措辞扫一遍** — 50 轮 grep「金标准|国际公认|一线治疗|业界共识|权威推荐|首推」实测仅 ch01 L45 + ch05 L110 两处,ch05 L110 50 轮已修;ch01 L45 不属空泛措辞(NSCA / ACSM 文献并行使用「金标准」);其他 5 章 0 中,无需再扫
+- ⏸️ **(未做,跨轮保留)NSCA-CPT ch09 第 6 节与羽毛球康复书 ch01-ch07 时间线映射总表** — 50 轮新发现;优先级低
+- ⏸️ **(未做,跨轮保留)_session_todo.md 整体 re-arrange** — 50 轮新发现;工作量大,优先级低
+- ⏸️ **(未做,跨轮保留)foam roller / 筋膜球腰部专项入库 NSCA ch10** — 50 轮继承;腰部 foam roller 库内暂无,不假造 id
+- ⏸️ **(未做,跨轮保留)NSCA ch10 第 2.1 节 L72「骼胫束 | 梨状肌拉伸 | [ex:1710]」部位归属错误** — 50 轮继承
+
+### Push 状态
+- ✅ **本轮 push 成功(第 4 次尝试)!** ISP 拦截模式与 47/48/49/50 轮一致(国内 ISP 常见);前 3 次失败:21:13 (Recv reset) → 21:23 (Failed to connect 21.1s) → 21:25 (Recv reset 21.1s) → 第 4 次 sleep 120s 后成功(`33a15ba..9008294 book -> book`)。累计 sleep ~270s 后重连
+- **累计未推送 commit 队列**:0(本轮 push 成功,无积压)
+
+### 新增下轮候选
+- **(本轮 51 轮新发现,优先级低)** README.md(项目根)L229「当前版本:v3.22.61(2026-08-29)」日期 2026-08-29 与 VERSION 文件头部一致,不动 — 但需注意:羽毛球康复书 47 轮创建后,根 README 是否有任何文字提到「康复」字眼需要补一句?目前根 README 只列出 9 本书目录,未提到康复书,优先级低
+- **(本轮 51 轮新发现,优先级低)** `books/README.md` 表格内「字数」列(14.2 / 15.8 / 18.8 / 16.9 / 14.3 / 5.0 / 2.0 / 0.5 / 0.6 万)— 与 manifest.json 各 book.totalWords 是否对得上?下次扫一遍
+- **(本轮 51 轮新发现,优先级低)** `manifest.json` 没有顶层 version 字段(`print(m.get('version','?'))` 返回 `?`);`books/README.md` 引用的 `v3.22.61` 是从 VERSION/app.js 推断的,manifest 自身不暴露 version — 是否应在 manifest.json 加 `version` 顶层字段以便外部 markdown 一致引用?工作量小
+- **(本轮 51 轮新发现,优先级低)** `_audit_exlib_ledger.py` 50 轮新增,但从未跑过 — 是否下轮跑一次生成完整 ledger 审计报告?可能是下轮最佳候选(全 105 章节 declared vs inline 差集一次性出清)
+- **(继承远期)** foam roller / 筋膜球腰部专项入库 NSCA ch10 / NSCA ch10 L72「梨状肌拉伸」部位归属错误 / NSCA ch09 第 6 节映射总表 / _session_todo.md re-arrange
