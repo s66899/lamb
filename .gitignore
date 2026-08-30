@@ -26,6 +26,7 @@ publish_check.txt
 cloudflared.exe
 _append_todo_round50.py
 _append_todo_round51.py
+_append_todo_round52.py
 
 # Mavis agent memory (本地, 不入仓)
 memory/

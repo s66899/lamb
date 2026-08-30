@@ -1955,3 +1955,49 @@
 - **(本轮 51 轮新发现,优先级低)** `manifest.json` 没有顶层 version 字段(`print(m.get('version','?'))` 返回 `?`);`books/README.md` 引用的 `v3.22.61` 是从 VERSION/app.js 推断的,manifest 自身不暴露 version — 是否应在 manifest.json 加 `version` 顶层字段以便外部 markdown 一致引用?工作量小
 - **(本轮 51 轮新发现,优先级低)** `_audit_exlib_ledger.py` 50 轮新增,但从未跑过 — 是否下轮跑一次生成完整 ledger 审计报告?可能是下轮最佳候选(全 105 章节 declared vs inline 差集一次性出清)
 - **(继承远期)** foam roller / 筋膜球腰部专项入库 NSCA ch10 / NSCA ch10 L72「梨状肌拉伸」部位归属错误 / NSCA ch09 第 6 节映射总表 / _session_todo.md re-arrange
+
+## 2026-08-31 04:16:15 第 52 轮 (commit aad02f2)
+
+### 本轮做了什么
+- **commit `aad02f2`** `fix(books-readme): L17 心理学行章节数/字数与 manifest.json 对齐(12→13 / 18.8→20.5 万字)` — 接 51 轮 todo「books/README.md 表格内『字数』列与 manifest.json 各 book.totalWords 是否对得上」候选,本轮实地
+- **真实问题**:`books/README.md` 表格 L17「心理学」行声明「12 章 / 18.8 万字」与 `manifest.json` 实际「13 章 / 20.5 万字」漂移(差 1 章 / 1.7 万字)。51 轮修了 L11 总数(96→97 章 / 88.1→89.8 万字),但单行表格未扫,遗留此 1 行。49 轮前后新增 ch12-positive-psychology.md(~1.6 万字)后未同步 README 表格行
+- **修复策略**:单行 2 字段同步 — L17「12」→「13」/「18.8 万」→「20.5 万」,不动其他任何文字;L11 总数 97 章 / 89.8 万字保持(改前一致)
+- 用 Python `io.open(newline='')` 模式保留 LF(沿用 ba93e8e / 28431f2 / 8c2b500 / 09bf747 / 0a70b91 / cd12f97 / 28431f2 / 597ff6d / 33a15ba 教训)
+- 单文件 L17 单行同步:2041 字节(改前一致);1 行删 + 1 行增
+
+### 校验
+- `git diff --stat`: `1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+- L17 改后实测:`| 🧠 �的心理学 | 系统学习心理学,同时克服拖延懒惰 | 13 | 20.5 万 | 进行中 |` ✓
+- `python -c "raw.count(b'\r\n')"`: 0 ✓ (无 CRLF 污染)
+- `python -c "raw.count(b'\r')"`: 0 ✓ (无裸 CR)
+- `python -c "raw.endswith(b'\n')"`: False(改前改后一致,本轮未引入 LF 状态变化)
+- 全 9 行表格扫表 vs `manifest.json`:仅心理学 1 行漂移,其他 8 行(羽毛球/金融/工程力学/阴阳/NSCA-CPT/康复/比赛策略/营养)全对齐 ✓
+- `python -c "manifest psychology chapters"`: 13 ✓
+- `python -c "manifest psychology totalWords"`: 205037 字 = 20.5037 万字 ≈ **20.5 万字** ✓
+- `python -c "manifest totalWords sum"`: 897927 字 = 89.79 万字 ≈ **89.8 万字** ✓ (L11 一致)
+- `python -c "manifest chapterCount sum"`: 97 ✓ (L11 一致)
+- `node --check` 未涉及(纯 .md 文字修改)✓
+- 零业务代码改动;APP_VERSION 不 bump
+
+### 上轮候选清算
+- ✅ **(本轮 52 轮已修)books/README.md L17「心理学 12 章 / 18.8 万字」陈旧数字** — 51 轮 todo 登记的「`books/README.md` 表格内『字数』列(14.2 / 15.8 / 18.8 / 16.9 / 14.3 / 5.0 / 2.0 / 0.5 / 0.6 万)与 manifest.json 各 book.totalWords 是否对得上」清单,本轮实地 9 行扫表仅心理学 1 行漂移,合并修完
+- ⏸️ **(未做,跨轮保留)ch01 L45「**负荷进阶的金标准**」循证化** — 50 轮新发现;不属空泛措辞(NSCA / ACSM 文献并行使用「金标准」),优先级低
+- ⏸️ **(未做,跨轮保留)NSCA-CPT ch09 第 6 节与羽毛球康复书 ch01-ch07 时间线映射总表** — 50 轮新发现;优先级低
+- ⏸️ **(未做,跨轮保留)_session_todo.md 整体 re-arrange** — 50 轮新发现;工作量大,优先级低
+- ⏸️ **(未做,跨轮保留)foam roller / 筋膜球腰部专项入库 NSCA ch10** — 50 轮继承;腰部 foam roller 库内暂无,不假造 id
+- ⏸️ **(未做,跨轮保留)NSCA ch10 第 2.1 节 L72「骼胫束 | 梨状肌拉伸 | [ex:1710]」部位归属错误** — 50 轮继承
+- ⏸️ **(未做,跨轮保留)`manifest.json` 加 `version` 顶层字段** — 51 轮新发现;工作量小(单字段),但非阻断性,可下轮处理
+
+### Push 状态
+- ✅ **本轮 push 成功(第 2 次尝试)!** ISP 拦截模式与 47/48/49/50/51 轮一致(国内 ISP 常见);首次失败:21:16 (Failed to connect to github.com port 443 via 127.0.0.1 after 2084 ms);60 秒 sleep 后 `git -c http.proxy= -c https.proxy= push origin book` → exit 0 (`17a82ac..aad02f2 book -> book`)
+- **累计未推送 commit 队列**:0(本轮 push 成功,无积压)
+
+### 新增下轮候选
+- **(本轮 52 轮新发现,优先级低)manifest.json 加 `version` 顶层字段** — 51 轮 todo 候选继承;实测 `print(m.get('version','?'))` 返回 `?`,manifest 自身不暴露版本,books/README.md L11 引用的 v3.22.61 是从 VERSION/app.js 推断;加 1 行 `"version": "v3.22.61"` 在 manifest 顶层,工作量小,可远期处理
+- **(本轮 52 轮新发现,优先级低)根 README.md 是否提到「康复指南」字眼** — 51 轮新发现继承;根 README 只列 9 本书目录,未提到康复书,优先级低
+- **(本轮 52 轮新发现,优先级低)`_audit_exlib_ledger.py` 全量跑一次生成完整 ledger 报告** — 51 轮继承;50 轮新增后未跑过,可下轮作为标准审计动作(105 章节 declared vs inline 差集一次性出清)
+- **(本轮 52 轮新发现,优先级低)books/README.md L11「总计 9 本书 / 97 章 / 89.8 万字」是否也应跟随单行表格数字微调** — 本轮实测已对齐,不动;但下次新增书籍时需同步扫单行表格(本轮教训)
+- **(继承远期)** ch01 L45「负荷进阶的金标准」循证化 / NSCA ch09 第 6 节映射总表 / _session_todo.md re-arrange / foam roller 腰部专项入库 / NSCA ch10 L72「梨状肌拉伸」部位归属错误 / APP_VERSION bump / L# 改进 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记 / 1500+ 行 todo 归档
+
+### commit hash
+- `aad02f2`(本轮已 commit,已 push `17a82ac..aad02f2`)
