@@ -1660,7 +1660,7 @@
 ## 2026-08-31 第 44 轮
 
 ### 本轮做了什么
-- **commit `TBD`** `fix(readme): 根 README「书籍列表」补 4 本书完整目录(NSCA-CPT / badminton-recovery / competition / nutrition)` — 43 轮 ef29150 候选清算登记的「根 README 5 本书营销目录只列部分章节(羽毛球/金融/心理学/工程力学/NSCA-CPT)优先级低」本轮落地;实测 `grep -nE "^### " README.md` 5 个老书标题(羽毛球/金融/心理学/阴阳/工程力学),仓库结构树 88f58f8 已补 9 本书目录但根 README「书籍列表」段仅 5 本,羽毛球只列 10/13 章(缺 ch11 战术进阶 / ch12 体能训练 / ch13 双打战术)其余 4 本书(NSCA-CPT / badminton-recovery / competition / nutrition)整本缺失;本轮在「### ⚙️ Lamb 的工程力学」段尾后、「## 📖 每章结构」前新增 4 个 `### <emoji> Lamb 的<书名>` 块,每块沿用既有格式:**主题**/**目录**/章节列表;章节标题全部从 `manifest.json` 读出(避免手工抄错),共 31 个章节行(NSCA-CPT 10 + badminton-recovery 8 + competition 6 + nutrition 7),33 行插入(4 块各 3 行块头 + 31 行章节 + 4 块间空行);59 行新增 0 行删
+- **commit `c04693e`** `fix(readme): 根 README「书籍列表」补 4 本书完整目录(NSCA-CPT / badminton-recovery / competition / nutrition)` — 43 轮 ef29150 候选清算登记的「根 README 5 本书营销目录只列部分章节(羽毛球/金融/心理学/工程力学/NSCA-CPT)优先级低」本轮落地;实测 `grep -nE "^### " README.md` 5 个老书标题(羽毛球/金融/心理学/阴阳/工程力学),仓库结构树 88f58f8 已补 9 本书目录但根 README「书籍列表」段仅 5 本,羽毛球只列 10/13 章(缺 ch11 战术进阶 / ch12 体能训练 / ch13 双打战术)其余 4 本书(NSCA-CPT / badminton-recovery / competition / nutrition)整本缺失;本轮在「### ⚙️ Lamb 的工程力学」段尾后、「## 📖 每章结构」前新增 4 个 `### <emoji> Lamb 的<书名>` 块,每块沿用既有格式:**主题**/**目录**/章节列表;章节标题全部从 `manifest.json` 读出(避免手工抄错),共 31 个章节行(NSCA-CPT 10 + badminton-recovery 8 + competition 6 + nutrition 7),33 行插入(4 块各 3 行块头 + 31 行章节 + 4 块间空行);59 行新增 0 行删
 - 顺手留档一次性脚本 `_scan_exlib_refs.py`(1595 字节):沿用 41 轮 56ceb7b / 40 轮 19eb83b 留档 `_fix_4books_title.py` / `_fix_ch06_ch07_status_offby.py` 风格,扫描 `books/**/*.md` 内 `(?<!\d)ex:(\d{4})(?!\d)` 引用 vs `_valid_ids.txt` 1336 个合法 id 找出 broken,实测本轮 140 个唯一引用 / 0 broken(沿用 35 轮 09bf747 入库后清零);后续轮次可复用
 
 ### 校验
