@@ -9068,7 +9068,7 @@ const MANIFEST_DATA = {
       "chapters": [
         {
           "file": "ch01-introduction.md",
-          "title": "NSCA-CPT 体系导论",
+          "title": "NSCA-CPT 体能训练体系与羽毛球整合导论",
           "words": 6215,
           "h2s": [
             {
@@ -9193,7 +9193,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch02-exercise-physiology.md",
-          "title": "运动生理学",
+          "title": "运动生理学——理解身体如何应对训练刺激",
           "words": 15093,
           "h2s": [
             {
@@ -9558,7 +9558,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch03-anatomy.md",
-          "title": "运动解剖",
+          "title": "运动解剖与肌肉系统",
           "words": 806,
           "h2s": [
             {
@@ -9643,7 +9643,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch04-strength-training.md",
-          "title": "基础力量训练（含 ex-lib 引用）",
+          "title": "基础力量训练",
           "words": 5093,
           "h2s": [
             {
@@ -9767,7 +9767,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch05-power-training.md",
-          "title": "爆发力训练（含 ex-lib 引用）",
+          "title": "爆发力训练",
           "words": 4247,
           "h2s": [
             {
@@ -9960,7 +9960,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch06-agility.md",
-          "title": "敏捷性训练（含 ex-lib 引用）",
+          "title": "敏捷性与灵敏训练",
           "words": 3746,
           "h2s": [
             {
@@ -10072,7 +10072,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch07-flexibility.md",
-          "title": "柔韧性与活动度（含 ex-lib 引用）",
+          "title": "柔韧性与关节活动度",
           "words": 3614,
           "h2s": [
             {
@@ -10222,7 +10222,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch08-periodization.md",
-          "title": "周期化训练（含 ex-lib 引用）",
+          "title": "周期化训练",
           "words": 3286,
           "h2s": [
             {
@@ -10389,7 +10389,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch09-injury-prevention.md",
-          "title": "损伤预防与康复（含 6 大康复体系）",
+          "title": "损伤预防与康复",
           "words": 4303,
           "h2s": [
             {
@@ -10516,7 +10516,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch10-recovery.md",
-          "title": "恢复策略（v3.22.16 双层结构 + 12 ex-lib 已校对）",
+          "title": "恢复策略",
           "words": 3398,
           "h2s": [
             {

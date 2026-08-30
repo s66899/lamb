@@ -1483,3 +1483,69 @@
 
 ### commit hash
 - `e02330a`（本地已落，`book` 分支 HEAD，领先 `origin/book` 5 commits；**push 未成功**，等网络恢复后单次 push 即可，沿用「N commit 累计 push 成功」先例）
+
+
+## 2026-08-31 第 40 轮
+
+### 本轮做了什么
+- **commit PENDING** `fix(manifest): NSCA-CPT 10 章 chapter title 字段对齐 .md H1 / README 主题 — 移除「(含 ex-lib 引用)」「v3.22.16 双层结构 + 12 ex-lib 已校对」「(含 6 大康复体系)」等元痕迹尾巴,采用各章 H1 去「第N章:」前缀的简洁措辞,与 badminton-recovery 8 行 README 主题 / .md H1 完全对齐`
+- **背景**:承接 39 轮候选(优先级中)「finance / yin-yang / badminton 三本书 README 章节表头与 manifest.title 一致性核对」+ 顺手扫全部 9 本书:
+  - 9 本书 manifest.title vs README H1 全部不一致 — **设计意图**:manifest.title 是程序显示的纯简称(阴阳/羽毛球/工程力学/...),README H1 是带 emoji 的完整品牌名(🩹 羽毛球康复指南/🐏的羽毛球/...),这是「程序简称 + README 完整名」双轨,**不算 bug**
+  - 但 9 本书中有章节表格的只有 2 本:NSCA-CPT (10 行) + badminton-recovery (8 行);badminton-recovery 8 行 manifest.title 已与 README 主题完全对齐(所有「肩关节康复 × 杀球过头」类)
+  - NSCA-CPT 10 行全部不一致,差异有 3 类:
+    - **截短**:ch01 manifest 「NSCA-CPT 体系导论」 vs README/H1 「NSCA-CPT 体能训练体系与羽毛球整合导论」
+    - **加副标题**:ch02 manifest 「运动生理学」 vs README/H1 「运动生理学——理解身体如何应对训练刺激」;ch03 类似
+    - **元尾巴**:ch04-ch08 manifest 尾巴带「(含 ex-lib 引用)」(v3.22.16/52 那时为标记 ex-lib 落地状态加的版本痕迹,现在其他 7 本书都未带这尾巴,过时);ch09 manifest 「损伤预防与康复(含 6 大康复体系)」(README 表格主题同)— 内容上的描述,非版本痕迹,但放在用户视觉主界面也偏冗余;ch10 manifest 「恢复策略(v3.22.16 双层结构 + 12 ex-lib 已校对)」(README 「(SMR + 12 ex-lib 已校对)」)— 纯版本痕迹
+- **决策**:统一采用 **「manifest.title = .md H1 去「第N章:」前缀」** 的简洁形式(与 badminton-recovery 8 行约定一致),理由:
+  - 与磁盘 H1 1:1 对应,作者改 H1 之后 manifest 跟进简单
+  - 与 README 主题列 1:1 对应(README 的 ch09「(含 6 大康复体系)」/ ch10「(SMR + 12 ex-lib 已校对)」原本是 README 表格里加的副标签,不影响磁盘 H1,本轮不动 README 也不动 H1,只动 manifest 字段)
+  - 移除所有「v3.22.x」/「含 ex-lib 引用」等元痕迹,让用户视觉清爽
+- **修复**:NSCA-CPT 10 章 manifest.title 一次性对齐:
+  - ch01: 「NSCA-CPT 体系导论」→「NSCA-CPT 体能训练体系与羽毛球整合导论」
+  - ch02: 「运动生理学」→「运动生理学——理解身体如何应对训练刺激」
+  - ch03: 「运动解剖」→「运动解剖与肌肉系统」
+  - ch04: 「基础力量训练(含 ex-lib 引用)」→「基础力量训练」
+  - ch05: 「爆发力训练(含 ex-lib 引用)」→「爆发力训练」
+  - ch06: 「敏捷性训练(含 ex-lib 引用)」→「敏捷性与灵敏训练」
+  - ch07: 「柔韧性与活动度(含 ex-lib 引用)」→「柔韧性与关节活动度」
+  - ch08: 「周期化训练(含 ex-lib 引用)」→「周期化训练」
+  - ch09: 「损伤预防与康复(含 6 大康复体系)」→「损伤预防与康复」
+  - ch10: 「恢复策略(v3.22.16 双层结构 + 12 ex-lib 已校对)」→「恢复策略」
+  - manifest.json + manifest_data.js 同步更新(沿用 v3.22.51 / 19eb83b / e02330a 的双文件同步策略)
+- **不动**:不动 README 章节表头(ch09「(含 6 大康复体系)」/ ch10「(SMR + 12 ex-lib 已校对)」是 README 内部副标签,与磁盘 H1 一致即可,无功能性不一致);不动 9 本书 manifest.title(其他 8 本都是纯书名简称,与 README H1 双轨设计本就是意图);不动 .md 文件本体;不动 ex-lib;不动 app.js;不动 VERSION(纯 manifest 字段更新,不发版)
+- **改动**:`2 files changed, 0 insertions(+), 0 deletions(-)`(git diff 行数不变;字节数 manifest.json -89、manifest_data.js -89)
+
+### 校验
+- `python -c "import json; m=json.load(open('manifest.json')); nsca=next(b for b in m['books'] if b['id']=='nsca-cpt'); [print(c['file'],'|',c['title']) for c in nsca['chapters']]"`:10 行全部与 H1 去前缀一致 ✓
+- `python -c "import json; m=json.load(open('manifest.json')); nsca=next(b for b in m['books'] if b['id']=='nsca-cpt'); print('chapterCount=', nsca['chapterCount'])"`:**10** ✓(改前 10,字段未触动,仅 title 文本变)
+- 跨文件一致性:manifest.json 与 manifest_data.js NSCA-CPT 章节 title **完全相等**(Python 解析比对 10 行 0 diff)✓
+- `python -m json.tool manifest.json > /dev/null`:exit 0 ✓
+- `node --check manifest_data.js`:exit 0 ✓
+- `node _scan_exlib.js`:1336 ids / 524 refs / **0 broken**(纯 title 改名,refs/broken 不变)✓
+- `git diff --stat HEAD`:`2 files changed, 0 insertions(+), 0 deletions(-)` ✓(纯行内替换)
+- `git diff --text manifest.json`:10 处行内 title 字符串替换,无双边内容字符改动以外的字节变化 ✓
+- `git ls-files -s --eol manifest.json manifest_data.js`:改前改后均 `i/crlf w/crlf attr/-text`,CRLF 状态保留 ✓
+- `tail -c 5 manifest.json`: `]}
+` ✓ 与 HEAD 一致
+- `tail -c 5 manifest_data.js`: `}
+` ✓ 与 HEAD 一致
+- 零业务代码改动(app.js / index.html / books/**/*.md / VERSION 全部不动)
+- 零 ex-lib id 改动(0 broken 不变 / 0 新增)
+- APP_VERSION 不 bump(纯 manifest 字段更新,不发版)
+- 4 埋点不动:app.js APP_VERSION 仍 v3.22.61 / index.html 三处 `?v=` 仍 v3.22.61 / manifest.json 无 chapterCount 变化 / VERSION 无新增行
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(39 轮新增,优先级中)** finance / yin-yang / badminton 三本书 README 章节表头 vs manifest.title 一致性核对 → 经扫表确认:仅 NSCA-CPT 与 badminton-recovery 有 README 章节表格;badminton-recovery 8 行已对齐;NSCA-CPT 10 行全部漂移 → 本轮 NSCA-CPT 10 章 title 对齐 H1,候选作废
+- ⏭️ **(39 轮新增,优先级中)** ch08-palmistry-basics.md yin-yang H2 切层特别(用「###」作首段标题,正文才用「## 8.1」)— 纯排版风格选择,无功能性不一致 → 远期继承(不动)
+- ⏭️ **(继承远期,优先级低)** ch04 L202 12 个 unique 加权精细化 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / `_session_todo.md` 1485 → 1500+ 行归档 / 其他书籍 orphan .md 扫表
+- ⏭️ **(继承远期,优先级中)** app.js APP_VERSION v3.22.61 vs 实际最新(本轮未触发,纯 manifest 字段更新)
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 仍被本地 ISP 拦截 GitHub 443。本地 commit 即将落 `book` 分支,等网络恢复后单次 push 即可(沿用「N commit 累计 push 成功」先例,39 轮 e02330a 累计 5 commits 待 push)。
+
+### 新增下轮候选
+- **(本轮新发现,优先级低)** NSCA-CPT README ch09 主题「损伤预防与康复(含 6 大康复体系)」/ ch10 主题「恢复策略(SMR + 12 ex-lib 已校对)」与磁盘 H1 / manifest.title 现在对齐为「损伤预防与康复」/「恢复策略」,但 README 表格里仍带括号副标签 — 是否要同步删除 README 的副标签?纯视觉一致性,本轮不动
+- **(本轮新发现,优先级低)** 扫表时发现 engineering-mechanics / finance / psychology / yin-yang / badminton / competition / nutrition 7 本书的 README 没有章节表头(直接用文字列表介绍),与 NSCA-CPT / badminton-recovery 的表格风格不一致 — 是否要为这 7 本补 README 章节表头?纯文档风格选择,工作量较大,建议远期登记
+- **(本轮新发现,优先级低)** 9 本书 manifest.title vs README H1 双轨差异(简称 vs 品牌名)既然是设计意图,是否要在 README 顶部加一行「本书简称:XXX」用于搜索/记忆辅助?纯文档改进
+- **(继承远期,优先级低)** ch04 L202 12 个 unique 加权精细化 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / `_session_todo.md` 1485+ 行归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记
