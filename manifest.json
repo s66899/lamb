@@ -12037,7 +12037,7 @@
         {
           "file": "ch01-introduction.md",
           "title": "康复总论——原则、时间线、信号识别",
-          "words": 2072,
+          "words": 2741,
           "h2s": [
             {
               "title": "本章导言",
@@ -12785,7 +12785,8 @@
         }
       ],
       "totalWords": 20073,
-      "chapterCount": 8
+      "chapterCount": 8,
+      "totalChars": 20742
     },
     {
       "id": "competition",
