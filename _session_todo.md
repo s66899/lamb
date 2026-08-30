@@ -2266,3 +2266,36 @@
 2. **ch02-shoulder.md §清单 7 unique id 与正文 23 处子分布声明与实际 grep 对齐** — 同上文件可能有子项漏算
 3. **NSCA-CPT ch09 第六节「弹力带反向提踵」[ex:1000] 引用未在羽毛球康复 ch07 表格头部「8/12 周如需小腿 SMR 可引此条目」呼应一致** — 跨书互引表残差
 4. **ch04/ch06/ch07 「本章 ex-lib 引用清单」表格宽度在窄屏溢出风险** — 视觉问题待评估
+
+## 第 59 轮（2026-08-31）
+
+**Commit**: `1f98698`
+**改动**: `books/badminton-recovery/ch06-back.md`（+4 / −7）
+
+**问题诊断**：
+- ch06 §4 周 W2 表格原文："[ex:1352] lower back curl 腰背 SMR 替代，库中暂无 foam roller 下背专项条目"
+- 库里 [ex:1352] 实际字段：`bp_zh=背部 / tgt_zh=脊柱 / goal=core`，是仰卧腰背卷曲**核心动作**，根本不是 SMR
+- v3.22.17 已入库 foam roller 12 条（ex-5202~ex-5213），back 系列有 5207 upper back / 5208 latissimus / 5212 thoracic spine，**全是真实 SMR 条目**
+
+**修复**：
+- §4 周 W2 表格 → `[ex:5212] foam roller thoracic spine 胸椎 foam roller`（库内合法，与"腰背筋膜松解"语义最近）
+- §清单段表格 → 移除 `[ex:1352]` 训练动作行（不该把核心动作当 SMR）；`5212` 升格入训练动作表
+- §头部声明 → 16 unique → 15 业务 unique + 历史勘误段；分布细分表已对账（4 周 4 + 8 周 9 + 12 周 4 + 后场 4 + 清单段 23 = 44）
+- §说明段 → 加 v3.22.62 勘误说明，澄清 SMR 必须用 ex-5202~ex-5213 库内真实 foam roller 条目，绝不混用核心动作条目
+
+**校验**：
+- `node _scan_exlib.js` → ex-lib total ids 1336 / total refs 530 / broken 0
+- `python -m json.tool books/exercises/ex-lib.json` → OK
+- `node --check app.js` → OK
+- ch06 文件 grep → 44 inline / 16 unique（含 1352 历史勘误提及 1 处），全部合法
+
+**push**：本地 commit `1f98698` 落地；push 失败（沙箱无 GitHub 网络），待用户侧 push 后 GitHub Pages 自动部署。
+
+---
+
+## 下轮候选
+
+1. **badminton-recovery ch06 §8 周时间线文末清单 5212 升格后是否需补「邻近 foam roller」单独子节** —— 让读者一眼看到 foam roller 系列在腰部康复的全貌（5207/5208/5212 三连 + 5210 lacrosse ball forearm 等相关）
+2. **ch08 行动清单 ch06 相关行核对** —— ch08 L77 现在写"鸟狗式（库中暂无 bird dog 条目...）"，与 ch06 §4 周完全一致，无需改
+3. **NSCA-CPT ch10 §第七节总清单 v3.22.50 加的「↗ 详见 2.1 节」是否对每个 id 都生效** —— 抽查 12 个 id 中是否还有漏标
+4. **VERSION 文件头部「当前 HEAD = v3.22.61」与本轮不涉及 bump 是否仍一致** —— v3.22.62 是内容勘误不 bump（惯例：内容修复不升 APP_VERSION），保持 v3.22.61
