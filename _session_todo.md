@@ -1693,3 +1693,62 @@
 - **(继承,优先级低)** books/README.md 写「96 章」实际 97 章
 - **(继承,优先级低)** 根 README「每章结构 60/30/10」核实
 - **(继承远期,优先级低)** ch04 L202 / 末尾裸 hash / ch06 ch07 措辞 / L# / APP_VERSION / 1500+ 行 todo 归档 / 其他书籍 orphan / ch08 palmistry 切层登记
+
+## 2026-08-31 第 45 轮 (commit ceebefb)
+
+### 本轮做了什么
+- **commit `ceebefb`** `fix(readme): 羽毛球 ch11-13 + 工程力学 ch11-12 漏列章节补全` — 44 轮 c04693e 候选清算里登记的两个同性质条目合并修;实测 manifest badminton 13 章(README 列 10 章,缺战术进阶/体能训练/双打战术 3 章)+ engineering-mechanics 12 章(README 列 10 章,缺振动分析/断裂与疲劳 2 章),章节标题从 manifest.json chapters[*].title 取(避免手工抄错,标题措辞沿用 e4e55be 英译中策略,与磁盘 .md H1 完全对齐);5 行新增 0 行删
+
+### 校验
+- `git diff --stat README.md`: `1 file changed, 5 insertions(+)` ✓
+- `python raw.count(b'\r\n')`: 0 ✓ (无 CRLF 污染)
+- `python raw.count(b'\r')`: 0 ✓ (无裸 CR)
+- `python raw.endswith(b'\n')`: True ✓ (LF 收尾保留)
+- `sed -n '17,36p' README.md`: 羽毛球 13 章完整列出 ✓
+- `sed -n '90,113p' README.md`: 工程力学 12 章完整列出 ✓
+- `git ls-files -s --eol README.md`: `i/lf w/lf attr/-text` ✓ (沿用既有 LF)
+- 零业务代码改动 / 零 ex-lib id 改动(1336/524/0 不变)/ 零 .md 内容改动 / 零 manifest 改动 / 零 books/* 子目录改动
+- APP_VERSION 不 bump(纯 README 文档,不发版)
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(44 轮新增,优先级低)** 根 README 工程力学缺 ch11/12 — 本轮合并修,候选作废
+- ✅ **(44 轮新增,优先级低)** 根 README 羽毛球缺 ch11/12/13 — 本轮合并修,候选作废
+- ⏭️ **(继承远期,优先级低)** books/README.md 96→97 章 — 一行字段,继续留
+- ⏭️ **(继承远期,优先级低)** 根 README「每章结构 60/30/10」核实 — 抽样工作量较大,继续留
+- ⏭️ **(继承远期,优先级低)** ch04 L202 / 末尾裸 hash / ch06 ch07 措辞 / L# / APP_VERSION / 1500+ 行 todo 归档 / 其他书籍 orphan / ch08 palmistry 切层登记
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 仍被本地 ISP 拦截 GitHub 443 (`Failed to connect to github.com port 443 via 127.0.0.1 after 2084 ms`),本地 commit 落 `book` 分支,等网络恢复后单次 push 即可;本次累计 3 commits 待 push(ceebefb 本轮 + c04693e / c77f032 44 轮);沿用 44 轮 c04693e 「累计 push 成功」先例。
+
+### 新增下轮候选
+- **(继承,优先级低)** books/README.md 写「96 章」实际 97 章 — 一行字段同步
+- **(继承,优先级低)** 根 README「每章结构 60/30/10」描述核实 — 抽样工作量较大
+- **(继承远期,优先级低)** ch04 L202 12 unique 加权精细化 / 末尾裸 hash 块 / L# / APP_VERSION bump / 1500+ 行 todo 归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记
+
+## 2026-08-31 第 46 轮 (commit TBD)
+
+### 本轮做了什么
+- **commit TBD** `fix(badminton-recovery): ch06 + ch07 末尾 ex-lib 引用清单数字声明对齐实际 inline 计数` — 44 轮远期候选里登记的「ch06 ch07 措辞」合并修;诊断脚本扫表发现 ch06 实际 39 inline / 16 unique(声明 35 / 13)与 ch07 实际 32 inline / 14 unique(声明 29 / 13),声明数字整体偏低;补表行(foam roller 邻近条目 [ex:5205] / [ex:5207] / [ex:5208] / [ex:5212])并把头部"分布加和"改成按段(含清单段内 inline)精确计算;两个文件最终 grep 实测与声明 100% 一致(零伪造 id 经库内 1336 id 校验通过);6 行新增 2 行删;纯文本修复可独立回滚 `git revert HEAD`
+
+### 校验
+- `python grep count` ch06: 44 inline / 16 unique ✓ 与声明一致
+- `python grep count` ch07: 32 inline / 14 unique ✓ 与声明一致
+- `python LEGAL=set(lib); bad=[i for i in set(ids) if i not in LEGAL]`: 两章均 `missing=[]` ✓ (零伪造)
+- `python raw.count(b'\r\n')`: 0 ✓ (无 CRLF 污染)
+- `git ls-files -s --eol`: i/lf w/lf ✓ (LF 沿用既有)
+- 零业务代码改动 / 零 ex-lib id 改动(1336/524/0 不变)/ 零 manifest 改动 / 零 book 文件数改动 / 零 APP_VERSION bump
+- 修改前一并发现另一处错误陈述——ch07 原头部"合并本声明句 5211/1373/1490/1368 这 4 个 id 各内嵌 1 次，合计 33 处 inline"在该章声明逻辑上是错算的(各 id 在正文已多次出现，声明文字却只说"1 次"),本轮一并改正
+
+### 上轮候选清算
+- ✅ **(44 轮远期,优先级低)** ch06 ch07 措辞 — 实测为 ex-lib 清单数字声明错算(声明 vs 实际差 5 处 inline / 3 unique),本轮合并修完;候选作废
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:沿用 45 轮 ISP 拦截状态;本轮累计 push 待 = 4 commits
+
+### 新增下轮候选
+- **(本轮发现,优先级低)** ch07「库中暂无跟腱专用离心动作」这句话可以补一句 "Alfredson 方案是否为循证金标准" 微文,加强证据链 — 一句话补充
+- **(本轮发现,优先级低)** ch06 / ch07 / ch01 / ch03 / ch04 / ch05 末尾「ex-lib 引用清单」风格不统一(部分声明 inline / unique 数字 + 部分仅表无声明 / 部分仅数字 + 部分两者) — 可全量模板化,但需逐章校对工作量大
+- **(继承,优先级低)** books/README.md 写「96 章」实际 97 章 — 一行字段同步
+- **(继承,优先级低)** 根 README「每章结构 60/30/10」描述核实 — 抽样工作量较大
+- **(继承远期,优先级低)** ch04 L202 12 unique 加权精细化 / 末尾裸 hash 块 / L# / APP_VERSION bump / 1500+ 行 todo 归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记

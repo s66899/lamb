@@ -170,7 +170,7 @@
 
 ## 本章 ex-lib 引用清单
 
-本章共引用 35 处 ex-lib inline 引用（折合 13 个 unique id），全部已验证为库内合法 id（零伪造）。下方清单按 unique id 一行一条列出 13 条；同一个 id 在不同周方案/场景行内重复引用是预期设计（速查表强调"一个动作多场景通用"），不重复计入 unique 数。分布：4 周时间线 4 处 + 8 周时间线 9 处 + 12 周时间线 4 处 + 后场力学纠正 4 处 + 下方清单 13 unique + 说明段 1 处（[ex:1352] 再引）= 35 处 inline（含本声明句同 1352 这 1 个 id 内嵌 1 次，合计 36 处 inline）。
+本章共引用 **44 处** ex-lib inline 引用（折合 **16 个 unique id**，其中 13 个为训练动作 + 3 个为说明段顺带提及的 foam roller 邻近条目 [ex:5207] upper back / [ex:5208] latissimus / [ex:5212] thoracic spine），全部已验证为库内合法 id（零伪造）。下方清单按 unique id 一行一条列出 16 条；同一个 id 在不同周方案/场景行内重复引用是预期设计（速查表强调"一个动作多场景通用"），不重复计入 unique 数。**分布（按段计）**：4 周时间线 4 处 + 8 周时间线 9 处 + 12 周时间线 4 处 + 后场力学纠正 4 处 + 清单段（含 16 行表 + 头部声明 3 处 + 说明段 4 处） 23 处 = **44 处 inline**。
 
 | ex-id | 中文名 / 英文名 | 本章用途 |
 |------|--------------|---------|
@@ -187,5 +187,8 @@
 | [ex:1511] | hamstring stretch / 腘绳肌拉伸 | 8 / 12 周腘绳肌柔韧（直腿抬高目标 > 70°） |
 | [ex:1576] | leg up hamstring stretch / 抬腿腘绳肌拉伸 | 8 / 12 周腘绳肌拉伸替代版 |
 | [ex:1709] | assisted lying glutes stretch / 仰卧辅助臀肌拉伸 | 12 周 W5-8 改善骨盆前倾 |
+| [ex:5207] | foam roller upper back / 上背 foam roller 专项（说明段顺带提及） | 邻近部位 SMR 可引；居家无器械可用网球替代 |
+| [ex:5208] | foam roller latissimus / 背阔肌 foam roller 专项（说明段顺带提及） | 邻近部位 SMR 可引；居家无器械可用网球替代 |
+| [ex:5212] | foam roller thoracic spine / 胸椎 foam roller 专项（说明段顺带提及） | 邻近部位 SMR 可引；居家无器械可用网球替代 |
 
 **说明**：ex-lib 库内**已有**foam roller / 筋膜球系列专项条目（v3.22.17 入库 ex-5202~ex-5213 共 12 条覆盖各部位），但腰部 foam roller 专项**确实暂无**（库内 back 系列为 5207 upper back / 5208 latissimus / 5212 thoracic spine，无 lumbar 专项）。本章腰部 SMR 类因此仍引用 [ex:1352] lower back curl（腰背卷曲）作为替代，介质可用网球或长曲棍球置于腰方肌沿脊柱两侧滚动；如需 upper-back / thoracic / lat 等邻近部位 foam roller 专项可分别引 [ex:5207] / [ex:5212] / [ex:5208]（库内合法 id）。库中也暂无"麦肯基伸展 / bird-dog 鸟狗式"专项条目，故这两项在 4 周 / 8 周方案中以文字描述保留，与 ex-lib 库内合法动作并存。
