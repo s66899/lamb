@@ -1726,10 +1726,10 @@
 - **(继承,优先级低)** 根 README「每章结构 60/30/10」描述核实 — 抽样工作量较大
 - **(继承远期,优先级低)** ch04 L202 12 unique 加权精细化 / 末尾裸 hash 块 / L# / APP_VERSION bump / 1500+ 行 todo 归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记
 
-## 2026-08-31 第 46 轮 (commit TBD)
+## 2026-08-31 第 46 轮 (commit eabddef)
 
 ### 本轮做了什么
-- **commit TBD** `fix(badminton-recovery): ch06 + ch07 末尾 ex-lib 引用清单数字声明对齐实际 inline 计数` — 44 轮远期候选里登记的「ch06 ch07 措辞」合并修;诊断脚本扫表发现 ch06 实际 39 inline / 16 unique(声明 35 / 13)与 ch07 实际 32 inline / 14 unique(声明 29 / 13),声明数字整体偏低;补表行(foam roller 邻近条目 [ex:5205] / [ex:5207] / [ex:5208] / [ex:5212])并把头部"分布加和"改成按段(含清单段内 inline)精确计算;两个文件最终 grep 实测与声明 100% 一致(零伪造 id 经库内 1336 id 校验通过);6 行新增 2 行删;纯文本修复可独立回滚 `git revert HEAD`
+- **commit `eabddef`** `fix(badminton-recovery): ch06 + ch07 末尾 ex-lib 引用清单数字声明对齐实际 inline 计数` — 44 轮远期候选里登记的「ch06 ch07 措辞」合并修;诊断脚本扫表发现 ch06 实际 39 inline / 16 unique(声明 35 / 13)与 ch07 实际 32 inline / 14 unique(声明 29 / 13),声明数字整体偏低;补表行(foam roller 邻近条目 [ex:5205] / [ex:5207] / [ex:5208] / [ex:5212])并把头部"分布加和"改成按段(含清单段内 inline)精确计算;两个文件最终 grep 实测与声明 100% 一致(零伪造 id 经库内 1336 id 校验通过);6 行新增 2 行删;纯文本修复可独立回滚 `git revert HEAD`
 
 ### 校验
 - `python grep count` ch06: 44 inline / 16 unique ✓ 与声明一致
