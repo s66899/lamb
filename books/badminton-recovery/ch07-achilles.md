@@ -49,7 +49,7 @@
 | 3 | 弹力带抗力训练（[ex:0999] band single leg calf raise / [ex:1000] band single leg reverse calf raise） | 离心 + 抗力跖屈 | 弹力带 |
 | 4 | 评估回训练场 | 低强度起跳 | 30% |
 
-**离心训练是 Alfredson 方案** —— 这是国际公认的跟腱病一线治疗。
+**离心训练是 Alfredson 方案** —— Alfredson 等 1998 年 AJSM 原始 RCT奠定了该方案的循证基础（PubMed 1a 级证据），后续 2015 / 2018 年系统综述仍将其列为慢性跟腱病的 first-line 治疗。
 
 ---
 
