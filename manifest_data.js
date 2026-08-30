@@ -2677,7 +2677,7 @@ const MANIFEST_DATA = {
       "chapters": [
         {
           "file": "ch01-grip-and-ready-stance.md",
-          "title": "Grip And Ready Stance",
+          "title": "握拍与准备姿势——一切技术的根基",
           "words": 8529,
           "h2s": [
             {
@@ -2813,7 +2813,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch02-forehand-clear.md",
-          "title": "Forehand Clear",
+          "title": "正手高远球——羽毛球最重要的技术没有之一",
           "words": 6869,
           "h2s": [
             {
@@ -2904,7 +2904,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch03-backhand-technique.md",
-          "title": "Backhand Technique",
+          "title": "反手技术",
           "words": 9091,
           "h2s": [
             {
@@ -3067,7 +3067,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch04-net-shots.md",
-          "title": "Net Shots",
+          "title": "网前小球",
           "words": 11286,
           "h2s": [
             {
@@ -3197,7 +3197,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch05-footwork-system.md",
-          "title": "Footwork System",
+          "title": "步伐体系——场上移动的根基",
           "words": 14067,
           "h2s": [
             {
@@ -3402,7 +3402,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch06-forehand-smash.md",
-          "title": "Forehand Smash",
+          "title": "杀球与扣杀——攻击力的极致",
           "words": 5898,
           "h2s": [
             {
@@ -3519,7 +3519,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch07-flat-drive.md",
-          "title": "Flat Drive",
+          "title": "平抽快挡——双打的灵魂",
           "words": 4061,
           "h2s": [
             {
@@ -3636,7 +3636,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch08-comprehensive-training.md",
-          "title": "Comprehensive Training",
+          "title": "综合训练——从单项到实战",
           "words": 13999,
           "h2s": [
             {
@@ -4056,7 +4056,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch11-tactics-advanced.md",
-          "title": "Tactics Advanced",
+          "title": "战术进阶——从技术到智慧的跨越",
           "words": 5518,
           "h2s": [
             {
@@ -4203,7 +4203,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch12-physical-training.md",
-          "title": "Physical Training",
+          "title": "体能训练与运动防护",
           "words": 16125,
           "h2s": [
             {
@@ -4452,7 +4452,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch13-doubles-tactics.md",
-          "title": "Doubles Tactics",
+          "title": "双打战术配合与竞技策略",
           "words": 13327,
           "h2s": [
             {
@@ -4778,7 +4778,7 @@ const MANIFEST_DATA = {
       "chapters": [
         {
           "file": "ch01-force-analysis-and-statics.md",
-          "title": "Force Analysis And Statics",
+          "title": "受力分析与静力学基础——一切力学的起点",
           "words": 10116,
           "h2s": [
             {
@@ -5296,7 +5296,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch04-bending-internal-forces.md",
-          "title": "Bending Internal Forces",
+          "title": "弯曲内力——梁的变形与承载密码",
           "words": 11481,
           "h2s": [
             {
@@ -5386,7 +5386,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch05-bending-stress.md",
-          "title": "Bending Stress",
+          "title": "弯曲应力——梁的强度分析核心",
           "words": 13443,
           "h2s": [
             {
@@ -5591,7 +5591,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch06-combined-deformation.md",
-          "title": "Combined Deformation",
+          "title": "组合变形——应力与应变的综合分析",
           "words": 6751,
           "h2s": [
             {
@@ -5750,7 +5750,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch07-column-stability.md",
-          "title": "Column Stability",
+          "title": "压杆稳定——失稳的力学本质与心理韧性",
           "words": 21390,
           "h2s": [
             {
@@ -5865,7 +5865,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch08-energy-methods.md",
-          "title": "Energy Methods",
+          "title": "能量法",
           "words": 15382,
           "h2s": [
             {
@@ -6468,7 +6468,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch11-vibration-analysis.md",
-          "title": "Vibration Analysis",
+          "title": "振动分析——系统对激励的响应",
           "words": 17827,
           "h2s": [
             {
@@ -6705,7 +6705,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch12-fracture-and-fatigue.md",
-          "title": "Fracture And Fatigue",
+          "title": "断裂力学与疲劳分析",
           "words": 14232,
           "h2s": [
             {
@@ -7079,7 +7079,7 @@ const MANIFEST_DATA = {
       "chapters": [
         {
           "file": "ch01-financial-market-basics.md",
-          "title": "Financial Market Basics",
+          "title": "金融市场的基本逻辑——为什么钱会流动",
           "words": 10329,
           "h2s": [
             {
@@ -7199,7 +7199,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch02-financial-statement-analysis.md",
-          "title": "Financial Statement Analysis",
+          "title": "财务报表分析——读懂数字背后的商业故事",
           "words": 13567,
           "h2s": [
             {
@@ -7324,7 +7324,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch03-time-value-of-money.md",
-          "title": "Time Value Of Money",
+          "title": "货币时间价值",
           "words": 23703,
           "h2s": [
             {
@@ -7502,7 +7502,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch04-risk-and-return.md",
-          "title": "Risk And Return",
+          "title": "风险与收益——投资中最核心的权衡",
           "words": 16050,
           "h2s": [
             {
@@ -7592,7 +7592,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch05-stock-valuation.md",
-          "title": "Stock Valuation",
+          "title": "股票估值——价值投资的核心方法",
           "words": 12988,
           "h2s": [
             {
@@ -7808,7 +7808,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch06-bond-pricing.md",
-          "title": "Bond Pricing",
+          "title": "债券定价——固定收益资产的价值逻辑",
           "words": 6277,
           "h2s": [
             {
@@ -7942,7 +7942,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch07-asset-allocation.md",
-          "title": "Asset Allocation",
+          "title": "资产配置——把鸡蛋放在不同篮子里",
           "words": 5670,
           "h2s": [
             {
@@ -8080,7 +8080,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch08-behavioral-finance.md",
-          "title": "Behavioral Finance",
+          "title": "行为金融学——为什么你总是做出错误的投资决策",
           "words": 14232,
           "h2s": [
             {
@@ -8222,7 +8222,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch09-investment-psychology.md",
-          "title": "Investment Psychology",
+          "title": "投资心理学——战胜市场情绪",
           "words": 4788,
           "h2s": [
             {
@@ -8335,7 +8335,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch10-practical-trading.md",
-          "title": "Practical Trading",
+          "title": "实战演练——从理论到盈利的最后一公里",
           "words": 16618,
           "h2s": [
             {
@@ -8505,7 +8505,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch11-financial-market.md",
-          "title": "Financial Market",
+          "title": "金融市场与工具——资本流动的生态系统",
           "words": 7569,
           "h2s": [
             {
@@ -8639,7 +8639,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch12-derivatives-and-risk.md",
-          "title": "Derivatives And Risk",
+          "title": "衍生品与风险管理",
           "words": 12958,
           "h2s": [
             {
@@ -8764,7 +8764,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch13-international-finance.md",
-          "title": "International Finance",
+          "title": "国际金融与外汇市场",
           "words": 12992,
           "h2s": [
             {
@@ -10618,7 +10618,7 @@ const MANIFEST_DATA = {
       "chapters": [
         {
           "file": "ch01-perception-and-attention.md",
-          "title": "Perception And Attention",
+          "title": "感知与注意——世界如何进入你的大脑",
           "words": 10580,
           "h2s": [
             {
@@ -10760,7 +10760,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch02-memory.md",
-          "title": "Memory",
+          "title": "记忆——大脑的信息银行",
           "words": 11912,
           "h2s": [
             {
@@ -11082,7 +11082,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch03-thinking-and-language.md",
-          "title": "Thinking And Language",
+          "title": "思维与语言——人类独有的能力",
           "words": 24924,
           "h2s": [
             {
@@ -11298,7 +11298,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch04-motivation-and-needs.md",
-          "title": "Motivation And Needs",
+          "title": "动机与需要——人类行为的内在驱动力",
           "words": 9096,
           "h2s": [
             {
@@ -11372,7 +11372,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch05-emotion-and-affect.md",
-          "title": "Emotion And Affect",
+          "title": "情绪与情感",
           "words": 11947,
           "h2s": [
             {
@@ -11523,7 +11523,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch06-personality.md",
-          "title": "Personality",
+          "title": "人格——你是谁，以及你为什么会这样做",
           "words": 20142,
           "h2s": [
             {
@@ -11665,7 +11665,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch07-social-influence.md",
-          "title": "Social Influence",
+          "title": "社会影响——为什么你会随大流，以及何时你会坚持自我",
           "words": 19241,
           "h2s": [
             {
@@ -11842,7 +11842,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch08-cognitive-bias.md",
-          "title": "Cognitive Bias",
+          "title": "认知偏差——思维的系统性错误",
           "words": 6936,
           "h2s": [
             {
@@ -11949,7 +11949,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch09-developmental-psychology.md",
-          "title": "Developmental Psychology",
+          "title": "发展心理学——从婴儿到老年，一个不断演化的心灵",
           "words": 22441,
           "h2s": [
             {
@@ -12129,7 +12129,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch10-mental-disorders.md",
-          "title": "Mental Disorders",
+          "title": "心理障碍——临床评估、严重障碍与人际系统视角",
           "words": 21013,
           "h2s": [
             {
@@ -12282,7 +12282,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch11-psychotherapy.md",
-          "title": "Psychotherapy",
+          "title": "心理治疗与干预方法",
           "words": 16745,
           "h2s": [
             {
@@ -12474,7 +12474,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch12-positive-psychology.md",
-          "title": "Positive Psychology",
+          "title": "积极心理学——幸福的科学",
           "words": 13338,
           "h2s": [
             {
@@ -14816,4 +14816,4 @@ const MANIFEST_DATA = {
       "chapterCount": 7
     }
   ]
-}
+};
