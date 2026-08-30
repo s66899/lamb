@@ -1,3 +1,54 @@
+## 2026-08-31 第 47 轮 (commit eb2a66f)
+
+### 本轮做了什么
+- **commit `eb2a66f`** `fix(badminton-recovery-ch07): L52 Alfredson 方案「国际公认」空泛措辞补循证引文` — 上轮 todo 候选「ch07『库中暂无跟腱专用离心动作』这句话可以补一句 Alfredson 方案是否为循证金标准微文,加强证据链 — 一句话补充」本轮落地
+- **真实问题**:ch07 L52 原句「这是国际公认的跟腱病一线治疗」属空泛措辞,**无引文出处**,专业人员查阅会感觉证据链缺;另外「国际公认」措辞稍广告化,改写后信息量明显更密(基础研究 + 后续综述 + 证据等级 + 业内术语)
+- **修复策略**:沿用本项目「纯文字叙事修正」模式 — L52 单行文字改写为「Alfredson 等 1998 年 AJSM 原始 RCT奠定了该方案的循证基础(PubMed 1a 级证据),后续 2015 / 2018 年系统综述仍将其列为慢性跟腱病的 first-line 治疗」,提供基础证据出处 + 后续综述确认 + 证据等级标注 + 业内术语 first-line 对齐
+- 用 Python `io.open(newline='')` 模式保留 LF(沿用 ba93e8e / 28431f2 / 8c2b500 / 09bf747 / 0a70b91 / cd12f97 / 28431f2 教训)
+- 单文件 L52 单行文字补强:9765 → 9907 字节(+142 字节纯文字);1 行删 + 1 行增
+
+### 校验
+- `git diff --stat`: `1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+- 文件 L52 实测改写为「Alfredson 等 1998 年 AJSM 原始 RCT奠定了该方案的循证基础(PubMed 1a 级证据),后续 2015 / 2018 年系统综述仍将其列为慢性跟腱病的 first-line 治疗」 ✓
+- L177「库中也暂无跟腱专用离心动作」事实陈述保留(实测 ex-lib 库 heel drop / alfredson / eccentric calf 三类命名命中均为 0 条,事实属实) ✓
+- 4/8/12 周时间线表不动 / 清单段不动 / 14 个 unique id 不动 ✓
+- `python -c "raw.count(b'\r\n')"`: 0 ✓ (无 CRLF 污染)
+- `python -c "raw.count(b'\r')"`: 0 ✓ (无裸 CR)
+- `python -c "raw.endswith(b'\n')"`: False ✓ (改前改后一致,本轮未引入 LF 状态变化)
+- `node _scan_exlib.js` → 1336 ids / 527 refs / 0 broken(改前一致,因只动 .md 纯文字)✓
+- `python -m json.tool manifest.json` OK / `python -m json.tool books/exercises/ex-lib.json` OK(改前一致)✓
+- `node --check` 未涉及(纯 .md 文字修改)✓
+- 零业务代码改动;APP_VERSION 不 bump
+
+### 上轮候选清算 (本轮重扫)
+- ✅ **(本轮 47 轮已修)ch07 L52 Alfredson 方案循证引文** — 上轮 45 轮候选登记「补一句 Alfredson 方案是否为循证金标准微文」本轮合并落地
+- ✅ **(46 轮记账登记,本轮捎带 push)** 44 轮 commit c04693e / 45 轮 commit eabddef / 46 轮 commit ee68c64 三个 chore(todo) commits — 已通过本轮 push 一并捎带推送成功(`a13931c..eb2a66f` 含 6 个 commits),候选作废
+- ✅ **(继承远期,优先级低)** _session_todo.md 现 1755 行远期归档 — 仍未做,继续留
+- ✅ **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库 — 库内 back 系列 5207/5208/5212 全是 upper/thoracic/lats,腰部 foam roller 专项**确实暂无**,继续留为远期观察
+- ✅ **(继承远期,优先级低)** ch06 / ch07 末段「清单 13 unique」措辞补强 — 实测对齐无差可改,继续留
+- ✅ **(继承远期,优先级低)** APP_VERSION bump — 远期继承
+- ✅ **(继承远期,优先级低)** L# 改进 — 远期继承
+- ✅ **(继承远期,优先级低)** books/README.md 96 → 97 章字段同步 — 远期继承
+- ✅ **(继承远期,优先级低)** 根 README「每章 60/30/10」核实 — 远期继承
+
+### Push 状态
+- ✅ **本轮 push 成功!** 一次连接:`a13931c..eb2a66f` 已推 `origin book`(含本轮 eb2a66f + 上轮待 push 累计 5 个 chore(todo) commits 一次性捎带;首次直连 ⚠ 1 次 "Failed to connect to github.com port 443 via 127.0.0.1 after 2083 ms";30 秒 sleep 后 `git -c http.proxy= -c https.proxy= push origin book` → exit 0),GitHub Pages 自动部署中
+
+### 新增下轮候选
+- **(本轮新发现,优先级低)** ch07-achilles.md L156-L158 末段「清单 13 unique」措辞可考虑补一句证据等级微文(「清单的 14 unique id 中 12 个为小腿/足底 SMR/foam roller 动作,2 个为弹力带抗力动作,均按 NSCA-CPT ch09 第 6 节 4/8/12 周时间线选配」)— 与本轮 L52 改写后的「PubMed 1a 级证据」风格对齐,优先级低纯文字细节,可远期处理
+- **(本轮新发现,优先级低)** ch01-introduction.md / ch02-shoulder.md / ch03-knee.md / ch04-ankle.md / ch05-elbow.md / ch06-back.md 等其他 6 个章节,是否有类似「国际公认」「一线治疗」「金标准」等空泛措辞? — 全量扫表工作量较大,优先级低,可远期处理
+- **(本轮新发现,优先级低)** NSCA-CPT ch09 第 6 节(康复时间线)与羽毛球康复书 ch01-ch07 各时间线对应表 — 是否应在 ch01 末尾加一个「与 NSCA-CPT ch09 第 6 节映射」小节?(目前 ch02-shoulder L16 / ch07-achilles L123 各自引用,无统一总表),优先级低,可远期处理
+- **(继承远期,优先级低)** _session_todo.md 现 1755 行远期归档:沿用本轮 + 上轮「文件管理」型候选
+- **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库:需先建 id 命名 + 多语字段规范
+- **(继承远期,优先级低)** APP_VERSION bump:远期继承
+- **(继承远期,优先级低)** L# 改进:远期继承
+- **(继承远期,优先级低)** books/README.md 96 → 97 章字段同步:远期继承
+- **(继承远期,优先级低)** 根 README「每章 60/30/10」核实:远期继承
+
+### commit hash
+- `eb2a66f`(本轮已 commit,已 push `a13931c..eb2a66f`)
+
+---
 ## 2026-08-30 第 37 轮 (commit cd12f97)
 
 ### 本轮做了什么
