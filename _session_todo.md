@@ -1622,3 +1622,35 @@
 - **(继承,优先级低)** 根 README 5 本书(羽毛球/金融/心理学/工程力学/NSCA-CPT)营销目录只列部分章节 — 与本轮仓库结构补全不冲突,远期
 - **(继承,优先级低)** 根 README「每章结构 60/30/10」描述与实际是否一致 — 需要抽样核实
 - **(继承远期,优先级低)** ch04 L202 / 末尾裸 hash / ch06 ch07 措辞 / L# / APP_VERSION / 1500+ 行 todo 归档 / 其他书籍 orphan / ch08 palmistry
+
+## 2026-08-31 第 43 轮
+
+### 本轮做了什么
+- **commit `8d3bb2d`** `fix(readme): 版本号 v3.19.0 → v3.22.61 + 补 v3.20/3.21/3.22 三组更新日志` — 41 轮 56ceb7b 候选清算里登记的两个根 README 优先级中条目合并修复;实测 `cat VERSION` 头部注释 `HEAD = v3.22.61, APP_VERSION = v3.22.61`,`grep APP_VERSION app.js` 得 v3.22.61,但 `grep "v3\." README.md` 顶头写 v3.19.0 (2026-08-02),更新日志停在 v3.19.x 缺 v3.20.0/v3.21.x/v3.22.x 三大版本约 40 commits;本轮一并修两处:版本号 → v3.22.61 + 新增 3 组 H3 章节(v3.22.x 43 条 + v3.21.x 10 条 + v3.20.x 1 条),54 条历史条目全部从 VERSION 文件 v3.22.5/6/7/8/9/10/11/15/16/17/21/22/23/24/25/26/27/28/29/30/31/32/33/34/35/36/37/38/39/40/41/42/43/44/45/46/49/50/51/52/53/55/56/57/58/61 摘出 + v3.21.0-9 + v3.20.0;保持原 H3 反时序(v3.22 在上,v3.21 居中,v3.20 居下,接 v3.19.x)
+
+### 校验
+- `git diff --stat README.md`: `1 file changed, 66 insertions(+), 1 deletion(-)` ✓
+- `git ls-files -s --eol README.md`: `100644 ... i/lf w/lf attr/-text` ✓ (LF 保留,无 CRLF 引入)
+- `grep -n "v3\." README.md | head -1`: `167:当前版本：**v3.22.61**(2026-08-29)` ✓ (唯一一处当前版本号字段,在 H2「## 📌 版本」下面)
+- `sed -n '175p' README.md`: `### v3.22.x — 多本书内容深耕 + ex-lib 体系` ✓ (反时序顶部)
+- `sed -n '236p;238p' README.md`: `### v3.20.x — 移动端布局优化` / `- **v3.20.0**(2026-08-03): 📱 移动端手游风格布局优化` ✓ (中间无重复条目)
+- 零业务代码改动(app.js / index.html / books/**/*.md / manifest.json / manifest_data.js / VERSION / ex-lib 全部不动)
+- 零 ex-lib id 改动(1336/524/0 不变)
+- APP_VERSION 不 bump(纯 README 文档更新,不发版)
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(41/42 轮新增,优先级中)** 根 README 版本号 v3.19.0→v3.22.61 + 更新日志补 v3.20/3.21/3.22 → 本轮一次性修完,候选作废
+- ⏭️ **(42 轮新增,优先级低)** books/README.md 写「96 章」实际 97 章 → 一行字段同步,本轮不动(沿用远期)
+- ⏭️ **(42 轮新增,优先级低)** 根 README 5 本书营销目录只列部分章节 → 与本轮版本号+更新日志不冲突,远期
+- ⏭️ **(42 轮新增,优先级低)** 根 README「每章结构 60/30/10」描述核实 → 需要抽样 2-3 章统计,工作量较大,远期
+- ⏭️ **(继承远期,优先级低)** ch04 L202 / 末尾裸 hash / ch06 ch07 措辞 / L# / APP_VERSION / 1500+ 行 todo 归档 / 其他书籍 orphan / ch08 palmistry
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 仍被本地 ISP 拦截 GitHub 443 (`Failed to connect to github.com port 443 via 127.0.0.1 after 2091 ms`)。本地 commit 落 `book` 分支,等网络恢复后单次 push 即可(沿用「N commit 累计 push 成功」先例,42 轮 88f58f8 累计 9 commits 待 push)。
+
+### 新增下轮候选
+- **(继承,优先级低)** books/README.md 写「96 章」实际 97 章(psy ch02-textbook 39 轮 e02330a 已注册但 books/README 沿用旧 96)— 一行字段同步
+- **(继承,优先级低)** 根 README 5 本书(羽毛球/金融/心理学/工程力学/NSCA-CPT)营销目录只列部分章节 — 与本轮「仓库结构补全+版本号+更新日志」不冲突,远期
+- **(继承,优先级低)** 根 README「每章结构 60/30/10」描述与实际章节结构是否一致 — 需要抽样 2-3 章核实
+- **(继承远期,优先级低)** ch04 L202 / 末尾裸 hash / ch06 ch07 措辞 / L# / APP_VERSION / 1500+ 行 todo 归档 / 其他书籍 orphan / ch08 palmistry 切层登记
