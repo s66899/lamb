@@ -1525,9 +1525,11 @@
 - `git diff --stat HEAD`:`2 files changed, 0 insertions(+), 0 deletions(-)` ✓(纯行内替换)
 - `git diff --text manifest.json`:10 处行内 title 字符串替换,无双边内容字符改动以外的字节变化 ✓
 - `git ls-files -s --eol manifest.json manifest_data.js`:改前改后均 `i/crlf w/crlf attr/-text`,CRLF 状态保留 ✓
-- `tail -c 5 manifest.json`: `]}
+- `tail -c 5 manifest.json`: `]}
+
 ` ✓ 与 HEAD 一致
-- `tail -c 5 manifest_data.js`: `}
+- `tail -c 5 manifest_data.js`: `}
+
 ` ✓ 与 HEAD 一致
 - 零业务代码改动(app.js / index.html / books/**/*.md / VERSION 全部不动)
 - 零 ex-lib id 改动(0 broken 不变 / 0 新增)
@@ -1653,4 +1655,41 @@
 - **(继承,优先级低)** books/README.md 写「96 章」实际 97 章(psy ch02-textbook 39 轮 e02330a 已注册但 books/README 沿用旧 96)— 一行字段同步
 - **(继承,优先级低)** 根 README 5 本书(羽毛球/金融/心理学/工程力学/NSCA-CPT)营销目录只列部分章节 — 与本轮「仓库结构补全+版本号+更新日志」不冲突,远期
 - **(继承,优先级低)** 根 README「每章结构 60/30/10」描述与实际章节结构是否一致 — 需要抽样 2-3 章核实
+- **(继承远期,优先级低)** ch04 L202 / 末尾裸 hash / ch06 ch07 措辞 / L# / APP_VERSION / 1500+ 行 todo 归档 / 其他书籍 orphan / ch08 palmistry 切层登记
+
+## 2026-08-31 第 44 轮
+
+### 本轮做了什么
+- **commit `TBD`** `fix(readme): 根 README「书籍列表」补 4 本书完整目录(NSCA-CPT / badminton-recovery / competition / nutrition)` — 43 轮 ef29150 候选清算登记的「根 README 5 本书营销目录只列部分章节(羽毛球/金融/心理学/工程力学/NSCA-CPT)优先级低」本轮落地;实测 `grep -nE "^### " README.md` 5 个老书标题(羽毛球/金融/心理学/阴阳/工程力学),仓库结构树 88f58f8 已补 9 本书目录但根 README「书籍列表」段仅 5 本,羽毛球只列 10/13 章(缺 ch11 战术进阶 / ch12 体能训练 / ch13 双打战术)其余 4 本书(NSCA-CPT / badminton-recovery / competition / nutrition)整本缺失;本轮在「### ⚙️ Lamb 的工程力学」段尾后、「## 📖 每章结构」前新增 4 个 `### <emoji> Lamb 的<书名>` 块,每块沿用既有格式:**主题**/**目录**/章节列表;章节标题全部从 `manifest.json` 读出(避免手工抄错),共 31 个章节行(NSCA-CPT 10 + badminton-recovery 8 + competition 6 + nutrition 7),33 行插入(4 块各 3 行块头 + 31 行章节 + 4 块间空行);59 行新增 0 行删
+- 顺手留档一次性脚本 `_scan_exlib_refs.py`(1595 字节):沿用 41 轮 56ceb7b / 40 轮 19eb83b 留档 `_fix_4books_title.py` / `_fix_ch06_ch07_status_offby.py` 风格,扫描 `books/**/*.md` 内 `(?<!\d)ex:(\d{4})(?!\d)` 引用 vs `_valid_ids.txt` 1336 个合法 id 找出 broken,实测本轮 140 个唯一引用 / 0 broken(沿用 35 轮 09bf747 入库后清零);后续轮次可复用
+
+### 校验
+- `git diff --stat`: `2 files changed, 59 insertions(+)` (README.md 59 / _scan_exlib_refs.py 新增 1595)✓
+- `grep -cE "^### " README.md`: 9 (从 5 增到 9,5 老书 + 4 新书)✓
+- `wc -l README.md`: 387 (从 328 增 59)✓
+- `python -c "raw.count(b'\r\n')"`: 0 ✓ (无 CRLF 污染)
+- `python -c "raw.endswith(b'\n')"`: True ✓ (沿用既有 LF 收尾)
+- `python -c "raw.count(b'\r')"`: 0 ✓ (无裸 CR)
+- `python _scan_exlib_refs.py`: 合法 1336 / 唯一引用 140 / broken 0 ✓ (本轮未动 .md 引用,纯 README 文档)
+- `python -m json.tool manifest.json` OK / `python -m json.tool books/exercises/ex-lib.json` OK (改前一致)✓
+- `node --check app.js` 未涉及(纯 README + 工具脚本,无业务代码改动)✓
+- 零业务代码改动 / 零 ex-lib id 改动(1336/524/0 不变) / 零 .md 内容改动 / 零 manifest 改动 / 零 books/* 子目录改动
+- APP_VERSION 不 bump(纯 README 文档,不发版)
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(43 轮新增,优先级低)** 根 README 5 本书营销目录只列部分章节 — 本轮一次性修完,5 老书 → 9 本书完整目录,候选作废
+- ⏭️ **(继承远期,优先级低)** books/README.md 写「96 章」实际 97 章 — 一行字段同步,继续留
+- ⏭️ **(继承远期,优先级低)** 根 README「每章结构 60/30/10」描述与实际章节结构是否一致 — 本轮补 4 本新书目录后,该描述只适用于 5 本「动机心理学+X」老书,新书(康复/比赛/营养/工程力学/体能)以专业内容为主;需抽样 2-3 章核实,继续留
+- ⏭️ **(继承远期,优先级低)** ch04 L202 / 末尾裸 hash / ch06 ch07 措辞 / L# / APP_VERSION / 1500+ 行 todo 归档 / 其他书籍 orphan / ch08 palmistry 切层登记
+
+### Push 状态
+- 待 push(即将 git push origin book,GitHub Pages 自动部署;若仍被 ISP 拦截则累计到下次可推送时)
+
+### 新增下轮候选
+- **(本轮新发现,优先级低)** 根 README「每章结构」段在补 4 本新书目录后,60/30/10 描述隐式仅适用 5 本老书,但段落没说「以下 5 本主课书」;非阻塞,但若追求严谨可在该段前加一句限定(沿用 43 轮登记的「根 README「每章 60/30/10」核实」候选)
+- **(本轮新发现,优先级低)** 根 README 书籍列表段第 9 本「⚙️ Lamb 的工程力学」同样只列 10 章,manifest 实际 12 章(缺 ch11-vibration-analysis / ch12-fracture-and-fatigue),可沿同模板补 2 章标题补全到 12 章
+- **(本轮新发现,优先级低)** badminton 同样缺 ch11 战术进阶 / ch12 体能训练 / ch13 双打战术 3 章(manifest 13 章,README 只列 10 章),可沿同模板补 3 章
+- **(继承,优先级低)** books/README.md 写「96 章」实际 97 章
+- **(继承,优先级低)** 根 README「每章结构 60/30/10」核实
 - **(继承远期,优先级低)** ch04 L202 / 末尾裸 hash / ch06 ch07 措辞 / L# / APP_VERSION / 1500+ 行 todo 归档 / 其他书籍 orphan / ch08 palmistry 切层登记
