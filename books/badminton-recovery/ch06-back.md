@@ -52,7 +52,7 @@
 | 周 | 治疗 | 训练 | 负荷 |
 |---|------|------|------|
 | 1 | NSAIDs；冰敷 15min × 3/天 | 停训 + 步态正常化 | 0 |
-| 2 | 热敷；筋膜松解（[ex:1352] lower back curl 腰背 SMR 替代，库中暂无 foam roller 下背专项条目；可用网球/长曲棍球置于腰方肌沿脊柱两侧滚动） | 核心激活 + 步行 | 自重 |
+| 2 | 热敷；筋膜松解（[ex:5212] foam roller thoracic spine 胸椎 foam roller，库内真实 foam roller 条目；**腰部 foam roller 仍无 lumbar 专项**，腰方肌沿脊柱两侧可滚动胸椎 foam roller 或网球/长曲棍球替代） | 核心激活 + 步行 | 自重 |
 | 3 | 物理治疗 | 桥式 + 鸟狗式 + 死虫式 | 自重 |
 | 4 | 评估回训练场 | 低强度正手 | 自重 |
 
@@ -172,7 +172,7 @@
 
 ## 本章 ex-lib 引用清单
 
-本章共引用 **44 处** ex-lib inline 引用（折合 **16 个 unique id**，其中 13 个为训练动作 + 3 个为说明段顺带提及的 foam roller 邻近条目 [ex:5207] upper back / [ex:5208] latissimus / [ex:5212] thoracic spine），全部已验证为库内合法 id（零伪造）。下方清单按 unique id 一行一条列出 16 条；同一个 id 在不同周方案/场景行内重复引用是预期设计（速查表强调"一个动作多场景通用"），不重复计入 unique 数。**分布（按段计）**：4 周时间线 4 处 + 8 周时间线 9 处 + 12 周时间线 4 处 + 后场力学纠正 4 处 + 清单段（含 16 行表 + 头部声明 3 处 + 说明段 4 处） 23 处 = **44 处 inline**。
+本章共引用 **44 处** ex-lib inline 引用（折合 **15 个 unique 业务 id**），全部已验证为库内合法 id（零伪造）。下方清单按 unique id 一行一条列出 13 条训练动作（其中 [ex:5212] foam roller thoracic spine 为 v3.22.62 由 [ex:1352] 替换入库内真实 SMR 条目后升格入表的），另说明段顺带提及 [ex:5207] upper back / [ex:5208] latissimus 两条邻近 foam roller。同一 id 在不同周方案/场景行内重复引用是预期设计（速查表强调"一个动作多场景通用"），不重复计入 unique 数。**分布（按段计）**：4 周时间线 4 处 + 8 周时间线 9 处 + 12 周时间线 4 处 + 后场力学纠正 4 处 + 清单段（含 13 行表 + 说明段提及 + 历史勘误提及）23 处 = **44 处 inline**。**v3.22.62 勘误**：原 [ex:1352] lower back curl（实为腰背卷曲核心动作，非 SMR）已从业务行替换为 [ex:5212] foam roller thoracic spine（库内真实 foam roller 条目），仅本说明段作为历史记录保留 id 字符串。
 
 | ex-id | 中文名 / 英文名 | 本章用途 |
 |------|--------------|---------|
@@ -183,17 +183,14 @@
 | [ex:1015] | band vertical pallof press / 弹力带垂直抗旋推举 | 8 周抗旋进阶（6-8 周加入） |
 | [ex:1422] | pelvic tilt into bridge / 骨盆倾斜→桥式 | 8 周训练组合 / 后场前专项髋铰链模式 |
 | [ex:1341] | exercise ball lower back stretch (pyramid) / 健身球金字塔腰背拉伸 | 8 周拉伸（柔韧恢复） |
-| [ex:1352] | lower back curl / 腰背卷曲 SMR | 4 周 W2 腰背筋膜松解 |
 | [ex:0690] | seated lower back stretch / 坐姿腰背拉伸 | 8 / 12 周拉伸（避免久坐僵硬） |
 | [ex:1559] | exercise ball hip flexor stretch / 健身球髋屈肌拉伸 | 8 / 12 周髋屈肌紧张缓解 |
 | [ex:1511] | hamstring stretch / 腘绳肌拉伸 | 8 / 12 周腘绳肌柔韧（直腿抬高目标 > 70°） |
 | [ex:1576] | leg up hamstring stretch / 抬腿腘绳肌拉伸 | 8 / 12 周腘绳肌拉伸替代版 |
 | [ex:1709] | assisted lying glutes stretch / 仰卧辅助臀肌拉伸 | 12 周 W5-8 改善骨盆前倾 |
-| [ex:5207] | foam roller upper back / 上背 foam roller 专项（说明段顺带提及） | 邻近部位 SMR 可引；居家无器械可用网球替代 |
-| [ex:5208] | foam roller latissimus / 背阔肌 foam roller 专项（说明段顺带提及） | 邻近部位 SMR 可引；居家无器械可用网球替代 |
-| [ex:5212] | foam roller thoracic spine / 胸椎 foam roller 专项（说明段顺带提及） | 邻近部位 SMR 可引；居家无器械可用网球替代 |
+| [ex:5212] | foam roller thoracic spine / 胸椎 foam roller 专项 | 4 周 W2 腰背筋膜松解（库内真实 foam roller 条目）；居家无器械可用网球替代 |
 
-**说明**：ex-lib 库内**已有**foam roller / 筋膜球系列专项条目（v3.22.17 入库 ex-5202~ex-5213 共 12 条覆盖各部位），但腰部 foam roller 专项**确实暂无**（库内 back 系列为 5207 upper back / 5208 latissimus / 5212 thoracic spine，无 lumbar 专项）。本章腰部 SMR 类因此仍引用 [ex:1352] lower back curl（腰背卷曲）作为替代，介质可用网球或长曲棍球置于腰方肌沿脊柱两侧滚动；如需 upper-back / thoracic / lat 等邻近部位 foam roller 专项可分别引 [ex:5207] / [ex:5212] / [ex:5208]（库内合法 id）。库中也暂无"麦肯基伸展 / bird-dog 鸟狗式"专项条目，故这两项在 4 周 / 8 周方案中以文字描述保留，与 ex-lib 库内合法动作并存。
+**说明**：ex-lib 库内**已有**foam roller / 筋膜球系列专项条目（v3.22.17 入库 ex-5202~ex-5213 共 12 条覆盖各部位），但腰部 foam roller 专项**确实暂无**（库内 back 系列为 5207 upper back / 5208 latissimus / 5212 thoracic spine，无 lumbar 专项）。本章腰部 SMR 类因此改引 **[ex:5212] foam roller thoracic spine（胸椎 foam roller 真实条目）**作为最近邻替代——介质可用 foam roller 沿胸椎/上背滚动，再用网球/长曲棍球置于腰方肌沿脊柱两侧补足 lumbar 区域；如需 upper-back / lat 等邻近部位 foam roller 专项可分别引 [ex:5207] / [ex:5208]（库内合法 id）。库中也暂无"麦肯基伸展 / bird-dog 鸟狗式"专项条目，故这两项在 4 周 / 8 周方案中以文字描述保留，与 ex-lib 库内合法动作并存。**v3.22.62 勘误**：v3.22.18 修订时将 [ex:1352] lower back curl（实为腰背卷曲核心动作，非 SMR）错标为"SMR 替代"，本次更正——SMR 必须用库内 foam roller 真实条目（ex-5202~ex-5213），绝不混用核心动作条目替代。
 ---
 
 **[← 返回 第一章 总览 · 6 大损伤 × 时间线 × 对应章节](./ch01-introduction.md)** ｜ **[下一章 → 第七章 跟腱康复 × 反复起跳](./ch07-achilles.md)**
