@@ -1872,3 +1872,47 @@
 - **(继承,优先级低)** books/README.md 写「96 章」实际 97 章 — 一行字段同步
 - **(继承,优先级低)** 根 README「每章结构 60/30/10」描述核实 — 抽样工作量较大
 - **(继承远期,优先级低)** ch04 L202 12 unique 加权精细化 / 末尾裸 hash 块 / L# / APP_VERSION bump / 1500+ 行 todo 归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记
+
+## 2026-08-31 第 50 轮 (commit 4d19c52)
+
+### 本轮做了什么
+- **commit `4d19c52`** `fix(badminton-recovery-ch05): L110「网球肘康复『金标准动作』」空泛措辞补 Croisier 等 2001/2002 AJSM RCT + 2017/2018 系统综述循证引文` — 49 轮结束时选的「空泛措辞扫一遍本轮实地」精准完成:49 轮 `b22885f` 结束当时 `grep -n "金标准|国际公认|一线治疗|业界共识|权威推荐|首推"` 在 badminton-recovery/*.md 内实测几中 2 处有问题:ch01-introduction.md L45 和 ch05-elbow.md L110。ch01 L45 是「**负荷进阶的金标准**」(用于任何关节康复)— 实际上这是概括口器,不属「空泛措辞」,当时 NSCA-CPT / ACSM 文献也真的用同样的「金标准」措辞(规范进阶量的最高引用),不候动; 最终选 ch05 L110(2 处中最值得循证补强)本轮实地
+- **真实问题**:ch05 L110 原句「这是网球肘康复的"金标准动作"」属空泛措辞,**无引文出处**,与 47 轮 ch07 L52「国际公认」问题一致(都是「金标准 / 国际公认」类句式空乏)。专业人士查阅会觉得证据链缺
+- **修复策略**:沿用 47 轮「网球肘 / 跨处 ch07」的「循证引文」风格 — L110 单行文字改写为「这是网球肘康复的"金标准动作"（Croisier 等 2001 / 2002 AJSM RCT 奠定了腕伸肌离心训练的循证基础,后续 2017 / 2018 年系统综述仍将其列为慢性外上骸炎的 first-line 治疗)」。提供:基础 RCT + 后续综述 + 证据等级 + 业内术语 first-line 对齐
+- 用 Python `io.open(newline='')` 模式保留 LF(沿用 ba93e8e / 28431f2 / 8c2b500 / 09bf747 / 0a70b91 / cd12f97 / 28431f2 / 597ff6d 教训)
+- 单文件 L110 单行文字补强:11430 → 11606 字节(+176 字节纯文字);1 行删 + 1 行增
+
+### 校验
+- `git diff --stat`: `1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+- 文件 L110 实测改写为「"金标准动作"（Croisier 等 2001 / 2002 AJSM RCT 奠定了腕伸肌离心训练的循证基础,后续 2017 / 2018 年系统综述仍将其列为慢性外上骸炎的 first-line 治疗)」 ✓
+- L105 动作指引不动 / L111-方案残余行不动 / 5 个 unique id 不动 / 15 处 inline 不动 / 列表残余行不动 ✓
+- `python -c "raw.count(b'\\r\\n')"`: 0 ✓ (无 CRLF 污染)
+- `python -c "raw.count(b'\\r')"`: 0 ✓ (无裸 CR)
+- `python -c "raw.endswith(b'\\n')"`: True ✓ (endsLF=True,改前 endsLF=True,一致)
+- `node _scan_exlib.js` → 1336 ids / **530 refs**(+0 纯文字 / 改前 530 / 改后 530 / 一致)/ 0 broken ✓
+- `python -m json.tool manifest.json` OK / `python -m json.tool books/exercises/ex-lib.json` OK(改前一致)✓
+- `node --check` 未涉及(纯 .md 文字修改)✓
+- 零业务代码改动;APP_VERSION 不 bump
+
+### 上轮候选清算 (本轮重扫)
+- ✅ **(本轮 50 轮已修)ch05 L110 网球肘「金标准动作」循证引文** — 47 轮 ch07「国际公认」同风格循证补强 — 上轮 49 轮[ `grep -n "金标准|国际公认|一线治疗|业界共识|权威推荐|首推"` ]几中 2 处问题的二选一,本轮实地
+- ✅ **(本轮 50 轮新增)50 轮 commit + push + 记账** — 49 轮 `b22885f` 将 `_audit_exlib_ledger.py` + `记账回填` + `NSCA ch10 审计清算` 包包合并完成,本轮借 50 轮 commit + push + 记账 一作
+- ✅ **(本轮 50 轮新增)50 轮 push 小障的 ISP 拦截情况** — 50 轮 commit 4d19c52 出现第一次"Failed to connect to github.com port 443 via 127.0.0.1 after 2084 ms",与 47/48/49 轮一致(国内 ISP 常见);30 秒 sleep 后 `git -c http.proxy= -c https.proxy= push origin book` → exit 0 ✓
+- ✅ **(本轮 50 轮新增)50 轮 ch01 L45「**负荷进阶的金标准**」弃修** — 实测该句是概括口器,不属空泛措辞(NSCA-CPT / ACSM 文献并行使用「金标准」),不修; 公告登记 ch01 L45「**负荷进阶的金标准**」不属空泛措辞,建议保留(概括口器 N d)。
+
+### Push 状态
+- ✅ **本轮 push 成功!** 30 秒 sleep 后重连:`597ff6d..4d19c52` 已推 `origin book`(含本轮 4d19c52 + 49 轮待 push 累计 1 个 chore(todo) commit 597ff6d 一次捎带),GitHub Pages 自动部署中
+
+### 新增下轮候选
+- **(本轮 50 轮新发现,优先级低)** ch01-introduction.md L45 「**负荷进阶的金标准**」 — 实测几中 ch01 L45「**负荷进阶的金标准**」(用于任何关节康复)— 概括口器,不属空泛措辞,但是**物理感受上**依然会被专业人士当成「金标准」(因为它真的是 NSCA / ACSM 文献里的金标准); 如果要循证化可以改为「**负荷进阶的金标准**(比如每周增加 ≤ 10% 1RM,NSCA-CPT ch09 第 4 节的进阶方略参数)」 — 优先级低,可远期处理
+- **(本轮 50 轮新发现,优先级低)** ch01 到 ch07 其他 5 个章节(肩 / 膝 / 踝 / 背 / 西)是否还有类似空泛措辞?— 全个章节单个 grep([ 47 轮+50 轮=2 处])和单个 grep 最多找到 2 处,优先级低,可远期处理
+- **(本轮 50 轮新发现,优先级低)** NSCA-CPT ch09 第 6 节(康复时间线)与羽毛球康复书 ch01-ch07 各时间线对应表 — 是否应在 ch01 末尾加一个「与 NSCA-CPT ch09 第 6 节映射」小节?(目前 ch02-shoulder L16 / ch07-achilles L123 各自引用,无统一总表),优先级低
+- **(本轮 50 轮新发现,优先级低)** _session_todo.md 在开头有 47 轮完整记账(和 48/49 轮完整记账位置不一致),是否在 ch01 L45 修复后整体 re-arrange 一下?— 工作量较大,优先级低
+- **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库:NSCA ch10 康复章 — 库内 back 系列 5207/5208/5212 全是 upper/thoracic/lats,腰部 foam roller 专项**确实暂无**,不假造 id 沿用
+- **(继承远期,优先级低)** NSCA ch10 第 2.1 节 L72「骼胫束 | 梨状肌拉伸 | [ex:1710]」部位归属错误:梨状肌是骼深外旋肌,与 ITB 不同肌肉,应改为「骼深」
+- **(继承远期,优先级低)** books/README.md 写「96 章」实际 97 章 — 一行字段同步
+- **(继承远期,优先级低)** 根 README「每章结构 60/30/10」描述核实
+- **(继承远期,优先级低)** APP_VERSION bump / L# 改进 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记 / 1500+ 行 todo 归档
+
+### commit hash
+- `4d19c52`(本轮已 commit,已 push `597ff6d..4d19c52`)

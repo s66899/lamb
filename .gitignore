@@ -24,6 +24,7 @@ verify_regex.py
 verify_regex.js
 publish_check.txt
 cloudflared.exe
+_append_todo_round50.py
 
 # Mavis agent memory (本地, 不入仓)
 memory/
