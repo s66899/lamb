@@ -1839,3 +1839,36 @@
 - **(继承,优先级低)** books/README.md 写「96 章」实际 97 章 — 一行字段同步
 - **(继承,优先级低)** 根 README「每章结构 60/30/10」描述核实 — 抽样工作量较大
 - **(继承远期,优先级低)** ch04 L202 12 unique 加权精细化 / 末尾裸 hash 块 / L# / APP_VERSION bump / 1500+ 行 todo 归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记
+
+## 2026-08-31 第 49 轮 (commit b22885f)
+
+### 本轮做了什么
+- **commit `b22885f`** `fix(ledger): badminton-recovery ch05 14→15 + nsca ch10 31→33 inline 声明对齐实测 + 新增 _audit_exlib_ledger.py 扫所有 105 个 book 章节声明/实际差集` — 沿用上轮候选「扫所有 book md 找 declared vs inline 差集」优先级中那个,本轮合并修复 + 工具留档
+- **真实问题**:扫表脚本发现 2 处声明数字与实测 drift(均 pure 文案层):
+  - `books/badminton-recovery/ch05-elbow.md` L223 声明「14 处 inline」实测 15 处(说明段 L233 同句连提 2 次 [ex:5210] 原声明只数 1 次)→ 同步把分布「说明段 1 处」改为「说明段 2 处（[ex:5210] 在说明句中连提 2 次）」, 总和 6+5+2+2=15 ✓
+  - `books/nsca-cpt/ch10-recovery.md` L303 声明「31 处 inline」实测 33 处(48 轮 34fc512 补 [ex:1710] 总清单 1 行 + 补 v3.22.62 勘误说明 1 处共 +2)→ unique 25 保持不变 ✓
+- **修复策略**:纯文案数字对齐, 零 ex-lib id 改动 / 零业务代码改动 / 零 APP_VERSION bump(沿用 48 轮 34fc512 / 47 轮 eb2a66f「纯文案不 bump」惯例);同步留档一次性脚本 `_audit_exlib_ledger.py` 127 行(沿用 38 轮 19eb83b / 41 轮 56ceb6b 留档风格)供未来 1-2 轮 / 上线前重跑
+
+### 校验
+- `python _audit_exlib_ledger.py`: 0 chapter drift, 1 informational list-only (badminton/ch12 用裸 4 位数字非 [ex:NNNN] 清单段,自动排除) ✓
+- `grep -o "\[ex:[0-9]\{4\}\]" books/badminton-recovery/ch05-elbow.md | wc -l`: 15 ✓ 与声明一致
+- `grep -o "\[ex:[0-9]\{4\}\]" books/nsca-cpt/ch10-recovery.md | wc -l`: 33 ✓ 与声明一致
+- `grep -o "\[ex:[0-9]\{4\}\]" books/nsca-cpt/ch10-recovery.md | sort -u | wc -l`: 25 ✓ 与声明一致
+- `git diff --stat`: `2 files changed, 2 insertions(+), 2 deletions(-)` + 1 new script 127 行 ✓
+- `node --check` 未涉及(纯 .md 文字修改)✓
+- `python -m json.tool manifest.json / books/exercises/ex-lib.json`: 改前一致 ✓
+- 零 ex-lib id 改动 (1336/524/0 不变) / 零业务代码改动 / 零 APP_VERSION bump / 零 manifest 改动
+- LF 保留(沿用 HEAD); 无 CRLF 引入; 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(48 轮,优先级中)** 扫所有 book md 找 declared vs inline 差集 — 本轮合并修复 + 留档脚本, 完成两处真实漂移修复; 候选作废
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:沿用 45-48 轮 ISP 拦截状态(`Failed to connect to github.com port 443 via 127.0.0.1 after 2026 ms`,连续试推 2 次均失败);本轮累计 push 待 = 6 commits(597ff6d todo + 34fc512 nsca ch10 + 本轮 b22885f + 三个 46-48 轮未推送);等 GitHub 443 恢复后单次 `git push origin book` 即可恢复部署
+
+### 新增下轮候选
+- **(继承 48 轮,优先级中)** NSCA ch10 2.1 节表 L72「髂胫束 | 梨状肌拉伸 | [ex:1710]」部位归属错误:梨状肌是髋深层外旋肌,与 ITB 不同肌肉,应改为「髋深层」;48 轮总清单新行已用「髋深层」对齐,但 2.1 节表本身未改 — 优先级中(同章节内字面错位)
+- **(本轮发现,优先级低)** `_audit_exlib_ledger.py` 扫到 1 个 list-only 章节(badminton/ch12)声明 43 unique / 66 处列表项,但实际 [ex:NNNN] inline 仅 1 处 — 该声明的「unique」实际指「清单段内的 4 位 id 总数」(含 SMR 12 条邻近条目复用),与脚本的「[ex:NNNN] unique」是不同口径,需人工逐行核对清单表与 4 位 id 总数是否一致(40+ 个 id 是否全部在库内合法 / 是否有漏写)
+- **(继承,优先级低)** books/README.md 写「96 章」实际 97 章 — 一行字段同步
+- **(继承,优先级低)** 根 README「每章结构 60/30/10」描述核实 — 抽样工作量较大
+- **(继承远期,优先级低)** ch04 L202 12 unique 加权精细化 / 末尾裸 hash 块 / L# / APP_VERSION bump / 1500+ 行 todo 归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记
