@@ -192,3 +192,8 @@
 | [ex:5212] | foam roller thoracic spine / 胸椎 foam roller 专项（说明段顺带提及） | 邻近部位 SMR 可引；居家无器械可用网球替代 |
 
 **说明**：ex-lib 库内**已有**foam roller / 筋膜球系列专项条目（v3.22.17 入库 ex-5202~ex-5213 共 12 条覆盖各部位），但腰部 foam roller 专项**确实暂无**（库内 back 系列为 5207 upper back / 5208 latissimus / 5212 thoracic spine，无 lumbar 专项）。本章腰部 SMR 类因此仍引用 [ex:1352] lower back curl（腰背卷曲）作为替代，介质可用网球或长曲棍球置于腰方肌沿脊柱两侧滚动；如需 upper-back / thoracic / lat 等邻近部位 foam roller 专项可分别引 [ex:5207] / [ex:5212] / [ex:5208]（库内合法 id）。库中也暂无"麦肯基伸展 / bird-dog 鸟狗式"专项条目，故这两项在 4 周 / 8 周方案中以文字描述保留，与 ex-lib 库内合法动作并存。
+---
+
+**[← 返回 第一章 总览 · 6 大损伤 × 时间线 × 对应章节](./ch01-introduction.md)** ｜ **[下一章 → 第七章 跟腱康复 × 反复起跳](./ch07-achilles.md)**
+
+> 本章 4 / 8 / 12 周时间线执行完后，按 [第八章 行动清单与互引表](./ch08-action-plan.md) 跑一遍「回归球场的三道关」自检，通过即回到球场。

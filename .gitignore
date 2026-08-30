@@ -36,3 +36,8 @@ memory/
 
 # Local docs
 孙元洋-简历.pdf
+_add_chapter_nav.py
+_fix_ch04_nav.py
+_normalize_lf.py
+_count_all.py
+_count_words.py
