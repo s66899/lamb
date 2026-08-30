@@ -1684,7 +1684,7 @@
 - ⏭️ **(继承远期,优先级低)** ch04 L202 / 末尾裸 hash / ch06 ch07 措辞 / L# / APP_VERSION / 1500+ 行 todo 归档 / 其他书籍 orphan / ch08 palmistry 切层登记
 
 ### Push 状态
-- 待 push(即将 git push origin book,GitHub Pages 自动部署;若仍被 ISP 拦截则累计到下次可推送时)
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 仍被本地 ISP 拦截 GitHub 443 (`Failed to connect to github.com port 443 via 127.0.0.1 after 2084 ms`),本地 commit 落 `book` 分支,等网络恢复后单次 push 即可;本次累计 2 commits 待 push(c04693e 主改 / c77f032 回填 hash);沿用 43 轮 ef29150 「累计 push 成功」先例。
 
 ### 新增下轮候选
 - **(本轮新发现,优先级低)** 根 README「每章结构」段在补 4 本新书目录后,60/30/10 描述隐式仅适用 5 本老书,但段落没说「以下 5 本主课书」;非阻塞,但若追求严谨可在该段前加一句限定(沿用 43 轮登记的「根 README「每章 60/30/10」核实」候选)
