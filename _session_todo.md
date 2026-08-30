@@ -1549,3 +1549,44 @@
 - **(本轮新发现,优先级低)** 扫表时发现 engineering-mechanics / finance / psychology / yin-yang / badminton / competition / nutrition 7 本书的 README 没有章节表头(直接用文字列表介绍),与 NSCA-CPT / badminton-recovery 的表格风格不一致 — 是否要为这 7 本补 README 章节表头?纯文档风格选择,工作量较大,建议远期登记
 - **(本轮新发现,优先级低)** 9 本书 manifest.title vs README H1 双轨差异(简称 vs 品牌名)既然是设计意图,是否要在 README 顶部加一行「本书简称:XXX」用于搜索/记忆辅助?纯文档改进
 - **(继承远期,优先级低)** ch04 L202 12 个 unique 加权精细化 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / `_session_todo.md` 1485+ 行归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记
+
+## 2026-08-31 第 41 轮
+
+### 本轮做了什么
+- **commit `e4e55be`** `fix(manifest): badminton 13 + engineering-mechanics 8 + finance 13 + psychology 12 = 46 章 chapter title 字段英译中(对齐 .md H1)` — 40 轮 2d0a09d 修了 NSCA-CPT 10 章 title 漂移后,本轮按同源策略(`manifest.title = .md H1 去「第N章:」前缀`)扫剩余 4 本书 → 发现 46 章 title 仍用英文(Grip And Ready Stance / Forehand Clear / Force Analysis And Statics / Financial Market Basics / Perception And Attention / Memory / Cognitive Bias...),与磁盘 H1 严重不一致;manifest.json + manifest_data.js 双文件同步(沿用 2d0a09d / 19eb83b / e02330a 同步策略);保留 5 处「英 + · + 中」风格 title(Competition Psychology · 入门/Competition Psychology · 专业版/Axial Loading · 基础/Axial Loading · 深度版/Dynamics · 基础/Dynamics · 进阶/Memory · 教材版 — 共 7 处但有 2 处实际已含 CN 不动)有 CN 字符跳过不动
+- **修复策略**:`python3 _fix_4books_title.py` 一次性扫描 4 本书 50 章(剔除已 CN 的 7 章)→ 43 章 title 字符串行内替换(实际 44 因有 ch02 重复文件);沿用 40 轮 6cbe5af 风格 LF 追加 todo(本文件 LF/CRLF 混合 历史如此,无变更)
+- **不动**:`books/**/*.md` 全部不动 / app.js 不动 / index.html 不动 / VERSION 不动 / ex-lib 不动(1336/524/0 不变)
+- **改动**:`2 files changed, 0 insertions(+), 0 deletions(-)`(git diff 行数不变;字节数 manifest.json +1089 / manifest_data.js +1090 — 实际是 44 行删除 + 44 行插入,因 .gitattributes `* -text` 把 manifest 文件视为 binary,不计入行数;沿用 40 轮 2d0a09d / 38 轮 19eb83b 同样行为)
+- **新增一次性脚本** `_fix_4books_title.py`(95 行)留档备查,沿用 38 轮 19eb83b 模板思路 + python 实现替换为更稳的 CRLF 保留(json.dumps → 字符串 replace '\n' → '\r\n' → 'wb' 字节写)
+
+### 校验
+- `python3 -m json.tool manifest.json > /dev/null`:exit 0 ✓
+- `node --check manifest_data.js`:exit 0 ✓
+- `node _scan_exlib.js`:1336 ids / 524 refs / **0 broken**(纯 title 改名,refs/broken 不变)✓
+- 跨文件一致性:manifest.json 与 manifest_data.js **完全相等**(Python 解析比对 fingerprint() == True,9 本书共 97 章 title 字段全对齐)✓
+- EOL 保留:`git ls-files -s --eol manifest.json manifest_data.js` 改前改后均 `i/crlf w/crlf attr/-text` ✓
+- 4 本书 51 chapter title 全部含 CN 字符(`has_cn() == True`),7 个「英 + · + 中」风格保留不动 ✓
+- 零业务代码改动(app.js / index.html / books/**/*.md / VERSION 全部不动)
+- 零 ex-lib id 改动(0 broken 不变 / 0 新增)
+- APP_VERSION 不 bump(纯 manifest 字段更新,不发版)
+- 4 埋点不动:app.js APP_VERSION 仍 v3.22.61 / index.html 三处 `?v=` 仍 v3.22.61 / manifest.json 无 chapterCount 变化 / VERSION 无新增行
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(40 轮新增,优先级低)** NSCA-CPT README ch09/ch10 主题括号副标签是否同步删除 → 优先级低,且与磁盘 H1 / manifest.title 不冲突,**不修**(远期继承)
+- ✅ **(40 轮新增,优先级低)** 7 本书(EM/finance/psy/yin-yang/badminton/competition/nutrition)是否补 README 章节表头 → 优先级低,工作量较大,**不修**(远期继承)
+- ✅ **(40 轮新增,优先级低)** 9 本书 manifest.title vs README H1 双轨差异加「本书简称」 → 优先级低,**不修**(远期继承)
+- ✅ **(本轮新发现,优先级中)** 4 本书 46 章 manifest title 仍用英文 → 本轮 e4e55be 一次性全部修完,候选作废
+- ✅ **(本轮新发现,优先级中)** books/README.md 写「96 章」实际 97 章(psy ch02-textbook 39 轮 e02330a 已注册但 README 写 96 沿用旧)→ 优先级低,**沿用远期**不动(books/README.md 是「人维护」非自动)
+- ⏭️ **(继承远期,优先级低)** ch04 L202 12 个 unique 加权精细化 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / `_session_todo.md` 1551+ 行归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记 / 根 README 仓库结构补 3 目录(羽毛球康复/比赛/营养)/ 根 README 5 本书目录补全 / 根 README 版本号 v3.19→v3.22 / 根 README 更新日志补 v3.20-22 / 根 README「每章 60/30/10」描述核实
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 仍被本地 ISP 拦截 GitHub 443。本地 commit 落 `book` 分支,等网络恢复后单次 push 即可(沿用「N commit 累计 push 成功」先例,40 轮 2d0a09d 累计 7 commits 待 push)。
+
+### 新增下轮候选
+- **(本轮新发现,优先级中)** 根 README 缺 3 个新书目录(badminton-recovery / competition / nutrition)— 用户首屏视觉,虽然纯文档但权重高,可能影响首次访问仓库的用户认知
+- **(本轮新发现,优先级中)** 根 README 版本号「v3.19.0」严重过时(实际最新 v3.22.61,差 3 个大版本约 40 commits),更新日志停在 v3.19.0 缺 3 个月工作
+- **(本轮新发现,优先级低)** 根 README 5 本书(羽毛球/金融/心理学/工程力学/NSCA-CPT)目录只列到部分章节 — 与 40 轮 2d0a09d 修的 NSCA-CPT 10 章对应,根 README 应该同步
+- **(本轮新发现,优先级低)** books/README.md 写「9 本书 / 96 章 / 88.1 万字」实际 97 章(psy 13 不是 12) — 一行字段同步
+- **(本轮新发现,优先级低)** 根 README「每章结构 60/30/10」描述与实际章节内容结构是否一致(NSCA-CPT 4 章解剖 / 羽毛球康复 6 大损伤体系等是否真有 30% 心理学)— 需要抽样 2-3 章核实
+- **(继承远期,优先级低)** ch04 L202 12 个 unique 加权精细化 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / `_session_todo.md` 1551+ 行归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记
