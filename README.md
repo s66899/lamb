@@ -134,10 +134,13 @@
 ```
 books/
 ├── badminton/              # 🏸 羽毛球
+├── badminton-recovery/     # 🩹 羽毛球康复指南
 ├── finance/                # 📈 金融
 ├── psychology/             # 🧠 心理学
 ├── engineering-mechanics/  # ⚙️ 工程力学
 ├── nsca-cpt/               # 💪 NSCA-CPT
+├── competition/            # 🎯 比赛策略
+├── nutrition/              # 🥗 营养恢复
 └── yin-yang/               # ☯️ 阴阳·手面相与八卦
 ```
 

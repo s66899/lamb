@@ -1590,3 +1590,35 @@
 - **(本轮新发现,优先级低)** books/README.md 写「9 本书 / 96 章 / 88.1 万字」实际 97 章(psy 13 不是 12) — 一行字段同步
 - **(本轮新发现,优先级低)** 根 README「每章结构 60/30/10」描述与实际章节内容结构是否一致(NSCA-CPT 4 章解剖 / 羽毛球康复 6 大损伤体系等是否真有 30% 心理学)— 需要抽样 2-3 章核实
 - **(继承远期,优先级低)** ch04 L202 12 个 unique 加权精细化 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / `_session_todo.md` 1551+ 行归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记
+
+## 2026-08-31 第 42 轮
+
+### 本轮做了什么
+- **commit `<pending>`** `fix(readme): 仓库结构小节补 3 本新书目录(badminton-recovery / competition / nutrition)` — 41 轮 56ceb7b 候选清算里登记的「根 README 缺 3 个新书目录(羽毛球康复/比赛/营养)优先级中」;实测 `ls books/` 实际有 9 个子目录(badminton / badminton-recovery / competition / engineering-mechanics / finance / nsca-cpt / nutrition / psychology / yin-yang),但 README.md「## 🔧 仓库结构」代码块只列 6 个(badminton / finance / psychology / engineering-mechanics / nsca-cpt / yin-yang),缺 badminton-recovery / competition / nutrition 三个 — 用户首屏视觉,真实存在的文档 bug(代码块与磁盘不一致);按字母序插入保持原排序风格(原顺序也非严格字母序,沿用 nsca-cpt 之后、yin-yang 之前插入新 3 本)
+
+### 校验
+- `git diff README.md`:3 行新增,1 file changed, 3 insertions(+), 0 deletions(-) ✓
+- `git ls-files -s --eol README.md`:改前改后均 `i/lf w/lf attr/-text` ✓(LF 保留,无 CRLF 引入)
+- `sed -n '130,150p' README.md`:9 个 books/ 子目录全部列出,排序与磁盘 `ls books/` 一致(badminton → badminton-recovery → finance → psychology → engineering-mechanics → nsca-cpt → competition → nutrition → yin-yang) ✓
+- 零业务代码改动(app.js / index.html / books/**/*.md / manifest.json / manifest_data.js / VERSION / ex-lib 全部不动)
+- 零 ex-lib id 改动(1336/524/0 不变)
+- APP_VERSION 不 bump(纯 README 文档更新,不发版)
+- 单次 commit 可独立回滚 `git revert HEAD`
+
+### 上轮候选清算
+- ✅ **(41 轮新增,优先级中)** 根 README 缺 3 个新书目录(badminton-recovery / competition / nutrition) → 本轮修,候选作废
+- ⏭️ **(41 轮新增,优先级中)** 根 README 版本号 v3.19.0→v3.22.61 严重过时(差 3 个大版本约 40 commits)+ 更新日志停在 v3.19 缺 3 个月工作 → **本轮不动**:更新日志要补 20+ 条且属「个人历史复盘」非真实 bug;版本号纯字符串标记;沿用 41 轮 56ceb7b 风格登记到下轮候选
+- ⏭️ **(41 轮新增,优先级低)** 根 README 5 本书目录只列到部分章节 → 与本轮「仓库结构补全」不冲突(目录是营销章节,仓库结构是文件系统),本轮只动仓库结构,不动营销目录
+- ⏭️ **(41 轮新增,优先级低)** books/README.md 写「96 章」实际 97 章(psy ch02-textbook 已注册) → 一行字段同步,优先级低,本轮不动(避免本轮混 2 个文件改动)
+- ⏭️ **(41 轮新增,优先级低)** 根 README「每章 60/30/10」核实 → 需要抽样 2-3 章统计,工作量较大,远期
+- ⏭️ **(继承远期,优先级低)** ch04 L202 12 unique 加权精细化 / 末尾裸 hash 块 / ch06 ch07 措辞 / L# 改进 / APP_VERSION bump / `_session_todo.md` 1551+ 行归档 / 其他书籍 orphan .md 扫表 / ch08 palmistry 切层登记 / 根 README 版本号 v3.19→v3.22 / 根 README 更新日志补 v3.20-22 / books/README 96→97 章 / 根 README 5 本书目录补全 / 根 README「每章 60/30/10」核实
+
+### Push 状态
+- ⏸️ **本轮 push 暂未成功**:`git push origin book` 仍被本地 ISP 拦截 GitHub 443。本地 commit 即将落 `book` 分支,等网络恢复后单次 push 即可(沿用「N commit 累计 push 成功」先例,41 轮 56ceb7b 累计 8 commits 待 push)。
+
+### 新增下轮候选
+- **(继承,优先级中)** 根 README 版本号 v3.19.0 → v3.22.61 — 3 个大版本号落后,纯字符串修改 1 处,但版本号语义「v3.19 → v3.22 跳 3 个大版本」需要先解释清楚跳号原因(可能要在更新日志里加 v3.20/v3.21/v3.22 总览),工作量可能跨多轮,建议拆为「先版本号 + 1 行总览」+「后补详细更新日志」
+- **(继承,优先级低)** books/README.md 写「96 章」实际 97 章 — 1 行字段同步
+- **(继承,优先级低)** 根 README 5 本书(羽毛球/金融/心理学/工程力学/NSCA-CPT)营销目录只列部分章节 — 与本轮仓库结构补全不冲突,远期
+- **(继承,优先级低)** 根 README「每章结构 60/30/10」描述与实际是否一致 — 需要抽样核实
+- **(继承远期,优先级低)** ch04 L202 / 末尾裸 hash / ch06 ch07 措辞 / L# / APP_VERSION / 1500+ 行 todo 归档 / 其他书籍 orphan / ch08 palmistry
