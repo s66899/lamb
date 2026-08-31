@@ -2509,8 +2509,54 @@
 **Push 状态**：❌ github.com:443 当前不可达（curl timeout 10s / git push 2090ms 后失败），commit `c1422f0` 已落地本地待 push。网络恢复后单跑 `git push origin book` 即可。
 
 **下轮候选**：
-1. **push 阻塞恢复** — 网络通后跑 `git push origin book`，本轮 commit c1422f0 推送 + GitHub Pages 部署
-2. **ch05「段内 3 处 inline 引用」自检** — ch05 头部声明"说明段 3 处 inline"措辞模糊，措辞可学 ch02 风格改成"正文 N + 本段 N = 全文 N"两段式（无数字偏差，仅表述清晰化，可选）
-3. **NSCA-CPT ch10 SMR 条目扩写 / 入库候选** — ex-5202~ex-5213 已入库 12 条，但 NSCA ch10 实际只引用少数几条；可考虑补全引用覆盖率
-4. **羽毛球康复书 ch01 §五「读第八章的"回归测试"清单」措辞** — ch08 §四 标题现在是"回归球场的三道关"，可对齐文案（与 ch08 内部命名一致性）
-5. **VERSION 文件追加本轮 v3.22.62 条目** — 沿用历史惯例，manifest / changelog 同步本轮数字声明修复
+
+1. **(本轮候选第 1,继承 66 轮)** push 阻塞恢复 — `c1422f0..e9afc00` 共 4 commit (含 v3.22.62 release b2b6ab2) 待 push；网络通后 `git push origin book` 一次推 4 commit + GitHub Pages 部署
+2. **(本轮新发现)** NSCA ch10 §七末段 L301 「v3.22.62 勘误说明」+ L303「截至 v3.22.62」措辞脱节 — v3.22.62 已 b2b6ab2 发版后,这两段从「描写本轮」变为「历史回顾」,叙事读起来怪;非必需 cleanup,跨轮保留
+3. **(继承远期)** books/README.md 96 → 97 章字段同步 — 远期继承
+4. **(继承远期)** 根 README「每章 60/30/10」核实 — 远期继承
+5. **(继承远期)** `_audit_exlib_ledger.py` 正则扩展 (消 ch05 误报) — 跨轮保留
+6. **(继承远期)** badminton-recovery ch01 L214 / ch02-ch07 末 → ch08 §四 锚点链接 — 跨轮保留(中文锚点渲染待验证)
+
+### commit hash
+
+- `c1422f0` (65 轮,本地未 push) →
+- `b2b6ab2` (本轮,v3.22.62 release) →
+- `423a39a` (本轮,todo 回填 + gitignore) →
+- `e9afc00` (本轮,423a39a 漏补 11 个旧文件)
+
+## 第 66 轮 (commits b2b6ab2+423a39a+e9afc00) — 2026-08-31
+
+### 本轮做了什么
+
+- **v3.22.62 真正发版** — 4 埋点 v3.22.61 → v3.22.62 + VERSION 头注释 + 顶部 changelog 摘要 (b2b6ab2,3 files changed)
+  - **触发原因(真实 bug)**: NSCA ch10 §七末段 L301+L303 提到 'v3.22.62 勘误说明' + '截至 v3.22.62 ... 33 inline' (b22885f 在 2026-08-31 03:09 已写文件里), 但 VERSION 头注释 + git log 全无 v3.22.62 — 形成「ahead-of-git-log 悬空文档」。检查发现当日 02:47~03:09 三 commit (34fc512 + af48c46 + b22885f) 真实做了 NSCA ch10 §七漏列 [ex:1710] + L303 31→33 inline 数字对齐 + _audit_exlib_ledger.py 入库,只是一直没 bump 4 埋点 + 补 VERSION changelog 摘要
+  - **决策**: 用 _bump_version.js 单点工具 --set=v3.22.62 --apply 一步 bump (沿用 v3.22.41 自举工具),连带把 VERSION 头注释 'v3.22.61 → v3.22.62' + '27 条 commit 摘要 → 28' + 顶部追加 v3.22.62 changelog 描述当日凌晨三 commit 真实做的事
+  - **结果**: 文件里 v3.22.62 两个引用从 ahead-of-git-log 悬空 → 真发版叙事自圆其说;4 埋点全 v3.22.62 一致
+- **ch06-back §ex-lib 清单数字声明回填记账(上轮 c1422f0 漏的)** (423a39a,2 files changed)
+  - _session_todo.md 追加 '第 65 轮 (commit c1422f0)' 段: ch06 §清单头部 44→45 / 23→24 + 4+9+4+4+24=45 已对齐 + 7 章总览 inline/unique 全 ✓
+  - .gitignore 加 _append_todo_round65.py / 66.py
+- **423a39a 漏加的 11 个旧文件回补 .gitignore** (e9afc00,1 file changed)
+  - 423a39a 误删了 60/63/64 三行(只加了 65/66)
+  - 现补回 50~64 全部 11 个 _append_todo_roundN.py 到 .gitignore(共 13 个文件被 ignore)
+
+### 校验
+
+- `node _bump_version.js` dry-run → 4 埋点全 = v3.22.62 ✅
+- `node --check app.js` ✅ / `node --check _bump_version.js` ✅
+- `python -m json.tool manifest.json` ✅ / `python -m json.tool books/exercises/ex-lib.json` ✅
+- `node -e "ch10 inline=33 unique=25"` 与段内声明 33/25/0 一致 ✅
+- `git diff --stat` → 4 埋点 0 行 (字节数不变) + VERSION +533 B + _session_todo.md +21 行
+
+### push 状态
+
+- ❌ github.com:443 仍不可达 (与 65 轮 c1422f0 push 失败同症状, 疑似 ISP 拦截)
+- 本地待 push 4 commits: `c1422f0..e9afc00` 共 (c1422f0, b2b6ab2, 423a39a, e9afc00)
+- 网络通后单跑 `git push origin book` 一次性捎带 4 个 commit + GitHub Pages 自动部署
+
+### commit hash
+
+- `b2b6ab2` (chore release v3.22.62)
+- `423a39a` (chore todo 上轮回填)
+- `e9afc00` (chore 423a39a 漏补回填)
+
+
