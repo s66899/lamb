@@ -9549,10 +9549,6 @@ const MANIFEST_DATA = {
             {
               "title": "思考题",
               "subs": []
-            },
-            {
-              "title": "思考题",
-              "subs": []
             }
           ]
         },
