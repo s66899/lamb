@@ -2401,3 +2401,46 @@
 - `d269f1e`(本轮已 commit,本地未 push)
 
 ---
+
+## 第 63 轮 (commit e912133, 本轮)
+
+### 本轮做了什么
+
+- **ch01 顶部加「下一章 → 第二章 肩关节康复」 + 「📋 直接看第八章 行动清单与互引表」双向出口导航** — `books/badminton-recovery/ch01-introduction.md` L3-L4 (1 file, 2 insertions)
+  - **触发原因**: ch02-ch07 顶部都有「← 返回 ch01 + 下一章 →」双向导航条 (v3.22.57 落地),但 ch01 作为全书总览章,顶部**此前没有任何出口提示**;读者从 ch01 进入后,必须手动滚到底或借助 §七导航表才能跳到具体损伤章节,UX 不连贯
+  - **决策**:不加「← 返回 ch01」(ch01 是首页无法返回自身),只加出口方向:①「下一章 → 第二章 肩关节康复」(与 ch02 顶部「← 返回 ch01 + 下一章 →」对称,显式推荐第二章作为下一站)+ ②「📋 直接看第八章 行动清单」(给"已经知道自己伤哪 / 想直接拿行动方案"的资深球友一个跳过 ch02-ch07 的快通道,与 ch08 §一按部位速查表配套)
+  - **影响**:ch01 236 → 238 行 (+2 行);零 ex-lib id 改动;零业务代码改动;与 ch02-ch07 顶部导航风格 100% 对齐 (同样使用 `｜` 分隔符 + 同款 `[text](./file.md)` 语法)
+
+### 校验
+
+- `head -6 books/badminton-recovery/ch01-introduction.md` → 顶部导航条正确插入 ✅
+- `python -c "raw.count(b'\r\n')"` → 0 (无 CRLF 污染) ✅
+- `python -c "raw.endswith(b'\n')"` → True (文件以单 LF 结尾) ✅
+- `python _scan_exlib_refs.py` → broken refs = 0 ✅ (= 改前一致,纯文字)
+- `python -m json.tool manifest.json` → OK ✅ (= 改前一致,未动)
+- `python -m json.tool books/exercises/ex-lib.json` → OK ✅ (= 改前一致,未动)
+- `python _audit_exlib_ledger.py` → 仅 ch05 已知误报 (跨轮保留,本轮未引入新 drift) ✅
+- `git diff --stat` → 1 file changed, 2 insertions(+) ✅ (零删除)
+
+### push 状态
+
+- ✅ **本轮 push 成功!** `git -c http.proxy= -c https.proxy= push origin book` exit 0;`b17d99a..e912133` 已推 `origin book`,GitHub Pages 自动部署中 (捎带成功:本轮 e912133 + 上轮 d269f1e + 上轮 chore 0455484 共 3 个本地未推 commit 一次性捎带)
+
+### 留给下轮候选
+
+- **(本轮新发现,优先级低)ch01 L3 「三阶段时间线 + 三层信号识别 + 三种返回测试」语义对齐** — 62 轮继承,本轮未触及;严格 grep 「三层信号识别」= §二/§五「信号识别—三个层次」+ ch01 §三本章信号识别 (双层);读者读得懂,优先级低继续留
+- **(本轮新发现,优先级低)ch01 底部加 「🏸 跳到你受伤部位对应的章节开始读」 章节跳转条** — ch01 §六末尾 L194 现有「下一步」叙述无链接,可加一行 `[🏸 跳到对应损伤章节开始康复 →](./ch02-shoulder.md)` 徽章,与本轮顶部导航呼应形成「顶部出口 + 底部出口」双向引导
+- **(本轮新发现,优先级低)ch08 末尾加「🏸 回到球场」收尾徽章 / 读完 checklist** — 56/57 轮候选继承;ch08 末尾现有 emoji 🏸 但无显式 checklist,可补「你已读完本书 / 接下来三件事」3 项
+- **(继承远期,优先级低)** 羽毛球康复书 6 章 H2 结构统一化 — 跨轮保留,工作量大
+- **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库 — 不假造 id,继续留
+- **(继承远期,优先级低)** NSCA-CPT ch10 第七节总清单 ↗ 详见 2.1 节 是否覆盖所有 id — 跨轮保留
+- **(继承远期,优先级低)** APP_VERSION bump — 沿用 v3.22.61
+- **(继承远期,优先级低)** books/README.md 96 → 97 章字段同步 — 远期继承
+- **(继承远期,优先级低)** 根 README「每章 60/30/10」核实 — 远期继承
+- **(继承远期,优先级低)** `_audit_exlib_ledger.py` 正则扩展 (消 ch05 误报) — 跨轮保留
+
+### commit hash
+
+- `e912133` (本轮已 commit,已 push `b17d99a..e912133`)
+
+---
