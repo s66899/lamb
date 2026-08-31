@@ -2560,3 +2560,45 @@
 - `e9afc00` (chore 423a39a 漏补回填)
 
 
+## 第 67 轮 (commit 69c0337) — 2026-08-31
+
+**改动**：`books/badminton/ch12-physical-training.md` L128 H2 编号冲突修复 (3 insertions / 1 deletion, 1 file)
+
+- **触发原因(真实 broken)**：L128「## 二、基础体能训练（原版内容 — 体能概述）」(v3.22.6 之前的 58ad5d9 原版) 与 L323「## 二、羽毛球专项体能训练（ex-lib 动作版）」(v3.22.6 58ad5d9 引入) 两个 H2 编号完全一致（GitHub Pages / GitHub markdown 渲染时 anchor slug 都生成「二基础体能训练原版内容体能概述」/「二羽毛球专项体能训练exlib动作版」类似 slug——GitHub 实际对中文 H2 用 hex 编码做 slug，「## 二、」+ 相同后续文本会导致 anchor 模糊跳第一个）；跨轮保留自 v3.22.6 引入至今，从未清理
+- **决策**：
+  - 把 L128 改成 `## 二·历史、基础体能训练（原版内容 — 体能概述；v3.22.6 起被同号「## 二、羽毛球专项体能训练（ex-lib 动作版）」复用，本节作为历史原版并行保留以便交叉查阅）` ——anchor 明确区分（"二·历史、" vs "二、" 渲染 slug 不同）
+  - L323 H2 前加块引用 `> **章节结构说明**：本节「## 二、羽毛球专项体能训练（ex-lib 动作版）」为 v3.22.6 (58ad5d9) 引入的 ex-lib 动作版次；本章上方 L128「## 二·历史、基础体能训练（原版内容）」为更早原版的「## 二、」同名节，作为历史原版并行保留以便交叉查阅——两个 H2 编号刻意区分，子小节 `### 2.1~2.6`（原版）与 `### 2.1~2.4`（ex-lib 版）位于不同 H2 内互不干扰`
+  - H3 子小节（### 2.1~2.6 原版 / ### 2.1~2.4 ex-lib 版）**不动**——它们分属不同 H2 父节，逻辑上不冲突
+  - 不动原内容（除 H2 标题前缀追加）
+- **校验**：
+  - `python _scan_exlib_refs.py` → 合法 1336 / 唯一引用 140 / broken 0 不变 ✅
+  - `python -m json.tool manifest.json` OK ✅
+  - `python -m json.tool books/exercises/ex-lib.json` OK ✅
+  - `node --check app.js` OK ✅
+  - `grep -nE "^## " books/badminton/ch12-physical-training.md` → 9 个 H2 唯一（除两个"## 二·历史、" 与 "## 二、" 之外），0 编号冲突 ✅
+  - 文件末尾 LF 正常 ✅
+  - `git diff --stat` → 1 file changed, 3 insertions(+), 1 deletion(-) ✅
+
+**Push 状态**：
+- ❌ **本轮 push 再次失败**：`fatal: unable to access 'https://github.com/s66899/lamb.git/': Failed to connect to github.com port 443 via 127.0.0.1 after 2070 ms: Could not connect to server`
+- 与第 65 轮 c1422f0 / 第 66 轮 b2b6ab2+423a39a+e9afc00 同症状（github.com:443 ISP 拦截）
+- 本地待 push 9 commits: `d67b8cc..614e91f` 共 (d67b8cc, 40b1df7, c1422f0, b2b6ab2, 423a39a, e9afc00, acb2291, 69c0337, 614e91f) — 上次成功 push 是 860fb83（第63轮），第 64/65/66/67 轮 push 全部失败
+- 网络通后单跑 `git push origin book` 一次性捎带 9 个 commit + GitHub Pages 自动部署
+
+**下轮候选**：
+
+1. **(本轮候选第 1,继承 67 轮)** push 阻塞恢复 — `d67b8cc..614e91f` 共 9 commit 待 push；网络通后 `git push origin book` 一次推 9 commit + GitHub Pages 部署
+2. **(本轮新发现,优先级低)** NSCA ch09 「与 NSCA-CPT 其他章节 + 羽毛球 ch12 的互引」表 (L478-L492) 完全无 `badminton-recovery/` 反向链接 — 羽毛球康复书 ch01 §五明确承诺"想理解通用原理 → 读 NSCA-CPT ch09"，但 NSCA ch09 互引表只覆盖 ch04-ch08 (NSCA 自身) + 羽毛球 ch12 (基础书)，未反向链接羽毛球康复书；NSCA ch10 末段 L276 已有康复书链接（参考其格式即可）；不引入表，跨轮保留
+3. **(本轮新发现,优先级低)** 所有 9 本书的 README 章节结构表 0 处章节名带相对路径链接 — 跨本书一致性问题（不是羽毛球康复书独有）；9 本书全改才一致；工作量超出"小改进"边界；远期保留
+4. **(本轮新发现,优先级低)** 根 README「每章结构」段 (L175-L179) 60/30/10 三段式总纲与羽毛球康复书「双层结构（前半普通人 + 后半专业人士）」实际风格不一致 — 但羽毛球康复书 README 「使用说明」段 (L11) 明确声明"前半段普通人 + 后半段专业人士"是康复书的专属设计；非一致性问题，远期保留
+5. **(继承远期,优先级低)** ch01 L214 / ch02-ch07 末 → ch08 §四 锚点链接 — 跨轮保留(中文锚点渲染待验证)
+6. **(继承远期,优先级低)** `_audit_exlib_ledger.py` 正则扩展 (消 ch05 误报) — 跨轮保留
+7. **(继承远期,优先级低)** books/README.md 96 → 97 章字段同步 — 已同步到 97，远期保留
+8. **(继承远期,优先级低)** 根 README「每章 60/30/10」核实 — 与 #4 同，远期保留
+9. **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库 — 不假造 id,继续留
+
+### commit hash
+
+- `69c0337` (本轮主 commit, badminton-ch12 H2 编号冲突修复,本地未 push)
+- `614e91f` (本轮 todo 回填 + 5→6→9 commit 计数修正,本地未 push)
+
