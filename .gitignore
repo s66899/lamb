@@ -1,6 +1,11 @@
 # Node / workspace artifacts (never commit)
 node_modules/
 .openclaw/
+__pycache__/
+
+# Python bytecode cache (审计脚本 _audit_exlib_ledger.pyc 偶尔产生)
+*.pyc
+*.pyo
 
 # OS junk
 Thumbs.db
