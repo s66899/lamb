@@ -1378,39 +1378,3 @@ GH → 肝脏产生 IGF-1 → 促进肌肉和骨骼生长
 
 **本章实践工具**：可在「🏠 首页 → 💪 体能训练 → 训练哲学」回顾本章核心思想，并在「🎯 教练板块 → 学员评估」使用评估表打分。
 
----
-
-## 思考题
-
-1. 你的安静心率是多少？通过 4 周的体能训练后，你预期它会下降多少？为什么？
-2. 回忆一下你打羽毛球时的"决胜局"腿软现象，从能量系统和乳酸积累的角度解释其原因。
-3. 假设你要为一名 30 岁的业余男性羽毛球爱好者设计训练方案，他的初始 VO₂max 为 38 ml/kg/min，目标是在 6 个月内提升到 50 ml/kg/min。请列出训练方法和监测指标。
-4. 你最近一次训练后感到疲劳，尝试从本章介绍的四个疲劳层次（中枢/神经接点/外周/心理）分析你的疲劳来源，并提出针对性恢复方案。
-5. 设计一个 6 周的羽毛球体能训练计划，结合"准备期-赛前期-比赛期"的周期化思路，并解释每个阶段的生理学依据。
-
----
-
-**作者**：🐏
-**创作日期**：2026年7月
-**致谢**：本章在写作过程中参考了 NSCA《Essentials of Strength Training and Conditioning》（第 4 版）、《Physiology of Sport and Exercise》（第 5 版）等经典运动生理学教材，以及 Fox、Booth、Bouchard 等运动生理学家的学术文献。特别感谢 National Strength and Conditioning Association 为全球体能训练行业提供的标准化知识体系，以及众多羽毛球教练员分享的实战训练经验。本章的部分训练建议参考了中国羽毛球协会青少年训练大纲中的体能训练内容。
-
-**参考文献**：
-- [1] NSCA. (2022). NSCA Essentials of Personal Training (3rd ed.). Human Kinetics.
-- [2] Baechle, T. R. & Earle, R. W. (2016). Essentials of Strength Training and Conditioning (4th ed.). Human Kinetics. [NSCA-CSCS 经典教材]
-- [3] Wilmore, J. H., Costill, D. L., & Kenney, W. L. (2012). Physiology of Sport and Exercise (5th ed.). Human Kinetics.
-- [4] McArdle, W. D., Katch, F. I., & Katch, V. L. (2015). Essentials of Exercise Physiology (5th ed.). Wolters Kluwer.
-- [5] Bompa, T. O. & Buzzichelli, C. (2019). Periodization: Theory and Methodology of Training (6th ed.). Human Kinetics. [周期化训练理论经典]
-- [6] Fox, E. L., Bowers, R. W., & Foss, M. L. (1993). The Physiological Basis of Physical Education and Athletics (4th ed.). Brown & Benchmark.
-- [7] American College of Sports Medicine. (2021). ACSM's Guidelines for Exercise Testing and Prescription (11th ed.). Wolters Kluwer.
-- [8] Powers, S. K. & Howley, E. T. (2017). Exercise Physiology: Theory and Application to Fitness and Performance (9th ed.). McGraw-Hill.
-- [9] 张英波. (2015). 体能训练学. 高等教育出版社. [国内经典]
-- [10] 羽毛球项目青少年训练大纲. 中国羽毛球协会.
-- [11] Bangsbo, J. (1994). Energy demands in competitive soccer. Journal of Sports Sciences, 12(S1), S5-S12. [间歇运动能量代谢参考]
-- [12] Seiler, S. (2010). What is best practice for training intensity and duration distribution in endurance athletes? International Journal of Sports Physiology and Performance, 5(3), 276-291. [极化训练模型]
-- [13] Faigenbaum, A. D. et al. (2009). Youth strength training. Pediatric Exercise Science, 21(3), 349-359.
-- [14] Halson, S. L. (2014). Monitoring training load to understand fatigue in athletes. Sports Medicine, 44(S2), 139-147. [训练负荷监控]
-- [15] Meeusen, R. et al. (2013). Prevention, diagnosis and treatment of the overtraining syndrome. European Journal of Sport Science, 13(1), 1-24.
-
----
-
-**本章实践工具**：可在「🏠 首页 → 💪 体能训练 → 训练哲学」回顾本章核心思想，并在「🎯 教练板块 → 学员评估」使用评估表打分。
