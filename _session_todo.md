@@ -2602,3 +2602,48 @@
 - `69c0337` (本轮主 commit, badminton-ch12 H2 编号冲突修复,本地未 push)
 - `614e91f` (本轮 todo 回填 + 5→6→9 commit 计数修正,本地未 push)
 
+
+## 第 68 轮 (commit 9c588ec) — 2026-08-31
+
+**改动**：`books/nsca-cpt/ch09-injury-prevention.md` 互引表新增「反向链接（羽毛球康复书）」第 4 列 + 表后约定说明（10 insertions / 8 deletions, 1 file）
+
+- **触发原因（真实 broken）**：羽毛球康复书 ch01-introduction.md §五 L162 明确承诺「想理解通用原理 → 读 NSCA-CPT ch09」——这是一个**反向链接承诺**。但 NSCA-CPT ch09 §「与 NSCA-CPT 其他章节 + 羽毛球 ch12 的互引」表（L501-L510）原 3 列结构只覆盖本表章节 + 互引章节 + 关系，**完全无羽毛球康复书的反向链接列**。读者从 NSCA ch09 读完后只能跳到羽毛球 ch12，看不到羽毛球康复书 6 大损伤的 4/8/12 周专章——承诺只兑现了一半。跨轮保留自 v3.22.6 起羽毛球康复书创建至今的缺口
+- **决策**：
+  - 在原 3 列「本章小节 / 互引章节 / 关系」基础上新增第 4 列「反向链接（羽毛球康复书）」
+  - 6 行映射（按 NSCA ch09 第 1-6 节顺序：膝/肩/踝/肘/腰/跟腱；与羽毛球康复书 ch02-ch07 顺序「肩/膝/踝/肘/腰/跟腱」错位处理）：
+    - 第 1 节 膝关节康复 → [badminton-recovery ch03](./../badminton-recovery/ch03-knee.md)
+    - 第 2 节 肩关节康复 → [badminton-recovery ch02](./../badminton-recovery/ch02-shoulder.md)
+    - 第 3 节 踝关节康复 → [badminton-recovery ch04](./../badminton-recovery/ch04-ankle.md)
+    - 第 4 节 肘关节康复 → [badminton-recovery ch05](./../badminton-recovery/ch05-elbow.md)
+    - 第 5 节 腰部康复 → [badminton-recovery ch06](./../badminton-recovery/ch06-back.md)
+    - 第 6 节 跟腱康复 → [badminton-recovery ch07](./../badminton-recovery/ch07-achilles.md)
+  - 表后新增块引用约定：「**反向链接约定**：每节康复模型在羽毛球康复书里有独立专章……羽毛球康复书 ch01 §五明确承诺"想理解通用原理 → 读 NSCA-CPT ch09"，本表用于兑现该承诺」——把为什么需要这列解释清楚，未来读者/编辑能立刻看到设计意图
+  - H2/H3 顺序不动；ex-lib id 引用不动（表内全部是 `[ex:xxxx]` 保持原状）；业务代码不动
+- **校验**：
+  - `python _scan_exlib_refs.py` → 合法 1336 / 唯一引用 140 / broken 0 与本轮修复前一致 ✅（新增列只引文件不含 ex-lib id）
+  - `grep -nE "^## " books/nsca-cpt/ch09-injury-prevention.md` → 11 个 H2 全部唯一，无编号冲突 ✅
+  - `sed -n '503,510p' books/nsca-cpt/ch09-injury-prevention.md | awk -F'|' 'NR<=2 || NR==3 {print NF" cols"}'` → 表头/分隔/第 1 行均 6 `|`（4 列）✅
+  - `tail -3 books/nsca-cpt/ch09-injury-prevention.md | od -c` → 末尾 CRLF 与 `git show HEAD:...` 比对一致 ✅
+  - `git diff --stat` → 1 file changed, 10 insertions(+), 8 deletions(-) ✅
+  - 反向链接路径 `./../badminton-recovery/ch0X-xxx.md` 从 `books/nsca-cpt/ch09-injury-prevention.md` 出发验证可达 `books/badminton-recovery/` 6 个文件（全部存在）✅
+
+**Push 状态**：
+
+- ❌ **本轮 push 再次失败（与第 64/65/66/67 轮同症状）**：`fatal: unable to access 'https://github.com/s66899/lamb.git/': Failed to connect to github.com port 443 via 127.0.0.1 after 2070 ms: Could not connect to server`；同次回合跑了 3 次 push（kqe40cku, i6awet6e, a77izpoo）全部同错
+- 本地待 push 10 commits: `d67b8cc..9c588ec` 共 (d67b8cc, 40b1df7, c1422f0, b2b6ab2, 423a39a, e9afc00, acb2291, 69c0337, c0adcc9, 9c588ec) — 上次成功 push 是 860fb83（第63轮），第 64/65/66/67/68 轮 push 全部失败
+- 网络通后单跑 `git push origin book` 一次性捎带 10 个 commit + GitHub Pages 自动部署
+
+**下轮候选**：
+
+1. **(本轮候选第 1,继承 68 轮)** push 阻塞恢复 — `d67b8cc..9c588ec` 共 10 commit 待 push；网络通后 `git push origin book` 一次推 10 commit + GitHub Pages 部署
+2. **(本轮新发现,优先级低)** NSCA ch10 §六「跨章节互引」末段 L276 单链接 `badminton-recovery/` 整书 → 可扩展为 6 行表（与 ch09 本轮刚补的反向链接表同模式）—— 但 ch10 §六目前是段尾内联列表非表格，工作量稍大于"单次小改进"；可分两轮做：先扩成表 + 再补反向链接列（与 ch09 同）；跨轮保留
+3. **(本轮新发现,优先级低)** `badminton-recovery/` 各章 ch02-ch07 §一导言头部是否有「NSCA-CPT ch09 对应章节」前缀引用 —— 抽检未发现，本轮只补了 NSCA → 羽毛球康复书单向链接；羽毛球康复书 → NSCA 方向可能在 ch01 §五/§七 已声明但未逐章重复；远期保留
+4. **(继承远期,优先级低)** ch01 L214 / ch02-ch07 末 → ch08 §四 锚点链接 — 跨轮保留(中文锚点渲染待验证)
+5. **(继承远期,优先级低)** `_audit_exlib_ledger.py` 正则扩展 (消 ch05 误报) — 跨轮保留
+6. **(继承远期,优先级低)** books/README.md 96 → 97 章字段同步 — 已同步到 97，远期保留
+7. **(继承远期,优先级低)** 根 README「每章 60/30/10」核实 — 远期保留
+8. **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库 — 不假造 id,继续留
+
+### commit hash
+
+- `9c588ec` (本轮主 commit, nscacpt-ch09 互引表反向链接列补全,本地未 push)
