@@ -4097,3 +4097,45 @@ TOC 渲染会出现两个 `十、` 节点，第二个完全无意义（subs 全�
     可远期改成只屏蔽真正需要 `.lfs` 后缀的文件（如 `*.psd` / `*.zip`），其他正常 .md / .js / .html / .json
     走默认 text 改善协作 diff。
 
+## 2026-08-31 22:17 第 94 轮（commit 962568b）—finance ch13 L725-L741 错位「**参考文献：** + **致谢：**」块删除（93 轮候选 #4 兑现）
+
+### 本轮做了什么
+- **commit `962568b`** `fix(finance-ch13): L725-L741 错位「**参考文献：** + **致谢：**」块删除 — 章末 L1098 已有覆盖全章 12 节的完整版（92 轮候选 #2 兑现）
+- **真实问题**:markdown L725-L741 在 `### 10.4` 和 `### 10.5` 之间错放「**参考文献：**」10 条 + 「**致谢：**」段；章末 `## 本章小结` L1098 已有规范版 15 条 + 完整致谢段
+- **修复策略**:派递 89 轮 commit `929ecc4` + 91 轮 commit `13c8d2b` 同型（纯 markdown 叙事修正 + 纯删除 17 行）— 单文件 `books/finance/ch13-international-finance.md`，1255 字节纯删除
+- 用 Python `io.open(newline='')` 模式保留 CRLF
+
+### 校验
+- `git diff --stat`: 1 file changed, 17 deletions(-) ✓
+- `python -m json.tool manifest.json` OK ✓
+- `node --check manifest_data.js` OK ✓
+- `python _scan_exlib_refs.py` → 合法 1336 / 唯一 140 / broken 0（不变）✓
+- `python _audit_exlib_ledger.py` → 0 drift（不变）✓
+- markdown h2 数:16 → 16（不变）✓
+- manifest h2 数:15 → 15（不变）✓
+- CRLF 计数:1134 → 1117（-17）✓
+- Lone CR 计数:0 → 0 ✓
+- APP_VERSION `v3.22.62` 不 bump；app.js / style.css 未触碰
+- 零业务代码改动；零 ex-lib id 改动
+- 可独立回滚:`git revert 962568b` ✓
+
+### Push 状态
+- ✓ 本轮 push 成功！`bbcb382..962568b` 已推 `origin book`（github.com:443 第 1 次报成功），GitHub Pages 自动部署中
+
+### 上轮候选清算（本轮重扫）
+- ✓ 本轮已修:finance ch13 L725-L741 错位「**参考文献：** + **致谢：**」块
+- ✓ 本轮已修:93 轮 commit 5a6ad58 已 push（bbcb382…962568b 包含 93 轮）
+- ✓ 88 轮 commit 25a0bcd / 89 轮 commit 2f68ef8 / 90 轮 commit 929ecc4 / 91 轮 commit ca4557e / 92 轮 commit ac37027 / 93 轮 commit 5a6ad58 / 94 轮 commit 962568b — 7 轮都已 push 完成，候选作废
+- ✓ 继承远期:badminton ch13 章节编号乱序，1 位继续留
+- ✓ 继承远期:psychology ch12 章节编号乱序 + 空 `## ` 行，2 位继续留
+- ✓ 继承远期:engineering-mechanics ch12 章节编号乱序，3 位继续留
+- ✓ 继承远期:finance ch13 manifest `words: 12992` 未与 markdown 删除同步，94 轮新发现，可远期
+- ✓ 继承远期:NSCA-CPT ch10 曾列 4 次勘误 580+ 字，可远期整理
+- ✓ 继承远期:_append_todo_round78 缺失，9 位继续留
+- ✓ 继承远期:.gitattributes `* -text` 全文件屏蔽 diff，10 位继续留
+
+### commit hash
+- `962568b`（本轮已 commit，已 push `bbcb382..962568b`）
+
+---
+
