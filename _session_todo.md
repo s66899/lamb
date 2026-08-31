@@ -2493,3 +2493,24 @@
 ### commit hash
 
 - `d67b8cc` (本轮已 commit,本地未 push)
+
+## 第 65 轮 (commit c1422f0) — 2026-08-31
+
+**改动**：`books/badminton-recovery/ch06-back.md` §本章 ex-lib 引用清单 头部声明
+- 头部总数：**44 处** → **45 处**
+- 清单段小计：23 处 → **24 处**（含本声明自身 1 处 inline 引用）
+- 分布累加式 4+9+4+4+24=45 已对齐实际 grep 数 45 / 16 unique
+
+**校验**：
+- badminton-recovery 7 章 ch0X 总览 inline/unique — ch02 32/7 ✓ / ch03 16/9 ✓ / ch04 23/13 ✓ / ch05 16/5 ✓ / **ch06 45/16 ✓** / ch07 32/14 ✓ / ch08 35/16 ✓
+- ex-lib 库 1336 个合法 id；羽毛球康复书全 0 broken
+- `node --check app.js` OK / `python -m json.tool manifest.json` OK
+
+**Push 状态**：❌ github.com:443 当前不可达（curl timeout 10s / git push 2090ms 后失败），commit `c1422f0` 已落地本地待 push。网络恢复后单跑 `git push origin book` 即可。
+
+**下轮候选**：
+1. **push 阻塞恢复** — 网络通后跑 `git push origin book`，本轮 commit c1422f0 推送 + GitHub Pages 部署
+2. **ch05「段内 3 处 inline 引用」自检** — ch05 头部声明"说明段 3 处 inline"措辞模糊，措辞可学 ch02 风格改成"正文 N + 本段 N = 全文 N"两段式（无数字偏差，仅表述清晰化，可选）
+3. **NSCA-CPT ch10 SMR 条目扩写 / 入库候选** — ex-5202~ex-5213 已入库 12 条，但 NSCA ch10 实际只引用少数几条；可考虑补全引用覆盖率
+4. **羽毛球康复书 ch01 §五「读第八章的"回归测试"清单」措辞** — ch08 §四 标题现在是"回归球场的三道关"，可对齐文案（与 ch08 内部命名一致性）
+5. **VERSION 文件追加本轮 v3.22.62 条目** — 沿用历史惯例，manifest / changelog 同步本轮数字声明修复
