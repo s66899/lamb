@@ -238,6 +238,7 @@ books/
 
 ### v3.22.x — 多本书内容深耕 + ex-lib 体系
 
+- **v3.22.62**（2026-08-31）: 🔧 README 两处 v3.22.61→v3.22.62 残渣扫尾（追平 78 轮 _bump_version.js b2b6ab2 已 bump 的 4 埋点；本轮补 v3.22.62 自身 changelog 条目，让根 README §「🔄 更新日志」与 VERSION v5 + app.js APP_VERSION + index.html 三处 ?v= + books/README 数据源五处对齐）
 - **v3.22.61**（2026-08-29）: 🔧 4 埋点 v3.22.58→v3.22.61 一步到位追平
 - **v3.22.58**（2026-08-28）: 🔧 4 埋点 v3.22.53→v3.22.58 + VERSION 头部补齐
 - **v3.22.57**（2026-08-27）: 🩹 NSCA-CPT ch10「14 个错位 id」措辞脱节修复
