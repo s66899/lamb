@@ -37,24 +37,70 @@ def count_inline(text: str):
     return len(ids), len(set(ids))
 
 def find_declared(text: str):
-    """Pull declared numbers near an ex-lib header."""
+    """Pull declared numbers from the **declarative summary** paragraph of an
+    ex-lib ledger section, NOT from later per-segment narrative breakdowns.
+
+    Chapters use several declarative-anchor phrases at the top of the ledger:
+        - "本章共引用 N 处 ex-lib inline 引用（折合 K 个 unique id）"
+        - "本章 ex-lib 引用现状：... N 处 inline 引用 / K 个唯一 id"
+        - "本章正文共 N 处 inline 引用（折合 K 个 unique id）"
+
+    Later in the same paragraph the author often breaks down the total by
+    segment, e.g. "说明段 2 处 ... 加本句分布说明顺带提及的 1 处 inline" —
+    these per-segment numbers are **narrative**, not declarations, and must
+    NOT be picked up (would produce false-positive drift reports).
+
+    Strategy: anchor each declaration on a recognized declarative-anchor
+    phrase and only count numbers that appear in the **first sentence** of
+    that paragraph (split on `。` / `；` / `，` carefully handled below).
+    Specifically, we extract numbers from the substring between the anchor
+    phrase and the first sentence-terminating `。` after it.
+    """
+    # Anchors that mark the START of a declarative summary.
+    # Each anchor regex matches the phrase itself; we capture the leading
+    # "本章..." style so we know the declarative paragraph starts here.
+    ANCHOR_PATTERNS = [
+        re.compile(r"本章共引用"),
+        re.compile(r"本章\s*ex-lib\s*引用现状"),
+        re.compile(r"本章正文共"),
+        re.compile(r">\s*\*\*本章 ex-lib 引用现状\*\*"),
+        # ch03 / ch05 / ch08 style: "**本章共引用 N 处 ex-lib inline 引用**"
+        re.compile(r"\*\*本章共引用"),
+        # ch02 style header that already lists counts
+        re.compile(r"本章 ex-lib 引用清单"),
+    ]
     declared = {}
-    # find line numbers that look like a ledger / declared-count statement
-    for m in re.finditer(r"(\d+)\s*(?:处\s*inline\s*引用?|个\s*inline|处\s*引用|unique\s*id|个\s*unique|唯一\s*id|个唯一|处\s*列表项)", text):
-        n = int(m.group(1))
-        ctx = text[max(0, m.start() - 40):m.end() + 40]
-        # filter: only consider numbers that are reasonable counts (1..300)
-        if n < 1 or n > 300:
-            continue
-        # classify by surrounding keyword
-        kw = m.group(0)
-        if "unique" in kw.lower() or "唯一" in kw:
-            kind = "unique"
-        elif "列表项" in kw:
-            kind = "list_items"
-        else:
-            kind = "inline"
-        declared.setdefault(kind, []).append((n, m.start()))
+    for anchor in ANCHOR_PATTERNS:
+        for am in anchor.finditer(text):
+            # Take the substring from anchor start up to the first '。' (or
+            # 400 chars, whichever comes first) — this is the declarative
+            # sentence and excludes later narrative breakdown.
+            start = am.start()
+            chunk = text[start:start + 400]
+            # find first sentence-terminator that ends the declaration
+            # (use '。' or '!' or '\n\n' whichever first, but bias to '。')
+            term = chunk.find("。")
+            if term == -1 or term > 300:
+                term = 300
+            decl_sentence = chunk[:term]
+            # Inner regex: tolerate optional "ex-lib" or "ex " between
+            # 处/个 and "inline"/"unique" so we catch the actual declarative
+            # phrasing used in this codebase (e.g. "35 处 ex-lib inline 引用").
+            for m in re.finditer(
+                r"(\d+)\s*(?:处\s*(?:ex-lib\s*|ex\s+)?inline\s*引用?|个\s*(?:ex-lib\s*|ex\s+)?inline|处\s*引用|(?:ex-lib\s*|ex\s+)?unique\s*id|个\s*(?:ex-lib\s*|ex\s+)?unique|唯一\s*id|个唯一|处\s*列表项)",
+                decl_sentence,
+            ):
+                n = int(m.group(1))
+                kw = m.group(0)
+                if n < 1 or n > 300:
+                    continue
+                if "unique" in kw.lower() or "唯一" in kw:
+                    kind = "unique"
+                elif "列表项" in kw:
+                    kind = "list_items"
+                else:
+                    kind = "inline"
+                declared.setdefault(kind, []).append((n, m.start()))
     return declared
 
 def audit(path: Path):
