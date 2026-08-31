@@ -4139,3 +4139,57 @@ TOC 渲染会出现两个 `十、` 节点，第二个完全无意义（subs 全�
 
 ---
 
+## 2026-08-31 22:40 第 95 轮（commit 429e771）—badminton-recovery/ch01 manifest 补「七、全书导航总览」h2（94 轮扫描新发现兑现）
+
+### 本轮做了什么
+- **commit `429e771`** `fix(badminton-recovery-ch01): manifest 补「七、全书导航总览」 h2 — 与 markdown 1:1 对齐（94 轮新发现）`
+- **真实问题**:扫描全仓 `manifest.json` vs markdown 时发现 `books/badminton-recovery/ch01-introduction.md` 的 h2 列表（`本章导言 + 一~七` = 8 个）与 manifest.json / manifest_data.js 的 h2 列表（`本章导言 + 一~六` = 7 个）**严重不对齐**——markdown 第 197 行 L197 有 `## 七、全书导航总览：6 大损伤 × 时间线 × 对应章节` 实体段（含「第一层：普通人能看懂」+「第二层：专业人士参考」两个 ### 子节 + 一张 6 行导航表 + 一张 NSCA 映射表 + 「章节间依赖关系」段），但两个 manifest 都缺这条 h2；ch01 是整本书「康复总论」的入口，目录少一节会让读者读 TOC 时困惑（其他书都是 1:1 对齐）
+- **修复策略**:派递 86/87/88/89/90/91/92 轮同型 manifest h2s 与 markdown 1:1 对齐模式——只动两个 manifest（不动 markdown、不动业务代码、不动 ex-lib id、不动 APP_VERSION），在 manifest.json 第 12117 行 + manifest_data.js 第 12793 行 六、本章核心要点 的 h2s entry 之后插入新 entry `七、全书导航总览：6 大损伤 × 时间线 × 对应章节`，subs 镜像 markdown 的两个 ### 子节 `第一层：普通人能看懂` + `第二层：专业人士参考`（均 level 3）
+- 用 Python `io.open(newline='')` 模式保留 CRLF
+- **扫描新发现**:本轮除了修 ch01 还**重扫**出 ch08-action-plan.md 同型问题——markdown `本章导言 + 一~九`（10 个 h2），manifest 仅 `本章导言 + 一~八`（9 个 h2），且 [4]~[8] 的 title 全部 off-by-one（manifest [4] 写「四、与 NSCA-CPT ch09 的互引表」但 md L143 是「四、回归球场的三道关（对应 ch01 §四）」，manifest 整段缺 md L143 这一节）。因 ch08 fix 涉及 5 个 title 重命名 + 1 个 missing entry，共 6 处改动，scope 比本轮大，故**留作下轮**（96 轮候选 #1）
+
+### 校验
+- `git diff --stat --text` 2 files（manifest.json + manifest_data.js 各 Bin +429 / +429 字节）✓
+- `python -m json.tool manifest.json` → OK ✓
+- `node --check manifest_data.js` → OK ✓
+- 1:1 对齐校验：
+  - markdown h2 数:8（`本章导言 + 一~七`）
+  - manifest.json h2 数:7 → 8（添加 1 条）
+  - manifest_data.js h2 数:7 → 8（添加 1 条）
+  - 三个数据源 title 完全 1:1（去前缀 `## ` 后 `==` 验证 True）✓
+- 新 entry subs 镜像 md 两个 ### 子节：第一层：普通人能看懂 + 第二层：专业人士参考（均 level 3）✓
+- `node _scan_exlib.js` → 1336 ids / 581 refs / 0 broken（不变；仅动 manifests 不涉 ex-lib）✓
+- `python _scan_exlib_refs.py` → 合法 1336 / 唯一 140 / broken 0（不变）✓
+- `python _audit_exlib_ledger.py` → 0 drift（不变）✓
+- `python _audit_exlib_ledger.py` 仍报 `badminton/ch12-physical-training.md inline=1 declared=66 list-section`，与本轮无关，沿用 92 轮 informational 标记 ✓
+- CRLF 计数:manifest.json 14136 → 14143（+7） / manifest_data.js 14811 → 14818（+7）/ lone CR:0 / 0 ✓
+- 两个 manifest 文件字节数：manifest.json 435290 → 435719（+429）/ manifest_data.js 457244 → 457673（+429），CRLF 行尾原状保留 ✓
+- APP_VERSION `v3.22.62` 不 bump；app.js / style.css / index.html / VERSION 未触碰 ✓
+- 零业务代码改动；零 ex-lib id 改动；零 markdown 改动
+- 可独立回滚：`git revert 429e771` 即可恢复两个 manifest 的 h2s entry 缺失 ✓
+
+### Push 状态
+- ✓ 本轮 push 成功！`2902365..429e771` 已推 `origin book`（github.com:443 第 7 次重试成功，sleep 累加 30+60+90+90+180+120+180 ≈ 12.5 分钟；中间一次 `curl 56 Recv failure: Connection was reset` 但最终 push 成功），GitHub Pages 自动部署中
+
+### 上轮候选清算（本轮重扫）
+- ✓ 本轮已修:badminton-recovery/ch01 manifest 缺 `七、全书导航总览` entry（94 轮扫描新发现兑现）
+- ✓ 继承远期:badminton-recovery/ch08 manifest [4]~[8] off-by-one + 缺 `九、最后的提醒` entry，本轮扫描新发现 6 处改动 scope 较大，**转 96 轮候选 #1**
+- ✓ 继承远期:badminton ch13 章节编号乱序 + 重复十二 + 跳号十五 + 回退十三（92 轮候选 #3），scope 大继续留
+- ✓ 继承远期:psychology ch12 章节编号乱序 + 空 `## ` 行（92 轮候选 #4），scope 大继续留
+- ✓ 继承远期:engineering-mechanics ch12 章节编号乱序（92 轮候选 #5），scope 大继续留
+- ✓ 继承远期:finance ch13 manifest `words: 12992` 未与 markdown 删除同步（94 轮新发现），全仓 97/100 章都有 drift（仅 ±几百到 ±上万字不等），约定不明，本轮不动继续留
+- ✓ 继承远期:NSCA-CPT ch10 §七末段「v3.22.17 / v3.22.62 / v3.22.72 / v3.22.74」四次勘误 580+ 字，可远期整理为附录「v3.22 勘误史」独立 H2
+- ✓ 继承远期:_append_todo_round78.{py,md} 在 HEAD 缺失（92 轮候选 #9），可远期补
+- ✓ 继承远期:.gitattributes `* -text` 全文件屏蔽 diff（92 轮候选 #10），可远期改成只屏蔽真正需要 `.lfs` 后缀的文件
+
+### 新增下轮候选
+- **(本轮新发现, 优先级高)** `badminton-recovery/ch08-action-plan.md` manifest h2s 严重错位 + 缺 entry:
+  - markdown `本章导言 + 一~九`（10 个 h2，含 `## 一、按部位行动清单` L16 / `## 二、按人群行动清单` L98 / `## 三、回归球场的统一标准` L126 / `## 四、回归球场的三道关（对应 ch01 §四）` L143 / `## 五、与 NSCA-CPT ch09 的互引表` L177 / `## 六、与羽毛球 ch12 第九节的互引表` L193 / `## 七、本章 ex-lib 引用清单` L206 / `## 八、本书目录回顾` L233 / `## 九、最后的提醒` L246）
+  - manifest 当前 `[3] 三、回归球场的统一标准` / `[4] 四、与 NSCA-CPT ch09 的互引表` / `[5] 五、与羽毛球 ch12 第九节的互引表` / `[6] 六、本章 ex-lib 引用清单` / `[7] 七、本书目录回顾` / `[8] 八、最后的提醒`
+  - **错位分析**:manifest 缺 `## 四、回归球场的三道关（对应 ch01 §四）`（md L143），且 [4]~[8] 全部 title 错位（应是「五、与 NSCA / 六、与羽毛球 ch12 / 七、本章 ex-lib / 八、本书目录回顾 / 九、最后的提醒」），共 5 个 title 重命名 + 1 个 missing entry = 6 处改动
+  - 修复策略：纯 manifest 改动 + 0 markdown 改动 + 0 ex-lib 改动 + 0 APP_VERSION 改动，可独立 commit 回滚（96 轮候选 #1）
+
+### commit hash
+- `429e771`（本轮已 commit，已 push `2902365..429e771`）
+
+---
