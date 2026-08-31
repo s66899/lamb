@@ -2780,3 +2780,52 @@
 ### commit hash
 
 - `ce714b0` (本轮主 commit, nsca-ch10 §3.1 加 4 个 inline 引用 + §7 末段声明 33→41 同步,已 push)
+
+---
+
+## 第 72 轮 (commit 989e584) — 2026-08-31
+
+**改动**：`books/nsca-cpt/ch10-recovery.md` §3.2 「W5 减载周」末追加主动恢复示例 + §3.3 表后追加「准备期 W1-4」+「过渡期 W11-12」两段主动恢复示例 + §7 末段「本章 ex-lib 引用现状」声明数字 41→63 同步（4 insertions / 2 deletions, 1 file）
+
+- **触发原因（继承 71 轮候选 #1）**：71 轮补了 §3.1「每日恢复投入时间」（拉伸 + 泡沫轴各 2 行示例），但 §3.2（8 周方案 W5 减载周）+ §3.3（12 周方案准备期 W1-4 + 过渡期 W11-12）依旧纯文字描述。这三处都是 4/8/12 周方案里读者最关心的"具体做什么动作"节点——减载周 / 准备期 / 过渡期如果只有"主动恢复"四个字，读者读完只知道要练，不知道练哪个动作。NSCA ch10 库内已有 21 个合法 id（§7 总清单 13 + §2.1 本节表 7 + §2.1 SMR 表 12，去重后 25 unique），但 §3.2 / §3.3 正文 0 inline，跨轮保留到 72 轮集中补齐
+- **决策**：
+  - §3.2 W5 减载周：1 段追加在"W5 是关键减载周..."末，5 个 inline（1604/1560/1713/1710/5206）—— 世界最佳拉伸 + 腘绳 + 股四 + 梨状肌 + 泡沫轴臀肌，每条带"每侧 X 秒 × N 组"剂量提示
+  - §3.3 准备期 W1-4 + 过渡期 W11-12：1 段追加在表后（含 blank line），8 个 inline（0669/1559/5212/5207/1604/1358/5202/5203）—— 准备期覆盖肩袖 + 髋屈肌 + 胸椎 + 上背（开局身体唤醒），过渡期覆盖世界最佳 + 婴儿式 + 股四 + 腘绳（赛季末低强度放松）
+  - §7 末段声明数字 v3.22.71 → v3.22.72：body inline 37→50（+13）+ decl inline 4→17（+13，因为声明字符串本身列出 13 个 id 形成 13 处 inline）= 总 inline 41→63；unique 25 不变（6 个新增 id 1604/1560/1710/5206/5212/5207 全部已在 v3.22.71 baseline 的 25 unique 内，来自 §7 总清单 13 + §2.1 SMR 表 12）
+  - 13 个新引 id 全部库内合法（1336 合法 / 全项目 140 唯一 / 0 broken 不变）
+  - 沿用 71 轮风格：H2/H3 顺序不动；§2.1 本节 ex-lib 引用表 7 行不动；§2.1 SMR 引用表 12 行不动；§7 总清单 13 行不动；§3.1 引用示例 4 行不动；§3.2 表格 5 行不动；§3.3 表格 5 行不动
+  - 零业务代码改动；零 APP_VERSION bump（v3.22.62 不变，沿用 v3.22.55/56/57/62/71 等小 fix 不 bump 惯例）
+  - 用户偏好兑现：所有引用均按库里实际存在条目引用（1604/1560/1713/1710/5206/0669/1559/5212/5207/1358/5202/5203 全部库内合法），零伪造 id
+- **校验**：
+  - `python -c "import re; ..."` 数 ch10 内 inline=63 / unique=25，声明数 63 ✅，声明 unique 25 ✅
+  - `python _scan_exlib_refs.py` → 合法 1336 / 唯一引用 140 / broken 0 与本轮修复前一致 ✅
+  - `python -c "import json; json.load(open('books/exercises/ex-lib.json'))"` → JSON OK ✅
+  - `node --check app.js` → OK ✅
+  - `grep -nE "^## |^### " books/nsca-cpt/ch10-recovery.md` → 7 个 H2 + 13 个 H3 全部唯一且位置不变（与 71 轮 baseline 一致）✅
+  - `git diff --stat` → 1 file changed, 4 insertions(+), 2 deletions(-) ✅
+  - §2.1 本节 ex-lib 引用表 7 行 + §2.1 SMR 引用表 12 行 + §7 总清单 13 行 = 32 行表，0 行被改动 ✅
+  - §3.1 引用示例 4 行（拉伸 / 泡沫轴两行各 2 inline）0 行被改动 ✅
+  - 混合 CRLF/LF 行尾保护：删除 1 行 CRLF 区段（§3.2 L202）+ 替换 1 行 CRLF 区段（§7 L305）+ 新增 2 行 CRLF 区段（§3.3 L213-214），LF-only 计数 324 不变（已用 edit 工具精确替换，未做整文件重写）✅
+- **本轮 fix commit `989e584`**（nsca-ch10 §3.2 + §3.3 共加 13 处 inline 引用 + §7 末段声明 41→63 同步，1 file，4 insertions / 2 deletions，混合 CRLF/LF 行尾保护）
+
+**Push 状态**：
+
+- ❌ **本轮 push 失败（与第 70 轮同症状）**：`fatal: unable to access 'https://github.com/s66899/lamb.git/': Failed to connect to github.com port 443 via 127.0.0.1 after 21116 ms: Could not connect to server`（连试 6 次 + 累计 sleep 230 秒均失败）
+- 71 轮靠 `git -c http.proxy= -c https.proxy= push origin book` 一次性绕过代理成功，本轮同样命令连试不通——今日网络比 71 轮时更差
+- 本地待 push 1 commit：`989e584`
+- 网络通后单跑 `git -c http.proxy= -c https.proxy= push origin book` 一次性捎带 1 commit + GitHub Pages 自动部署
+
+**下轮候选**：
+
+1. **(本轮候选第 1,继承 71/72 轮)** push 阻塞恢复 — `989e584` 本地待 push；网络通后 `git -c http.proxy= -c https.proxy= push origin book` 一次推 + GitHub Pages 部署
+2. **(继承 71 轮候选 #1 续)** NSCA ch10 §四 恢复评估 (3 节：晨脉/HRV/主观疲劳评分) + §五 误区清单 + §六 体系衔接 — 共 5 节 0 inline；每节 ~2-3 inline 引用示例（评估节侧重相关肌肉恢复动作示例，误区节侧重"错误动作 vs 正确动作"对照示例）；单次 commit 内可独立回滚
+3. **(继承 71 轮候选 #2)** ch07-achilles 184 行 / ch06-back 198 行仍是羽毛球康复书最薄两章，可补第 13 周「专项维护期」+ 损伤力学图解说明段；ch07 距"跟腱硬度自测""跟腱炎分期鉴别"等专业内容尚未覆盖
+4. **(继承 68 / 70 轮)** `_audit_exlib_ledger.py` 正则扩展消 ch05-elbow 误报（declared=1 actual=16）
+5. **(继承 68 轮,优先级低)** NSCA ch10 §六「与本套体系的衔接」末段 L276 单链接 `badminton-recovery/` 整书 → 可扩展为 6 行表
+6. **(继承 70 轮,优先级低)** ch01 L214 / ch02-ch07 末 → ch08 §四 锚点链接 — 跨轮保留
+7. **(本轮新发现,优先级低)** 用户偏好文本"库内没有 foam roller / 筋膜球专项条目"与库实况不一致（v3.22.17 已入库 ex-5202~ex-5213 共 12 条）—— 跨轮保留；下轮可把 USER.md / USER 偏好同步对齐到库实况
+8. **(本轮新发现,优先级低)** ch10 §7 末段「v3.22.17 / v3.22.62 / v3.22.72」三次勘误说明累积在 §7 末段，跨多轮后声明字符串越来越长（v3.22.72 已 380+ 字），可考虑移到附录或独立 changelog 章节；本轮先不动
+
+### commit hash
+
+- `989e584` (本轮主 commit, nsca-ch10 §3.2 + §3.3 共加 13 处 inline 引用 + §7 末段声明 41→63 同步,本地未 push)
