@@ -2,7 +2,7 @@
 
 **上一轮 HEAD**：`0c790e3`（round112 — `books/README.md` 2 处字数计数 ↔ manifest.json `totalWords` 对齐；github.com:443 不可达，未 push）。
 
-**本轮 HEAD**：`bceb996`（round113 — badminton-ch07 12 周时间线补拉伸梯度 inline + L172 借手指字。`b2afa5f` → `a1dc768` → `bceb996` 均为 amend 所得同主题，仅含 fix + ledger）。
+**本轮 HEAD**：`5825260`（chore: round113 记账记账 amend = `b2afa5f` → `a1dc768` → `bceb996` → `5825260`）。下面 ledger 中「本轮 HEAD」与「commit hash」最终值以 `5825260` 为准。
 
 ## 本轮真实 bug
 
@@ -47,7 +47,7 @@ ch07-achilles 12 周时间线「第二层：专业人士参考」是整本书最
 
 ## commit hash
 
-`bceb996`（含 fix + ledger，共 fix 1 + ledger 1，amend 2 次）
+`5825260`（含 fix + ledger 记账补完）
 
 ## push 状态
 
