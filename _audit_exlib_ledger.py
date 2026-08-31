@@ -32,8 +32,20 @@ DECLARED_PATTERNS = [
 ]
 
 def count_inline(text: str):
-    """Return (inline_count, unique_count) over the chapter text, dedup per id."""
-    ids = EXLIB_RE.findall(text)
+    """Return (inline_count, unique_count) over the chapter text, dedup per id.
+
+    Excludes inline refs that appear inside markdown blockquote lines
+    (`> `-prefixed). Those are ledger-declaration narrative (e.g. "> **本章
+    ex-lib 引用现状**：...本章正文共 **63 处 inline 引用 / 25 个唯一 id** ...
+    世界最佳拉伸 [ex:1604] + ..."), NOT real body inline references.
+    Counting them double-counts: once in the "actual" count and once in the
+    "declared" count from the same number — which would cause false drift
+    every time a new ledger blockquote is appended.
+    """
+    body_lines = "\n".join(
+        ln for ln in text.splitlines() if not ln.lstrip().startswith(">")
+    )
+    ids = EXLIB_RE.findall(body_lines)
     return len(ids), len(set(ids))
 
 def find_declared(text: str):
@@ -64,6 +76,11 @@ def find_declared(text: str):
         re.compile(r"本章\s*ex-lib\s*引用现状"),
         re.compile(r"本章正文共"),
         re.compile(r">\s*\*\*本章 ex-lib 引用现状\*\*"),
+        # v3.22.74+ style: "> **v3.22.NN 引用现状更新**" — multi-round ledger
+        # updates appended after the original "本章 ex-lib 引用现状" block.
+        # Must come AFTER the >**本章 ex-lib 引用现状** anchor so it doesn't
+        # match the older block's start (different start position anyway).
+        re.compile(r">\s*\*\*v3\.\d+\.\d+\s*引用现状(?:更新)?\*\*"),
         # ch03 / ch05 / ch08 style: "**本章共引用 N 处 ex-lib inline 引用**"
         re.compile(r"\*\*本章共引用"),
         # ch02 style header that already lists counts
@@ -86,21 +103,30 @@ def find_declared(text: str):
             # Inner regex: tolerate optional "ex-lib" or "ex " between
             # 处/个 and "inline"/"unique" so we catch the actual declarative
             # phrasing used in this codebase (e.g. "35 处 ex-lib inline 引用").
-            for m in re.finditer(
-                r"(\d+)\s*(?:处\s*(?:ex-lib\s*|ex\s+)?inline\s*引用?|个\s*(?:ex-lib\s*|ex\s+)?inline|处\s*引用|(?:ex-lib\s*|ex\s+)?unique\s*id|个\s*(?:ex-lib\s*|ex\s+)?unique|唯一\s*id|个唯一|处\s*列表项)",
-                decl_sentence,
-            ):
-                n = int(m.group(1))
-                kw = m.group(0)
-                if n < 1 or n > 300:
-                    continue
-                if "unique" in kw.lower() or "唯一" in kw:
-                    kind = "unique"
-                elif "列表项" in kw:
-                    kind = "list_items"
-                else:
-                    kind = "inline"
-                declared.setdefault(kind, []).append((n, m.start()))
+            # Take ONLY the FIRST match per declarative chunk — later numbers
+            # are per-segment narrative breakdowns (e.g. "body inline 从 X 同
+            # 步累加为 Y，decl 同步加 Z") that should NOT be picked up as the
+            # authoritative declared count. Combined with last-wins voting
+            # across chunks, this gives us the LATEST ledger block's main
+            # declared number (e.g. v3.22.74's "59 处 inline"). We need TWO
+            # independent first-matches per chunk: one for inline counts and
+            # one for unique-id counts.
+            INLINE_RE = re.compile(
+                r"(\d+)\s*(?:处\s*(?:ex-lib\s*|ex\s+)?inline\s*引用?|个\s*(?:ex-lib\s*|ex\s+)?inline|处\s*引用|处\s*列表项)"
+            )
+            UNIQUE_RE = re.compile(
+                r"(\d+)\s*(?:(?:ex-lib\s*|ex\s+)?unique\s*id|个\s*(?:ex-lib\s*|ex\s+)?unique|唯一\s*id|个唯一)"
+            )
+            im = INLINE_RE.search(decl_sentence)
+            um = UNIQUE_RE.search(decl_sentence)
+            if im:
+                n = int(im.group(1))
+                if 1 <= n <= 300:
+                    declared.setdefault("inline", []).append((n, im.start()))
+            if um:
+                n = int(um.group(1))
+                if 1 <= n <= 300:
+                    declared.setdefault("unique", []).append((n, um.start()))
     return declared
 
 def audit(path: Path):
@@ -114,10 +140,18 @@ def audit(path: Path):
     # not about [ex:NNNN] inline refs — compare only when there are real inline refs)
     if inline_total >= 5:
         for kind, vals in declared.items():
-            # count frequency; pick majority
-            from collections import Counter
-            cnt = Counter(n for n, _ in vals)
-            decl_n, hits = cnt.most_common(1)[0]
+            # Last-wins (NOT majority vote): when multiple declarative
+            # paragraphs exist for the same kind (e.g. multi-round ledger
+            # blocks like v3.22.71 / v3.22.72 / v3.22.74 each with their
+            # own "本章正文共 N 处 inline 引用"), the LATEST paragraph is
+            # the most recent ledger update and is what the author wants
+            # to be authoritative. Frequency voting picks stale numbers
+            # (older blocks re-state the same number multiple times via
+            # narrative breakdowns). Pick last = the rightmost (highest
+            # start offset) match, which corresponds to the last-written
+            # declarative block in the file.
+            decl_n = vals[-1][0]
+            hits = 1  # last-wins — single authoritative value
             actual = inline_total if kind == "inline" else (unique_total if kind == "unique" else None)
             if actual is None:
                 continue
