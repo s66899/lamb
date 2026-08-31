@@ -4440,7 +4440,7 @@ TOC 渲染会出现两个 `十、` 节点，第二个完全无意义（subs 全�
     或读 raw 字节比对）。本轮 manifest.json/manifest_data.js 共 +31 bytes（4 h2 改 + 1 乱码
     修复）实际肉眼看不到；下次想做类似修复时仍要按 raw 字节维度操作。
 
-## 第 110 轮（commit TBD）— 整仓扫描 0 broken / 0 fix 落地，仅记账
+## 第 110 轮（commit c2f5fd5）— 整仓扫描 0 broken / 0 fix 落地，仅记账
 
 **本轮做了什么**：扫描全 9 本书 markdown 的 ex-lib inline 引用 [ex:N] 与 ex-lib.json
 库内合法 id 集，全仓 **0 broken**（1336 个合法 id / 9 本书 / 0 missing）；同步校验：
