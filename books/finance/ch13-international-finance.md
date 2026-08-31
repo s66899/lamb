@@ -722,23 +722,6 @@ S = (M / M*) × (Y* / Y) × (v / v*)
 - 长期来看，汇率会向 PPP 值回归，短期波动不必过度关注
 - 如果投资期限在 5 年以上，汇率风险会得到部分对冲
 
----
-
-**参考文献：**
-
-- [1] 姜波克. 国际金融学新编[M]. 复旦大学出版社, 2018
-- [2] Krugman, P., Obstfeld, M., & Melitz, M. International Economics: Theory and Policy(12th ed.)[M]. Pearson, 2022
-- [3] 中国人民银行. 人民币国际化报告[M]. 中国金融出版社, 2023
-- [4] IMF. Annual Report on Exchange Arrangements and Exchange Restrictions[R]. 2023
-- [5] Eichengreen, B. Globalizing Capital: A History of the International Monetary System(3rd ed.)[M]. Princeton University Press, 2019
-- [6] 张礼卿. 国际金融学[M]. 高等教育出版社, 2020
-- [7] 余永定. 见证失衡——双顺差、人民币汇率与美元陷阱[J]. 国际经济评论, 2010(1): 7-28
-- [8] BIS. Triennial Central Bank Survey of Foreign Exchange and OTC Derivatives Markets[R]. 2022
-- [9] 周小川. 关于改革国际货币体系的思考[J]. 中国金融, 2009(7): 8-9
-- [10] 国家外汇管理局. 中国国际收支报告[M]. 2023
-
-**致谢：**
-感谢所有为本书编写提供帮助的学者、教师和同业。特别感谢中国人民银行和外汇管理局在政策解读方面的专业指导，以及各高校金融学研究团队在理论和实证方面提供的深刻洞见。欢迎读者提出宝贵意见。
 
 ### 10.5 国际资产配置的实战步骤
 
