@@ -12705,7 +12705,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch01-introduction.md",
           "title": "康复总论——原则、时间线、信号识别",
-          "words": 2072,
+          "words": 2741,
           "h2s": [
             {
               "title": "本章导言",
