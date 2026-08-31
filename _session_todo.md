@@ -2647,3 +2647,93 @@
 ### commit hash
 
 - `9c588ec` (本轮主 commit, nscacpt-ch09 互引表反向链接列补全,本地未 push)
+
+---
+
+## 第 69 轮 (commit ee8ff80) — 2026-08-31
+
+**改动**：`books/nsca-cpt/ch02-exercise-physiology.md` 章末重复块清理（36 行纯删除，1 file）
+
+- **触发原因（真实 broken / 重复 H2）**：用脚本扫 `books/**.md` 时发现 NSCA-CPT ch02 末尾有两个 `## 思考题` H2 — L1339（含 7 题，参考文献 [1]-[20] 完整版 + 本章实践工具）和 L1383（含 5 题，参考文献只到 [15]，缺 [16]-[20] + 本章实践工具又重复了一次）。后者是前者的「早期版/子集」残留：5 题 < 7 题，[15] < [20] 参考文献。GitHub 上两个 H2 锚点都叫 `#思考题` 会自动 disambiguate 成 `#思考题` + `#思考题-1`，TOC / 内部引用都会指到第一个，重复块纯冗余无意义。
+- **决策**：
+  - 保留 L1339 的较新完整版（7 题 + 参考文献 [1]-[20]）
+  - 删除 L1381-L1416 共 36 行：`---` 分隔 + `## 思考题` + 5 题 + `---` + 作者/创作日期/致谢/参考文献 [1]-[15] + `---` + `**本章实践工具**`
+  - 文件末段保持 `**本章实践工具**：可在「🏠 首页 → 💪 体能训练 → 训练哲学」...` 一行 + 末尾换行，与其他章章尾格式对齐
+  - 零 ex-lib id 改动（ch02 全文 0 处 [ex:XXXX] inline，1336 合法 / 140 唯一 / 0 broken 不变）
+  - 零业务代码改动；APP_VERSION v3.22.62 不 bump
+- **校验**：
+  - `grep -nE "^## 思考题" books/nsca-cpt/ch02-exercise-physiology.md` → 仅剩 1 处 L1339 ✅
+  - `git diff --stat` → `1 file changed, 36 deletions(-)`（0 insertion 纯删除）✅
+  - `python _scan_exlib_refs.py` → 合法 1336 / 唯一引用 140 / broken 0 不变 ✅
+  - `python -m json.tool manifest.json` / `python -m json.tool books/exercises/ex-lib.json` → OK ✅
+  - `node --check app.js` → OK ✅
+  - 文件末尾 `od -c` 验证 → CR 字节 0 个，纯 LF，行尾 CRLF 污染零 ✅
+  - L1379 行 `**本章实践工具**` 保留为文件最后一行实质内容（前面是 `---` 分隔），其他章章尾格式一致 ✅
+- **顺带处理**：`.gitignore` 加 `_append_todo_round68.md`（与既有 `_append_todo_round68.py` 同模式；该 .md 文件是上一轮 9c588ec 的临时记账草稿，未跟踪文件）。本轮独立 commit `6f7c652`（沿用 68 轮 59b4b35 风格）
+
+**Push 状态**：
+
+- ❌ **本轮 push 再次失败（与第 64/65/66/67/68 轮同症状）**：`fatal: unable to access 'https://github.com/s66899/lamb.git/': Failed to connect to github.com port 443 via 127.0.0.1 after 2072 ms: Could not connect to server`
+- 本地待 push 13 commits：`d67b8cc..6f7c652` 共 (d67b8cc, 40b1df7, c1422f0, b2b6ab2, 423a39a, e9afc00, acb2291, 69c0337, c0adcc9, 9c588ec, 59b4b35, ee8ff80, 6f7c652) — 上次成功 push 是 860fb83（第63轮），第 64/65/66/67/68/69 轮 push 全部失败
+- 网络通后单跑 `git push origin book` 一次性捎带 13 commit + GitHub Pages 自动部署
+
+**下轮候选**：
+
+1. **(本轮候选第 1,继承 69 轮)** push 阻塞恢复 — `d67b8cc..6f7c652` 共 13 commit 待 push；网络通后 `git push origin book` 一次推 13 commit + GitHub Pages 部署
+2. **(本轮新发现,已验证,优先级中)** `books/finance/ch13-international-finance.md` L613 处也有重复 `## 本章小结` H2（章末 L1118 已有完整版，L613 中间版是 9 章内容的 mid-chapter summary，位置错乱——读者读到 §9 之后、§10 之前突然看到「本章小结」语义断裂）。决策待定：是删 L613 错位版？还是移动 L1118 完整版到 L613？保守做法是删 L613 错位版（章末完整版保留为章末章末小结）。下次可做
+3. **(继承远期,优先级低)** NSCA ch10 §六「跨章节互引」末段单链接 → 可扩为 6 行表（与 ch09 本轮刚补的反向链接表同模式，但 ch10 不是按部位分段，可能设计需要重新思考）—— 跨轮保留
+4. **(继承远期,优先级低)** 11 个 .md 文件内 `### 第一层：普通人能看懂` / `### 第二层：专业人士参考` H4 重复锚点 — GitHub 自动 disambiguate 成 `-1/-2/-3...`，但若内部用相对 anchor 跳转会有歧义；影响小，跨轮保留
+5. **(继承远期,优先级低)** ch01 L214 / ch02-ch07 末 → ch08 §四 锚点链接 — 跨轮保留(中文锚点渲染待验证)
+6. **(继承远期,优先级低)** `_audit_exlib_ledger.py` 正则扩展 (消 ch05 误报) — 跨轮保留
+7. **(继承远期,优先级低)** books/README.md 96 → 97 章字段同步 — 已同步到 97，远期保留
+8. **(继承远期,优先级低)** 根 README「每章 60/30/10」核实 — 远期保留
+9. **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库 — 不假造 id,继续留
+
+### commit hash
+
+- `ee8ff80` (本轮主 commit, nscacpt-ch02 章末重复块清理,本地未 push)
+- `6f7c652` (本轮记账 commit, .gitignore 加 _append_todo_round68.md)
+
+---
+
+## 第 70 轮 (commit c8115c5) — 2026-08-31
+
+**改动**：`books/finance/ch13-international-finance.md` L611-L620 错位 `## 本章小结` 块删除（10 行纯删除，1 file）
+
+- **触发原因（继承 69 轮候选 #2）**：扫 H2 时发现该章有两个 `## 本章小结` H2 — L613（夹在 §9.3 后、§9.4 之前，paragraph 1+2+3 总结 9 章内容）和 L1108（章末，覆盖全章 12 节内容）。L613 是早期"§9 写完就小结"的残留：内容只覆盖 §1-§9（"汇率决定理论...以及中国在国际金融中的角色"），但章末还有 §10/§11/§12 三大节和 L1108 完整版（"汇率决定理论...数字时代的新发展（CBDC、加密货币、区块链、DeFi、ESG）...对未来十年的展望和中国投资者的建议"）。语义断裂：读者读到 §9 末尾突然看到"本章小结"，后面却还有 3 节 + 完整版本章小结。
+- **决策**：
+  - 保留 L1108 章末完整版（覆盖全章 12 节 + 数字时代 + 风险管理与未来趋势 + 中国投资者建议）
+  - 删除 L611-L620 共 10 行：`---` 分隔（611）+ blank（612）+ `## 本章小结` heading（613）+ blank（614）+ para1 国际金融最迷人领域（615）+ blank（616）+ para2 9 章内容总结（617）+ blank（618）+ para3 开放经济视角（619）+ blank（620）
+  - §9.4 QDII 制度直接接续 §9.3 AIIB 末尾（衔接自然，§9.4/§9.5 还在原位）
+  - 零 ex-lib id 改动（ch13 全文 0 处 [ex:XXXX] inline，1336 合法 / 140 唯一 / 0 broken 不变）
+  - 零业务代码改动；APP_VERSION v3.22.62 不 bump
+- **校验**：
+  - `grep -nE "^## 本章小结" books/finance/ch13-international-finance.md` → 仅剩 1 处 L1108 ✅
+  - `git diff --stat books/finance/ch13-international-finance.md` → `1 file changed, 10 deletions(-)`（0 insertion 纯删除，1 hunk `@@ -608,16 +608,6 @@`）✅
+  - 混合行尾保护：原文件 CRLF/LF 混合（CRLF 823 + LF-only 324），删除 10 行 CRLF 区段，LF-only 计数 324 不变（已用 Python 二进制精确删行，避免整文件重写）✅
+  - `python -m json.tool manifest.json` / `python -m json.tool books/exercises/ex-lib.json` → OK ✅
+  - `python _scan_exlib_refs.py` → 合法 1336 / 唯一引用 140 / broken 0 不变 ✅
+  - `node --check app.js` → OK ✅
+- **本轮 fix+记账合并 commit `c8115c5`**（finance-ch13 L611-L620 错位本章小结块删除 + 70 轮记账，2 files，90 insertions / 10 deletions，混合 CRLF/LF 行尾保护）。沿用 67 轮 `c0adcc9` 风格（fix + 记账合并单 commit），区别于 68/69 轮（拆分 fix + 记账双 commit）。本轮文件改动小（仅 2 files，10 行纯删除），合并提交更清晰；可独立回滚 `git revert c8115c5`
+
+**Push 状态**：
+
+- ❌ **本轮 push 再次失败（与第 64/65/66/67/68/69 轮同症状）**：`fatal: unable to access 'https://github.com/s66899/lamb.git/': Failed to connect to github.com port 443 via 127.0.0.1 after 2050 ms: Could not connect to server`
+- 本地待 push 14 commits：`d67b8cc..c8115c5` 共 (d67b8cc, 40b1df7, c1422f0, b2b6ab2, 423a39a, e9afc00, acb2291, 69c0337, c0adcc9, 9c588ec, 59b4b35, ee8ff80, 6f7c652, c8115c5) — 上次成功 push 是 860fb83（第63轮），第 64-70 轮 push 全部失败
+- 网络通后单跑 `git push origin book` 一次性捎带 14 commit + GitHub Pages 自动部署
+
+**下轮候选**：
+
+1. **(本轮候选第 1,继承 70 轮)** push 阻塞恢复 — `d67b8cc..c8115c5` 共 14 commit 待 push；网络通后 `git push origin book` 一次推 14 commit + GitHub Pages 部署
+2. **(本轮新发现,已验证,优先级中)** `books/finance/` 抽重复 H2 — 跨轮扫结果：ch01-ch12 均无重复 `## 本章小结` / `## 思考题` / `## 参考文献`；ch13 已在 70 轮清理。**远期保留**（其他系列书未扫，下轮可扩到 yin-yang / psychology / engineering-mechanics）
+3. **(继承远期,优先级低)** NSCA ch10 §六「跨章节互引」末段单链接 → 可扩为 6 行表（与 ch09 本轮刚补的反向链接表同模式，但 ch10 不是按部位分段，可能设计需要重新思考）—— 跨轮保留
+4. **(继承远期,优先级低)** 11 个 .md 文件内 `### 第一层：普通人能看懂` / `### 第二层：专业人士参考` H4 重复锚点 — GitHub 自动 disambiguate 成 `-1/-2/-3...`，但若内部用相对 anchor 跳转会有歧义；影响小，跨轮保留
+5. **(继承远期,优先级低)** ch01 L214 / ch02-ch07 末 → ch08 §四 锚点链接 — 跨轮保留(中文锚点渲染待验证)
+6. **(继承远期,优先级低)** `_audit_exlib_ledger.py` 正则扩展 (消 ch05 误报) — 跨轮保留
+7. **(继承远期,优先级低)** books/README.md 96 → 97 章字段同步 — 已同步到 97，远期保留
+8. **(继承远期,优先级低)** 根 README「每章 60/30/10」核实 — 远期保留
+9. **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库 — 不假造 id,继续留
+
+### commit hash
+
+- `c8115c5` (本轮主 commit, finance-ch13 错位 本章小结 块清理,本地未 push)
