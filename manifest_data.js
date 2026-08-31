@@ -8960,7 +8960,7 @@ const MANIFEST_DATA = {
                   "level": 3
                 },
                 {
-                  "title": "10.5",
+                  "title": "10.5 国际资产配置的实战步骤",
                   "level": 3
                 }
               ]
