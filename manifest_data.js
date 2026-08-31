@@ -13437,23 +13437,40 @@ const MANIFEST_DATA = {
               "subs": []
             },
             {
-              "title": "四、与 NSCA-CPT ch09 的互引表",
+              "title": "四、回归球场的三道关（对应 ch01 §四）",
+              "subs": [
+                {
+                  "title": "4.1 三道关 checklist（必须全部通过）",
+                  "level": 3
+                },
+                {
+                  "title": "4.2 第二层：客观测试体系（与 NSCA-CPT ch09 对齐）",
+                  "level": 3
+                },
+                {
+                  "title": "4.3 分阶段回归球场的强度控制",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "title": "五、与 NSCA-CPT ch09 的互引表",
               "subs": []
             },
             {
-              "title": "五、与羽毛球 ch12 第九节的互引表",
+              "title": "六、与羽毛球 ch12 第九节的互引表",
               "subs": []
             },
             {
-              "title": "六、本章 ex-lib 引用清单",
+              "title": "七、本章 ex-lib 引用清单",
               "subs": []
             },
             {
-              "title": "七、本书目录回顾",
+              "title": "八、本书目录回顾",
               "subs": []
             },
             {
-              "title": "八、最后的提醒",
+              "title": "九、最后的提醒",
               "subs": []
             }
           ]
