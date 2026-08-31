@@ -190,7 +190,7 @@
 | [ex:1709] | assisted lying glutes stretch / 仰卧辅助臀肌拉伸 | 12 周 W5-8 改善骨盆前倾 |
 | [ex:5212] | foam roller thoracic spine / 胸椎 foam roller 专项 | 4 周 W2 腰背筋膜松解（库内真实 foam roller 条目）；居家无器械可用网球替代 |
 
-**说明**：ex-lib 库内**已有**foam roller / 筋膜球系列专项条目（v3.22.17 入库 ex-5202~ex-5213 共 12 条覆盖各部位），但腰部 foam roller 专项**确实暂无**（库内 back 系列为 5207 upper back / 5208 latissimus / 5212 thoracic spine，无 lumbar 专项）。本章腰部 SMR 类因此改引 **[ex:5212] foam roller thoracic spine（胸椎 foam roller 真实条目）**作为最近邻替代——介质可用 foam roller 沿胸椎/上背滚动，再用网球/长曲棍球置于腰方肌沿脊柱两侧补足 lumbar 区域；如需 upper-back / lat 等邻近部位 foam roller 专项可分别引 [ex:5207] / [ex:5208]（库内合法 id）。库中也暂无"麦肯基伸展 / bird-dog 鸟狗式"专项条目，故这两项在 4 周 / 8 周方案中以文字描述保留，与 ex-lib 库内合法动作并存。**v3.22.62 勘误**：v3.22.18 修订时将 [ex:1352] lower back curl（实为腰背卷曲核心动作，非 SMR）错标为"SMR 替代"，本次更正——SMR 必须用库内 foam roller 真实条目（ex-5202~ex-5213），绝不混用核心动作条目替代。
+**说明**：ex-lib 库内**已有**12 条 SMR 专项条目（v3.22.17 入库 ex-5202~ex-5213:其中 **10 条泡沫轴** ex-5202~5209 + 5212~5213 分别覆盖股四头肌 / 腘绳肌 / 髂胫束 / 小腿 / 臀肌 / 上背 / 背阔肌 / 肩袖 / 胸椎 / 内收肌（`eq_zh` 全部为「泡沫轴」），加 **2 条筋膜球** ex-5210 / 5211 分别覆盖前臂伸肌 / 足底筋膜（`eq_zh` 为「筋膜球」，介质即长曲棍球/网球等球形硬质工具），但腰部 foam roller 专项**确实暂无**（库内 back 系列为 5207 upper back / 5208 latissimus / 5212 thoracic spine，无 lumbar 专项）。本章腰部 SMR 类因此改引 **[ex:5212] foam roller thoracic spine（胸椎 foam roller 真实条目）**作为最近邻替代——介质可用 foam roller 沿胸椎/上背滚动，再用网球/长曲棍球置于腰方肌沿脊柱两侧补足 lumbar 区域；如需 upper-back / lat 等邻近部位 foam roller 专项可分别引 [ex:5207] / [ex:5208]（库内合法 id）。库中也暂无"麦肯基伸展 / bird-dog 鸟狗式"专项条目，故这两项在 4 周 / 8 周方案中以文字描述保留，与 ex-lib 库内合法动作并存。**v3.22.62 勘误**：v3.22.18 修订时将 [ex:1352] lower back curl（实为腰背卷曲核心动作，非 SMR）错标为"SMR 替代"，本次更正——SMR 必须用库内 foam roller / 筋膜球真实条目（ex-5202~ex-5213 共 12 条），绝不混用核心动作条目替代。
 ---
 
 **[← 返回 第一章 总览 · 6 大损伤 × 时间线 × 对应章节](./ch01-introduction.md)** ｜ **[下一章 → 第七章 跟腱康复 × 反复起跳](./ch07-achilles.md)**
