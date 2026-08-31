@@ -4713,7 +4713,7 @@ const MANIFEST_DATA = {
                 }
               ]
             },
-                        {
+            {
               "title": "十五、双打运动员的饮食与营养策略",
               "subs": [
                 {
