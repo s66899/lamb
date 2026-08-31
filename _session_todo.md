@@ -2714,17 +2714,17 @@
   - `python -m json.tool manifest.json` / `python -m json.tool books/exercises/ex-lib.json` → OK ✅
   - `python _scan_exlib_refs.py` → 合法 1336 / 唯一引用 140 / broken 0 不变 ✅
   - `node --check app.js` → OK ✅
-- **本轮 fix+记账合并 commit `13c8d2b`**（finance-ch13 L611-L620 错位本章小结块删除 + 70 轮记账，2 files，90 insertions / 10 deletions，混合 CRLF/LF 行尾保护）。沿用 67 轮 `c0adcc9` 风格（fix + 记账合并单 commit），区别于 68/69 轮（拆分 fix + 记账双 commit）。本轮文件改动小（仅 2 files，10 行纯删除），合并提交更清晰；可独立回滚 `git revert 13c8d2b`
+- **本轮 fix commit `13c8d2b`**（finance-ch13 L611-L620 错位本章小结块删除，1 file，10 行纯删除，混合 CRLF/LF 行尾保护） + **本轮记账 commit `a9be168`**（session_todo 修正，1 file，5 行修订）。**为防止“fix+记账合并 commit”造成的无限 amend 循环**（每次 amend 后 session_todo 内 hash 引用也需同步更新→hash 随之变化→再 amend…→无限循环，本轮实际遇到 4e33487 → 649d0a4 → 7f289a7 → f49d859 → c8115c5 → 13c8d2b 6 次才稳定），**本轮采取 68/69 轮拆分风格**（fix + 记账双 commit）。可独立回滚 `git revert 13c8d2b..a9be168`
 
 **Push 状态**：
 
 - ❌ **本轮 push 再次失败（与第 64/65/66/67/68/69 轮同症状）**：`fatal: unable to access 'https://github.com/s66899/lamb.git/': Failed to connect to github.com port 443 via 127.0.0.1 after 2050 ms: Could not connect to server`
-- 本地待 push 14 commits：`d67b8cc..13c8d2b` 共 (d67b8cc, 40b1df7, c1422f0, b2b6ab2, 423a39a, e9afc00, acb2291, 69c0337, c0adcc9, 9c588ec, 59b4b35, ee8ff80, 6f7c652, 13c8d2b) — 上次成功 push 是 860fb83（第63轮），第 64-70 轮 push 全部失败
+- 本地待 push 16 commits：`d67b8cc..0e95881` 共 (d67b8cc, 40b1df7, c1422f0, b2b6ab2, 423a39a, e9afc00, acb2291, 69c0337, c0adcc9, 9c588ec, 59b4b35, ee8ff80, 6f7c652, 13c8d2b, a9be168, 0e95881) — 上次成功 push 是 860fb83（第63轮），第 64-70 轮 push 全部失败
 - 网络通后单跑 `git push origin book` 一次性捎带 14 commit + GitHub Pages 自动部署
 
 **下轮候选**：
 
-1. **(本轮候选第 1,继承 70 轮)** push 阻塞恢复 — `d67b8cc..13c8d2b` 共 14 commit 待 push；网络通后 `git push origin book` 一次推 14 commit + GitHub Pages 部署
+1. **(本轮候选第 1,继承 70 轮)** push 阻塞恢复 — `d67b8cc..0e95881` 共 16 commit 待 push；网络通后 `git push origin book` 一次推 14 commit + GitHub Pages 部署
 2. **(本轮新发现,已验证,优先级中)** `books/finance/` 抽重复 H2 — 跨轮扫结果：ch01-ch12 均无重复 `## 本章小结` / `## 思考题` / `## 参考文献`；ch13 已在 70 轮清理。**远期保留**（其他系列书未扫，下轮可扩到 yin-yang / psychology / engineering-mechanics）
 3. **(继承远期,优先级低)** NSCA ch10 §六「跨章节互引」末段单链接 → 可扩为 6 行表（与 ch09 本轮刚补的反向链接表同模式，但 ch10 不是按部位分段，可能设计需要重新思考）—— 跨轮保留
 4. **(继承远期,优先级低)** 11 个 .md 文件内 `### 第一层：普通人能看懂` / `### 第二层：专业人士参考` H4 重复锚点 — GitHub 自动 disambiguate 成 `-1/-2/-3...`，但若内部用相对 anchor 跳转会有歧义；影响小，跨轮保留
@@ -2736,4 +2736,6 @@
 
 ### commit hash
 
-- `13c8d2b` (本轮主 commit, finance-ch13 错位 本章小结 块清理,本地未 push)
+- `13c8d2b` (本轮主 commit, finance-ch13 错位 本章小结 块删除,本地未 push)
+- `a9be168` (本轮记账 commit, session_todo 第 70 轮 commit hash 引用与最终 HEAD 不一致修正)
+- `0e95881` (本轮记账 commit, 后续微调: 修 typo + push 计数 14→15 + cand #1 引用更新)
