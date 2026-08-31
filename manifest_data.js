@@ -12272,7 +12272,7 @@ const MANIFEST_DATA = {
               "subs": []
             },
             {
-              "title": "一、",
+              "title": "一、心理治疗的基本概念与精神动力学疗法",
               "subs": [
                 {
                   "title": "1.1 理论基础",
