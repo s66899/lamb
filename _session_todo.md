@@ -4440,3 +4440,61 @@ TOC 渲染会出现两个 `十、` 节点，第二个完全无意义（subs 全�
     或读 raw 字节比对）。本轮 manifest.json/manifest_data.js 共 +31 bytes（4 h2 改 + 1 乱码
     修复）实际肉眼看不到；下次想做类似修复时仍要按 raw 字节维度操作。
 
+## 第 110 轮（commit TBD）— 整仓扫描 0 broken / 0 fix 落地，仅记账
+
+**本轮做了什么**：扫描全 9 本书 markdown 的 ex-lib inline 引用 [ex:N] 与 ex-lib.json
+库内合法 id 集，全仓 **0 broken**（1336 个合法 id / 9 本书 / 0 missing）；同步校验：
+
+- `node --check app.js` ✅ / `node --check manifest_data.js` ✅ / `python -m json.tool manifest.json` ✅
+- APP_VERSION = v3.22.62（app.js L28）+ APP_DATE = 2026-08-29，与 README / books/README
+  / VERSION 5 处埋点一致
+- 羽毛球康复书 8 章 inline 引用实际数（脚本逐章扫）：
+  - ch01-introduction: 0 unique (本章纯文字无 ex-lib 引用，符合导言定位)
+  - ch02-shoulder: 32 处 / 7 unique ✓（v3.22.55 修复的「7 处」声明对得上）
+  - ch03-knee: 16 处 / 9 unique（无声明段，配置符合）
+  - ch04-ankle: 23 处 / 13 unique（无声明段）
+  - ch05-elbow: 16 处 / 5 unique（无声明段）
+  - ch06-back: 45 处 / 16 unique ✓（声明段「45 处 / 16 unique」与实际 1:1）
+  - ch07-achilles: 32 处 / 14 unique ✓（声明段「32 处 / 14 unique」+ 分布
+    「4 周 6 + 8 周 5 + 12 周 0 + 落地缓冲 1 + 清单 20 = 32」逐段对得上）
+  - ch08-action-plan: 35 处 / 16 unique（无声明段）
+- NSCA-CPT ch10 v3.22.74 ledger 声明「59 处 / 25 unique / 0 broken」与脚本扫
+  body+table (27+32=59) 一致；blockquote 段不计入（设计选择）
+
+**ch07 末段「库中也暂无跟腱专用离心动作」事实声明校验**：用 'achilles' /
+'eccentric' / 'heel drop' / 'tendon' 在 ex-lib 1336 项里 grep，**0 命中**——声明属实。
+
+**ch01 §七「全书导航总览」6 行表格交叉校验**：链接到的 6 章 H2 标题在 markdown
+实际位置全部存在（ch02 「二、信号识别——三个层次」L36 / 「七、杀球生物力学关键点」L183；
+ch03 「第一部分：诊断与信号识别」L21 / 「第五部分：羽毛球专项回归检验」L161；ch04 「第一层：普通人能看懂」L24 / 「第二层：专业人士参考」L80；ch05 「二、信号识别——三个层次」L41 / 「四、反手发力链生物力学关键点」L82；ch06 「4 周时间线（轻症 / 肌肉劳损）」L32 / 「后场被动反手的力学纠正」L122；ch07 「4 周时间线（轻症 / 早期跟腱病）」L29 / 「杀球落地缓冲训练」L109）——零 broken link。
+
+**本轮没有落地 fix**：扫描结果显示仓库当前 **0 个真实 broken id / 0 个 APP_VERSION drift /
+0 个 manifest JSON 损坏 / 0 个 markdown 渲染异常**，最近一轮（fb70466）已经处理了
+ch08 manifest 镜像不变式问题。考虑过但**主动放弃**的几项改进：
+
+1. 羽毛球康复书 ch07 12 周时间线段 inline 引用为 0 处（vs ch02 / ch04 / ch06 都有具体
+   ex-lib 动作列表），但补强属于 scope creep（与「不重复大改动」偏好冲突），留观。
+2. ch01 §七导航表「你该先读哪一节」列只链文件未带锚点（点进跳到文件顶端），加锚点
+   需要校对 GitHub Pages jekyll kramdown 自动 fragment 规则（中文 + 标点混合），有
+   把"承诺跳转但跳错"变成"承诺跳转但 404"的风险，留观。
+3. 仓库根目录 21 个 `_round104_*.py` / `_round105_*.py` / `_round106_*.py` /
+   `_round107_*.py` / `_round109_*.py` / `_scan_ch12_h2_separator.py` 等临时
+   扫描脚本 + `_round109_*.txt` 输出文件长期未 commit 但又未删除，按以往轮次规律
+   是「运行完扫描→不 add」的工作流噪音，**不在本轮处理**。
+
+**下轮候选**：
+1. NSCA-CPT ch10 §七末段 v3.22.17 / v3.22.62 / v3.22.72 / v3.22.74 四次勘误 blockquote
+   累积 580+ 字，可整理为附录「v3.22 勘误史」独立 H2（91/95 轮已列入候选，本轮
+   再次确认仍无变化）。
+2. 羽毛球康复书 ch07 12 周时间线段补强 5 个 inline 动作（与 ch02/ch04/ch06 体例对齐，
+   需选 ex-lib 库内已有 calf raise / Achilles 拉伸变体——本轮扫过库内 0 个 achilles
+   专项，需用 calf raise / calf stretch 类条目代用，与 ch07 「Alfredson 方案由
+   calf raise / calf stretch 代用」说明段一致）。
+3. `_session_todo.md` 78 轮 双写 `_append_todo_round78.{py,md}` 在 HEAD 缺失，
+   与 73~77/79~97 轮惯例不同，可远期补一份保持双写连续。
+4. engineering-mechanics 整本 12 章 manifest h2s 与 markdown 1:1 校验
+   （97 轮只扫了 ch12）。
+
+**commit**：本轮仅 ledger append（`_session_todo.md` 末尾），无 fix 配套，故单 commit
+chore(todo) 即可（沿用 v3.22.55/56/57/62/71~80/82/83/84/85/86/87/88/89/90/91/92/97 轮
+chore(todo) + fix 配对风格的纯记账轮次变体——本轮无 fix 故只 chore）。
