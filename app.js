@@ -26,7 +26,7 @@ let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存�
 
 // ─── 版本 ─────────────────────────────────
 const APP_VERSION = 'v3.22.62';
-const APP_DATE = '2026-08-29';
+const APP_DATE = '2026-08-31';
 
 // ─── 全局错误边界（防白屏）─────────────────
 window.addEventListener('error', (e) => {
