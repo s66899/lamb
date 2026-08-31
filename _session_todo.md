@@ -3442,3 +3442,40 @@ GitHub Pages 自动部署中
 6. (继承 71~82 轮, 优先级低) NSCA-CPT ch09 / ch10 的反向链接承诺
    （ch01-introduction L162「想理解通用原理 → 读 NSCA-CPT ch09」）已完整兑现
    （NSCA-CPT ch09 L512 反链表 + 羽毛球 ch12 §九联动），跨轮保留
+
+
+---
+
+## 第 84 轮（commit 6d04c9e）— books/README.md L21 羽毛球康复指南字数 2.07 → 2.1 万字漂移修复（与 83 轮 L11 同型字面量对齐）
+
+**本轮做了什么**：
+- `books/README.md` L21 羽毛球康复指南字数 `2.07 万` → `2.1 万`
+- 追平 83 轮 L11 总字数已用 1 位小数的惯例（89.9 / 89.86）
+- 让 9 本书表全部统一 1 位小数：
+  - 14.2 / 15.8 / 20.5 / 16.9 / 14.3 / 5.0 / **2.1** / 0.5 / 0.6
+- 真实数据：badminton-recovery 8 章累加 20742 字 → 2.0742 万 → 1 位 = 2.1
+
+**校验**：
+- `python -m json.tool manifest.json` → OK ✓
+- `file books/README.md` → "Unicode text, UTF-8 text" 无 CRLF ✓
+- `git diff --stat` → `1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+- manifest badminton-recovery 8 章累加 20742 字 = 2.0742 万 ≈ 2.1 万 ✓
+- 零业务代码改动 / 零 ex-lib id 改动 / audit 0 drift 不变 / APP_VERSION 不 bump
+- 可独立回滚：`git revert HEAD`
+
+**用户偏好兑现**：
+- 双层结构保持 —— 读者看到的「羽毛球康复指南 8 / 2.1 万」与表中其他 8 本书位数对齐
+- 沿用 73/74/75/76/77/79/80/81/82/83 轮风格：单行 fix + 单 commit + 双 .py + .md 记账追加
+- 零伪造 id
+
+**commit hash**：6d04c9e（fix(meta): books/README.md L21 羽毛球康复指南字数 2.07 → 2.1 万字漂移修复；零业务代码改动；零 ex-lib id 改动）
+
+**push 状态**：✅ 成功！`09b07a7..6d04c9e book -> book`（1 次直连 443 失败 + sleep 30 + `git -c http.proxy= -c https.proxy= push` → exit 0），GitHub Pages 自动部署中
+
+**下轮候选**：
+1. (继承 71~83 轮, 优先级低) 营养书 ch01~ch07 各 400~1000 字偏短（实为完整骨架 + 公式 + 表），如需扩写可挑 1 章做小补
+2. (继承 71~83 轮, 优先级低) 羽毛球康复书 ch07-achilles 184 行最薄，但 inline 32 处 / unique 14 个已饱和，结构完整，硬补有 scope creep 风险，留观
+3. (继承 71~83 轮, 优先级低) NSCA-CPT ch10 §七末段四次勘误 blockquote 累积 580+ 字，可远期整理到附录「v3.22 勘误史」独立 H2
+4. (继承 80~83 轮, 优先级低) `_append_todo_round78.{py,md}` 在 HEAD 里缺失 —— 78 轮的记账 narrative 写在 `_session_todo.md` 末尾「## 第 78 轮」段，但未生成 73~79/80/81/82/83/84 双写惯例的两个文件。可远期补一份让 round68/71/73/74/75/76/77/79/80/81/82/83/84 双写系列保持连续
+5. (本轮新发现, 优先级低) 根 README.md L10 也有类似「v3.22.62 · 9 本书 / 97 章 / X 万字」字面量，需对照根 README 内部一致性扫描
+6. (继承 71~83 轮, 优先级低) NSCA-CPT ch09 / ch10 的反向链接承诺（ch01-introduction L162「想理解通用原理 → 读 NSCA-CPT ch09」）已完整兑现，跨轮保留
