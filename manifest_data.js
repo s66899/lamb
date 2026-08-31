@@ -1400,7 +1400,7 @@ const MANIFEST_DATA = {
         },
         {
           "file": "ch11-fingerprints-palm-color.md",
-          "title": "手相指纹掌色与掌形",
+          "title": "手相指纹、掌色与掌形",
           "words": 14353,
           "h2s": [
             {
@@ -14066,7 +14066,7 @@ const MANIFEST_DATA = {
       "chapters": [
         {
           "file": "ch01-tdee.md",
-          "title": "TDEE 每日总能耗计算",
+          "title": "TDEE每日总能耗计算",
           "words": 436,
           "h2s": [
             {
