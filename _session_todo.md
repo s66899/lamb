@@ -3040,3 +3040,28 @@
 - 羽毛球康复书 ch07 跟腱章 184 行 / 2079 字最薄，但结构完整，硬塞有 scope creep 风险，留观
 - 教材「棵→踝」/「所以→所有」/「镉→锚」等历史笔误已全部清零
 - NSCA-CPT ch10 §七末段三个 v3.22.NN 历史快照 blockquote 都已记账；后续若有 v3.22.78+ 新一轮 inline 增删，需注意保留last-wins结构避免audit happy边缘情况
+
+## 第 78 轮（commit 4f8fc37）— README 两处 v3.22.61 → v3.22.62 残渣扫尾
+
+**本轮做了什么**：
+- 扫面时发现「叙事领先于代码」典型残渣：`README.md` L231「当前版本：v3.22.61（2026-08-29）」+ `books/README.md` L11「数据源：manifest.json v3.22.61 · 总计 9 本书 / 97 章 / 89.8 万字」两处仍写 v3.22.61，但 `_bump_version.js --set=v3.22.62` 早在 b2b6ab2 已把 app.js APP_VERSION / index.html 三处 ?v= / VERSION 头注释 + 顶部 changelog 全部 bump 到 v3.22.62——README 是 4 埋点里漏掉的两处。
+- 单字段文本替换：`v3.22.61` → `v3.22.62` + L231 日期 `2026-08-29` → `2026-08-31`（追平 VERSION v3.22.62 的发版日期 2026-08-31）。`README.md` L241「**v3.22.61**（2026-08-29）: 🔧 4 埋点 v3.22.58→v3.22.61 一步到位追平」是历史 changelog 条目，按惯例保留不动。
+- 零业务代码改动、零 ex-lib id 改动（库内 1336 / 全项目 140 unique / 0 broken 不变）、audit 0 drift 不变（不动任何 [ex:NNNN] / 不动任何章节内容）。
+
+**校验**：
+- `node --check app.js` → OK
+- `python -m json.tool manifest.json` → OK
+- `python _audit_exlib_ledger.py` → 0 drift（仅 ch12 informational list-only，与改前一致）
+- 5 埋点全部 v3.22.62 对齐：`app.js:28` APP_VERSION / `index.html:24,228,229` 三处 `?v=` / `VERSION` 头注释 + 顶部 changelog / `README.md:231` 当前版本 / `books/README.md:11` 数据源 ✓
+- `git diff --stat` → 2 files changed, 2 insertions(+), 2 deletions(-)
+- push：`c2ebfa0..4f8fc37 book -> book`（GitHub Pages 自动部署）
+
+**commit hash**：4f8fc37（fix(meta): README 「当前版本 v3.22.61」→ v3.22.62 + books/README 「数据源 v3.22.61」→ v3.22.62）
+
+**下轮候选**：
+- 营养书 ch01~ch07 各 400-1000 字偏短（实为完整骨架 + 公式 + 表），如需扩写可挑 1 章做小补（继承上轮）
+- 羽毛球康复书 ch07 跟腱章 184 行 / 2079 字最薄，结构完整（继承上轮）
+- NSCA-CPT ch09 / ch10 的反向链接承诺（ch01-introduction L162 「想理解通用原理 → 读 NSCA-CPT ch09」）仍只兑现到羽毛球 ch12 一半，跨轮保留（继承上轮）
+- **新发现**：`badminton-recovery/ch07-achilles.md` 184 行偏短；快速浏览一遍可能有 1-2 处 inline 引用可加（沿用 v3.22.71~74 风格「§X.Y 加 N 处 inline 示例」），但需要先 grep 看是否 §X.Y 都已 inline 饱和
+- **新发现**：根 `README.md` L241 之下最近的 changelog 是 v3.22.61，中间缺 v3.22.62 一条（v3.22.62 是 b2b6ab2 / _bump_version.js 的 4 埋点同步），可在根 README §「🔄 更新日志」补一条 v3.22.62 摘要让 changelog 自洽（与 VERSION 文件 changelog 同步）
+- 教材笔误扫尾已完成；ex-lib audit 0 drift 长期保持
