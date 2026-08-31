@@ -2982,7 +2982,7 @@
 2. `.gitignore` L4-L8 — 新增 `__pycache__/` / `*.pyc` / `*.pyo` 三个忽略项（消除每次跑 `_audit_exlib_ledger.py` 都会在工作树生成 `__pycache__/_audit_exlib_ledger.cpython-313.pyc` / `cpython-314.pyc` 导致工作树 dirty 状态污染）
 
 **真实问题**：
-- 第 75 轮 commit `49b1bc1` + `970b4c1` 已完成且 push 成功，但 ledger 字符串里 `**commit hash**：（待 commit 后填）` 占位符未回填，跨轮看 ledger 时无法直接定位本轮 commit（需要 git log 反查）；属于「记账不一致」类小 bug
+- 第 75 轮 commit `49b1bc1` + `970b4c1` 已完成且 push 成功，但 ledger 字符串里 `**commit hash**：`49b1bc1`（本轮主 commit, ch10 §4.3 L255 [ex:5205] 措辞错位「全身」→「小腿」+ L315 v3.22.74 blockquote 同步对齐；2 files changed, 35 insertions(+), 2 deletions(-)）` 占位符未回填，跨轮看 ledger 时无法直接定位本轮 commit（需要 git log 反查）；属于「记账不一致」类小 bug
 - 每次跑 `python _scan_exlib_refs.py` / `python _audit_exlib_ledger.py` 后都会在工作树生成 `__pycache__/_audit_exlib_ledger.cpython-313.pyc`（更早期还有 cpython-314.pyc），但 `.gitignore` 一直没忽略 Python bytecode，导致 `git status --short` 长期 dirty（最近至少 71 轮起每个 commit 之前都看到 `?? __pycache__/`）；属于「工具链 cleanliness」类小改进
 
 **校验**：
