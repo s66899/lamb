@@ -3392,7 +3392,13 @@ const MANIFEST_DATA = {
             },
             {
               "title": "🐏 行动建议",
-              "subs": []
+              "subs": [
+                {"title": "如果你每天只有15分钟", "level": 3},
+                {"title": "如果你每周有2～3次系统训练", "level": 3},
+                {"title": "训练顺序建议", "level": 3},
+                {"title": "三个月训练计划纲要", "level": 3},
+                {"title": "记住三条黄金法则", "level": 3}
+              ]
             },
             {
               "title": "📚 参考文献",
