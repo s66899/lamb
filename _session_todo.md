@@ -3066,7 +3066,7 @@
 - **新发现**：根 `README.md` L241 之下最近的 changelog 是 v3.22.61，中间缺 v3.22.62 一条（v3.22.62 是 b2b6ab2 / _bump_version.js 的 4 埋点同步），可在根 README §「🔄 更新日志」补一条 v3.22.62 摘要让 changelog 自洽（与 VERSION 文件 changelog 同步）
 - 教材笔误扫尾已完成；ex-lib audit 0 drift 长期保持
 
-## 第 79 轮（commit bf1564c）— README §「🔄 更新日志」补 v3.22.62 自身条目
+## 第 79 轮（commit a2bfb7e）— README §「🔄 更新日志」补 v3.22.62 自身条目
 
 **本轮做了什么**：
 - 扫面 6 个版本埋点时发现根 `README.md` L241 之上最近的 changelog 是 v3.22.61（2026-08-29），中间缺 v3.22.62 一条 —— 而 78 轮（commit `4f8fc37`）已经把 README L231 / books/README L11 / app.js APP_VERSION / index.html 三处 ?v= / VERSION 头注释全部 bump 到 v3.22.62，但根 README §「🔄 更新日志」列表本身没补对应条目。
@@ -3093,7 +3093,7 @@
 - 行尾保护：README.md 仍纯 LF（与改前一致，无 CRLF 引入）
 - 零文字本体数字改动；零 inline id 变化；零业务代码变化；可独立回滚 `git revert HEAD` ✅
 
-**commit hash**：bf1564c（fix(meta): README §「🔄 更新日志」补 v3.22.62 自身条目）
+**commit hash**：a2bfb7e（fix(meta): README §「🔄 更新日志」补 v3.22.62 自身条目）
 
 **下轮候选**：
 1. **(本轮新发现,优先级低)** NSCA ch10 §七末段「v3.22.17 / v3.22.62 / v3.22.72 / v3.22.74」四次勘误 blockquote 累积 580+ 字，与本轮同型「叙事长度累积」问题，可考虑把历次 v3.22.NN 勘误移到文件末尾「附录：v3.22 勘误史」独立 H2，让正文 §七 保持 1 个 blockquote；可远期处理

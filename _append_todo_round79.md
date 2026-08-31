@@ -40,7 +40,7 @@
 
 ## commit hash
 
-bf1564c
+a2bfb7e
 
 ## 下轮候选
 
