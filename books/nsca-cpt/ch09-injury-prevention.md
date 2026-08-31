@@ -500,14 +500,16 @@ NSCA-CPT 损伤预防 5 原则：
 
 ## 与 NSCA-CPT 其他章节 + 羽毛球 ch12 的互引
 
-| 本章小节 | 互引章节 | 关系 |
-|---------|---------|------|
-| 第 1 节 膝关节康复 | ch04 力量 + 羽毛球 ch12 | 闭链动作（[ex:0987]）是核心 |
-| 第 2 节 肩关节康复 | ch04 肩袖稳定 + ch05 爆发力 | 杀球动作链的康复前提 |
-| 第 3 节 踝关节康复 | ch06 敏捷性 + ch08 周期化 | 落地缓冲（[ex:3543]）在周期化里的位置 |
-| 第 4 节 肘关节康复 | ch04 前臂 + 羽毛球 ch12 | 离心训练（[ex:0994]）的细化 |
-| 第 5 节 腰部康复 | ch04 核心抗旋 + 羽毛球 ch12 | 死虫（[ex:0276]）的临床应用 |
-| 第 6 节 跟腱康复 | ch04 小腿 + ch05 跳跃 | 提踵（[ex:0999]）的进阶用法 |
+| 本章小节 | 互引章节 | 反向链接（羽毛球康复书） | 关系 |
+|---------|---------|------|------|
+| 第 1 节 膝关节康复 | ch04 力量 + 羽毛球 ch12 | [badminton-recovery ch03](./../badminton-recovery/ch03-knee.md) | 闭链动作（[ex:0987]）是核心 |
+| 第 2 节 肩关节康复 | ch04 肩袖稳定 + ch05 爆发力 | [badminton-recovery ch02](./../badminton-recovery/ch02-shoulder.md) | 杀球动作链的康复前提 |
+| 第 3 节 踝关节康复 | ch06 敏捷性 + ch08 周期化 | [badminton-recovery ch04](./../badminton-recovery/ch04-ankle.md) | 落地缓冲（[ex:3543]）在周期化里的位置 |
+| 第 4 节 肘关节康复 | ch04 前臂 + 羽毛球 ch12 | [badminton-recovery ch05](./../badminton-recovery/ch05-elbow.md) | 离心训练（[ex:0994]）的细化 |
+| 第 5 节 腰部康复 | ch04 核心抗旋 + 羽毛球 ch12 | [badminton-recovery ch06](./../badminton-recovery/ch06-back.md) | 死虫（[ex:0276]）的临床应用 |
+| 第 6 节 跟腱康复 | ch04 小腿 + ch05 跳跃 | [badminton-recovery ch07](./../badminton-recovery/ch07-achilles.md) | 提踵（[ex:0999]）的进阶用法 |
+
+> **反向链接约定**：每节康复模型在羽毛球康复书里有独立专章（ch02-shoulder / ch03-knee / ch04-ankle / ch05-elbow / ch06-back / ch07-achilles），读者可以跳过去看 4/8/12 周时间线版对应章节；羽毛球康复书 ch01 §五明确承诺"想理解通用原理 → 读 NSCA-CPT ch09"，本表用于兑现该承诺。
 
 ---
 
