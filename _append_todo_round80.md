@@ -37,7 +37,7 @@
 
 ## commit hash
 
-（待 commit 后填）
+83d17e6
 
 ## 下轮候选
 
