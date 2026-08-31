@@ -2444,3 +2444,52 @@
 - `e912133` (本轮已 commit,已 push `b17d99a..e912133`)
 
 ---
+---
+
+## 第 64 轮 (commit d67b8cc, 本轮)
+
+### 本轮做了什么
+
+- **ch08 插入新 §四「回归球场的三道关（对应 ch01 §四）」 + 重编号 §四~§九** — `books/badminton-recovery/ch08-action-plan.md` (+40 / -6, 1 file)
+  - **触发原因(真实 broken promise)**:ch01 §四定义了「回归球场的三道关」(力量/功能/耐力),ch01 L214 + ch02-ch07 末全部承诺「按 ch08 跑一遍三道关」,但 ch08 原版末尾**只有 §三「统一标准」6 项 + §八「软提醒」5 条** — 读者按指示跑到 ch08 找不到「三道关」具体内容。这是真实的 UX 死链:8 章全部 promise 一个 ch08 不存在的小节
+  - **决策**:插入新 §四做 ch01 §四 的「落地版」(checklist + 客观测试 + 强度控制),而不是在 §三 加一段 — 因为 §三 是「入门硬门槛 6 项」与 §四「分项达标线」是**互补关系**,不能合并;ch01 §四 已经是双层结构(普通人+专业人士),§四 必须保留双层
+  - **新 §四 内容**(全部内容复述自 ch01 §四,零编造):
+    - §4.1 三道关 checklist(可勾选 `- [ ]` markdown 语法)— 第一关·力量关 / 第二关·功能关 / 第三关·耐力关
+    - §4.2 第二层客观测试体系表(7 项测试 + 通过标准 + 适用损伤,与 NSCA-CPT ch09 对齐)
+    - §4.3 分阶段回归球场强度控制表(3 阶段 × 时长/内容/强度 50%/70%/85%)
+    - 顶部块引用说明本节是 ch01 §四 的「落地版」,兑现 ch02-ch07 末承诺
+    - 末尾块引用说明 §4.1 与 §三「统一标准」是**互补关系**(§三=入门硬门槛,§4.1=分项达标线,两者全通过才回球场)
+  - **重编号**:原 §四~§八 → §五~§九(原 §八「最后的提醒」5 条保留为 §九 收尾,内容零改)
+  - **顺手修 LF**:原文件 219 行以 `🏸` emoji 结尾**无换行符**,与其他 7 章(ch01-ch07 全部以 LF 结尾)风格不一致 — 末尾补 1 字节 `
+` 拉齐风格
+
+### 校验
+
+- `python _scan_exlib_refs.py` → broken refs = 0 ✅(新 §四/§九 零 ex-lib id 改动)
+- `python -c "ch08 [ex:NNNN] inline=35 unique=16"` → 与 §七 声明完全一致 ✅
+- `python -m json.tool manifest.json` → OK ✅
+- `python -m json.tool books/exercises/ex-lib.json` → OK ✅
+- `python _audit_exlib_ledger.py` → 仅 ch05 已知误报(脚本盲点,跨轮保留,本轮未引入新 drift) ✅
+- `grep -rn 'ch08#\|ch08.*-.*\|action-plan#' books/` → 零命中 ✅(无文件引用 ch08 子节号,全部整章锚定 `./ch08-action-plan.md`,重编号零风险)
+- 8 章末尾 LF 一致性: `for f in ch0*.md; do endsLF=$? done` → 8/8 ✅
+- `git diff --stat` → 1 file changed, 40 insertions(+), 6 deletions(-) ✅
+
+### push 状态
+
+- ⚠️ **本轮 push 失败**:`fatal: unable to access 'https://github.com/s66899/lamb.git/': Recv failure: Connection was reset`
+- commit `d67b8cc` 已存在本地 `book` 分支,等下一次有网络时一并捎带
+
+### 留给下轮候选
+
+- **(本轮新发现,优先级低)ch01 L214 / ch02-ch07 末 → ch08 §四 增加锚点链接 `#四-回归球场的三道关对应-ch01-四`** — 现在链接 `./ch08-action-plan.md` 整章,读者点进去还要滚到 §四;加锚点可一键定位;但 GitHub Pages 是否支持中文锚点需验证(已知部分 markdown 渲染器对中文 H2 heading anchor 支持不一致),需先实测再决定是否落地
+- **(继承远期,优先级低)** 羽毛球康复书 6 章 H2 结构统一化 — 跨轮保留,工作量大
+- **(继承远期,优先级低)** foam roller / 筋膜球腰部专项入库 — 不假造 id,继续留
+- **(继承远期,优先级低)** NSCA-CPT ch10 第七节总清单 ↗ 详见 2.1 节 是否覆盖所有 id — 跨轮保留
+- **(继承远期,优先级低)** APP_VERSION bump — 沿用 v3.22.61
+- **(继承远期,优先级低)** books/README.md 96 → 97 章字段同步 — 远期继承
+- **(继承远期,优先级低)** 根 README「每章 60/30/10」核实 — 远期继承
+- **(继承远期,优先级低)** `_audit_exlib_ledger.py` 正则扩展 (消 ch05 误报) — 跨轮保留
+
+### commit hash
+
+- `d67b8cc` (本轮已 commit,本地未 push)
