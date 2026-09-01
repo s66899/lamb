@@ -1,7 +1,7 @@
 ## 第 121 轮 — badminton ch12 §8.4 训练类 unique 计数 34→35 校对勘误
 
 **commit**: `d6bd819` fix(badminton-ch12): §8.4 训练类 unique 计数 34→35 校对修正
-**push**: ⏳ 本轮 github.com:443 持续连接失败（连续 6 次重试：sleep 3/5/15/30/45/ping + 直 push 共 6 次均 `Failed to connect to github.com port 443 after 21000+ ms` 或 `Recv failure: Connection was reset`，ping github.com 也被网络层拒绝）；commit 已在本地落盘，远程推送留待下轮网络恢复
+**push**: ✅ `e285949..8505c2a book -> book`（sleep 30 后一次推成功，前 6 次 github.com:443 持续连接失败属本环境已知网络波动）
 
 ### 本轮做了什么
 
