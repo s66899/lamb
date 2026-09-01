@@ -13490,7 +13490,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch01-pre-match-prep.md",
           "title": "赛前准备与倒计时",
-          "words": 60,
+          "words": 964,
           "h2s": [
             {
               "title": "赛前准备的重要性",
@@ -13586,7 +13586,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch02-serve-receive.md",
           "title": "发接发战术体系",
-          "words": 334,
+          "words": 758,
           "h2s": [
             {
               "title": "发球的重要性",
@@ -13683,7 +13683,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch03-opponent-analysis.md",
           "title": "对手分析与应对",
-          "words": 168,
+          "words": 771,
           "h2s": [
             {
               "title": "赛前情报收集",
@@ -13755,7 +13755,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch04-mental-strategy.md",
           "title": "比赛心理策略",
-          "words": 122,
+          "words": 972,
           "h2s": [
             {
               "title": "比赛心理的重要性",
@@ -13846,7 +13846,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch05-physical-pacing.md",
           "title": "体能分配与节奏控制",
-          "words": 120,
+          "words": 1068,
           "h2s": [
             {
               "title": "羽毛球比赛的体能特点",
@@ -13968,7 +13968,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch06-post-match-review.md",
           "title": "局间调整与赛后复盘",
-          "words": 55,
+          "words": 762,
           "h2s": [
             {
               "title": "局间调整的重要性",
@@ -14054,7 +14054,7 @@ const MANIFEST_DATA = {
           ]
         }
       ],
-      "totalWords": 859,
+      "totalWords": 5295,
       "chapterCount": 6
     },
     {
