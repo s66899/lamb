@@ -2665,7 +2665,7 @@ const MANIFEST_DATA = {
           ]
         }
       ],
-      "totalWords": 142825,
+      "totalWords": 143788,
       "chapterCount": 15
     },
     {
