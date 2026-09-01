@@ -1,4 +1,15 @@
 # Force-disable LFS for this repo to avoid actions/checkout failures
 # (LFS isn't actually used here; workspace accidentally inherited the global filter)
-* -text -merge -diff -lfs -lockable
+* -text -lfs -lockable
+
+# Re-enable text-mode diff for small data files so `git diff` shows real
+# content instead of just "blob hash changed". CRLF in the working tree is
+# preserved on disk; the diff attribute only affects how git *displays* changes.
+*.json  diff
+*.md    diff
+*.js    diff
+*.html  diff
+*.css   diff
+
+# Markdown: use the built-in markdown diff driver for readable word-level diffs.
 *.md diff=markdown
