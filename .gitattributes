@@ -1,6 +1,9 @@
 # Force-disable LFS for this repo to avoid actions/checkout failures
-# (LFS isn't actually used here; workspace accidentally inherited the global filter)
-* -text -lfs -lockable
+# (LFS isn't actually used here; workspace accidentally inherited the global filter).
+# Note: keeping -text off here fights against the explicit per-extension diff
+# lines below; we strip -text so *.json etc. actually diff instead of being
+# treated as binary blobs. LFS (-lfs) and lockable stay off.
+* -lfs -lockable
 
 # Re-enable text-mode diff for small data files so `git diff` shows real
 # content instead of just "blob hash changed". CRLF in the working tree is
