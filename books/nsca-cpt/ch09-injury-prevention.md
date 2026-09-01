@@ -92,11 +92,11 @@ NSCA-CPT 损伤预防 5 原则：
 
 | 阶段 | 动作 | ex-lib 动作 | 组数×次 | 频次 |
 |------|------|--------|---------|------|
-| 0-2 周 | 单腿罗马尼亚硬拉 | [ex:0980 band bent-over hip extension] | 3×10/侧 | 每天 |
-| 0-2 周 | 坐姿腿屈伸 | [ex:0085 barbell romanian deadlift] (轻负荷) | 3×12 | 每天 |
-| 2-6 周 | 单腿保加利亚蹲 | [ex:0054 barbell lunge] (轻负荷) | 3×8/侧 | 每周 3 次 |
-| 2-6 周 | 臀桥 | [ex:1408 band hip lift] | 3×15 | 每周 3 次 |
-| 6+ 周 | 跳箱（轻箱） | [ex:0514 跳箱深蹲] | 4×5 | 每周 2 次 |
+| 0-2 周 | 单腿罗马尼亚硬拉 | [ex:0980] band bent-over hip extension | 3×10/侧 | 每天 |
+| 0-2 周 | 坐姿腿屈伸 | [ex:0085] barbell romanian deadlift (轻负荷) | 3×12 | 每天 |
+| 2-6 周 | 单腿保加利亚蹲 | [ex:0054] barbell lunge (轻负荷) | 3×8/侧 | 每周 3 次 |
+| 2-6 周 | 臀桥 | [ex:1408] band hip lift | 3×15 | 每周 3 次 |
+| 6+ 周 | 跳箱（轻箱） | [ex:0514] 跳箱深蹲 | 4×5 | 每周 2 次 |
 
 #### 第二层：专业人士参考
 
@@ -147,10 +147,10 @@ NSCA-CPT 损伤预防 5 原则：
 
 | 阶段 | 允许动作 | ex-lib 动作 |
 |------|---------|--------|
-| 0-2 周 | 等长股四头收缩 | [ex:0276 dead bug] |
-| 2-4 周 | 闭链运动（部分负重）| [ex:0987 单腿分腿蹲]（轻负荷）|
-| 4-8 周 | 单腿闭链到 70% 1RM | [ex:0054 barbell lunge] |
-| 8-12 周 | 双腿深蹲 + plyometric | [ex:0038 barbell back squat] |
+| 0-2 周 | 等长股四头收缩 | [ex:0276] dead bug |
+| 2-4 周 | 闭链运动（部分负重）| [ex:0987] 单腿分腿蹲（轻负荷）|
+| 4-8 周 | 单腿闭链到 70% 1RM | [ex:0054] barbell lunge |
+| 8-12 周 | 双腿深蹲 + plyometric | [ex:0038] barbell back squat |
 | 12+ 周 | 旋转动作专项 | 死虫 + 转体 |
 
 **禁忌动作**（康复全过程）：
@@ -210,10 +210,10 @@ NSCA-CPT 损伤预防 5 原则：
 
 | 阶段 | 时间 | 允许动作 | ex-lib 动作 |
 |------|------|---------|--------|
-| **急性期** | 0-2 周 | 仅等长收缩、肩胛骨回缩 | [ex:0080 standing military press]（无负荷）|
-| **恢复期** | 2-6 周 | 闭链肩胛稳定、外旋 | [ex:0235 cable standing shoulder external rotation] |
-| **强化期** | 6-12 周 | 外旋力量 70% 1RM、肩胛控制 | [ex:0864 dumbbell upright shoulder external rotation] |
-| **回归期** | 12+ 周 | 渐进过头顶动作、专项 | [ex:0864 dumbbell upright shoulder external rotation]（库里无独立 90° id，借用最接近的 upright shoulder external rotation）|
+| **急性期** | 0-2 周 | 仅等长收缩、肩胛骨回缩 | [ex:0080] standing military press（无负荷）|
+| **恢复期** | 2-6 周 | 闭链肩胛稳定、外旋 | [ex:0235] cable standing shoulder external rotation |
+| **强化期** | 6-12 周 | 外旋力量 70% 1RM、肩胛控制 | [ex:0864] dumbbell upright shoulder external rotation |
+| **回归期** | 12+ 周 | 渐进过头顶动作、专项 | [ex:0864] dumbbell upright shoulder external rotation（库里无独立 90° id，借用最接近的 upright shoulder external rotation）|
 
 **关键动作库**（每个都标 ex-lib id）：
 
@@ -269,10 +269,10 @@ NSCA-CPT 损伤预防 5 原则：
 
 | 阶段 | 时间 | 重点 | ex-lib 动作 |
 |------|------|------|--------|
-| **急性期** | 0-1 周 | POLICE、消炎 | [ex:1377 calf stretch]（温和）|
+| **急性期** | 0-1 周 | POLICE、消炎 | [ex:1377] calf stretch（温和）|
 | **早期活动** | 1-3 周 | 踝绕环、本体感觉 | 配套动作 |
-| **力量恢复** | 3-6 周 | 单腿提踵、跳跃落地 | [ex:0999 band single leg calf raise] |
-| **专项回归** | 6-12 周 | 急停变向、羽毛球步伐 | [ex:3543 bodyweight drop jump squat] |
+| **力量恢复** | 3-6 周 | 单腿提踵、跳跃落地 | [ex:0999] band single leg calf raise |
+| **专项回归** | 6-12 周 | 急停变向、羽毛球步伐 | [ex:3543] bodyweight drop jump squat |
 
 **核心动作库**：
 
@@ -331,7 +331,7 @@ NSCA-CPT 损伤预防 5 原则：
 | 阶段 | 动作 | ex-lib 动作 | 频次 |
 |------|------|--------|------|
 | 0-4 周 | 腕伸肌拉伸 | 配套动作 | 每天 3×30 秒 |
-| 4-8 周 | 腕伸肌离心训练 | [ex:0994 band reverse wrist curl]（轻）| 每天 3×15 |
+| 4-8 周 | 腕伸肌离心训练 | [ex:0994] band reverse wrist curl（轻）| 每天 3×15 |
 | 8+ 周 | 渐进腕伸肌强化 | [ex:0994] | 每周 3×3×15 |
 | 8+ 周 | 渐进腕屈肌强化 | 配套动作 | 每周 3×3×15 |
 
@@ -362,9 +362,9 @@ NSCA-CPT 损伤预防 5 原则：
 网球肘的"内侧版本"——少见但同样困扰正手杀球球友。
 
 **康复动作库**：
-- 腕屈肌拉伸 + 离心训练（用 [ex:0054 barbell lunge] 配套）
-- 腕屈肌强化（[ex:0088 坐姿杠铃提踵] 配套变式）
-- 握力训练（保留 [ex:1421 dumbbell farmer's walk]）
+- 腕屈肌拉伸 + 离心训练（用 [ex:0054] barbell lunge 配套）
+- 腕屈肌强化（[ex:0088] 坐姿杠铃提踵 配套变式）
+- 握力训练（保留 [ex:1421] dumbbell farmer's walk）
 
 ---
 
@@ -445,11 +445,11 @@ NSCA-CPT 损伤预防 5 原则：
 
 | 阶段 | 动作 | ex-lib 动作 | 频次 |
 |------|------|--------|------|
-| 第 1 阶段 | 单腿离心提踵（台阶）| [ex:0999 band single leg calf raise]（离心）| 每天 3×15 |
-| 第 1 阶段 | 坐姿提踵（比目鱼肌）| [ex:0088 坐姿杠铃提踵]（轻负荷）| 每天 3×15 |
+| 第 1 阶段 | 单腿离心提踵（台阶）| [ex:0999] band single leg calf raise（离心）| 每天 3×15 |
+| 第 1 阶段 | 坐姿提踵（比目鱼肌）| [ex:0088] 坐姿杠铃提踵（轻负荷）| 每天 3×15 |
 | 第 2 阶段 | 单腿离心提踵（负重）| [ex:0999]（负重）| 每天 3×15 |
-| 第 2 阶段 | 双腿提踵 | [ex:1369 band two legs calf raise] | 每周 3×3×15 |
-| 第 3 阶段 | 跳箱（轻箱）| [ex:0514 跳箱深蹲] | 每周 2×4×5 |
+| 第 2 阶段 | 双腿提踵 | [ex:1369] band two legs calf raise | 每周 3×3×15 |
+| 第 3 阶段 | 跳箱（轻箱）| [ex:0514] 跳箱深蹲 | 每周 2×4×5 |
 | 第 3 阶段 | 跑步回归（先慢后快）| 配套 | 渐进 |
 
 **4 / 8 / 12 周时间线**：
