@@ -12,7 +12,7 @@
 
 羽毛球常被误认为是"上肢 + 手腕"的运动，实际上**力量分布的真正重心在下肢 + 核心 + 肩袖**：一场单打比赛，运动员起跳 60-80 次、急停变向 300+ 次、躯干转体 400+ 次，杀球击球只占动作总数的 15% 左右。**没有基础下肢力量，杀球再猛也是无源之水**——对手拉你几拍，你的蹬地就拖不动了。
 
-本章按 NSCA-CSCS 的训练框架，从**力量类型 → 羽毛球专项力量需求 → 8 大模块训练动作 → 3 周/4 周/8 周计划**四个层次展开。每个动作我们都标注了 ex-lib 编号，格式 `[ex:0038-中文名]`，方便你在 app 里搜"动作卡"直接跳转。
+本章按 NSCA-CSCS 的训练框架，从**力量类型 → 羽毛球专项力量需求 → 8 大模块训练动作 → 3 周/4 周/8 周计划**四个层次展开。每个动作我们都标注了 ex-lib 编号，格式 `[ex:0038] 中文名`，方便你在 app 里搜"动作卡"直接跳转。
 
 ---
 
@@ -55,15 +55,15 @@
 
 ```
 ┌──────────────────────────────────┐
-│  第 5 层：腕/前臂（杀球末端发力） │  ← [ex:0994 反向腕弯举]
+│  第 5 层：腕/前臂（杀球末端发力） │  ← [ex:0994] 反向腕弯举
 ├──────────────────────────────────┤
-│  第 4 层：肩袖稳定（肩关节精确输出）│  ← [ex:0235 站姿肩外旋]
+│  第 4 层：肩袖稳定（肩关节精确输出）│  ← [ex:0235] 站姿肩外旋
 ├──────────────────────────────────┤
-│  第 3 层：核心抗旋（力量传递枢纽）  │  ← [ex:0276 死虫]
+│  第 3 层：核心抗旋（力量传递枢纽）  │  ← [ex:0276] 死虫
 ├──────────────────────────────────┤
-│  第 2 层：髋-下肢推（蹬地发力源）   │  ← [ex:0085 罗马尼亚硬拉]
+│  第 2 层：髋-下肢推（蹬地发力源）   │  ← [ex:0085] 罗马尼亚硬拉
 ├──────────────────────────────────┤
-│  第 1 层：单腿稳定（启动-制动）    │  ← [ex:0987 单腿分腿蹲]
+│  第 1 层：单腿稳定（启动-制动）    │  ← [ex:0987] 单腿分腿蹲
 └──────────────────────────────────┘
 ```
 
@@ -89,17 +89,17 @@
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 徒手深蹲（举臂） | `[ex:1685 squat to overhead reach]` | 站距与肩同宽，膝盖沿脚尖方向；举臂辅助躯干伸展 |
-| 高脚杯深蹲 | `[ex:1760 dumbbell goblet squat]` | 双手抱哑铃于胸前，重心更稳 |
-| 单腿辅助深蹲 | `[ex:0987 单腿分腿蹲]` | 抓固定物辅助，培养单腿稳定 |
+| 徒手深蹲（举臂） | `[ex:1685] squat to overhead reach` | 站距与肩同宽，膝盖沿脚尖方向；举臂辅助躯干伸展 |
+| 高脚杯深蹲 | `[ex:1760] dumbbell goblet squat` | 双手抱哑铃于胸前，重心更稳 |
+| 单腿辅助深蹲 | `[ex:0987] 单腿分腿蹲` | 抓固定物辅助，培养单腿稳定 |
 
 **进阶动作**：
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 杠铃背蹲 | `[ex:0038 barbell back squat]` | 杠位在斜方肌上段，蹲至大腿水平 |
-| 杠铃前蹲 | `[ex:0040 barbell front squat]` | 杠位锁骨前侧，对核心要求更高 |
-| 单腿保加利亚分腿蹲 | `[ex:0054 杠铃弓步]` | 后腿搭凳子，下蹲至前腿 90° |
+| 杠铃背蹲 | `[ex:0038] barbell back squat` | 杠位在斜方肌上段，蹲至大腿水平 |
+| 杠铃前蹲 | `[ex:0040] barbell front squat` | 杠位锁骨前侧，对核心要求更高 |
+| 单腿保加利亚分腿蹲 | `[ex:0054] 杠铃弓步` | 后腿搭凳子，下蹲至前腿 90° |
 
 **羽毛球专项应用**：
 - 高远球起跳的下蹲蓄力 → 直接来自深蹲的髋-膝联动模式
@@ -119,16 +119,16 @@
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 弹力带直腿硬拉 | `[ex:1010 band straight leg deadlift]` | 膝盖微弯，髋部后推 |
-| 弹力带罗马尼亚硬拉 | `[ex:1009 band stiff leg deadlift]` | 杠沿大腿前侧下滑到膝盖下方 |
+| 弹力带直腿硬拉 | `[ex:1010] band straight leg deadlift` | 膝盖微弯，髋部后推 |
+| 弹力带罗马尼亚硬拉 | `[ex:1009] band stiff leg deadlift` | 杠沿大腿前侧下滑到膝盖下方 |
 
 **进阶动作**：
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 罗马尼亚硬拉 | `[ex:0085 barbell romanian deadlift]` | 膝盖微弯，杠沿腿下滑到胫骨中段 |
-| 单臂罗马尼亚硬拉 | `[ex:0066 barbell one arm side deadlift]` | 单臂抓杠，对核心抗旋要求高 |
-| 传统硬拉 | `[ex:0032 barbell deadlift]` | 全程发力，力量地基 |
+| 罗马尼亚硬拉 | `[ex:0085] barbell romanian deadlift` | 膝盖微弯，杠沿腿下滑到胫骨中段 |
+| 单臂罗马尼亚硬拉 | `[ex:0066] barbell one arm side deadlift` | 单臂抓杠，对核心抗旋要求高 |
+| 传统硬拉 | `[ex:0032] barbell deadlift` | 全程发力，力量地基 |
 
 **羽毛球专项应用**：
 - 后场被动球的蹬地回位 → 髋铰链模式
@@ -143,15 +143,15 @@
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 弹力带单腿分腿蹲 | `[ex:0987 band one arm single leg split squat]` | 后腿搭凳子，前腿全蹲 |
-| 徒手单腿罗马尼亚硬拉 | `[ex:0980 band bent-over hip extension]` | 单脚微屈，另一脚后伸 |
+| 弹力带单腿分腿蹲 | `[ex:0987] band one arm single leg split squat` | 后腿搭凳子，前腿全蹲 |
+| 徒手单腿罗马尼亚硬拉 | `[ex:0980] band bent-over hip extension` | 单脚微屈，另一脚后伸 |
 
 **进阶动作**：
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 单腿保加利亚蹲 | `[ex:0054 barbell lunge]` | 加重 + 后腿垫高 |
-| 侧向箭步蹲 | `[ex:1410 barbell lateral lunge]` | 模拟横向并步 |
+| 单腿保加利亚蹲 | `[ex:0054] barbell lunge` | 加重 + 后腿垫高 |
+| 侧向箭步蹲 | `[ex:1410] barbell lateral lunge` | 模拟横向并步 |
 
 **羽毛球专项应用**：
 - 启动第一步（10 米内 80% 是单脚）→ 单腿蹬地
@@ -164,17 +164,17 @@
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 跪姿俯卧撑 | `[ex:0975 band close-grip push-up]` | 跪姿降难度，标准俯卧撑模式 |
-| 弹力带卧推 | `[ex:1254 band bench press]` | 平躺弹力带下压，模拟卧推 |
+| 跪姿俯卧撑 | `[ex:0975] band close-grip push-up` | 跪姿降难度，标准俯卧撑模式 |
+| 弹力带卧推 | `[ex:1254] band bench press` | 平躺弹力带下压，模拟卧推 |
 
 **进阶动作**：
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 杠铃卧推 | `[ex:0025 杠铃卧推]` | 标准卧推，胸/三头/前束发力 |
-| 杠铃上斜卧推 | `[ex:0047 barbell incline bench press]` | 30-45° 斜板，侧重上胸 + 肩前束 |
-| 杠铃下斜卧推 | `[ex:0033 barbell decline bench press]` | 重点下胸，但**羽毛球慎用**——肩袖压力 |
-| 站姿杠铃推举 | `[ex:0080 barbell standing military press]` | 三角肌 + 核心协同 |
+| 杠铃卧推 | `[ex:0025] 杠铃卧推` | 标准卧推，胸/三头/前束发力 |
+| 杠铃上斜卧推 | `[ex:0047] barbell incline bench press` | 30-45° 斜板，侧重上胸 + 肩前束 |
+| 杠铃下斜卧推 | `[ex:0033] barbell decline bench press` | 重点下胸，但**羽毛球慎用**——肩袖压力 |
+| 站姿杠铃推举 | `[ex:0080] barbell standing military press` | 三角肌 + 核心协同 |
 
 **羽毛球专项应用**：
 - 杀球末端"压腕"→ 卧推的胸-三头协同
@@ -191,16 +191,16 @@
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 弹力带坐姿划船 | `[ex:0990 band one arm twisting seated row]` | 坐姿，肘贴身体，单臂划船 |
-| 弹力带高位下拉 | `[ex:0974 band close-grip pulldown]` | 模拟引拍动作的关键肌群 |
+| 弹力带坐姿划船 | `[ex:0990] band one arm twisting seated row` | 坐姿，肘贴身体，单臂划船 |
+| 弹力带高位下拉 | `[ex:0974] band close-grip pulldown` | 模拟引拍动作的关键肌群 |
 
 **进阶动作**：
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 杠铃俯身划船 | `[ex:0039 barbell bent over row]` | 俯身 45°，肘贴身体 |
-| 单臂哑铃划船 | `[ex:0862 dumbbell bent over row]` | 单臂 + 跪凳，对左右平衡极好 |
-| 助力引体向上 | `[ex:0015 assisted parallel close grip pull-up]` | 进阶到标准引体的桥梁 |
+| 杠铃俯身划船 | `[ex:0039] barbell bent over row` | 俯身 45°，肘贴身体 |
+| 单臂哑铃划船 | `[ex:0862] dumbbell bent over row` | 单臂 + 跪凳，对左右平衡极好 |
+| 助力引体向上 | `[ex:0015] assisted parallel close grip pull-up` | 进阶到标准引体的桥梁 |
 
 **羽毛球专项应用**：
 - 杀球挥拍末端的"刹车" → 背阔肌收缩
@@ -215,17 +215,17 @@
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 死虫 | `[ex:0276 dead bug]` | 仰卧，对侧手脚交替伸展，核心压地 |
-| 帕洛夫推举 | `[ex:0979 band horizontal pallof press]` | 站姿，弹力带横向阻力下推出 |
-| 前平板转体 | `[ex:0464 front plank with twist]` | 平板支撑 + 单臂交替向天花板转体 |
+| 死虫 | `[ex:0276] dead bug` | 仰卧，对侧手脚交替伸展，核心压地 |
+| 帕洛夫推举 | `[ex:0979] band horizontal pallof press` | 站姿，弹力带横向阻力下推出 |
+| 前平板转体 | `[ex:0464] front plank with twist` | 平板支撑 + 单臂交替向天花板转体 |
 
 **进阶动作**：
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 帕洛夫推举（垂直）| `[ex:1015 band vertical pallof press]` | 垂直方向阻力，更接近杀球动作链 |
-| 侧平板抬髋 | `[ex:3544 bodyweight incline side plank]` | 侧平板，髋部上下抬 |
-| 侧平板后飞鸟 | `[ex:3664 dumbbell side plank with rear fly]` | 侧平板 + 哑铃后飞鸟复合动作 |
+| 帕洛夫推举（垂直）| `[ex:1015] band vertical pallof press` | 垂直方向阻力，更接近杀球动作链 |
+| 侧平板抬髋 | `[ex:3544] bodyweight incline side plank` | 侧平板，髋部上下抬 |
+| 侧平板后飞鸟 | `[ex:3664] dumbbell side plank with rear fly` | 侧平板 + 哑铃后飞鸟复合动作 |
 
 **羽毛球专项应用**：
 - 杀球的转体发力 → 核心转体抗旋
@@ -240,15 +240,15 @@
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 弹力带站姿肩外旋 | `[ex:0235 cable standing shoulder external rotation]` | 肘贴身体，前臂外旋 |
-| 哑铃侧卧肩外旋 | `[ex:0863 dumbbell lying external shoulder rotation]` | 侧卧，哑铃外旋，肩袖发力 |
+| 弹力带站姿肩外旋 | `[ex:0235] cable standing shoulder external rotation` | 肘贴身体，前臂外旋 |
+| 哑铃侧卧肩外旋 | `[ex:0863] dumbbell lying external shoulder rotation` | 侧卧，哑铃外旋，肩袖发力 |
 
 **进阶动作**：
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 哑铃站姿肩外旋 | `[ex:0864 dumbbell upright shoulder external rotation]` | 站姿，哑铃外旋，对抗更大阻力 |
-| 90/90 肩外旋 | `[ex:0864 dumbbell upright shoulder external rotation]` | 肩外展 90°，再外旋——杀球发力角度（库里无独立 90° id，借用最接近的 upright shoulder external rotation） |
+| 哑铃站姿肩外旋 | `[ex:0864] dumbbell upright shoulder external rotation` | 站姿，哑铃外旋，对抗更大阻力 |
+| 90/90 肩外旋 | `[ex:0864] dumbbell upright shoulder external rotation` | 肩外展 90°，再外旋——杀球发力角度（库里无独立 90° id，借用最接近的 upright shoulder external rotation） |
 
 **羽毛球专项应用**：
 - 杀球的"鞭打"末端 → 肩外旋的离心刹车
@@ -263,17 +263,17 @@
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 弹力带反握腕弯举 | `[ex:0994 band reverse wrist curl]` | 前臂平放桌沿，腕背伸 |
-| 农夫行走 | `[ex:1421 dumbbell farmer's walk]` | 双手持重物行走，握力 + 核心协同 |
+| 弹力带反握腕弯举 | `[ex:0994] band reverse wrist curl` | 前臂平放桌沿，腕背伸 |
+| 农夫行走 | `[ex:1421] dumbbell farmer's walk` | 双手持重物行走，握力 + 核心协同 |
 | 握力器静力收缩 | （自购器械） | 每天捏 50 次 × 5 秒 |
 
 **小腿 + 提踵**：
 
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
-| 弹力带单腿提踵 | `[ex:0999 band single leg calf raise]` | 单脚站台阶，脚跟下沉再顶起 |
-| 坐姿杠铃提踵 | `[ex:0088 坐姿杠铃提踵]` | 膝上压杠，专项训练比目鱼肌 |
-| 弹力带双腿提踵 | `[ex:1369 band two legs calf raise]` | 弹力带辅助，入门友好 |
+| 弹力带单腿提踵 | `[ex:0999] band single leg calf raise` | 单脚站台阶，脚跟下沉再顶起 |
+| 坐姿杠铃提踵 | `[ex:0088] 坐姿杠铃提踵` | 膝上压杠，专项训练比目鱼肌 |
+| 弹力带双腿提踵 | `[ex:1369] band two legs calf raise` | 弹力带辅助，入门友好 |
 
 **羽毛球专项应用**：
 - 杀球挥拍的"压腕" → 前臂屈肌
@@ -292,32 +292,32 @@
 
 | 顺序 | 动作 | ex-lib 动作 | 组数×次数 | 间歇 |
 |---|---|---|---|---|
-| 1 | 徒手深蹲（举臂） | `[ex:1685 squat to overhead reach]` | 3×12 | 60 秒 |
-| 2 | 弹力带直腿硬拉 | `[ex:1010 band straight leg deadlift]` | 3×12 | 60 秒 |
-| 3 | 弹力带单腿分腿蹲 | `[ex:0987 band one arm single leg split squat]` | 3×10/侧 | 60 秒 |
-| 4 | 臀桥 | `[ex:1408 band hip lift]` | 3×15 | 45 秒 |
-| 5 | 死虫 | `[ex:0276 dead bug]` | 3×10/侧 | 45 秒 |
-| 6 | 帕洛夫推举 | `[ex:0979 band horizontal pallof press]` | 3×10/侧 | 45 秒 |
+| 1 | 徒手深蹲（举臂） | `[ex:1685] squat to overhead reach` | 3×12 | 60 秒 |
+| 2 | 弹力带直腿硬拉 | `[ex:1010] band straight leg deadlift` | 3×12 | 60 秒 |
+| 3 | 弹力带单腿分腿蹲 | `[ex:0987] band one arm single leg split squat` | 3×10/侧 | 60 秒 |
+| 4 | 臀桥 | `[ex:1408] band hip lift` | 3×15 | 45 秒 |
+| 5 | 死虫 | `[ex:0276] dead bug` | 3×10/侧 | 45 秒 |
+| 6 | 帕洛夫推举 | `[ex:0979] band horizontal pallof press` | 3×10/侧 | 45 秒 |
 
 **周三：上肢推拉 + 肩袖**
 
 | 顺序 | 动作 | ex-lib 动作 | 组数×次数 | 间歇 |
 |---|---|---|---|---|
-| 1 | 跪姿俯卧撑 | `[ex:0975 band close-grip push-up]` | 3×10 | 60 秒 |
-| 2 | 弹力带坐姿划船 | `[ex:0990 band one arm twisting seated row]` | 3×12 | 60 秒 |
-| 3 | 弹力带卧推 | `[ex:1254 band bench press]` | 3×12 | 60 秒 |
-| 4 | 弹力带高位下拉 | `[ex:0974 band close-grip pulldown]` | 3×12 | 60 秒 |
-| 5 | 弹力带肩外旋 | `[ex:0235 cable standing shoulder external rotation]` | 2×15 | 45 秒 |
+| 1 | 跪姿俯卧撑 | `[ex:0975] band close-grip push-up` | 3×10 | 60 秒 |
+| 2 | 弹力带坐姿划船 | `[ex:0990] band one arm twisting seated row` | 3×12 | 60 秒 |
+| 3 | 弹力带卧推 | `[ex:1254] band bench press` | 3×12 | 60 秒 |
+| 4 | 弹力带高位下拉 | `[ex:0974] band close-grip pulldown` | 3×12 | 60 秒 |
+| 5 | 弹力带肩外旋 | `[ex:0235] cable standing shoulder external rotation` | 2×15 | 45 秒 |
 
 **周五：下肢 + 核心（同周一变式）**
 
 | 顺序 | 动作 | ex-lib 动作 | 组数×次数 | 间歇 |
 |---|---|---|---|---|
-| 1 | 高脚杯深蹲 | `[ex:1760 dumbbell goblet squat]` | 3×10 | 60 秒 |
-| 2 | 罗马尼亚硬拉 | `[ex:1009 band stiff leg deadlift]` | 3×10 | 60 秒 |
-| 3 | 单腿保加利亚蹲 | `[ex:0054 barbell lunge]` | 3×8/侧 | 60 秒 |
-| 4 | 侧平板抬髋 | `[ex:3544 bodyweight incline side plank]` | 3×20 秒/侧 | 45 秒 |
-| 5 | 前平板转体 | `[ex:0464 front plank with twist]` | 3×10/侧 | 45 秒 |
+| 1 | 高脚杯深蹲 | `[ex:1760] dumbbell goblet squat` | 3×10 | 60 秒 |
+| 2 | 罗马尼亚硬拉 | `[ex:1009] band stiff leg deadlift` | 3×10 | 60 秒 |
+| 3 | 单腿保加利亚蹲 | `[ex:0054] barbell lunge` | 3×8/侧 | 60 秒 |
+| 4 | 侧平板抬髋 | `[ex:3544] bodyweight incline side plank` | 3×20 秒/侧 | 45 秒 |
+| 5 | 前平板转体 | `[ex:0464] front plank with twist` | 3×10/侧 | 45 秒 |
 
 ### 计划 B：进阶 4 周（每周 4 次 × 60 分钟）
 
@@ -327,37 +327,37 @@
 
 | 顺序 | 动作 | ex-lib 动作 | 组数×次数 | 间歇 |
 |---|---|---|---|---|
-| 1 | 杠铃背蹲 | `[ex:0038 barbell back squat]` | 4×6 | 90 秒 |
-| 2 | 保加利亚分腿蹲 | `[ex:0054 barbell lunge]` | 3×8/侧 | 75 秒 |
-| 3 | 弹力带单腿提踵 | `[ex:0999 band single leg calf raise]` | 3×12/侧 | 60 秒 |
+| 1 | 杠铃背蹲 | `[ex:0038] barbell back squat` | 4×6 | 90 秒 |
+| 2 | 保加利亚分腿蹲 | `[ex:0054] barbell lunge` | 3×8/侧 | 75 秒 |
+| 3 | 弹力带单腿提踵 | `[ex:0999] band single leg calf raise` | 3×12/侧 | 60 秒 |
 
 **周二：上肢推 + 核心**
 
 | 顺序 | 动作 | ex-lib 动作 | 组数×次数 | 间歇 |
 |---|---|---|---|---|
-| 1 | 杠铃卧推 | `[ex:0025 杠铃卧推]` | 4×6 | 90 秒 |
-| 2 | 站姿杠铃推举 | `[ex:0080 barbell standing military press]` | 3×8 | 75 秒 |
-| 3 | 帕洛夫推举（垂直）| `[ex:1015 band vertical pallof press]` | 3×10/侧 | 60 秒 |
-| 4 | 侧平板后飞鸟 | `[ex:3664 dumbbell side plank with rear fly]` | 3×8/侧 | 60 秒 |
+| 1 | 杠铃卧推 | `[ex:0025] 杠铃卧推` | 4×6 | 90 秒 |
+| 2 | 站姿杠铃推举 | `[ex:0080] barbell standing military press` | 3×8 | 75 秒 |
+| 3 | 帕洛夫推举（垂直）| `[ex:1015] band vertical pallof press` | 3×10/侧 | 60 秒 |
+| 4 | 侧平板后飞鸟 | `[ex:3664] dumbbell side plank with rear fly` | 3×8/侧 | 60 秒 |
 
 **周四：下肢拉 + 上肢拉**
 
 | 顺序 | 动作 | ex-lib 动作 | 组数×次数 | 间歇 |
 |---|---|---|---|---|
-| 1 | 罗马尼亚硬拉 | `[ex:0085 barbell romanian deadlift]` | 4×8 | 90 秒 |
-| 2 | 单臂罗马尼亚硬拉 | `[ex:0066 barbell one arm side deadlift]` | 3×8/侧 | 75 秒 |
-| 3 | 杠铃俯身划船 | `[ex:0039 barbell bent over row]` | 4×8 | 75 秒 |
-| 4 | 助力引体向上 | `[ex:0015 assisted parallel close grip pull-up]` | 3×6 | 75 秒 |
+| 1 | 罗马尼亚硬拉 | `[ex:0085] barbell romanian deadlift` | 4×8 | 90 秒 |
+| 2 | 单臂罗马尼亚硬拉 | `[ex:0066] barbell one arm side deadlift` | 3×8/侧 | 75 秒 |
+| 3 | 杠铃俯身划船 | `[ex:0039] barbell bent over row` | 4×8 | 75 秒 |
+| 4 | 助力引体向上 | `[ex:0015] assisted parallel close grip pull-up` | 3×6 | 75 秒 |
 
 **周五：上肢推 + 肩袖 + 前臂**
 
 | 顺序 | 动作 | ex-lib 动作 | 组数×次数 | 间歇 |
 |---|---|---|---|---|
-| 1 | 上斜卧推 | `[ex:0047 barbell incline bench press]` | 4×8 | 90 秒 |
-| 2 | 哑铃侧卧肩外旋 | `[ex:0863 dumbbell lying external shoulder rotation]` | 3×15 | 45 秒 |
-| 3 | 90/90 肩外旋 | `[ex:0864 dumbbell upright shoulder external rotation]` | 3×12 | 45 秒 |
-| 4 | 弹力带反握腕弯举 | `[ex:0994 band reverse wrist curl]` | 3×15 | 45 秒 |
-| 5 | 农夫行走 | `[ex:1421 dumbbell farmer's walk]` | 3×30 米 | 60 秒 |
+| 1 | 上斜卧推 | `[ex:0047] barbell incline bench press` | 4×8 | 90 秒 |
+| 2 | 哑铃侧卧肩外旋 | `[ex:0863] dumbbell lying external shoulder rotation` | 3×15 | 45 秒 |
+| 3 | 90/90 肩外旋 | `[ex:0864] dumbbell upright shoulder external rotation` | 3×12 | 45 秒 |
+| 4 | 弹力带反握腕弯举 | `[ex:0994] band reverse wrist curl` | 3×15 | 45 秒 |
+| 5 | 农夫行走 | `[ex:1421] dumbbell farmer's walk` | 3×30 米 | 60 秒 |
 
 ### 计划 C：高水平 8 周周期化（每周 4-5 次）
 
