@@ -21,7 +21,10 @@
 - **第六章**：杀球与扣杀——攻击力的极致
 - **第七章**：平抽快挡——双打的灵魂
 - **第八章**：综合训练——从单项到实战
-- **第九章**：常见错误与纠正——少走弯路
-- **第十章**：比赛心理——压力下的技术发挥
+- **第九章**：比赛心理——如何在关键时刻保持最佳状态（[`ch09-competition-psychology.md`](./ch09-competition-psychology.md)）
+- **第十章**：比赛心理·专业级——专业级心理调控与竞技状态管理（[`ch10-competition-psychology.md`](./ch10-competition-psychology.md)，与第九章呼应，覆盖专业运动员心理调控的深度议题）
+- **第十一章**：战术进阶——从技术到智慧的跨越（[`ch11-tactics-advanced.md`](./ch11-tactics-advanced.md)）
+- **第十二章**：体能训练与运动防护（[`ch12-physical-training.md`](./ch12-physical-training.md)）
+- **第十三章**：双打战术配合与竞技策略（[`ch13-doubles-tactics.md`](./ch13-doubles-tactics.md)）
 
 ---
