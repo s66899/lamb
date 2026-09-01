@@ -367,67 +367,67 @@ RPE 是 Borg 量表的核心概念，让运动员根据自己的主观感受来�
 
 | 动作 | ex-lib id | 作用 | 频次 |
 |------|-----------|------|------|
-| [ex:0038 barbell back squat] | 杠铃背蹲 | 下肢综合力量基�stone | 2次/周 |
-| [ex:0085 barbell romanian deadlift] | 罗马尼亚硬拉 | 后链力量，蹬地发力的源头 | 2次/周 |
-| [ex:0054 barbell lunge] | 杠铃弓步 | 单腿力量 + 跨步模式 | 2次/周 |
-| [ex:1685 squat to overhead reach]（库里无纯 bodyweight squat，借用此动作） | 徒手深蹲（举臂） | 基础动作，新手必练；举臂辅助躯干伸展 | 每次热身 |
-| [ex:1410 barbell lateral lunge] | 杠铃侧向箭步蹲 | 侧向移动力量（杀上网的侧步）| 1次/周 |
+| [ex:0038] barbell back squat | 杠铃背蹲 | 下肢综合力量基�stone | 2次/周 |
+| [ex:0085] barbell romanian deadlift | 罗马尼亚硬拉 | 后链力量，蹬地发力的源头 | 2次/周 |
+| [ex:0054] barbell lunge | 杠铃弓步 | 单腿力量 + 跨步模式 | 2次/周 |
+| [ex:1685] squat to overhead reach（库里无纯 bodyweight squat，借用此动作） | 徒手深蹲（举臂） | 基础动作，新手必练；举臂辅助躯干伸展 | 每次热身 |
+| [ex:1410] barbell lateral lunge | 杠铃侧向箭步蹲 | 侧向移动力量（杀上网的侧步）| 1次/周 |
 
 **【上半身：挥拍发力的输出端】**
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| [ex:0025 杠铃卧推] | 杠铃卧推 | 胸-三头协同（推球/封网）|
-| [ex:0039 barbell bent over row] | 杠铃俯身划船 | 背间肌群（杀球“刹车”） |
-| [ex:0080 barbell standing military press] | 站姿杠铃推举 | 肩三角肌+上肢推力 |
-| [ex:0990 band one arm twisting seated row] | 弹力带坐姿单臂划船 | 单侧拉，模拟引拍动作 |
+| [ex:0025] 杠铃卧推 | 杠铃卧推 | 胸-三头协同（推球/封网）|
+| [ex:0039] barbell bent over row | 杠铃俯身划船 | 背间肌群（杀球“刹车”） |
+| [ex:0080] barbell standing military press | 站姿杠铃推举 | 肩三角肌+上肢推力 |
+| [ex:0990] band one arm twisting seated row | 弹力带坐姿单臂划船 | 单侧拉，模拟引拍动作 |
 
 **【肩袖稳定：杀球的“靶心”】**
 
 | 动作 | ex-lib id | 作用 | 重要度 |
 |------|-----------|------|------|
-| [ex:0235 cable standing shoulder external rotation] | 弹力带站姿肩外旋 | 肩袖外旋肌（杀球末端关键）| ★★★★★ |
-| [ex:0863 dumbbell lying external shoulder rotation] | 哑铃侧卧肩外旋 | 肩袖力量 | ★★★★ |
-| [ex:0864 dumbbell upright shoulder external rotation] | 哑铃站姿肩外旋 | 进阶肩袖 | ★★★★ |
+| [ex:0235] cable standing shoulder external rotation | 弹力带站姿肩外旋 | 肩袖外旋肌（杀球末端关键）| ★★★★★ |
+| [ex:0863] dumbbell lying external shoulder rotation | 哑铃侧卧肩外旋 | 肩袖力量 | ★★★★ |
+| [ex:0864] dumbbell upright shoulder external rotation | 哑铃站姿肩外旋 | 进阶肩袖 | ★★★★ |
 
 **【核心抗旋：动力链的“轴承”】**
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| [ex:0276 dead bug] | 死虫 | 入门核心稳定 |
-| [ex:0979 band horizontal pallof press] | 帕洛夫推举 | 横向抗旋（转体杀球关键）|
-| [ex:1015 band vertical pallof press] | 帕洛夫推举（垂直）| 垂直抗旋（高远球动作链）|
-| [ex:3544 bodyweight incline side plank] | 侧平板抬髋 | 侧向稳定（左右防守）|
+| [ex:0276] dead bug | 死虫 | 入门核心稳定 |
+| [ex:0979] band horizontal pallof press | 帕洛夫推举 | 横向抗旋（转体杀球关键）|
+| [ex:1015] band vertical pallof press | 帕洛夫推举（垂直）| 垂直抗旋（高远球动作链）|
+| [ex:3544] bodyweight incline side plank | 侧平板抬髋 | 侧向稳定（左右防守）|
 
 **【前臂与握力：握拍的本钱】**
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| [ex:0994 band reverse wrist curl] | 弹力带反握腕弯举 | 反手挥拍 |
-| [ex:1421 dumbbell farmer's walk] | 农夫行走 | 握力 + 核心协同 |
+| [ex:0994] band reverse wrist curl | 弹力带反握腕弯举 | 反手挥拍 |
+| [ex:1421] dumbbell farmer's walk | 农夫行走 | 握力 + 核心协同 |
 
 **新手训练计划（每周 3 次，每次 45 分钟）**：
 
 ```
 周一（下肢+核心）：
-  1. [ex:1685 squat to overhead reach] 3×12
-  2. [ex:1010 band straight leg deadlift] 3×12
-  3. [ex:0987 band one arm single leg split squat] 3×10/侧
-  4. [ex:0276 dead bug] 3×10/侧
-  5. [ex:0979 帕洛夫推举] 3×10/侧
+  1. [ex:1685] squat to overhead reach 3×12
+  2. [ex:1010] band straight leg deadlift 3×12
+  3. [ex:0987] band one arm single leg split squat 3×10/侧
+  4. [ex:0276] dead bug 3×10/侧
+  5. [ex:0979] 帕洛夫推举 3×10/侧
 
 周三（上肢推拉+肩袖）：
-  1. [ex:0975 band close-grip push-up] 3×10
-  2. [ex:0990 band one arm twisting seated row] 3×12
-  3. [ex:1254 band bench press] 3×12
-  4. [ex:0235 cable standing shoulder external rotation] 2×15
+  1. [ex:0975] band close-grip push-up 3×10
+  2. [ex:0990] band one arm twisting seated row 3×12
+  3. [ex:1254] band bench press 3×12
+  4. [ex:0235] cable standing shoulder external rotation 2×15
 
 周五（下肢+核心 同周一变式）：
-  1. [ex:1760 dumbbell goblet squat] 3×10
-  2. [ex:0085 barbell romanian deadlift] 3×10
-  3. [ex:0054 barbell lunge] 3×8/侧
-  4. [ex:3544 side plank] 3×20秒/侧
-  5. [ex:0464 front plank with twist] 3×10/侧
+  1. [ex:1760] dumbbell goblet squat 3×10
+  2. [ex:0085] barbell romanian deadlift 3×10
+  3. [ex:0054] barbell lunge 3×8/侧
+  4. [ex:3544] side plank 3×20秒/侧
+  5. [ex:0464] front plank with twist 3×10/侧
 ```
 
 **进阶训练计划（每周 4 次，每次 60 分钟）**：见 `books/nsca-cpt/ch04-strength-training.md` 第二节计划 B。
@@ -442,32 +442,32 @@ RPE 是 Borg 量表的核心概念，让运动员根据自己的主观感受来�
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| [ex:0514 跳箱深蹲] | 跳箱深蹲 | 垂直起跳杀球 |
-| [ex:1374 box jump down with one leg stabilization] | 单腿跳箱下 | 单脚落地制动 |
-| [ex:0513 jump squat v. 2] | jump squat v.2 | 变式跳箱 |
-| [ex:3543 bodyweight drop jump squat] | 跳深落地缓冲 | 离心-向心耦合 |
+| [ex:0514] 跳箱深蹲 | 跳箱深蹲 | 垂直起跳杀球 |
+| [ex:1374] box jump down with one leg stabilization | 单腿跳箱下 | 单脚落地制动 |
+| [ex:0513] jump squat v. 2 | jump squat v.2 | 变式跳箱 |
+| [ex:3543] bodyweight drop jump squat | 跳深落地缓冲 | 离心-向心耦合 |
 
 **【髋关节爆发：跨步蹬地】**
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| [ex:3888 dumbbell one arm snatch] | 单臂壶铃 snatch | 全身动力链 |
-| [ex:0028 barbell clean and press] | 杠铃高翻+推举 | 全身协调爆发 |
+| [ex:3888] dumbbell one arm snatch | 单臂壶铃 snatch | 全身动力链 |
+| [ex:0028] barbell clean and press | 杠铃高翻+推举 | 全身协调爆发 |
 
 **【上肢爆发：挥拍速度】**
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| [ex:1306 plyo push up] | 爆发俯卧撑 | 上肢推力爆发 |
-| [ex:0545 kettlebell plyo push-up] | 壶铃爆发俯卧撑 | 进阶 |
-| [ex:1353 medicine ball catch and overhead throw] | 药球过头顶砸 | 杀球末端释放 |
+| [ex:1306] plyo push up | 爆发俯卧撑 | 上肢推力爆发 |
+| [ex:0545] kettlebell plyo push-up | 壶铃爆发俯卧撑 | 进阶 |
+| [ex:1353] medicine ball catch and overhead throw | 药球过头顶砸 | 杀球末端释放 |
 
 **【核心旋转爆发：转体发力】**
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| [ex:1303 medicine ball chest push from 3 point stance] | 药球 3 点支撑推 | 转体+挥臂（杀球模拟）|
-| [ex:1302 medicine ball chest pass] | 药球胸前推 | 网前推扑发力 |
+| [ex:1303] medicine ball chest push from 3 point stance | 药球 3 点支撑推 | 转体+挥臂（杀球模拟）|
+| [ex:1302] medicine ball chest pass | 药球胸前推 | 网前推扑发力 |
 
 **训练要点**：爆发力训练负荷不能重，要“最快速度”。动作变慢时立即减重或停组。每周 ≤ 2 次。
 
@@ -508,29 +508,29 @@ RPE 是 Borg 量表的核心概念，让运动员根据自己的主观感受来�
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| 胸大肌门框拉伸 | [ex:1271 chest and front of shoulder stretch] | 改善圆肩，增加肩外旋 |
-| 90/90 肩外旋拉伸 | [ex:0863 lying external shoulder rotation] | 杀球活动度 |
+| 胸大肌门框拉伸 | [ex:1271] chest and front of shoulder stretch | 改善圆肩，增加肩外旋 |
+| 90/90 肩外旋拉伸 | [ex:0863] lying external shoulder rotation | 杀球活动度 |
 | 背后毛巾拉伸 | 无需 ex-lib | 肩内旋（正手引拍）|
 
 **【髋】**
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| 髋屈肌弓步 | [ex:1564 intermediate hip flexor and quad stretch] | 启动必背拉伸 |
-| 鸽子式 | [ex:1710 assisted lying gluteus and piriformis stretch] | 梨状肌+下肢发力链 |
-| 蝴蝶拉伸 | [ex:1494 butterfly yoga pose] | 内收肌（横向移动）|
+| 髋屈肌弓步 | [ex:1564] intermediate hip flexor and quad stretch | 启动必背拉伸 |
+| 鸽子式 | [ex:1710] assisted lying gluteus and piriformis stretch | 梨状肌+下肢发力链 |
+| 蝴蝶拉伸 | [ex:1494] butterfly yoga pose | 内收肌（横向移动）|
 
 **【踝/小腿】**
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| 小腿靠墙拉伸 | [ex:1377 calf stretch with hands against wall] | 落地冲击吸收 |
+| 小腿靠墙拉伸 | [ex:1377] calf stretch with hands against wall | 落地冲击吸收 |
 
 **【胸椎】**
 
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
-| 胸椎旋转 | [ex:1011 band seated twist] | 杀球转体前提 |
+| 胸椎旋转 | [ex:1011] band seated twist | 杀球转体前提 |
 
 **赛前动态 + 赛后静态完整流程**：见 `books/nsca-cpt/ch07-flexibility.md` 第七节。
 
@@ -944,23 +944,23 @@ RPE 是 Borg 量表的核心概念，让运动员根据自己的主观感受来�
 日期：________  体重：______ kg  睡眠：____ 小时  RPE 总体：_____
 
 周一（下肢 + 核心）：
-  [ex:1685 squat to overhead reach]  重量___ 组数___ 次数___ RPE___
-  [ex:0085 罗马尼亚硬拉]           重量___ 组数___ 次数___ RPE___
-  [ex:0054 杠铃弓步]              重量___ 组数___ 次数___ RPE___
-  [ex:0276 dead bug]              组数___ 次数___ RPE___
-  [ex:0979 帕洛夫推举]             组数___ 次数___ RPE___
+  [ex:1685] squat to overhead reach  重量___ 组数___ 次数___ RPE___
+  [ex:0085] 罗马尼亚硬拉           重量___ 组数___ 次数___ RPE___
+  [ex:0054] 杠铃弓步              重量___ 组数___ 次数___ RPE___
+  [ex:0276] dead bug              组数___ 次数___ RPE___
+  [ex:0979] 帕洛夫推举             组数___ 次数___ RPE___
   本次训练总时长：___ 分钟  能量补充：是/否
 
 周三（上肢推拉 + 肩袖）：
-  [ex:0025 杠铃卧推]              重量___ 组数___ 次数___ RPE___
-  [ex:0039 杠铃俯身划船]           重量___ 组数___ 次数___ RPE___
-  [ex:0235 弹力带肩外旋]           组数___ 次数___ RPE___
+  [ex:0025] 杠铃卧推              重量___ 组数___ 次数___ RPE___
+  [ex:0039] 杠铃俯身划船           重量___ 组数___ 次数___ RPE___
+  [ex:0235] 弹力带肩外旋           组数___ 次数___ RPE___
   本次训练总时长：___ 分钟
 
 周五（下肢爆发）：
-  [ex:0514 跳箱深蹲]              高度___ cm  组数___ 次数___
-  [ex:3888 单臂壶铃 snatch]       重量___ 组数___ 次数___
-  [ex:1306 爆发俯卧撑]             组数___ 次数___
+  [ex:0514] 跳箱深蹲              高度___ cm  组数___ 次数___
+  [ex:3888] 单臂壶铃 snatch       重量___ 组数___ 次数___
+  [ex:1306] 爆发俯卧撑             组数___ 次数___
   本次训练总时长：___ 分钟
 
 本周羽毛球训练：
