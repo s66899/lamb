@@ -12705,7 +12705,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch01-introduction.md",
           "title": "康复总论——原则、时间线、信号识别",
-          "words": 2741,
+          "words": 2891,
           "h2s": [
             {
               "title": "本章导言",
@@ -12815,7 +12815,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch02-shoulder.md",
           "title": "肩关节康复 × 杀球过头",
-          "words": 3035,
+          "words": 2832,
           "h2s": [
             {
               "title": "本章导言",
@@ -12928,7 +12928,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch03-knee.md",
           "title": "膝关节康复 × 上网急停",
-          "words": 2738,
+          "words": 2732,
           "h2s": [
             {
               "title": "本章导言",
@@ -13042,7 +13042,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch04-ankle.md",
           "title": "踝关节康复 × 跳起落地踩脚",
-          "words": 2520,
+          "words": 2499,
           "h2s": [
             {
               "title": "本章导言",
@@ -13132,7 +13132,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch05-elbow.md",
           "title": "肘关节康复 × 反手过度代偿",
-          "words": 2633,
+          "words": 2651,
           "h2s": [
             {
               "title": "本章导言",
@@ -13249,7 +13249,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch06-back.md",
           "title": "腰部康复 × 后场被动反手",
-          "words": 2313,
+          "words": 2516,
           "h2s": [
             {
               "title": "本章导言",
@@ -13315,7 +13315,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch07-achilles.md",
           "title": "跟腱康复 × 反复起跳",
-          "words": 2082,
+          "words": 2897,
           "h2s": [
             {
               "title": "本章导言",
@@ -13381,7 +13381,7 @@ const MANIFEST_DATA = {
         {
           "file": "ch08-action-plan.md",
           "title": "行动清单与互引表",
-          "words": 2680,
+          "words": 2683,
           "h2s": [
             {
               "title": "本章导言",
@@ -13477,7 +13477,7 @@ const MANIFEST_DATA = {
           ]
         }
       ],
-      "totalWords": 20073,
+      "totalWords": 21701,
       "chapterCount": 8
     },
     {
