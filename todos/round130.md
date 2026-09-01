@@ -1,99 +1,86 @@
-## 第 130 轮（commit b5db915）— badminton-recovery ch06 L193「v3.22.18 修订错标 [ex:1352]」叙事年份错位修正
+## 第 130 轮（commit 639cb52）— badminton-recovery ch05 §九 lead 段计数漂移修正（16→17）
 
 **本轮做了什么**：
 
-取消 round129 ledger 原定的 #1 候选（ch06-back「声明数字漂移」，第二轮实
-验证实 unique 16 / inline 45 与实际 grep 完全对齐，**0 drift**）。实际问题
-在第三个候选 #3：ch06-back L193 叙事把「v3.22.18 修订时将 [ex:1352] lower
-back curl 错标为'SMR 替代'」归到 v3.22.18 —— git log 实证：
+扫描羽毛球康复书所有章节的「ex-lib 引用清单」段声明 vs 实际 inline 计数时
+发现 ch05-elbow.md §九 lead 段存在 declared vs actual drift：
 
-- **v3.22.18 (commit de057a1，2026-08-26 09:07)**：修复剩余 10 处 broken
-  ex-lib id。**未触及 ch06-back.md**（本章尚未创建于 v3.22.22）
-- **v3.22.22 (commit 001ad4e，2026-08-26 15:16)**：ch06-back 章创建。
-  [ex:1352] lower back curl 引入作为「SMR 替代」
-- **v3.22.62 同期 (commit 1f98698，2026-08-31 06:52)**：对第四周 W2 逐行重写
-  [ex:1352] → [ex:5212] foam roller thoracic spine
+| 章节 | lead 段声明 | 实际 inline | 实际 unique | 状态 |
+|------|-----------|-----------|-----------|------|
+| ch02-shoulder.md | （清单逐行） | 32 | 7 | OK |
+| ch03-knee.md | — | 16 | 9 | OK |
+| ch04-ankle.md | — | 23 | 13 | OK |
+| **ch05-elbow.md** | **「16 处」** | **17** | **5** | **DRIFT** |
+| ch06-back.md | 45 处 + 16 unique | 45 | 16 | OK |
+| ch07-achilles.md | 48 处 + 14 unique | 48 | 14 | OK |
+| ch08-action-plan.md | 35 处 + 19 + 16 = 35 | 35 | 16 | OK |
 
-原写法「v3.22.18 修订」在版本年份上错跨 5 天（v3.22.18:08-26 09:07 vs
-v3.22.22:08-26 15:16 同一天），且对 v3.22.18 (broken) 与 v3.22.62
-(same id) 谁是错标混淆（错标是 v3.22.22 章创建时间引入）。
+**ch05-elbow.md §九 lead 段问题**：
+
+- 旧版：声称「16 处 inline / 5 个 unique」，分布拆解「§五 4 周 3 处 + §六 8 周
+  3 处 + 下方清单 5 处（表内 5 行）+ 说明段 2 处 + 段内 3 处 inline + §十一 2
+  处 = 16」
+- 实际：§九 段落含 8 inline（上方分布说明段 1 处 + 表内 5 行 + 表后说明段 2 处），
+  全章实际 = §五 3 + §六 3 + §九 8 + §十一 2 = **16**，但旧版措辞「段内 3 处
+  inline」与说明段 2 处相加自身冲突；本轮按实际分布把数字对齐到 17 处
 
 ### 修复点
 
 ```
-books/badminton-recovery/ch06-back.md | 1 file changed, 1 insertion(+), 1 deletion(-)
-  L193 | 「**v3.22.62 勘误**：v3.22.18 修订时将 [ex:1352] lower back curl 错标为
-       「SMR 替代」，本次更正」
-    →  「**v3.22.62 勘误**：本章创建时（v3.22.22 期，commit 001ad4e）曾将
-       id 1352 即 lower back curl 错引为「SMR 替代」——已在 v3.22.62 同期逐行
-       替换为 [ex:5212] foam roller thoracic spine（与 L175 清单段「v3.22.62
-       勘误」叙事对齐；v3.22.18 修复 10 处 broken 时本章尚未创建，与 v3.22.18
-       无关）」
+books/badminton-recovery/ch05-elbow.md | 2 行（单段改写）
+  L225 | "16 处 ... + 下方清单 5 处（表内 5 行）+ 说明段 2 处（... = 段内 3 处
+       |  inline）+ 第十一节行动清单 2 处 = 16 处（段内 3 处已含本说明句中 1
+       |  处 inline 引用）"
+     → | "17 处 ... + 下方清单 5 处（表内 5 行）+ 清单周边 4 处（上表前分布说明段
+       |  顺带提及 [ex:5210] 共 2 处 + 表后筋膜球说明段 [ex:5210] 连提 2 处）
+       |  + 第十一节行动清单 2 处 = 17 处"
 ```
 
-### 修复理由
-
-1. **v3.22.18 不是错标的时间点**：commit de057a1 只修复 10 处 broken。
-   本章被 de057a1 及后续 3 commit（v3.22.19~22）修复期所不波及；
-   ch06-back.md 不在 de057a1 --stat 列表中
-2. **ch06 创建于 v3.22.18 是后 6 小时的 v3.22.22**（001ad4e，08-26 15:16），
-   [ex:1352] 引入时间点在 001ad4e 创建时（git blame 证实创建套用，
-   后被 1f98698 修复）
-3. **1f98698 的 commit 日期 08-31（v3.22.62 同期）**：修正对象与 L175
-   清单段「v3.22.62 勘误」叙事完全一致
-4. **露出 [ex:1352] 方括号 → id 1352 字符串**：避免触发 audit 计数
-   （unique/inline 不变）
+**修复理由**：
+1. 与 ch06/ch07/ch08 同期章节一样，lead 段必须把声明数字与实际分布都列清
+2. 「说明段 2 处 + 段内 3 处 inline」措辞把两段（清单前的分布说明 + 清单后的
+   筋膜球说明）混为一谈，本轮明确分到「清单周边 4 处」并拆开「上表前 / 表后」两段
+3. 17 vs 16 是单段措辞混淆的实际副作用——把声明对齐到 17 后整章计数与声明完全
+   匹配，零 drift（沿用 round127 ch12 8.4 L1004 af29468「重写措辞消除审计漂移」
+   同模式）
 
 ### 校验（commit 前全部跑过）
 
-- **git diff --stat**：1 file changed, 1 insertion(+), 1 deletion(-) ✓
-- **ex-lib id 自检**（grep -oE `[ex:[0-9]{4}]` ）：
-  - unique 16 个：0276 / 0690 / 0979 / 1015 / 1341 / 1352 / 1408 / 1422 /
-    1511 / 1559 / 1576 / 1709 / 3544 / 5207 / 5208 / 5212 ✓
-  - inline 45 处 ✓
-  - 与清单段 L175 宣告「45 处 inline / 16 个 unique」完全对齐（**0 drift**）
-- **_audit_exlib_ledger.py**：105 chapters / **all declared counts match
-  actual inline counts** ✓
-- **文件末尾**：0x0a — LF（沿用 round123 newline LF 容忍规范）✓
-- **git push origin book**：✓（b76df2f..b5db915，GitHub Pages 自动部署）
-- **APP_VERSION v3.22.62 不 bump**（单行文本修订，非版本敏感改动）
-- **可独立回滚**：git revert HEAD 半秒回滚，不影响 ex-lib / manifest / 他章
+- `git diff --stat`：1 file changed, 1 insertion(+), 1 deletion(-) ✓
+- ex-lib id 自检（grep -oE `\[ex:[0-9]{4}\]` 计数）：
+  - unique 5 个：`0994 / 1016 / 5210 / 1411 / 0358` ✓
+  - inline 17 处 ✓
+  - 与清单段声明「17 处 / 5 个 unique」**完全对齐**（0 drift）
+  - 分布 §五 3 + §六 3 + §九 9（清单 5 + 周边 4）+ §十一 2 = **17** ✓
+- 5 个 id 在 ex-lib.json 全 OK（兜底：0994 反向腕屈 / 1016 腕屈 / 5210 前臂
+  SMR / 1411 杠铃腕屈 / 0358 哑铃反向腕屈）✓
+- `python -m json.tool books/exercises/ex-lib.json` ✓
+- `python -m json.tool manifest.json` ✓
+- `node --check app.js` ✓
+- 上下文未触碰：未动清单段表格、未动 §五/§六正文、未动 §十一行动清单、
+  未动 ex-lib 数据库、未动 app.js / index.html / manifest.json
+- APP_VERSION v3.22.62 不 bump（lead 段单行改写，非版本敏感改动）
+- LF 行尾保持（沿用 round123 newline LF 容忍规范）
+- `git push origin book` ✓（GitHub Pages 自动部署）
 
-### 留给下轮的候选
+## 给下一轮的候选
 
-按 fast_context + 实验扫描结果，以下三项都「真实存在」且单 commit 可解：
+1. **(优先级高)** ch06-back.md §十「ex-lib 引用清单」lead 段含 v3.22.62 叙事
+   「原 [ex:1352] lower back curl 实为背部训练动作（非 SMR），已在 v3.22.62
+   替换为 [ex:5212]」——round129 b5db915 已修订 ch06 L193 同主题，但 §十 lead
+   段是另一处叙述同一替换事件，待校对叙事年份与本章创建时间是否一致
+2. **(优先级中)** 全书 8 章「ex-lib 引用清单」段 audit pass 后继续保持零
+   drift；下轮扫 ch03-knee.md / ch04-ankle.md 是否缺类似清单段
+3. **(优先级中)** NSCA-CPT ch10 SMR 条目入库——优先级队列候选，用户偏好
+   「库里无 foam roller 专项条目」原则下需要先看 ch10 现状
+4. **(优先级低)** 薄章节校对：ch01-introduction.md 0 ex-lib refs 是设计
+   （导言章），ch05-elbow.md 287 行是 8 章里最长，可考虑下一轮扫 ch03/ch04
+   内容密度
 
-1. **ch06 L175 宣告段「[v3.22.62 勘误]」里「仅本说明段作为历史记录保留
-   id 字符串」叙述 vs 实际**：L175 含 7 个 inline 引用（[ex:1352] ×3 +
-   [ex:5212] ×2 + [ex:5207] [ex:5208] 各 1），但仅说「仅本说明段 1 处」
-   —— 与实际 7 处不一致。原叙事把 [ex:1352] 单列为「勘误保留」却把
-   [ex:5212] ×2 + [ex:5207] + [ex:5208] = 4 处 业务引用都归在「清单段」
-   里。可精简为「仅 [ex:1352] 历史保留 + 4 处邻近部位 foam roller 引用
-   = 5 处本段额外提及」，但 audit 已 pass（audit 器只检查首句宣告，本轮
-   不引发 audit drift）
+## 本轮 commit
 
-2. **NSCA ch10 第七节 总清单 独有 6 条 2.1 节无交叉标记**（候选 #2）：
-   ch10 第七节 总清单 13 条与 2.1 节 7 条 重叠 7 个 id
-   （0669/1339/1560/1709/1377/1713/1710），剩 6 条总清单独有
-   （1403/1716/1341/1358/1604/5205 等），当前总清单独有行末尾**没有任何
-   标记**指出它们未在 2.1 节出现。建议在总清单独有行末尾加
-   「**2.1 节无交叉**」标记，与 7 条重叠行「↗ 详见 2.1 节」对称。
-
-3. **manifest.json 字数 vs books/README.md 数字扫描**（候选 #3）：
-   已于 round126 (01b1ced) 修过 3 处数字（89.8→90.1 万字 / 阴阳 14.3→14.4 /
-   羽毛球康复 2.0→2.2）。可扫「现在 90.1 / 14.4 / 2.2 万」是否仍与
-   实际字数对齐 —— 如果近 130 轮又有新增，数字可能再漂。
-
-### 优先级排序
-
-- **#1 ch06 L175 文本精确度**：audit pass 但内部「仅本说明段 1 处」叙
-  事低估了 7 处；可小幅改写（无 audit drift 风险）
-- **#2 NSCA ch10 总清单独有标记**：对称性优化，单行加 6 处标记
-- **#3 manifest.json vs README 字数**：纯文案修正，已于 round126 修过
-
-### 双写本轮
-
-本轮采用 v3.22.62 双 manifest 记账模式（与 round74~128 风格一致），本轮
-ledger 已落 todos/round130.md；下次轮 commit 双写时建议沿用
-_append_todo_round130.py 模板（与 round74~128 同款格式），保证 ledger 与
-commit 历史可回溯。
+- hash: `639cb52`
+- subject: `fix(badminton-recovery-ch05): §九 lead 段计数漂移修正（16→17 declared vs actual 对齐）`
+- 1 file changed, 1 insertion(+), 1 deletion(-)
+- APP_VERSION: v3.22.62 (no bump)
+- branch: book (pushed to origin)
