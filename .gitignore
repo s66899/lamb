@@ -76,11 +76,12 @@ _append_todo_round60.py
 _append_todo_round63.py
 _append_todo_round64.py
 
-# 第 104+ 轮 ledger / fix / scan 临时脚本通配（一次性收敛 75+ 个 _roundNNN_*.py / _brace_check*.py / _scan_*.py）
+# 第 104+ 轮 ledger / fix / scan 临时脚本通配（一次性收敛 75+ 个 _roundNNN_*.py / _brace_check*.py / _scan_*.py / _compare_*.py）
 _round*.py
 _brace_check*.py
 _scan_*.py
 _scan_*.js
+_compare_*.py
 _fix_ch*.py
 _count_*.py
 _normalize_*.py
