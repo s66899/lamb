@@ -1,6 +1,8 @@
 ﻿# VERSION — 项目根 changelog（按版本号倒序排列；新版本在最上）
-# 当前 HEAD = v3.22.62, APP_VERSION (app.js) = v3.22.62
-# 历史叙事（v3.4.0 ~ v3.8.7）由原 VERSION 文件保留；本轮新增 v3.18.7 ~ v3.22.62 共 28 条 commit 摘要
+# 当前 HEAD = v3.22.63, APP_VERSION (app.js) = v3.22.63
+# 历史叙事（v3.4.0 ~ v3.8.7）由原 VERSION 文件保留；本轮新增 v3.18.7 ~ v3.22.63 共 29 条 commit 摘要
+
+v3.22.63 (2026-09-01) chore(release): 4 埋点 v3.22.62 → v3.22.63（_bump_version.js --set=v3.22.63 --apply 一步到位，兑现 round136 / commit 0079513 commit message 标题里 v3.22.63 叙事领先于代码的欠账 — 该 commit 实际落地了 NSCA-CPT ch03 193→326 行的实质内容改进，commit message 已自报 v3.22.63 但当时未触发 _bump_version 流程；本轮一次性补齐 4 埋点 + VERSION 头注释 + 本 changelog 条目，让叙事与代码对齐）+ APP_VERSION + index.html 三处 ?v= 全部 v3.22.63，回读校验通过；零业务代码改动；零 ex-lib id 改动
 
 v3.22.62 (2026-08-31) chore(release): 4 埋点 v3.22.61 → v3.22.62（_bump_version.js --set=v3.22.62 --apply 一步到位，追平 2026-08-31 当日凌晨 02:47~03:09 三 commit（34fc512 NSCA ch10 第七节漏列 [ex:1710] + af48c46 todo 回填 + b22885f ch10 L303 31→33 inline 数字对齐实测 + 新增 _audit_exlib_ledger.py）的"叙事领先于代码"欠账；APP_VERSION + index.html 三处 ?v= 全部 v3.22.62，回读校验通过）+ VERSION 头注释同步到 v3.22.62；零业务代码改动；零 ex-lib id 改动
 
