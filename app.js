@@ -84,7 +84,7 @@ function safeSet(key, value) {
   }
 }
 
-// ─── 5大训练模块 ──────────────────────────
+// ─── 7大训练模块（含教练系统 + 个人专项） ──────────────────────────
 const TRAIN_MODULES = [
   { id:'badminton-tech', icon:'🏸', title:'羽毛球技术', color:'var(--blue)',
     desc:'基于NSCA-CSCS运动科学，融合世界顶级教练实战经验的手法·步伐·球路一体化训练体系',
