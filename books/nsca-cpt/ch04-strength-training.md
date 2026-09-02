@@ -264,7 +264,7 @@
 | 动作 | ex-lib 编号 | 训练要点 |
 |------|-----------|---------|
 | 弹力带反握腕弯举 | `[ex:0994] band reverse wrist curl` | 前臂平放桌沿，腕背伸 |
-| 农夫行走 | `[ex:1421] dumbbell farmer's walk` | 双手持重物行走，握力 + 核心协同 |
+| 农夫行走 | `[ex:2133] dumbbell farmer's walk` | 双手持重物行走，握力 + 核心协同 |
 | 握力器静力收缩 | （自购器械） | 每天捏 50 次 × 5 秒 |
 
 **小腿 + 提踵**：
@@ -357,7 +357,7 @@
 | 2 | 哑铃侧卧肩外旋 | `[ex:0863] dumbbell lying external shoulder rotation` | 3×15 | 45 秒 |
 | 3 | 90/90 肩外旋 | `[ex:0864] dumbbell upright shoulder external rotation` | 3×12 | 45 秒 |
 | 4 | 弹力带反握腕弯举 | `[ex:0994] band reverse wrist curl` | 3×15 | 45 秒 |
-| 5 | 农夫行走 | `[ex:1421] dumbbell farmer's walk` | 3×30 米 | 60 秒 |
+| 5 | 农夫行走 | `[ex:2133] dumbbell farmer's walk` | 3×30 米 | 60 秒 |
 
 ### 计划 C：高水平 8 周周期化（每周 4-5 次）
 

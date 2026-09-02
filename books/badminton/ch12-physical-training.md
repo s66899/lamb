@@ -404,7 +404,7 @@ RPE 是 Borg 量表的核心概念，让运动员根据自己的主观感受来�
 | 动作 | ex-lib id | 作用 |
 |------|-----------|------|
 | [ex:0994] band reverse wrist curl | 弹力带反握腕弯举 | 反手挥拍 |
-| [ex:1421] dumbbell farmer's walk | 农夫行走 | 握力 + 核心协同 |
+| [ex:2133] dumbbell farmer's walk | 农夫行走 | 握力 + 核心协同 |
 
 **新手训练计划（每周 3 次，每次 45 分钟）**：
 
