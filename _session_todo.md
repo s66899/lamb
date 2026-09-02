@@ -4537,6 +4537,15 @@ chore(todo) + fix 配对风格的纯记账轮次变体——本轮无 fix 故只
 - 5 维度 APP_VERSION 一致性：app.js L28 / index.html L24+228+229 / VERSION 头部 / books/README 仍为 v3.22.63（README 未涉及 APP_VERSION，本轮不 bump）
 - drift 0/0
 
+## Round 145（2026-09-02）
+
+- ch01 补「六大损伤第 1 天起步动作」速查 §八 + 章末 ex-lib 引用清单 §九
+- 全书 inline 219→248（ch01 0→29），unique 总数 64 不变（9 个新 id 全部为库内合法且已在对应损伤章实际使用）
+- 全仓 ex-lib 616 refs / 0 broken
+- §八 第二层显式写明「不要自行编造库中不存在的 SMR 编号」护栏
+- commit d4c1479（2 files / +47 / -1）
+- ⚠️ push 失败：HTTPS 443 持续超时，commit 已落本地 ahead 1，待网络恢复后 `git push origin book` 触发 GH Pages 部署
+
 ## 遗留候选（留给下轮）
 
 1. （继承 141/142 轮，优先级中）`_session_todo.md` 78 轮双写 `_append_todo_round78.{py,md}` 在 HEAD 缺失，与 73~77/79~97 轮惯例不同
