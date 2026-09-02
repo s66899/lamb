@@ -62,4 +62,4 @@
 **创作日期**：2026年8月起（v3.22.44 立项 / 持续迭代到 v3.22.62）
 **总章数**：8 章
 **当前进度**：8/8 章完成（100%）
-**ex-lib 引用**：216 处 inline / 64 个唯一 id / 0 broken（截至当前 HEAD，详见各章末「本章 ex-lib 引用清单」——分布：ch01 0 / ch02 32 / ch03 16 / ch04 23 / ch05 17 / ch06 45 / ch07 48 / ch08 35 = 216 inline；各章清单段 unique 合计 7+9+13+5+16+14+16 = 80，跨 13 个 id 重复（80−16 dup = 64 unique）；本数较 v3.22.62 b1bfb04 时的 199 inline +17：来自 ch07 5825260 +16 inline（12 周方案「第一层」新增拉伸梯度）+ ch05 639cb52 +1 inline（§九 lead 段计数漂移修正后声明自引用））
+**ex-lib 引用**：219 处 inline / 64 个唯一 id / 0 broken（截至当前 HEAD，详见各章末「本章 ex-lib 引用清单」——分布：ch01 0 / ch02 32 / ch03 16 / ch04 23 / ch05 17 / ch06 46 / ch07 50 / ch08 35 = 219 inline；各章清单段 unique 合计 7+9+13+5+16+14+16 = 80，跨 13 个 id 重复（80−16 dup = 64 unique）；本数较 v3.22.62 b1bfb04 时的 199 inline +20：来自 ch07 5825260 +16 inline（12 周方案「第一层」新增拉伸梯度）+ ch05 639cb52 +1 inline（§九 lead 段计数漂移修正后声明自引用）+ ch06/ch07 9572a68 +3 inline（v3.22.64 SMR 库条数描述附注：ch06 §十清单说明段 +1 处 [ex:5212] foam roller thoracic spine、ch07 §十清单说明段 +2 处 [ex:5205] foam roller calves））
