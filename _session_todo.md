@@ -4602,3 +4602,24 @@ chore(todo) + fix 配对风格的纯记账轮次变体——本轮无 fix 故只
 5. （本轮新发现，优先级低）README L62 "创作日期：v3.22.62" 已是陈旧版本号，实际迭代到 v3.22.74+。但 APP_VERSION 在 app.js / index.html / VERSION 头部 / books/README（各书独立账本）有 5 埋点，写"v3.22.62"这种散文性日期陈述不属于埋点 drift，**沿用 round148 的判断"散文版本号不修"原则不修**
 6. （本轮新发现，优先级低）我自己的 ex-lib 扫描脚本第一版写错了——bare `ex:NNNN` 与 `[ex:NNNN]` 会同时被一个 `[ex:NNNN]` 命中，导致每章都翻倍。本轮立刻修复并以 `[ex:NNNN]` 形式单独计数得正确 251。后续扫描若仍用同一脚本会重蹈覆辙——可固化一个 `_scan_exlib_v2.py` 作为标准扫描器
 
+
+## 2026-09-02 第 161 轮 (commit ee50491)
+
+### 本轮做了什么
+- 上轮记账 commit 0f5d9c9 推送状态确认:本轮开始 `git push` 报告 Everything up-to-date,证明上一轮 push 已成功兜底(audit 0f5d9c9 已上线);上一轮记账 commit 2772b0c 的「push 待人工重试」状态作废
+- 本轮新发现:`books/badminton-recovery/README.md` L62 「创作日期」行尾写「持续迭代到 v3.22.62」,与真实 `app.js` L28 `APP_VERSION = 'v3.22.63'` 偏差一档;`books/README.md` L11 / 顶层 `index.html` ?v= 已对齐到 v3.22.63,只有这一处 README 散文性 v 号漏同步
+- **修复策略**:单行字符级 L62 `v3.22.62 → v3.22.63`,与 app.js 真实 APP_VERSION 对齐;**不动**同行的 v3.22.44(立项号=历史叙事)/ inline 计数说明段 / 各章分章数字;不 bump APP_VERSION(本次修改不触及 app.js)
+- 扫描复核:`grep v3.XX.YY books/README.md books/*/README.md` → 只剩 badminton-recovery/README.md 中 v3.22.44(立项号)与 v3.22.63(本轮修复后),其余 9 本 README v 号均与 APP_VERSION 一致;章节正文中 `v3.22.17 / 22 / 24 / 31 / 33 / 46 / 62 / 63 / 64 / 65 / 72 / 74` 等字面量均为「v3.22.XX 修订说明」历史 changelog 叙事块,不需对齐 APP_VERSION(沿用 round148「散文 v 号不修」原则)
+
+### 校验
+- `git diff --stat`: `1 file changed, 1 insertion(+), 1 deletion(-)` ✓
+- 全项目章节正文字面量扫:`manifest.json` 9 本书 / 97 章 / 617 inline / 0 broken ✓
+- 散文 README v 号扫:`books/README.md` v3.22.63 ✓、`books/*/README.md` 全部与 v3.22.63 对齐(或仅含立项号 v3.22.44 历史叙事)✓
+- `_valid_ids.txt` 1335 个合法 id,全项目章节正文 617 inline 全部命中合法 id ✓
+- ch01-ch08 分章 inline 实测:31+32+16+23+17+46+51+35 = 251,与 README 「251 inline / 64 unique / 0 broken」完全一致 ✓
+
+### 遗留 / 留给下轮
+- 本轮 `git push origin book` ×3 仍 fail(github.com:443 网络不通),与 round160 同症;待下轮自动 retry 或人工 `git push`
+- (继承 152/153 轮,优先级中) ch07 12 周时间线段补强 5 个 inline 动作(与 ch02/ch04/ch06 体例对齐) — 仍待扫库内 calf raise / calf stretch 类条目代用
+- (继承 142 轮,优先级低) `_session_todo.md` 78 轮双写 `_append_todo_round78.{py,md}` 在 HEAD 缺失
+- (本轮新发现,优先级低) 顶层 README.md L231「当前版本:v3.22.61」是 round148 已记账的散文 v 号,沿用 round148「散文 v 号不修」原则不修 — 复核 round148 上下文确认此判断持续有效
