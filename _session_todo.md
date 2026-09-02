@@ -4552,3 +4552,53 @@ chore(todo) + fix 配对风格的纯记账轮次变体——本轮无 fix 故只
 2. （继承 141/142 轮，优先级低）NSCA-CPT ch10 §七末段 v3.22.17/62/72/74 四次勘误 blockquote 累积 580+ 字 — round138 已合并 72/74 两段，剩余 17/62 两段仍占篇幅，可远期整理为附录
 3. （本轮新发现，优先级低）**本轮 README 修复经验揭示一个 pattern**：book README 顶层汇总行与章内「清单」声明是两份独立维护的源码，chapter-level 修复时易遗漏 README 汇总行。下次任何 chapter-level 修改后应顺手 `git diff HEAD~ -- books/*/README.md` 比对一次
 4. （本轮新发现，优先级低）`_valid_ids.txt` 是 4 位裸数字，不是 "ex-NNNN" 格式；前几轮 fast_context / scan 工具可能有兼容脚本假设了 "ex-" 前缀（如本轮 `python3 -c` 第一次失败就是因 `ex-` 前缀假设），建议在 `_valid_ids.txt` 头部加一行 `# format: bare 4-digit, prefix ex- when querying` 或创建 `_valid_ids_with_prefix.txt` 镜像文件
+
+## Round 156（2026-09-02 16:00）— README drift 修复
+
+**commit hash**: `223b5cc` (1 file changed, +1/-1)
+
+### 本轮做了什么
+
+全仓 ex-lib 扫表发现 README 顶层汇总行 inline 计数**真实 drift**（round143 之后两轮 chapter-level 修复均漏同步 README）：
+
+| 项 | README 旧值 | 章内实测 | 差值 | 漏源 commit |
+|---|---|---|---|---|
+| ch01 inline | 29 | **31** | +2 | `1854cdc` round151 ch01 §九清单脱节修复（[ex:0994] 升级到 §九清单表 + §九 blockquote 清单说明双提及） |
+| ch07 inline | 50 | **51** | +1 | `8799d3d` round153 ch07 跟腱红旗升级（[ex:1374] 红旗与时间线关系段复用） |
+| 合计 inline | 248 | **251** | +3 | — |
+
+唯一 id 仍为 64、broken 仍为 0（两次 chapter 修复均为提及升级 / 复用，未引入新独立 id）。
+
+### 修复
+
+单文件 1 行同步 `books/badminton-recovery/README.md` L65：
+- `ch01 29` → `ch01 31`
+- `ch07 50` → `ch07 51`
+- `248 处 inline` → `251 处 inline`
+- `本数较上一版 219 inline +29` → `本数较上一版 248 inline +3`
+- 末段追注 `+3 来源说明：round151 ch01 §九清单脱节修复 1854cdc +2 inline（ch01 29→31）+ round153 ch07 跟腱红旗升级 8799d3d +1 inline（ch07 50→51）`
+- 「所补 9 个 id 全部为库内合法条目」措辞改为「所补 3 处 inline 全部为库内合法条目（[ex:0994] / [ex:1374] 均已在 ch05/ch06 实际使用）」
+
+### 校验
+
+- `node --check app.js` ✅（未触碰）
+- `python -m json.tool manifest.json` ✅（未触碰）
+- badminton-recovery 实测 inline=251 / unique=64 / broken=0 vs README 声明 251/64/0 零 drift ✅
+- 零业务代码改动（app.js/manifest.json/index.html/VERSION 未触碰）
+- APP_VERSION 不 bump（README 不涉及 APP_VERSION）
+- LF 行尾干净 0 CRLF
+- 可独立回滚 `git revert HEAD`
+
+### push 状态
+
+✅ push 成功 ahead 0（GitHub 网络已从 round148 的间断恢复，本地 → origin/book 实时同步）
+
+### 留给下轮的候选
+
+1. （本轮新发现，优先级高）**README 顶层汇总行 vs chapter-level 修改的同步 pattern** 已被本轮第二次印证：round143 修了 219→248 后 round151/153 都漏同步。建议下轮在 chapter-level 修改 SOP 加一行「git diff HEAD~ -- books/<book>/README.md 比对内联分布」，让 251→未来版本不再依赖人工记忆。但这是 SOP 文档改动，需谨慎评估是否值得加 AGENTS.md。
+2. （继承 152/153 轮，优先级中）ch07 12 周时间线段补强 5 个 inline 动作（与 ch02/ch04/ch06 体例对齐）—— round152 已扫过库内 0 个 achilles 专项，需用 calf raise / calf stretch 类条目代用
+3. （继承 142 轮，优先级低）NSCA-CPT ch10 §七末段 v3.22.17/62/72/74 四次勘误 blockquote 累积 580+ 字 — round138 已合并 72/74 两段，剩余 17/62 两段可远期整理为附录
+4. （继承 142 轮，优先级低）`_session_todo.md` 78 轮双写 `_append_todo_round78.{py,md}` 在 HEAD 缺失
+5. （本轮新发现，优先级低）README L62 "创作日期：v3.22.62" 已是陈旧版本号，实际迭代到 v3.22.74+。但 APP_VERSION 在 app.js / index.html / VERSION 头部 / books/README（各书独立账本）有 5 埋点，写"v3.22.62"这种散文性日期陈述不属于埋点 drift，**沿用 round148 的判断"散文版本号不修"原则不修**
+6. （本轮新发现，优先级低）我自己的 ex-lib 扫描脚本第一版写错了——bare `ex:NNNN` 与 `[ex:NNNN]` 会同时被一个 `[ex:NNNN]` 命中，导致每章都翻倍。本轮立刻修复并以 `[ex:NNNN]` 形式单独计数得正确 251。后续扫描若仍用同一脚本会重蹈覆辙——可固化一个 `_scan_exlib_v2.py` 作为标准扫描器
+
