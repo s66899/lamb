@@ -5917,7 +5917,7 @@ window.ftSave = function() {
   arr.sort((a,b) => (a.d || '').localeCompare(b.d || ''));
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 90);
   const cut = cutoff.toISOString().slice(0,10);
-  save(arr.filter(x => (x.d || '') >= cut));
+  ftSaveData(arr.filter(x => (x.d || '') >= cut));
   const msg = document.getElementById('ftMsg');
   if (msg) { msg.textContent = '✅ 已保存 ' + rec.d; setTimeout(() => { if (msg) msg.textContent = ''; }, 3000); }
   ftRenderList();
