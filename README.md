@@ -233,7 +233,7 @@ books/
 
 ## 📌 版本
 
-当前版本：**v3.22.63**（2026-09-01）
+当前版本：**v3.22.64**（2026-09-02）
 
 每次内容更新后版本号递增、日期更新。
 
@@ -243,6 +243,7 @@ books/
 
 ### v3.22.x — 多本书内容深耕 + ex-lib 体系
 
+- **v3.22.64**（2026-09-02）: 🩺 新增第 10 本书《体能评估》（round165 备忘决策产物；round166 首版落地）— ch01「体能评估总论——手环数字怎么读 + 9 大指标基线」+ 内嵌交互面板（9 字段手录入 + Chart.js v4.4 折线趋势 + 最近 14 天数字列表）；数据存浏览器 LocalStorage，CDN 懒加载 Chart.js（首次访问才下载，其他书页零负担）。5 埋点统一 bump：app.js APP_VERSION / index.html 三处 ?v= / manifest.json / manifest_data.js / books/README.md / 顶层 README.md。代码变动：app.js 新增 ~190 行（FT_KEY + ftSave/ftClear + ftRenderChart/List + injectFitnessTrackerForm 占位检测），manifest_data.js 新增一本书同步到 manifest.json。零 ex-lib id 变动（fitness-assessment 不使用 ex-lib）。零 backward-compatibility 问题（新书独立）。
 - **v3.22.63**（2026-09-01）: 🔧 5 维度体检发现 README / books/README 两处 v3.22.62 文本残渣（追平 round137 commit 6252c30 _bump_version.js 已 bump 的 4 埋点（app.js APP_VERSION / index.html 三处 ?v= / manifest.json / VERSION 头注释）；本轮补 README.md L231 当前版本 + L241 changelog 条目 + books/README.md L11 数据源 v3.22.62→v3.22.63，让 5 维度 APP_VERSION 一致性体检通过）;后续 9 本书目录预览 vs 实际章节 1:1 核查修复(金融漏列 ch11/12/13 三处 + 心理学漏列 ch11/12 两处 = 5 处;扫表验证总条目数 13+13+12+15+12+10+8+6+7=96 与各书实际章节数一一对齐;零业务代码改动;零 ex-lib id 改动;drift 0/0)与 badminton-recovery ch04 踝关节补「必须立即就医的红旗信号」+ Ottawa Ankle Rules(全书唯一缺失红旗段的损伤章,顺手修 X 光「急性期必查」与准则自相矛盾;13 个 ex-lib token 全合法 broken 0;未伪造泡沫轴/筋膜球条目)亦均未触发 _bump_version,统一并入本 changelog 条目以保持「版本号 = 实际发版」单一来源
 - **v3.22.62**（2026-08-31）: 🔧 README 两处 v3.22.61→v3.22.62 残渣扫尾（追平 78 轮 _bump_version.js b2b6ab2 已 bump 的 4 埋点；本轮补 v3.22.62 自身 changelog 条目，让根 README §「🔄 更新日志」与 VERSION v5 + app.js APP_VERSION + index.html 三处 ?v= + books/README 数据源五处对齐）
 - **v3.22.61**（2026-08-29）: 🔧 4 埋点 v3.22.58→v3.22.61 一步到位追平

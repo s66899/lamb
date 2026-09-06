@@ -14831,6 +14831,97 @@ const MANIFEST_DATA = {
       ],
       "totalWords": 5796,
       "chapterCount": 7
+    },
+    {
+      "id": "fitness-assessment",
+      "title": "体能评估",
+      "emoji": "🩺",
+      "color": "#5e35b1",
+      "desc": "手环/手机健康 App 数字翻译成训练决策——9 大指标基线 + 嵌入 form + Chart.js 趋势",
+      "chapters": [
+        {
+          "file": "ch01-overview.md",
+          "title": "体能评估总论——手环数字怎么读 + 9 大指标基线",
+          "words": 1948,
+          "h2s": [
+            {
+              "title": "本章导言",
+              "subs": [
+              ]
+            },
+            {
+              "title": "第一层：普通人能看懂",
+              "subs": [
+                {
+                  "title": "一、静息心率（Resting HR）",
+                  "level": 3
+                },
+                {
+                  "title": "二、HRV（心率变异度）",
+                  "level": 3
+                },
+                {
+                  "title": "三、VO₂max（最大摄氧量）",
+                  "level": 3
+                },
+                {
+                  "title": "四、步数",
+                  "level": 3
+                },
+                {
+                  "title": "五、睡眠时长",
+                  "level": 3
+                },
+                {
+                  "title": "六、1RM（最大力量）",
+                  "level": 3
+                },
+                {
+                  "title": "七、体脂率",
+                  "level": 3
+                },
+                {
+                  "title": "八、瘦体重（LBM，去脂体重）",
+                  "level": 3
+                },
+                {
+                  "title": "九、训练容量（Volume Load）",
+                  "level": 3
+                },
+              ]
+            },
+            {
+              "title": "第二层：专业人士参考",
+              "subs": [
+                {
+                  "title": "三类数字的「权重」决策模型",
+                  "level": 3
+                },
+                {
+                  "title": "「数字 → 决策」的判定流程",
+                  "level": 3
+                },
+                {
+                  "title": "与 NSCA-CPT ch08 的关系",
+                  "level": 3
+                },
+              ]
+            },
+            {
+              "title": "📊 体能自评录入面板（嵌入式 form + Chart.js 折线图）",
+              "subs": [
+              ]
+            },
+            {
+              "title": "本章核心要点",
+              "subs": [
+              ]
+            },
+          ]
+        }
+      ],
+      "totalWords": 1948,
+      "chapterCount": 1
     }
   ]
 };

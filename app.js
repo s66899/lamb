@@ -25,7 +25,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.63';
+const APP_VERSION = 'v3.22.64';
 const APP_DATE = '2026-08-31';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -1962,7 +1962,7 @@ const LEVELS = [
 ];
 
 // ─── 书塔书籍映射（次要入口） ──────────
-const TOWER_BOOKS = ['badminton','badminton-recovery','finance','psychology','engineering-mechanics','nsca-cpt','yin-yang'];
+const TOWER_BOOKS = ['badminton','badminton-recovery','finance','psychology','engineering-mechanics','nsca-cpt','yin-yang','fitness-assessment'];
 
 // ═══════════════════════════════════════════════════════════════════
 //  🎮 RPG 系统（保持完整）
@@ -5344,6 +5344,11 @@ async function renderChapter() {
       + _finishCta
       + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
     makeCollapsible(); setupQuiz(ch); markStreak();
+    // v3.22.64 round166 fitness-assessment ch01 嵌入交互面板：mdParse 转义了 <div>/<script>，在 markdown 里只留了
+    // <!-- FITNESS_FORM_HERE --> 占位；在 app.js 里后置注入 DOM + 加载 Chart.js（CDN 懒加载，首次访问才下载）。
+    if (currentBookId === 'fitness-assessment' && currentChapterIdx === 0) {
+      try { injectFitnessTrackerForm(); } catch(e) { console.error('[fitness-assessment] form inject failed', e); }
+    }
     // v3.18.9 TOC 观察器：文章 DOM 已挂载，挂 IntersectionObserver 监听所有 H2
     requestAnimationFrame(_setupTocObserver);
     // 自动标记已读：用户实际看到正文即视为完成（markRead 内部已对已读章节短路，不会重复加 XP/弹成就）
@@ -5798,6 +5803,198 @@ const mdParse = (txt) => {
   let out=result.join('\n');out=out.replace(/((?:<li>.*<\/li>\n?)+)/g,'<ul>$1</ul>');out=out.replace(/<p><img[^>]+><\/p>/g,(m)=>'<div class="img-container">'+m.replace(/^<p>/,'').replace(/<\/p>$/,'')+'</div>');
   return out;
 };
+
+// ─── v3.22.64 round166 fitness-assessment ch01 嵌入表单 ───────────────────
+// 背景：mdParse() 转义了 markdown 里的 <div>/<script>，所以在 ch01 末尾只能用文本占位符
+// FITNESS_FORM_HERE_PLACEHOLDER；本函数读到该占位符后，注入 form DOM + 加载 Chart.js（CDN 懒加载）。
+// Chart.js 仅首次访问 fitness-assessment 才下载，其他书页零负担；失败时仅文字提示，不影响阅读。
+const FT_KEY = 'fitness_tracker_data_v1';
+let _ftChart = null;
+let _ftChartLibReady = false; // Chart.js 加载状态
+let _ftChartLoadTried = false;
+
+function ftLoadData() {
+  try { return JSON.parse(localStorage.getItem(FT_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+function ftSaveData(arr) {
+  try { safeSet(FT_KEY, arr); } catch(e) { localStorage.setItem(FT_KEY, JSON.stringify(arr)); }
+}
+
+function ftEnsureChart(cb) {
+  if (_ftChartLibReady && typeof Chart !== 'undefined') { cb(); return; }
+  if (_ftChartLoadTried) { setTimeout(() => ftEnsureChart(cb), 200); return; }
+  _ftChartLoadTried = true;
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+  s.onload = () => { _ftChartLibReady = true; cb(); };
+  s.onerror = () => { _ftChartLibReady = false; showToast('📊 Chart.js 加载失败（趋势图不可用）', 3000); cb(); };
+  document.head.appendChild(s);
+}
+
+function ftFmt(n) {
+  if (n === null || n === undefined || isNaN(n) || n === '') return '';
+  return String(n);
+}
+
+function ftRenderChart() {
+  const ctx = document.getElementById('ftChart');
+  if (!ctx) return;
+  if (typeof Chart === 'undefined') return;
+  const arr = ftLoadData();
+  const last30 = arr.slice(-30);
+  const labels = last30.map(r => (r.d || '').slice(5));
+  const datasets = [
+    { label: '静息 HR', data: last30.map(r => r.rhr), borderColor: '#ef5350', backgroundColor: 'rgba(239,83,80,0.1)', yAxisID: 'y', tension: 0.3, spanGaps: true },
+    { label: 'HRV', data: last30.map(r => r.hrv), borderColor: '#42a5f5', backgroundColor: 'rgba(66,165,245,0.1)', yAxisID: 'y', tension: 0.3, spanGaps: true },
+    { label: 'VO₂max', data: last30.map(r => r.vo2), borderColor: '#66bb6a', backgroundColor: 'rgba(102,187,106,0.1)', yAxisID: 'y', tension: 0.3, spanGaps: true },
+  ];
+  if (_ftChart) { try { _ftChart.destroy(); } catch(e) {} }
+  _ftChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } },
+      scales: {
+        y: { beginAtZero: false, title: { display: true, text: '数值', font: { size: 11 } } },
+        x: { ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } }
+      }
+    }
+  });
+}
+
+function ftRenderList() {
+  const el = document.getElementById('ftList');
+  if (!el) return;
+  const arr = ftLoadData();
+  const last14 = arr.slice(-14).reverse();
+  if (last14.length === 0) {
+    el.innerHTML = '<div style="color:var(--text3);padding:8px 0">暂无数据，点击「💾 保存今日」开始录入</div>';
+    return;
+  }
+  const rows = last14.map(r => (
+    '<tr style="border-bottom:1px solid var(--border)">'
+    + '<td style="text-align:left;padding:6px 4px">' + (r.d || '') + '</td>'
+    + '<td style="text-align:center;padding:6px 4px">' + ftFmt(r.rhr) + '</td>'
+    + '<td style="text-align:center;padding:6px 4px">' + ftFmt(r.hrv) + '</td>'
+    + '<td style="text-align:center;padding:6px 4px">' + ftFmt(r.vo2) + '</td>'
+    + '<td style="text-align:center;padding:6px 4px">' + ftFmt(r.steps) + '</td>'
+    + '<td style="text-align:center;padding:6px 4px">' + ftFmt(r.sleep) + '</td>'
+    + '<td style="text-align:center;padding:6px 4px">' + ftFmt(r.weight) + '</td>'
+    + '<td style="text-align:center;padding:6px 4px">' + ftFmt(r.bf) + '</td>'
+    + '<td style="text-align:center;padding:6px 4px">' + ftFmt(r.sq) + '</td>'
+    + '<td style="text-align:center;padding:6px 4px">' + ftFmt(r.rpe) + '</td>'
+    + '</tr>'
+  )).join('');
+  el.innerHTML = '<table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:1px solid var(--border)">'
+    + '<th style="text-align:left;padding:6px 4px">日期</th>'
+    + '<th style="padding:6px 4px">RHR</th>'
+    + '<th style="padding:6px 4px">HRV</th>'
+    + '<th style="padding:6px 4px">VO₂</th>'
+    + '<th style="padding:6px 4px">步数</th>'
+    + '<th style="padding:6px 4px">睡眠</th>'
+    + '<th style="padding:6px 4px">体重</th>'
+    + '<th style="padding:6px 4px">体脂</th>'
+    + '<th style="padding:6px 4px">1RM</th>'
+    + '<th style="padding:6px 4px">RPE</th>'
+    + '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+window.ftSave = function() {
+  const get = id => document.getElementById(id);
+  const v = id => { const x = get(id); return x && x.value !== '' ? +x.value : null; };
+  const rec = {
+    d: (get('ftDate') && get('ftDate').value) || new Date().toISOString().slice(0,10),
+    rhr: v('ftRHR'), hrv: v('ftHRV'), vo2: v('ftVO2'), steps: v('ftSteps'),
+    sleep: v('ftSleep'), weight: v('ftWeight'), bf: v('ftBF'),
+    sq: v('ftSQ'), rpe: v('ftRPE')
+  };
+  const arr = ftLoadData();
+  const idx = arr.findIndex(x => x.d === rec.d);
+  if (idx >= 0) arr[idx] = rec; else arr.push(rec);
+  arr.sort((a,b) => (a.d || '').localeCompare(b.d || ''));
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 90);
+  const cut = cutoff.toISOString().slice(0,10);
+  save(arr.filter(x => (x.d || '') >= cut));
+  const msg = document.getElementById('ftMsg');
+  if (msg) { msg.textContent = '✅ 已保存 ' + rec.d; setTimeout(() => { if (msg) msg.textContent = ''; }, 3000); }
+  ftRenderList();
+  ftEnsureChart(ftRenderChart);
+};
+
+window.ftClear = function() {
+  if (!confirm('确定清空全部历史数据？此操作不可恢复。')) return;
+  ftSaveData([]);
+  const msg = document.getElementById('ftMsg');
+  if (msg) msg.textContent = '🗑 已清空';
+  ftRenderList();
+  if (typeof Chart !== 'undefined') ftRenderChart();
+};
+
+function ftBuildFormHTML() {
+  const today = new Date().toISOString().slice(0,10);
+  return ''
+    + '<div id="fitnessTrackerApp" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:12px 0">'
+    + '<div style="font-weight:600;margin-bottom:8px">录入今日数据（9 字段可选填，保存后仅本地）</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px">'
+    + ftField('ftDate', '📅 日期', 'date', today, '')
+    + ftField('ftRHR', '💓 静息心率 (bpm)', 'number', '', '如 56', '30','120')
+    + ftField('ftHRV', '⚡ HRV / 恢复 (0-100)', 'number', '', '如 72', '0','100')
+    + ftField('ftVO2', '🫁 VO₂max (估算)', 'number', '', '如 48', '15','90', '0.1')
+    + ftField('ftSteps', '👟 步数', 'number', '', '如 8420', '0','50000')
+    + ftField('ftSleep', '😴 睡眠 (小时)', 'number', '', '如 7.5', '0','14', '0.1')
+    + ftField('ftWeight', '⚖️ 体重 (kg)', 'number', '', '如 70.2', '20','200', '0.1')
+    + ftField('ftBF', '📐 体脂 (%)', 'number', '', '如 16.5', '3','50', '0.1')
+    + ftField('ftSQ', '🏋️ 深蹲 1RM (kg)', 'number', '', '如 110', '0','400')
+    + ftField('ftRPE', '💪 RPE (1-10)', 'number', '', '如 7', '1','10')
+    + '</div>'
+    + '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">'
+    + '<button onclick="ftSave()" style="background:var(--green);color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:600">💾 保存今日</button>'
+    + '<button onclick="ftClear()" style="background:var(--bg);color:var(--text2);border:1px solid var(--border);padding:10px 18px;border-radius:8px;cursor:pointer">🗑 清空全部</button>'
+    + '<span id="ftMsg" style="font-size:12px;color:var(--text2)"></span>'
+    + '</div>'
+    + '<div style="font-weight:600;margin:12px 0 8px">最近 30 天趋势</div>'
+    + '<div style="position:relative;height:260px;margin-bottom:12px"><canvas id="ftChart"></canvas></div>'
+    + '<div style="font-weight:600;margin:12px 0 8px">最近 14 天数据（数字列表）</div>'
+    + '<div id="ftList" style="font-size:12px;color:var(--text2);max-height:200px;overflow-y:auto"></div>'
+    + '<div style="font-size:11px;color:var(--text3);margin-top:8px">🔒 数据仅保存在你浏览器 LocalStorage，不上传任何服务器。CDN 加载 Chart.js v4.4 供趋势图。来源详见 round165 备忘 §2。</div>'
+    + '</div>';
+}
+
+function ftField(id, label, type, val, ph, mn, mx, step) {
+  return '<label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text2)">'
+    + '<span>' + label + '</span>'
+    + '<input type="' + type + '" id="' + id + '" value="' + (val||'') + '" placeholder="' + (ph||'') + '"'
+    + (mn ? ' min="' + mn + '"' : '')
+    + (mx ? ' max="' + mx + '"' : '')
+    + (step ? ' step="' + step + '"' : '')
+    + ' style="padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">'
+    + '</label>';
+}
+
+function injectFitnessTrackerForm() {
+  // 防御重复注入：如果 form 已经存在就不再注入（避免 reader 切章重渲染时叠层）
+  if (document.getElementById('fitnessTrackerApp')) {
+    ftRenderList();
+    ftEnsureChart(ftRenderChart);
+    return;
+  }
+  // 把占位段落替换成 form DOM。占位段落经 mdParse 渲染为 <p>FITNESS_FORM_HERE_PLACEHOLDER</p>
+  const article = document.getElementById('article');
+  if (!article) return;
+  const ps = article.getElementsByTagName('p');
+  for (let i = 0; i < ps.length; i++) {
+    if (ps[i].textContent.indexOf('FITNESS_FORM_HERE_PLACEHOLDER') >= 0) {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = ftBuildFormHTML();
+      ps[i].parentNode.replaceChild(wrap.firstChild, ps[i]);
+      break;
+    }
+  }
+  ftRenderList();
+  ftEnsureChart(ftRenderChart);
+}
 
 // ─── View Switch ──────────────────────────────
 const VIEW_MAP = { dashboard:'viewDashboard', book:'viewBook', reader:'viewReader', library:'viewLibrary' };
