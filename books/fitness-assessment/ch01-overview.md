@@ -176,7 +176,7 @@
 > - **趋势比单点更重要**——折线图让"今天数字异常"立刻显现
 > - **下轮可扩展**：加 Web Bluetooth 直连心率带（绕过系统健康 App）→ 加握力 / 训练容量字段
 
-FITNESS_FORM_PLACEHOLDER_v1
+FITNESSFORMPLACEHOLDERMARKER
 
 **字段说明**（按重要性排）：
 
