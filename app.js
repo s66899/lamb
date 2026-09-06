@@ -5345,7 +5345,7 @@ async function renderChapter() {
       + `<hr style="margin-top:60px;opacity:0.3"><div style="text-align:center;font-size:11px;color:var(--text3);padding:20px 0 10px;border-top:1px solid var(--border);margin-top:30px">📚 知识书塔 · ${APP_VERSION} &nbsp;|&nbsp; ${APP_DATE} &nbsp;|&nbsp; 🐏 by Lamb</div>`;
     makeCollapsible(); setupQuiz(ch); markStreak();
     // v3.22.64 round166 fitness-assessment ch01 嵌入交互面板：mdParse 转义了 <div>/<script>，在 markdown 里只留了
-    // <!-- FITNESS_FORM_HERE --> 占位；在 app.js 里后置注入 DOM + 加载 Chart.js（CDN 懒加载，首次访问才下载）。
+    // FITNESS_FORM_PLACEHOLDER_v1 占位（mdParse 会吃 _HERE_ 的下划线当成 em）；在 app.js 里后置注入 DOM + 加载 Chart.js（CDN 懒加载，首次访问才下载）。
     if (currentBookId === 'fitness-assessment' && currentChapterIdx === 0) {
       try { injectFitnessTrackerForm(); } catch(e) { console.error('[fitness-assessment] form inject failed', e); }
     }
@@ -5806,7 +5806,7 @@ const mdParse = (txt) => {
 
 // ─── v3.22.64 round166 fitness-assessment ch01 嵌入表单 ───────────────────
 // 背景：mdParse() 转义了 markdown 里的 <div>/<script>，所以在 ch01 末尾只能用文本占位符
-// FITNESS_FORM_HERE_PLACEHOLDER；本函数读到该占位符后，注入 form DOM + 加载 Chart.js（CDN 懒加载）。
+// FITNESS_FORM_PLACEHOLDER_v1；本函数读到该占位符后，注入 form DOM + 加载 Chart.js（CDN 懒加载）。
 // Chart.js 仅首次访问 fitness-assessment 才下载，其他书页零负担；失败时仅文字提示，不影响阅读。
 const FT_KEY = 'fitness_tracker_data_v1';
 let _ftChart = null;
@@ -5980,12 +5980,12 @@ function injectFitnessTrackerForm() {
     ftEnsureChart(ftRenderChart);
     return;
   }
-  // 把占位段落替换成 form DOM。占位段落经 mdParse 渲染为 <p>FITNESS_FORM_HERE_PLACEHOLDER</p>
+  // 把占位段落替换成 form DOM。占位段落经 mdParse 渲染为 <p>FITNESS_FORM_PLACEHOLDER_v1</p>
   const article = document.getElementById('article');
   if (!article) return;
   const ps = article.getElementsByTagName('p');
   for (let i = 0; i < ps.length; i++) {
-    if (ps[i].textContent.indexOf('FITNESS_FORM_HERE_PLACEHOLDER') >= 0) {
+    if (ps[i].textContent.indexOf('FITNESS_FORM_PLACEHOLDER_v1') >= 0) {
       const wrap = document.createElement('div');
       wrap.innerHTML = ftBuildFormHTML();
       ps[i].parentNode.replaceChild(wrap.firstChild, ps[i]);
