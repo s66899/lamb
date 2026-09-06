@@ -5264,11 +5264,12 @@ async function renderChapter() {
   _article.classList.add('article-fade-in');
   let md = null;
   const localUrl = `books/${currentBookId}/${ch.file}`;
-  // 8秒超时兜底，防止 fetch 卡死
+  // 8s 超时兑底，防止 fetch 卡死；追加 cache:'no-store' 避免 GH Pages 304 命中缓存旧 .md
+  // （v3.22.64 round166 fitness-assessment 验证发现浏览器内 cached md 会与最新 GitHub md 不一致）
   const fetchWithTimeout = (url, ms=8000) => {
     return new Promise((resolve) => {
       const timer = setTimeout(() => resolve(null), ms);
-      fetch(url).then(r => { clearTimeout(timer); resolve(r); }).catch(() => { clearTimeout(timer); resolve(null); });
+      fetch(url, { cache: 'no-store' }).then(r => { clearTimeout(timer); resolve(r); }).catch(() => { clearTimeout(timer); resolve(null); });
     });
   };
   try {
@@ -6576,7 +6577,7 @@ async function fetchChapterContent(bookId, file) {
   const fetchWithTimeout = (url, ms = 8000) => {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), ms);
-    return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+    return fetch(url, { cache: 'no-store', signal: ctrl.signal }).finally(() => clearTimeout(timer));
   };
 
   const p = (async () => {
