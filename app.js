@@ -25,7 +25,7 @@ let readSecThisChapter = 0; // 当前章节已累计的"页面可见 + 活跃"�
 let _scrollSaveT = 0;       // v3.18.5 阅读位置记忆：scroll 节流保存定时器 id
 
 // ─── 版本 ─────────────────────────────────
-const APP_VERSION = 'v3.22.64';
+const APP_VERSION = 'v3.22.65';
 const APP_DATE = '2026-08-31';
 
 // ─── 全局错误边界（防白屏）─────────────────
@@ -2630,6 +2630,7 @@ function renderDashboard() {
     {icon:'🔍',title:'训练诊断',desc:'60+症状→原因→方案',action:'openDiagnosis()',color:'var(--orange)'},
     {icon:'🧮',title:'计算工具',desc:'TDEE·水合·训练量计算',action:'openCalculators()',color:'var(--red)'},
     {icon:'🏋️',title:'问卷训练方案',desc:'5 题 1 分钟 → 4 周个性化计划',action:'openFitnessQuestionnaire()',color:'var(--blue)'},
+    {icon:'💪',title:'增肌实验室',desc:'训练·营养·疲劳 全链路',action:'openHypertrophyLab()',color:'var(--red)'},
   ];
   $('toolsSection').innerHTML = TOOLS.map(t => `
     <div class="tool-card" onclick="${t.action}">
@@ -3035,6 +3036,7 @@ function renderToolItems() {
     `<div class="side-link sub" onclick="openWeeklyCheck()"><span class="sl-icon">✅</span> 周检查</div>`,
     `<div class="side-link sub" onclick="openLevelFinder()"><span class="sl-icon">📊</span> 级别定位</div>`,
     `<div class="side-link sub" onclick="openFitnessQuestionnaire()"><span class="sl-icon">🏋️</span> 问卷训练方案</div>`,
+    `<div class="side-link sub" onclick="openHypertrophyLab()"><span class="sl-icon">💪</span> 增肌实验室</div>`,
   ].join('');
 }
 
@@ -8217,6 +8219,41 @@ const FIT_TEMPLATES = {
       { week: 4, focus: '减量 + 比赛', sessions: [] },
     ],
   },
+  // v3.22.65 增肌实验室新增：肌肥大专项模板（4 周线性周期 + RIR 控制）
+  hypertrophy: {
+    title: '💪 肌肥大专项模板',
+    desc: '专为「以肌肥大（增肌）为首要目标」的爱好者设计。3-4 天/周 × 4 周，RIR 2-3 控制，每周一加 2.5% 负荷，蛋白 1.8 g/kg 起步。',
+    weeks: [
+      { week: 1, focus: '基线建立（RIR 3）', sessions: [
+        { day: '周一', title: '下肢推 + 核心', actions: [
+          { name: '杠铃背蹲', id: '0038', sets: 4, reps: '8-10 (RIR 3)' },
+          { name: '罗马尼亚硬拉', id: '0085', sets: 3, reps: '10 (RIR 2)' },
+          { name: '腿弯举', id: '0161', sets: 3, reps: '10-12 (RIR 2)' },
+          { name: '小腿提踵', id: '1490', sets: 4, reps: '12-15 (RIR 2)' },
+          { name: '死虫', id: '0276', sets: 3, reps: '10/侧' },
+        ]},
+        { day: '周三', title: '上肢推 + 肩袖', actions: [
+          { name: '杠铃卧推', id: '0025', sets: 4, reps: '8-10 (RIR 3)' },
+          { name: '上斜哑铃推举', id: '0026', sets: 3, reps: '10 (RIR 2)' },
+          { name: '站姿肩外旋', id: '0864', sets: 3, reps: '12-15 (RIR 2)' },
+          { name: '三头下压', id: '0098', sets: 3, reps: '12 (RIR 2)' },
+        ]},
+        { day: '周五', title: '上肢拉 + 下肢拉', actions: [
+          { name: '引体向上/辅助引体', id: '0032', sets: 4, reps: '6-10 (RIR 3)' },
+          { name: '杠铃划船', id: '0039', sets: 4, reps: '8-10 (RIR 3)' },
+          { name: '单臂哑铃划船', id: '0040', sets: 3, reps: '10/侧 (RIR 2)' },
+          { name: '保加利亚分腿蹲', id: '0054', sets: 3, reps: '10/侧 (RIR 2)' },
+        ]},
+        { day: '周六', title: '主动恢复 + 拉伸', actions: [
+          { name: '泡沫轴全身', id: '5202', sets: 1, reps: '10 分钟' },
+          { name: '世界最佳拉伸', id: '1604', sets: 1, reps: '5 分钟' },
+        ]},
+      ]},
+      { week: 2, focus: '负荷递增（+2.5%）', sessions: [] },
+      { week: 3, focus: '容量递增（+1 组）', sessions: [] },
+      { week: 4, focus: '减载周（容量 −40%）', sessions: [] },
+    ],
+  },
   // 康复 / 受伤后回归
   recovery: {
     title: '🩹 康复回归模板',
@@ -8487,6 +8524,391 @@ function attachFitnessBtnToTools() {
       dashboard.insertBefore(banner, dashboard.firstChild);
     }
   }*/
+}
+
+// ─────────────────────────────────────────────────────────────
+// v3.22.65 增肌实验室：4-8 周肌肥大专项 + 营养方案 + 疲劳自检调整
+// 定位：SPA 主面板 (overlay panel-lg)，复用 FIT_TEMPLATES / planSummary / calcTDEE 公式
+// 隐私：纯 LocalStorage，不上传服务器（与 fitness-assessment 同策略）
+// 后续路线图：穿戴 API (HealthKit/华为/Oppo/Vivo/Webhook)、200 种食物库、后端账户、Figma 稿
+// ─────────────────────────────────────────────────────────────
+
+const HYPER_LS_KEY = 'bk_hypertrophy_v1';
+
+// 计算 BMR（与 calcTDEE 一致，避免拆分）
+function _hyperBMR(gender, weight, height, age) {
+  return gender === 'female'
+    ? 10 * weight + 6.25 * height - 5 * age - 161
+    : 10 * weight + 6.25 * height - 5 * age + 5;
+}
+
+// 营养方案计算：增肌目标 + TDEE + 蛋白质/碳水/脂肪克重
+function computeNutritionPlan(input) {
+  const w = parseFloat(input.weight) || 70;
+  const h = parseFloat(input.height) || 175;
+  const a = parseInt(input.age) || 25;
+  const g = input.gender || 'male';
+  const act = parseFloat(input.activity) || 1.55;
+  const goal = input.goal || 'gain';  // gain / maintain / lose
+  const weeklyDeltaRaw = parseFloat(input.weeklyDelta);
+  const weeklyDelta = (isNaN(weeklyDeltaRaw) || weeklyDeltaRaw < 0) ? 0.25 : weeklyDeltaRaw;  // kg/week 增重速率（默认 0.25）
+
+  const bmr = _hyperBMR(g, w, h, a);
+  const tdee = Math.round(bmr * act);
+  // 增肌盈余算法：每 kg 脂肪含 7700 kcal，每周 0.25 kg → +275 kcal/天（保守）
+  // 用户填 weeklyDelta 后计算；保留上下限以防极端输入
+  const surplus = Math.max(100, Math.min(600, Math.round((weeklyDelta * 7700) / 7)));
+  const goalCal = goal === 'gain' ? tdee + surplus : goal === 'lose' ? tdee - 400 : tdee;
+  // 蛋白质 1.8 g/kg (Helms 2014 增肌 meta)，脂肪 0.8 g/kg，余下碳水
+  const protein = Math.round(w * 1.8);
+  const fat = Math.round(w * 0.8);
+  const carb = Math.round((goalCal - protein * 4 - fat * 9) / 4);
+
+  return {
+    bmr: Math.round(bmr),
+    tdee,
+    surplus,
+    goalCal,
+    protein,
+    fat,
+    carb,
+    weeklyDelta,
+    activity: act,
+    weight: w,
+  };
+}
+
+// 示范性食谱生成（按克重分配，仅参考，库中暂无食物数据库）
+function buildSampleMeals(nutrition) {
+  const { protein, fat, carb, weight } = nutrition;
+  // 按 4 餐分：早 25% / 午 35% / 晚 30% / 加餐 10%
+  return {
+    breakfast: {
+      label: '🍳 早餐（25%）',
+      protein_g: Math.round(protein * 0.25),
+      carb_g: Math.round(carb * 0.25),
+      fat_g: Math.round(fat * 0.25),
+      sample: '3 个鸡蛋（蛋白 18g）+ 1 碗燕麦（碳水 50g）+ 1 杯牛奶（蛋白 8g，脂肪 5g）',
+    },
+    lunch: {
+      label: '🍚 午餐（35%）',
+      protein_g: Math.round(protein * 0.35),
+      carb_g: Math.round(carb * 0.35),
+      fat_g: Math.round(fat * 0.35),
+      sample: '150g 鸡胸（蛋白 45g）+ 1.5 碗米饭（碳水 80g）+ 蔬菜 + 10g 橄榄油（脂肪 10g）',
+    },
+    dinner: {
+      label: '🥘 晚餐（30%）',
+      protein_g: Math.round(protein * 0.30),
+      carb_g: Math.round(carb * 0.30),
+      fat_g: Math.round(fat * 0.30),
+      sample: '120g 三文鱼或牛腱（蛋白 35g）+ 红薯或意面（碳水 60g）+ 西兰花 + 5g 坚果（脂肪 5g）',
+    },
+    snack: {
+      label: '🥛 加餐（10%）',
+      protein_g: Math.round(protein * 0.10),
+      carb_g: Math.round(carb * 0.10),
+      fat_g: Math.round(fat * 0.10),
+      sample: '1 勺蛋白粉（蛋白 25g）+ 1 个香蕉（碳水 25g）+ 5g 杏仁（脂肪 2.5g）',
+    },
+  };
+}
+
+// 疲劳度 1-10 → 下周方案调整（无穿戴设备时的降级路径）
+function applyFatigueAdjustment(baseFatigue) {
+  // 输入：1-10 主观疲劳分。1=状态极佳，10=严重疲劳/受伤
+  // 输出：调整提示 + 是否替换下周为辅助日
+  const f = Math.max(1, Math.min(10, baseFatigue));
+  if (f <= 3) {
+    return { level: 'green', label: '🟢 绿灯：可按计划训练', tip: '状态良好，按本周计划执行，下周可考虑小幅加量（+2.5%）。' };
+  }
+  if (f <= 6) {
+    return { level: 'yellow', label: '🟡 黄灯：维持本周负荷', tip: '中等疲劳，本周按原计划完成，下周先重复本周负荷不加量；额外加做 1 次主动恢复（泡沫轴 + 拉伸 15 分钟）。' };
+  }
+  if (f <= 8) {
+    return { level: 'orange', label: '🟠 橙灯：下周降容量 30%', tip: '明显疲劳，下周所有动作组数 × 0.7（如 4 组 → 3 组），次数上限 -2；同时增加 1 天纯主动恢复日，优先睡眠 8h+。' };
+  }
+  return { level: 'red', label: '🔴 红灯：下周替换为辅助训练', tip: '严重疲劳/疑似过训，下周大重量日（深蹲/硬拉/卧推）替换为同模式辅助动作（如高脚杯深蹲、单臂划船、瑞士球卧推），组数 ×0.6，强度降 20%。' };
+}
+
+// 主面板：4 区块（训练方案 / 营养方案 / 疲劳自检 / 路线图）
+function openHypertrophyLab() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(HYPER_LS_KEY) || '{}') || {}; } catch (e) {}
+  const plan = saved.plan || null;
+  const nutrition = saved.nutrition || null;
+  const fatigue = saved.fatigue || null;
+
+  const planHtml = plan ? `
+    <div style="background:var(--bg3);padding:10px;border-radius:8px;margin-bottom:10px;font-size:12px">
+      💾 已保存方案：<b>${plan.template.title}</b>（${plan.createdAt}）
+      <button class="h-btn" style="float:right;padding:4px 8px;font-size:11px" onclick="localStorage.removeItem('${HYPER_LS_KEY}');this.closest('.overlay').remove();openHypertrophyLab()">清除</button>
+    </div>
+  ` : '';
+
+  const fatigueHtml = fatigue ? `
+    <div style="background:var(--bg3);padding:10px;border-radius:8px;margin-bottom:10px;font-size:12px">
+      📊 最近疲劳自检：${fatigue.score}/10（${fatigue.adj.label}，${fatigue.adj.tip}）
+    </div>
+  ` : '';
+
+  const html = `
+    <div style="background:linear-gradient(135deg,var(--red),var(--gold));color:#fff;padding:12px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:600">💪 增肌实验室 · 4 周肌肥大专项</div>
+      <div style="font-size:11px;opacity:.9;margin-top:4px">训练方案 + 营养方案 + 疲劳自检 → 全链路在本地完成（不传服务器）</div>
+    </div>
+
+    <!-- ── Tab 1：训练方案生成 ── -->
+    <details open style="background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:10px">
+      <summary style="font-weight:600;cursor:pointer;font-size:13px;color:var(--green)">🏋️ 1. 智能训练方案（肌肥大 4 周线性周期）</summary>
+      <div style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.7">
+        <div>输入 5 项 → 自动推荐 <b>💪 肌肥大专项模板</b>（RIR 2-3 控制 + 每周 +2.5% 负荷 + 第 4 周减载）：</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+          <label>训练年限<select id="hy_year" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px">
+            <option value="novice">新手 (<6 月)</option>
+            <option value="intermediate" selected>中级 (6 月-2 年)</option>
+            <option value="advanced">高级 (2 年+)</option>
+          </select></label>
+          <label>每周可用天数<select id="hy_freq" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px">
+            <option value="3">3 天</option>
+            <option value="4" selected>4 天</option>
+            <option value="5">5 天</option>
+          </select></label>
+        </div>
+        <div style="margin-top:6px">
+          <label style="font-size:11px">伤病史（多选）</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+            <label><input type="checkbox" value="shoulder" class="hy_injury"> 肩</label>
+            <label><input type="checkbox" value="knee" class="hy_injury"> 膝</label>
+            <label><input type="checkbox" value="ankle" class="hy_injury"> 踝</label>
+            <label><input type="checkbox" value="elbow" class="hy_injury"> 肘</label>
+            <label><input type="checkbox" value="back" class="hy_injury"> 腰</label>
+            <label><input type="checkbox" value="achilles" class="hy_injury"> 跟腱</label>
+          </div>
+        </div>
+        <div style="margin-top:6px">
+          <label style="font-size:11px">当前最大力量（kg，可选，参考用）</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px">
+            <input id="hy_1rm_squat" type="number" placeholder="深蹲 1RM" style="padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px">
+            <input id="hy_1rm_bench" type="number" placeholder="卧推 1RM" style="padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px">
+            <input id="hy_1rm_dl" type="number" placeholder="硬拉 1RM" style="padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px">
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:3px">📐 1RM 估算公式：Epley（weight × (1 + reps/30)）已内置于体能评估 ch01 §六</div>
+        </div>
+        <button onclick="submitHypertrophyPlan()" class="h-btn" style="width:100%;margin-top:10px;background:var(--green);color:#fff;padding:10px">📋 生成 4 周肌肥大方案</button>
+        ${planHtml}
+      </div>
+    </details>
+
+    <!-- ── Tab 2：营养方案 ── -->
+    <details style="background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:10px">
+      <summary style="font-weight:600;cursor:pointer;font-size:13px;color:var(--gold)">🥩 2. 营养方案（增肌盈余 + 蛋白质 1.8 g/kg）</summary>
+      <div style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.7">
+        <div>输入身体数据 → 自动算 <b>TDEE + 增肌盈余 + 三大营养素克重</b>（与 nutrition ch01 TDEE / ch02 宏量营养素 公式一致）：</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+          <label>性别<select id="hy_gender" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px"><option value="male" selected>男</option><option value="female">女</option></select></label>
+          <label>体重 kg<input id="hy_weight" type="number" value="70" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px"></label>
+          <label>身高 cm<input id="hy_height" type="number" value="175" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px"></label>
+          <label>年龄<input id="hy_age" type="number" value="25" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px"></label>
+          <label>活动<select id="hy_act" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px"><option value="1.375">轻度</option><option value="1.55" selected>中度</option><option value="1.725">高度</option><option value="1.9">极高</option></select></label>
+          <label>目标<select id="hy_goal" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px"><option value="gain" selected>增肌</option><option value="maintain">维持</option><option value="lose">减脂</option></select></label>
+          <label>周增重 kg<select id="hy_delta" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px"><option value="0.25" selected>0.25（保守）</option><option value="0.5">0.5（激进）</option><option value="0.1">0.1（极慢）</option></select></label>
+        </div>
+        <button onclick="submitHypertrophyNutrition()" class="h-btn" style="width:100%;margin-top:10px;background:var(--gold);color:#fff;padding:10px">🥩 计算营养方案</button>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px">⏳ 路线图：完整 200+ 食物库 + 每日饮食日志 + 模糊搜索待后续（不在本轮）</div>
+      </div>
+    </details>
+
+    <!-- ── Tab 3：疲劳自检（穿戴降级） ── -->
+    <details style="background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:10px">
+      <summary style="font-weight:600;cursor:pointer;font-size:13px;color:var(--blue)">📊 3. 疲劳自检（穿戴设备未绑定时的降级路径）</summary>
+      <div style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.7">
+        <div>未绑定穿戴设备时，每周手动打分 1-10（1=状态极佳，10=严重疲劳/受伤），系统按规则调整下周方案：</div>
+        <div style="margin-top:8px">
+          <input id="hy_fatigue" type="range" min="1" max="10" value="5" style="width:100%" oninput="document.getElementById('hy_fatigue_val').textContent=this.value">
+          <div style="text-align:center;font-size:14px;font-weight:600;color:var(--blue)">当前打分：<span id="hy_fatigue_val">5</span> / 10</div>
+        </div>
+        <button onclick="submitHypertrophyFatigue()" class="h-btn" style="width:100%;margin-top:10px;background:var(--blue);color:#fff;padding:10px">📊 评估并调整下周方案</button>
+        ${fatigueHtml}
+        <div style="font-size:10px;color:var(--text3);margin-top:6px">⏳ 路线图：HRV / 睡眠 / 步数 自动接入待穿戴设备 API（不在本轮）</div>
+      </div>
+    </details>
+
+    <!-- ── Tab 4：路线图 ── -->
+    <details style="background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:10px">
+      <summary style="font-weight:600;cursor:pointer;font-size:13px;color:var(--orange)">🗺️ 4. 后续路线图（本轮不交付）</summary>
+      <div style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.7">
+        <div>✅ 本轮已交付（最小骨架）：</div>
+        <ul style="margin:4px 0 8px 16px">
+          <li>肌肥大 4 周线性周期模板（RIR 2-3 + 每周 +2.5% + 第 4 周减载）</li>
+          <li>训练方案生成（5 项参数 → 自动推荐）</li>
+          <li>营养方案计算（TDEE + 增肌盈余 + 蛋白/碳水/脂肪克重 + 4 餐分配示意）</li>
+          <li>疲劳度 1-10 调整规则（绿/黄/橙/红 4 档）</li>
+          <li>LocalStorage 持久化（<code>${HYPER_LS_KEY}</code>）</li>
+          <li>复用 books/exercises/ex-lib.json 动作库（每个动作可点击看 GIF）</li>
+        </ul>
+        <div>⏳ 后续待开发（用户后续要求时启动）：</div>
+        <ul style="margin:4px 0 0 16px">
+          <li>穿戴设备 API（Apple HealthKit / 华为运动健康 / Oppo 健康 / Vivo 健康 / Webhook）</li>
+          <li>每日饮食日志 + 200+ 食物库（含营养素数据 + 模糊搜索）</li>
+          <li>AI 自动触发调整（连续 3 天睡眠 <6h → 自动替换下周大重量日）</li>
+          <li>用户账户体系（联合登录 + 数据库 + GDPR/PIPL 合规加密）</li>
+          <li>Figma UI/UX 设计稿</li>
+          <li>训练-营养-疲劳 三合一看板（Chart.js 趋势图复用 fitness-assessment ch01）</li>
+        </ul>
+      </div>
+    </details>
+
+    <button onclick="this.closest('.overlay').remove()" class="h-btn" style="width:100%;margin-top:8px;padding:10px;background:var(--surface2);color:var(--text);border:1px solid var(--border)">关闭</button>
+  `;
+  showOverlay('panel-lg', '💪 增肌实验室（v3.22.65 最小骨架）', html);
+}
+
+// 提交训练方案
+function submitHypertrophyPlan() {
+  const year = document.getElementById('hy_year').value;
+  const freq = parseInt(document.getElementById('hy_freq').value, 10);
+  const injuries = Array.from(document.querySelectorAll('.hy_injury:checked')).map(c => c.value);
+  const oneRm = {
+    squat: parseFloat(document.getElementById('hy_1rm_squat').value) || null,
+    bench: parseFloat(document.getElementById('hy_1rm_bench').value) || null,
+    dl: parseFloat(document.getElementById('hy_1rm_dl').value) || null,
+  };
+
+  // 模板选择：直接用 hypertrophy 模板（用户已选「增肌为首要目标」）
+  // 但尊重伤病史：若有膝/肩/腰伤痛，提示优先 ch0X 红旗段
+  let warning = '';
+  if (injuries.includes('knee') || injuries.includes('back')) {
+    warning = '<div style="background:var(--bg3);padding:8px;border-radius:6px;margin-top:8px;font-size:11px;color:var(--orange)">⚠️ 检测到膝/腰伤痛史：方案中深蹲、硬拉等大重量动作建议先咨询物理治疗师；可从 badminton-recovery ch03/ch06 起步。</div>';
+  }
+  if (year === 'novice' && freq >= 4) {
+    warning += '<div style="background:var(--bg3);padding:8px;border-radius:6px;margin-top:8px;font-size:11px;color:var(--orange)">⚠️ 新手 + 4 天/周：建议先做 2 周 3 天适应期，避免第 1 周就上 4 天导致过度训练。</div>';
+  }
+
+  const plan = {
+    templateKey: 'hypertrophy',
+    template: FIT_TEMPLATES.hypertrophy,
+    answers: { year, freq, injuries, oneRm },
+    createdAt: new Date().toISOString().slice(0, 10),
+  };
+
+  // 复用 renderFitnessPlan 显示（已包含 ex-lib 链接）
+  // 但先持久化
+  const saved = JSON.parse(localStorage.getItem(HYPER_LS_KEY) || '{}') || {};
+  saved.plan = plan;
+  localStorage.setItem(HYPER_LS_KEY, JSON.stringify(saved));
+
+  this && this.closest && this.closest('.overlay') && this.closest('.overlay').remove();
+  renderFitnessPlan(plan);
+  // 附加伤病警告
+  if (warning) {
+    setTimeout(() => {
+      const overlay = document.querySelector('.overlay');
+      if (overlay) {
+        const body = overlay.querySelector('.panel-bd');
+        if (body) body.insertAdjacentHTML('beforeend', warning);
+      }
+    }, 100);
+  }
+}
+
+// 提交营养方案
+function submitHypertrophyNutrition() {
+  const input = {
+    gender: document.getElementById('hy_gender').value,
+    weight: document.getElementById('hy_weight').value,
+    height: document.getElementById('hy_height').value,
+    age: document.getElementById('hy_age').value,
+    activity: document.getElementById('hy_act').value,
+    goal: document.getElementById('hy_goal').value,
+    weeklyDelta: document.getElementById('hy_delta').value,
+  };
+  const nutrition = computeNutritionPlan(input);
+  const meals = buildSampleMeals(nutrition);
+
+  const mealHtml = Object.values(meals).map(m => `
+    <div style="background:var(--bg2);padding:10px;border-radius:8px;margin-bottom:8px">
+      <div style="font-weight:600;font-size:13px;color:var(--green)">${m.label}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">蛋白 <b>${m.protein_g}g</b> · 碳水 <b>${m.carb_g}g</b> · 脂肪 <b>${m.fat_g}g</b></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;line-height:1.6">${m.sample}</div>
+    </div>
+  `).join('');
+
+  const html = `
+    <div style="background:linear-gradient(135deg,var(--gold),var(--green));color:#fff;padding:14px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:13px;opacity:.9">每日总热量</div>
+      <div style="font-size:28px;font-weight:700">${nutrition.goalCal} <span style="font-size:14px">千卡</span></div>
+      <div style="font-size:11px;opacity:.8;margin-top:4px">TDEE ${nutrition.tdee} + 增肌盈余 ${nutrition.surplus}（每周 +${nutrition.weeklyDelta} kg）</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:var(--green)">${nutrition.protein}g</div>
+        <div style="font-size:10px;color:var(--text2)">蛋白质 (1.8 g/kg)</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:var(--gold)">${nutrition.carb}g</div>
+        <div style="font-size:10px;color:var(--text2)">碳水</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:var(--red)">${nutrition.fat}g</div>
+        <div style="font-size:10px;color:var(--text2)">脂肪 (0.8 g/kg)</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">🍽️ 4 餐分配示意（库中暂无 200+ 食物数据库，仅参考克重）</div>
+    ${mealHtml}
+    <div style="background:var(--bg3);padding:10px;border-radius:8px;font-size:11px;color:var(--text2);line-height:1.7;margin-top:12px">
+      <strong>📋 通俗解读：</strong><br>
+      • BMR（基础代谢）= ${nutrition.bmr} 千卡（你躺着不动一天消耗这么多）<br>
+      • TDEE（每日总消耗）= ${nutrition.tdee} 千卡（含日常活动）<br>
+      • 增肌目标 = ${nutrition.goalCal} 千卡（盈余 ${nutrition.surplus}）<br>
+      • 蛋白质 ${nutrition.protein}g ≈ ${Math.round(nutrition.protein / 30)} 个鸡蛋 / ${Math.round(nutrition.protein / 25)} 勺蛋白粉<br>
+      • 碳水 ${nutrition.carb}g ≈ ${Math.round(nutrition.carb / 60)} 碗米饭<br>
+      • 脂肪 ${nutrition.fat}g ≈ ${Math.round(nutrition.fat / 9)} 勺油
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:8px">
+      ⏳ 路线图：每日饮食日志 + 200+ 食物库 + 模糊搜索待后续（不在本轮）；当前为克重分配 + 示意食谱。
+    </div>
+  `;
+  showOverlay('panel-md', '🥩 增肌营养方案', html);
+
+  // 持久化
+  const saved = JSON.parse(localStorage.getItem(HYPER_LS_KEY) || '{}') || {};
+  saved.nutrition = nutrition;
+  localStorage.setItem(HYPER_LS_KEY, JSON.stringify(saved));
+}
+
+// 提交疲劳自检
+function submitHypertrophyFatigue() {
+  const score = parseInt(document.getElementById('hy_fatigue').value, 10);
+  const adj = applyFatigueAdjustment(score);
+  const colorMap = { green: 'var(--green)', yellow: 'var(--gold)', orange: 'var(--orange)', red: 'var(--red)' };
+
+  const html = `
+    <div style="background:${colorMap[adj.level]};color:#fff;padding:14px;border-radius:8px;margin-bottom:12px">
+      <div style="font-size:13px;opacity:.9">本周疲劳自检评分</div>
+      <div style="font-size:36px;font-weight:700">${score} <span style="font-size:14px">/ 10</span></div>
+      <div style="font-size:14px;margin-top:6px;font-weight:600">${adj.label}</div>
+    </div>
+    <div style="background:var(--bg2);padding:14px;border-radius:8px;font-size:12px;line-height:1.8;color:var(--text)">
+      <strong>📋 本周调整建议：</strong><br>${adj.tip}
+    </div>
+    <div style="background:var(--bg3);padding:10px;border-radius:8px;margin-top:10px;font-size:11px;color:var(--text2);line-height:1.7">
+      <strong>评分参考：</strong><br>
+      • 1-3（绿灯）：状态极佳 → 按计划或小幅加量<br>
+      • 4-6（黄灯）：中等疲劳 → 维持本周负荷，加 1 次主动恢复<br>
+      • 7-8（橙灯）：明显疲劳 → 下周组数 ×0.7，次数 −2<br>
+      • 9-10（红灯）：严重疲劳 → 大重量替换为辅助动作，组数 ×0.6
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:8px">
+      ⏳ 路线图：自动接入穿戴设备 API（HRV / 睡眠 / 步数）后，本评估可由系统每周日自动触发，无需手动打分。
+    </div>
+  `;
+  showOverlay('panel-md', '📊 疲劳自检结果', html);
+
+  // 持久化
+  const saved = JSON.parse(localStorage.getItem(HYPER_LS_KEY) || '{}') || {};
+  saved.fatigue = { score, adj, at: new Date().toISOString().slice(0, 10) };
+  localStorage.setItem(HYPER_LS_KEY, JSON.stringify(saved));
 }
 
 // 每次打开工具面板时也确保 banner 已挂入
