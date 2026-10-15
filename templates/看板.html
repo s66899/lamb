@@ -1,0 +1,2060 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1720;--panel:#1a2430;--panel2:#202b3a;--line:#2b3947;--fg:#e2e8f0;--dim:#94a3b8;--acc:#0ea5e9}
+body{font-family:"Microsoft YaHei","Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--fg);padding:16px}
+a{color:#38bdf8;text-decoration:none}a:hover{text-decoration:underline}
+header{background:linear-gradient(135deg,#1e3a5f,#0f766e);padding:18px 24px;border-radius:12px;margin-bottom:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:21px;font-weight:700;letter-spacing:.5px}
+header .sub{opacity:.8;font-size:12px;margin-top:5px}
+.live{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:11px;padding:5px 12px;border-radius:20px;background:#0b1220;border:1px solid var(--line);color:var(--dim)}
+.dot{width:8px;height:8px;border-radius:50%;background:#64748b}
+.live.on .dot{background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.7);animation:pulse 2s infinite}
+.live.busy .dot{background:#f59e0b}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:11px;margin-bottom:14px}
+.card{background:var(--panel);border-radius:10px;padding:13px 15px;border-left:4px solid var(--acc)}
+.card.ok{border-left-color:#22c55e}.card.warn{border-left-color:#f59e0b}
+.card.miss{border-left-color:#ef4444}.card.info{border-left-color:#a855f7}
+.card .n{font-size:25px;font-weight:700;line-height:1.1}
+.card .l{font-size:12px;opacity:.78;margin-top:4px}
+.card .s{font-size:11px;opacity:.5;margin-top:2px}
+.bar{height:7px;background:#0b1220;border-radius:4px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);transition:width .4s}
+details.fold{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+details.fold>summary{list-style:none;cursor:pointer;padding:12px 16px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px;user-select:none;background:var(--panel2)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:before{content:"\25B6";font-size:11px;opacity:.7;transition:transform .15s}
+details.fold[open]>summary:before{transform:rotate(90deg)}
+details.fold>summary:hover{background:#26333f}
+.cnt{margin-left:auto;font-size:11px;font-weight:600;padding:2px 9px;border-radius:10px;background:#0b1220;border:1px solid var(--line);color:var(--dim)}
+.cnt.bad{background:#3f1d1d;border-color:#7f1d1d;color:#fca5a5}
+.cnt.warn{background:#3f2e12;border-color:#92400e;color:#fcd34d}
+.body{padding:12px 16px}
+.box{background:#151d27;border:1px solid var(--line);border-radius:8px;padding:12px 15px;margin-bottom:9px}
+.box h4{font-size:13px;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:#0b1220;border:1px solid var(--line);color:#cbd5e1;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer}
+.chip:hover{border-color:var(--acc)}
+.lv-err h4{color:#fca5a5}.lv-warn h4{color:#fcd34d}.lv-info h4{color:#93c5fd}.lv-miss h4{color:#fca5a5}
+.tip{font-size:11px;opacity:.5;margin-top:6px}
+.ok-all{background:#0f2a1a;border-color:#22c55e}.ok-all h4{color:#86efac}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+input[type=search]{background:#0b1220;border:1px solid var(--line);color:var(--fg);padding:8px 12px;border-radius:6px;font-size:13px;min-width:210px;flex:1}
+.btn{background:#0b1220;border:1px solid var(--line);color:var(--fg);padding:8px 13px;border-radius:6px;cursor:pointer;font-size:13px}
+.btn:hover{border-color:var(--acc)}
+.btn.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+details.catsec{background:#151d27;border:1px solid #26313d;border-radius:8px;margin-bottom:8px;overflow:hidden}
+details.catsec>summary{list-style:none;cursor:pointer;padding:9px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;user-select:none}
+details.catsec>summary::-webkit-details-marker{display:none}
+details.catsec>summary:before{content:"\25B6";font-size:10px;opacity:.6}
+details.catsec[open]>summary:before{transform:rotate(90deg)}
+details.catsec>summary:hover{background:#1b2531}
+.catsec .cnt{margin-left:auto}
+.zero{color:#4b5563;font-size:12px;padding:10px 14px;display:none}
+/* 新增了工艺/标注/来源表三列,表头会被挤成竖排。
+   给表头加不换行,容器横向滚动,
+   宽度不足时用滚动条而不是把表头压缩。 */
+.catsec>div{overflow-x:auto}
+/* 表头吸顶。89 行的表往下滚,不知道哪一列是什么 ——
+   `position:sticky` 必须配 `top:0`,而且**祖先链上不能有 overflow**,
+   这里 .catsec>div 是横向滚动容器,吸附要挂在它身上才生效。
+   z-index 也要给足:行 hover 时的背景不能盖住表头。 */
+.catsec>div>table>thead th{position:sticky;top:0;z-index:2;box-shadow:0 1px 0 #0b1220}
+.catsec{min-width:1460px}
+table{min-width:1460px}
+/* 斑马线:89 行连续同色,横向拖动找行会串。
+   用 nth-child(even) 而不是给每行加 class —— 改模板时不用记得同步 JS。 */
+.catsec tbody tr:nth-child(even) td{background:#161f2b}
+.catsec tbody tr:nth-child(even):hover td{background:var(--panel2)}
+/* 缺件的行整行压暗一点。缺件是要紧的事,不该和齐套的行长得一样。 */
+.catsec tbody tr[data-miss="1"] td{background:#2a1418}
+.catsec tbody tr[data-miss="1"]:hover td{background:#3a1a20}
+.catsec tbody tr[data-miss="1"] td:nth-child(3){box-shadow:inset 3px 0 0 #ef4444}
+table{width:100%;border-collapse:collapse;background:var(--panel);font-size:13px;margin-top:4px}
+th{background:#243244;padding:9px 8px;text-align:left;font-weight:600;font-size:12px;white-space:nowrap}
+th.c{text-align:center}
+td{padding:8px;border-top:1px solid #24303e;vertical-align:middle}
+td.c{text-align:center}
+tr:hover td{background:var(--panel2)}
+.tag{display:inline-block;padding:3px 10px;border-radius:11px;font-size:11px;font-weight:600;white-space:nowrap}
+.proto{display:inline-block;min-width:22px;height:20px;line-height:20px;text-align:center;border-radius:4px;font-size:11px;font-weight:700}
+.p-A{background:#0ea5e933;color:#7dd3fc}.p-B{background:#f59e0b33;color:#fcd34d}
+.p-C{background:#10b98133;color:#6ee7b7}.p-AB{background:#a855f733;color:#d8b4fe}
+.p-x{background:#94a3b833;color:#cbd5e1}
+/* 表格里不再直接摆缩略图 —— 90 行小图堆在一起,既把每行撑高、
+   又让人以为那就是最终形状。改成一个小按钮,点一下弹大图。
+   「无图」用一个安静的占位,不留空白框。 */
+/* 缩略图。object-fit:contain 不能换成 cover —— 零件图有宽有窄,
+   cover 会把窄的那张裁掉两边,看着像另一个零件。 */
+.vp{display:block;width:80px;height:56px;object-fit:contain;
+    margin:0 auto;border-radius:6px;cursor:zoom-in;background:#0f172a;
+    border:1px solid var(--line)}
+.vp:hover{border-color:var(--acc);transform:scale(1.04)}
+.vp:active{transform:scale(.98)}
+.noph{display:inline-block;width:80px;height:56px;line-height:54px;
+      text-align:center;border-radius:6px;font-size:10px;opacity:.3;
+      border:1px dashed var(--line);cursor:default}
+.chk{display:inline-block;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;text-decoration:none}
+/* 已到位的交付物是真链接(<a>),点一下直接打开文件。
+   原来是 <span data-p>,点了只复制路径,不跳转。 */
+.chk.yes:hover{filter:brightness(1.25)}
+.chk.yes:active{transform:scale(.97)}
+.yes{background:#22c55e;color:#052e16}
+.no{background:#3f1d1d;color:#fca5a5;border:1px solid #7f1d1d}
+.na{background:#1e293b;color:#64748b;cursor:default}
+/* 零件表 STEP 那一格:一个真能转起来的「3D 预览」按钮 + 原来的文件链接。
+   浏览器不认 STEP,只有这个按钮点开才是模型;链接点开是满屏 ISO-10303-21。 */
+.hit3d{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;justify-content:center}
+.btn.b3d{padding:2px 8px;font-size:10.5px;font-weight:700;border-radius:5px;
+         background:#2563eb;color:#eaf2ff;border:1px solid #3b82f6;cursor:pointer}
+.btn.b3d:hover{background:#1d4ed8;color:#fff}
+.btn.b3d:active{transform:scale(.97)}
+.v3d-why{font-size:10px;color:#fbbf24;border:1px dashed #92400e;border-radius:4px;
+         padding:1px 5px;cursor:help}
+/* 备注原来靠 `opacity:.7` 压暗 —— 深色底上再乘 0.7 之后几乎贴住背景,
+   本人说「暗暗的不好看到」。改成实色 + 提亮,不用不透明度。 */
+.note{max-width:210px;font-size:11px;color:#FFD98A;opacity:1;
+       word-break:break-all}
+.note a,.toNote{color:#FFD98A}
+.banner{display:none;align-items:center;gap:10px;background:#3f2e12;border:1px solid #92400e;color:#fcd34d;padding:11px 15px;border-radius:9px;margin-bottom:12px;font-size:13px}
+.banner.show{display:flex}
+.banner b{color:#fff}
+/* ---- P11 总装图 ---- */
+.assyGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+          gap:10px;padding:12px 16px}
+.assyCard{background:#151d27;border:1px solid #26313d;border-radius:8px;overflow:hidden;
+          display:flex;flex-direction:column}
+.assyCard .pic{height:132px;background:#0f172a;display:flex;align-items:center;
+               justify-content:center;border-bottom:1px solid #26313d}
+.assyCard .pic img{max-width:100%;max-height:100%;object-fit:contain}
+.assyCard .pic .nosh{color:#4b5563;font-size:11px;text-align:center;padding:0 10px;line-height:1.6}
+.assyCard .nm{padding:8px 10px 3px;font-size:12.5px;font-weight:600;
+              overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.assyCard .sz{padding:0 10px 7px;font-size:10.5px;opacity:.45}
+.assyCard .acts{display:flex;gap:6px;padding:0 10px 10px;flex-wrap:wrap}
+.assyCard .acts .btn{padding:5px 9px;font-size:11.5px}
+/* 3D 预览弹窗
+   ★ 两个「定尺」原则,踩过才知道:
+
+   ① 布局:**定高 + 中间弹性**
+      标题 / 工具条 / 底栏 都是 flex:0 0 auto,只有 .stage 吃剩余高度。
+      以前 .stage 没写 flex、canvas 又是写死的 `height:min(66vh,640px)`,
+      三样加起来超过 .box 的 max-height:96vh —— flex 就去**压缩工具条**,
+      压成一条几像素的细缝,按钮上的字全叠在一起,于是
+      「适应窗口 / 放大 / 测量」那几个按钮既点不准也看不清。
+
+   ② 尺寸:全部用 **em**,单位挂在 --u 上
+      --u 同时看**宽和高**(vw + vh),再 clamp 到 11~18px。
+      这样 720p 的笔记本、27 寸 4K、浏览器再放大 150%,
+      按钮字号/内边距/画布高度都跟着一起缩,
+      **任何比例下都是一行、都能看全**,不需要为每种屏幕写一遍媒体查询。
+      (以前是写死 px:屏幕一变,按钮不是挤成两行就是小到看不清。) */
+.v3d{position:fixed;inset:0;background:#000a;display:flex;align-items:center;
+     justify-content:center;z-index:100;
+     --u:clamp(11px, 0.40vw + 0.55vh + 5px, 18px);
+     font-size:var(--u);padding:1em}
+.v3d *{box-sizing:border-box}
+.v3d[hidden]{display:none}
+.v3d .box{background:#101b2b;border:1px solid #2b4a6b;border-radius:.75em;
+          width:min(96vw,68em);height:min(94vh,54em);max-height:94vh;
+          display:flex;flex-direction:column;
+          box-shadow:0 2.4em 7em #000d}
+/* 画布 + 叠加层必须同一块坐标系,否则测量标注会整体偏移 */
+.v3d .stage{position:relative;flex:1 1 auto;min-height:8em;overflow:hidden}
+.v3d canvas{position:absolute;inset:0;width:100%;height:100%;display:block;
+            background:#0b1320;touch-action:none;cursor:grab}
+.v3d .ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.v3d h3{margin:0;padding:.62em 1.1em;font-size:1.02em;
+        border-bottom:1px solid #26405e;color:#eaf2ff;
+        display:flex;align-items:baseline;gap:.3em;flex-wrap:wrap;
+        flex:0 0 auto;line-height:1.4}
+.v3d h3 .dim{font-size:.82em;font-weight:400;color:#7dd3fc}
+/* 工具条:视图切换和测量分开两段,用竖线隔开 —— 一排铺开分不清哪个是
+   「换个角度」、哪个是「开始量」
+
+   ★ 类名必须叫 `.tbar`,**不能叫 `.bar`**:
+   页面顶上那些统计卡用的就是 `.bar`(进度条),规则是
+       .bar{height:7px;background:#0b1220;overflow:hidden;margin-top:8px}
+   `height:7px` 那一条 `.v3d .bar` 并没有覆盖(它压根没写 height),
+   于是工具条被压成 **7px 高的一根细条**,按钮(24px)整个溢出、
+   `overflow:hidden` 再把溢出部分裁掉 —— 屏幕上就只剩几条重叠的字。
+   表现是「窗口下面显示有问题」,而 HTML 结构、CSS 语法、JS 全都正常。 */
+.v3d .tbar{display:flex;flex-wrap:wrap;align-items:center;gap:.35em;
+           padding:.5em .8em;border-top:1px solid #26405e;background:#152238;
+           flex:0 0 auto}
+.v3d .tbar .sep{width:1px;align-self:stretch;background:#2b4a6b;
+                margin:0 .25em}
+.v3d .tbar .btn{font-size:.84em;padding:.38em .82em;border-radius:.42em;
+                white-space:nowrap;flex:0 0 auto;line-height:1.25}
+.v3d .tbar .btn.on{background:#2f6fe0;border-color:#7ab0ff;color:#fff}
+.v3d .tbar .btn:disabled{opacity:.4;cursor:not-allowed}
+.v3d .foot{padding:.5em 1em;border-top:1px solid #26405e;display:flex;
+           align-items:center;gap:.7em;flex:0 0 auto;flex-wrap:wrap;
+           color:#cfe0f5}
+.v3d .foot .btn{flex:0 0 auto;font-size:.84em;padding:.38em 1em;
+                 border-radius:.42em}
+.v3d .hint{font-size:.78em;opacity:.7;flex:1 1 12em;min-width:0}
+.v3d .rd{font-size:.84em;color:#8fe3ff;font-variant-numeric:tabular-nums;
+        flex:0 0 auto;text-align:right}
+.v3d .err{color:#ffc2c2;font-size:.84em;padding:1em 1.1em}
+.v3d .err .tip{margin-top:.6em;color:#a9bdd6;font-size:.92em}
+/* ---- P7 在线编辑 ---- */
+/* 可编辑单元格:平时和普通单元格长得一样,只在鼠标移上去时给一点提示。
+   做成「一眼就是输入框」的样式反而糟 —— 89 行全变成输入框,反而看不出哪些能改。 */
+td.e{position:relative;cursor:text}
+td.e:hover{background:#1e3a5f55;outline:1px dashed #3b82f6;outline-offset:-1px}
+td.e.dirty{background:#7c4a0a44;box-shadow:inset 2px 0 0 #f59e0b}
+td.e.dirty:hover{background:#8a5510aa}
+#editBar{display:inline-flex;align-items:center;gap:8px;margin-left:6px}
+#editBar .n{font-size:12px;color:#fbbf24}
+#editBar button[disabled]{opacity:.4;cursor:not-allowed}
+/* P14 加工后核对 / 新购件核对 */
+#chkBar{display:inline-flex;align-items:center;gap:8px;margin-left:10px;
+        padding-left:10px;border-left:1px solid #1e3a5f}
+#chkBar .n{font-size:12px;color:#fbbf24}
+td.ck{vertical-align:top;background:#101C30}
+.catsec tbody tr[data-miss="1"] td.ck{background:#241520}
+td.ck select.cks{width:100%;padding:4px 6px;border-radius:6px;font-size:12px;
+  border:1px solid #26313d;background:#111a2b;color:#cbd5e1;cursor:pointer}
+/* ★ 提亮。
+   原来底色是 #0d2a1a / #111a2b 这种**接近背景色**的暗调,
+   深色主题下等于「有字但看不清在哪一格」。
+   现在底色明显比卡片亮、字色用高亮档,一眼能扫出哪几格已核、哪几格不合格。
+   （配色与 theme.py 的 OK_DIM/WARN_DIM/BAD_DIM 保持一致。） */
+td.ck select.cks.st-ok{background:#14432C;color:#8DF5AE;border-color:#22C55E}
+td.ck select.cks.st-bad{background:#5A1D26;color:#FFA9A9;border-color:#EF4444}
+td.ck select.cks.st-redo{background:#5A3C0C;color:#FFD97A;border-color:#F59E0B}
+td.ck select.cks.st-todo{background:#22304A;color:#C6D3E6;border-color:#3C4D6B}
+td.ck select.cks.dirty{outline:2px solid #f59e0b;outline-offset:1px}
+td.ck .cn{margin-top:4px;font-size:11.5px;color:#E4EAF4;min-height:1.2em;
+  border-radius:5px;padding:2px 4px;word-break:break-word;cursor:text;
+  max-height:4.8em;overflow:auto}
+td.ck .cn.ph{color:#8FA0B8;font-style:italic;opacity:1}
+td.ck .cn:hover{background:#1e3a5f55;outline:1px dashed #3b82f6;outline-offset:-1px}
+td.ck .cn.dirty{background:#7c4a0a44;box-shadow:inset 2px 0 0 #f59e0b;color:#fde68a}
+td.ck select.cks[disabled]{opacity:.9;cursor:default}
+/* 到货数量:比状态下拉窄一行,右边跟着「需 N / 差 N」 */
+td.ck .cq{display:flex;align-items:center;gap:6px;margin-top:5px}
+td.ck input.cn-q{width:62px;padding:3px 6px;border-radius:6px;font-size:12px;
+  border:1px solid #3C4D6B;background:#0B1220;color:#E4EAF4;
+  font-variant-numeric:tabular-nums}
+td.ck input.cn-q:focus{outline:2px solid #0A84FF;outline-offset:0;border-color:#0A84FF}
+td.ck input.cn-q.short{border-color:#EF4444;color:#FFA9A9;background:#2A1116}
+td.ck .cq-hint{font-size:11px;color:#8FA0B8;white-space:nowrap}
+td.ck .cq-hint b{color:#C6D3E6;font-weight:600}
+td.ck .cq-hint .less{color:#FFA9A9;font-weight:600}
+td.ck .cq-lab{font-size:11px;color:#8FA0B8;white-space:nowrap}
+/* 确认弹窗:改哪些内容必须列出来。本人要求「提交前弹窗列清单」,
+   不能只问一句「确定吗」—— 89 行里错一行没人看得出来。 */
+.mask{position:fixed;inset:0;background:#000a;display:flex;align-items:center;
+      justify-content:center;z-index:99;padding:24px}
+.mask[hidden]{display:none}
+.dlg{background:#111a2b;border:1px solid #1e3a5f;border-radius:12px;
+     max-width:820px;width:100%;max-height:84vh;display:flex;flex-direction:column;
+     box-shadow:0 20px 60px #000a}
+.dlg h3{margin:0;padding:14px 18px;border-bottom:1px solid #1e3a5f;font-size:15px}
+.dlg .body{padding:0;overflow:auto;flex:1}
+.dlg table{width:100%;border-collapse:collapse;font-size:12.5px}
+.dlg th,.dlg td{padding:6px 10px;border-bottom:1px solid #1e293b;text-align:left;
+                vertical-align:top}
+.dlg th{position:sticky;top:0;background:#0f172a;color:#94a3b8;font-weight:600;
+        z-index:1;white-space:nowrap}
+.dlg .was{color:#f87171;text-decoration:line-through}
+.dlg .now{color:#4ade80;font-weight:600}
+.dlg .foot{padding:12px 18px;border-top:1px solid #1e3a5f;display:flex;
+           gap:10px;align-items:center;justify-content:flex-end}
+.dlg .warn{color:#fbbf24;font-size:12px;margin-right:auto;text-align:left}
+.btn.pri{background:#1d4ed8;border-color:#3b82f6;color:#fff}
+/* ---- 打印 / 存 PDF ----
+   这张看板是要发给加工厂的,「文件 → 打印 → 存为 PDF」是常态。
+   默认打印出来是深色底 + 大片留白,墨也费。改成白底黑字、
+   隐藏所有交互控件、每页重复表头。 */
+@media print{
+  :root{--bg:#fff;--panel:#fff;--panel2:#f1f5f9;--line:#cbd5e1;--fg:#0f172a;--dim:#475569}
+  body{background:#fff;color:#0f172a;padding:0;font-size:11px}
+  .toolbar,#editBar,.live,#mini,.banner{display:none!important}
+  header{background:none;border:1px solid #cbd5e1;padding:8px 12px;margin-bottom:8px}
+  header h1{font-size:16px}header .sub{opacity:.7}
+  .cards{grid-template-columns:repeat(4,1fr);gap:6px}
+  .card{padding:6px 8px;border:1px solid #cbd5e1;border-left-width:3px}
+  .card .n{font-size:16px}.bar{background:#e2e8f0}
+  details.fold{border:1px solid #cbd5e1;background:#fff;break-inside:auto}
+  /* 折叠的分类在打印时必须展开 —— 折着的框打印出来是空的 */
+  details.catsec,details.fold{break-inside:auto}
+  details.fold>summary{background:#f1f5f9;padding:6px 10px;font-size:12px}
+  details.catsec{background:#fff;border:1px solid #cbd5e1}
+  details.catsec>summary{color:#0f172a}
+  .catsec>div{overflow:visible}
+  table{min-width:0;font-size:9.5px}
+  th{background:#e2e8f0!important;color:#0f172a;position:static;box-shadow:none}
+  td,th{padding:3px 5px;border-top:1px solid #e2e8f0}
+  .catsec tbody tr:nth-child(even) td{background:#f8fafc}
+  .catsec tbody tr[data-miss="1"] td{background:#fee2e2}
+  .vp{width:44px;height:32px}
+  .noph{width:44px;height:32px;line-height:30px}
+  .chk,.proto,.tag{color:#0f172a;background:#e2e8f0!important;border:1px solid #cbd5e1}
+  .chk.yes{background:#bbf7d0!important}
+  .chk.no{background:#fecaca!important;color:#7f1d1d!important}
+  a{color:#1d4ed8;text-decoration:underline}
+  tr{break-inside:avoid}
+}
+#lb{display:none;position:fixed;inset:0;background:#000000ee;z-index:99;align-items:center;justify-content:center;flex-direction:column;padding:24px}
+#lb img{max-width:92vw;max-height:80vh;border-radius:8px}
+#lb .cap{color:#cbd5e1;margin-top:14px;font-size:14px}
+#lb .x{position:absolute;top:20px;right:26px;color:#fff;font-size:30px;cursor:pointer;line-height:1}
+#lb .x:hover{color:var(--acc)}
+#lb .hint{color:#64748b;margin-top:10px;font-size:12px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#22c55e;color:#052e16;padding:10px 20px;border-radius:8px;font-weight:600;display:none;z-index:100}
+footer{margin-top:20px;font-size:11px;opacity:.4;text-align:center;padding:12px}
+
+/* ---- 新增:交付物状态语义 ---- */
+.chk.na2{background:#1a2332;color:#7d8b9c;border:1px dashed #3a4757}
+.chk.hit-精确{background:#22c55e;color:#052e16}
+.chk.hit-前缀{background:#34d399;color:#052e16}
+.chk.hit-去尾缀{background:#a3e635;color:#1a2e05}
+.chk.hit-子串{background:#fbbf24;color:#3b2f0b}
+.chk.hit-目录{background:#f59e0b;color:#3b2f0b}
+.chk.miss2{background:#3f1d1d;color:#fca5a5;border:1px solid #7f1d1d}
+/* 溯源 */
+.src{font-size:10px;opacity:.55;max-width:150px;overflow:hidden;
+     text-overflow:ellipsis;white-space:nowrap;display:inline-block;
+     vertical-align:bottom}
+.marks{display:inline-flex;gap:3px;flex-wrap:wrap;margin-top:3px}
+.mk{background:#7c3aed33;color:#c4b5fd;border:1px solid #7c3aed55;
+    padding:1px 5px;border-radius:4px;font-size:10px;white-space:nowrap}
+.craft{font-size:11px;opacity:.8}
+.ext{font-size:10px;opacity:.5;margin-left:4px}
+/* 分类维度统计 */
+.mini{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+.mini>div{background:#151d27;border:1px solid #26313d;border-radius:8px;
+         padding:7px 11px;font-size:11px;display:flex;align-items:center;gap:7px}
+.mini b{font-size:15px;font-weight:700}
+.mini .dotc{width:8px;height:8px;border-radius:50%}
+/* 缺失清单表 */
+.mtab{width:100%;border-collapse:collapse;font-size:12px}
+.mtab th{background:#1e2836;padding:7px 8px;text-align:left;font-weight:600;
+         font-size:11px;position:sticky;top:0}
+.mtab td{padding:6px 8px;border-top:1px solid #24303e}
+.mtab tr:hover td{background:#202b3a}
+.mtab .c{text-align:center}
+.mtab .nw,.mtab th{white-space:nowrap}
+/* 名称可能很长,单元格内单行 +省略,
+   完整内容挂 title,鼠标停伏就能看到 */
+td.nm{max-width:206px;overflow:hidden;text-overflow:ellipsis;
+      white-space:nowrap}
+.mtab td{vertical-align:top}
+.near{display:flex;gap:4px;flex-wrap:wrap}
+.nf{background:#7c2d1233;color:#fdba74;border:1px solid #7c2d1255;
+    padding:1px 5px;border-radius:4px;font-size:10px;white-space:nowrap}
+/* CSV 按钮 */
+.btn:active{transform:translateY(1px)}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>__TITLE__</h1>
+    <div class="sub">__DESC__</div>
+  </div>
+  <div class="live" id="live"><span class="dot"></span><span id="liveTxt">__LIVETXT__</span></div>
+</header>
+<div class="banner" id="banner"></div>
+<div class="cards">__CARDS__</div>
+<div class="mini" id="mini"></div>
+<div id="assyBox"></div>
+<details class="fold" id="fMiss"><summary>缺失清单<span class="cnt" id="cMiss">0</span></summary><div class="body" id="missBox"></div></details>
+<details class="fold" id="fIss"><summary>数据检查<span class="cnt" id="cIss">0</span></summary><div class="body" id="issBox"></div></details>
+<details class="fold" id="fTb" open><summary>零件明细<span class="cnt" id="cTb">0</span></summary><div class="body">  <div class="toolbar">
+    <input type="search" id="q" placeholder="搜索 图号 / 名称 / 材料 / 工艺…">
+    <button class="btn on" data-f="all">全部</button>
+    <button class="btn" data-f="miss">仅缺文件</button>
+    <button class="btn" data-f="ready">已齐套</button>
+    <button class="btn" data-f="mk">仅有标注</button>
+    <button class="btn" id="exp">展开全部分类</button>
+    <button class="btn" id="col">收起全部分类</button>
+    <button class="btn" id="refresh">刷新</button>
+    <button class="btn" id="cpy">复制缺失清单</button>
+    <button class="btn" id="cpi">复制数据问题</button>
+    <button class="btn" id="csv">导出 CSV</button>
+    <span id="editBar"></span><span id="chkBar"></span>
+  </div>
+  <div id="cats"></div>
+</div></details>
+<div id="lb"><span class="x" title="关闭(Esc)">&times;</span><img id="lbi" alt="零件大图"><div class="cap" id="lbc"></div><div class="hint">点任意处或按 Esc 关闭</div></div>
+<div class="toast" id="toast">已复制</div>
+<footer>🐑 助手工程师 · __GEN__ · 单文件看板,可直接发给加工厂</footer>
+<script>
+const DATA=__DATA__, ISSUES=__ISSUES__, ORDER=__ORDER__, CATS=__CATS__,
+      CONFLICT=__CONFLICT__, LIVE_BUILD=__LIVE__, DL=__DL__, DL_LABEL=__DL_LABEL__,
+      PAUSED=__PAUSED__,
+      ASSY=__ASSY__,
+      CHK=__CHK_META__;
+const CHK_KINDS=Object.keys(CHK);
+const CHK_NAME=Object.fromEntries(CHK_KINDS.map(k=>[k,CHK[k].label]));
+const CHK_ST=Object.fromEntries(CHK_KINDS.map(k=>[k,
+  Object.fromEntries(CHK[k].statuses.map(s=>[s[0],s[1]]))]));
+// 这一件该填哪一栏。规则(引擎 checklist.kind_of 的网页版镜像)由服务端算好,
+// 前端只查表,不自己按分类名字猜 —— 两处各写一份「哪些算自产件」,
+// 迟早会改漏一处,然后网页上多出一栏、程序里没有,或者反过来。
+function chkKind(r){
+  for(const k of CHK_KINDS)
+    if((CHK[k].cats||[]).indexOf(r.cat)>=0)return k;
+  return '';
+}
+function chkGet(r,k){
+  const c=(r.chk&&r.chk[k])||null;
+  // ★ qty 必须一起带出来。
+  //   早先这里只挑 st/note,外购件的到货数量在数据里明明是有的
+  //   (核对表也真的写进去了),到了界面上却永远是空的 —— 框里只剩
+  //   那个占位的「—」,人只会以为没记过。数据在、界面不显示,
+  //   不报错,最难查。
+  return {st:(c&&c.st)||'todo',note:(c&&c.note)||'',
+          qty:(c&&c.qty!=null)?c.qty:null};
+}
+const chkKey=(r,k)=>(r.src||'')+'|'+(r.xrow||'')+'|'+k;
+// P7 只有「用本地服务打开」才有写接口。双击打开的静态看板是死文件,
+// POST /api/edit 不存在 —— 与其点了报 404,不如根本不给编辑框。
+// 判定放在最前面是因为下面 render 表格时就要用,
+// 而 LIVE 那行在文件末尾才定义,那时表格早渲染完了。
+const EDIT_ON = (location.protocol==='http:'||location.protocol==='https:');
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const isMiss=r=>DL.some(k=>r[k]&&!r[k+'_exists']);
+function chk(r,k,rowIdx){
+  const lab=DL_LABEL[k]||k.toUpperCase();
+  // 源表明确标了「不需要」,和「需要但没文件」是两回事,样式必须区分
+  if(r[k+'_want']===false)
+    return '<span class="chk na" title="源表未标注需要该交付物">— '+esc(lab)+'不需要</span>';
+  if(!r[k])return '<span class="chk na">— 不需要</span>';
+  const how=r[k+'_how']||'';
+  if(r[k+'_exists']){
+    const path=r[k+'_href']||r[k+'_rel'];
+    const tip=(how&&how!=='精确')
+      ? path+'\n文件名带后缀,按「'+how+'」匹配到: '+r[k+'_found'] : path;
+    const cls='hit-'+(how||'精确');
+    const tag=(how&&how!=='精确')?'<span class="ext">'+esc(how)+'</span>':'';
+    // 必须是 <a>。以前是 <span data-p>,点了只复制路径,根本不跳转。
+    // 路径还要修两处:反斜杠在 URL 里当分隔符用,以及看板在 6_看板\ 下、
+    // 文件在 3_3D图\ 下,得先退一级(../)。不改就是 404。
+    const link='<a class="chk yes '+cls+'" href="'+esc(fixPath(path))+'"'
+      +' target="_blank" title="'+esc(tip+'\n点击打开')+'">✓ '+esc(lab)+tag+'</a>';
+    // ★ STEP 别直接甩一个链接出去。
+    //   浏览器不认 STEP,点开就是满屏 `ISO-10303-21;` / `CARTESIAN_POINT`
+    //   —— 文件好的,浏览器只是把它当文本。以前这一步就是这样,
+    //   本人点「3D 图」看到一堆乱码,以为文件坏了。
+    //   构建时已经把 STEP 转成 STL(`_网格缓存/`),这里给一个真能转起来的按钮;
+    //   转不了(没装 OCP / 模型没有面)才退回链接,并且说清楚为什么。
+    if(k==='step'&&r.step_mesh){
+      return '<span class="hit3d">'
+        +'<button class="btn b3d" type="button" data-v3d-step="'+esc(rowIdx)+'">'
+        +'3D 预览</button>'+link+'</span>';
+    }
+    if(k==='step'&&r.step_mesh_err){
+      return link+'<span class="v3d-why" title="'+esc(r.step_mesh_err)+'">'
+        +'转不成网格</span>';
+    }
+    return link;
+  }
+  return '<span class="chk no" data-p="'+esc(r[k+'_rel'])+'"'
+    +' title="期望文件: '+esc(r[k+'_rel'])+'\n文件还没有,点此复制路径">✗ 缺 '+esc(lab)+'</span>';
+}
+// 交付物链接的路径修正。
+//
+// 坑 1:Python 的 relative_to() 给的是反斜杠(3_3D图\塑胶件/x.STEP),
+//       浏览器 URL 里反斜杠不算分隔符,必须全换正斜杠。
+// 坑 2:看板在 6_看板\ 下,交付物在 3_3D图\ / 4_2D图\ 下,要先退一级。
+//
+// 坑 3:看板还会被复制到别处(用户直接发出去、或发回源目录),
+//       那时交付物目录可能叫 3D图 / 2D图,看板本身就在根下、不用退级。
+//       所以基准前缀由构建时注入 __BASE__,不在这里猜。
+//       目录名的差异由发布脚本重写 DATA 里的字面路径。
+//
+// 声明必须写成完整的 JS 语句(带引号)。只写 `var __BASE__;` 再指望
+// 构建时把整个声明替换掉,是这轮踩的坑:替换后源码变成 `return ../+…`,
+// 引号没了,JS 语法错,表格一行都不渲染 —— 而文件 14MB、90 件数据、
+// 图片全有,只看大小和 DATA 完全发现不了。
+const __BASE__ = "__BASE_VALUE__";
+function fixPath(p){
+  if(!p)return '#';
+  return __BASE__+String(p).replace(/\\/g,'/').replace(/^\/+/,'');
+}
+function pbadge(r){
+  // 汇总表(如「节水马桶总物料」)不属于任何一台样机,proto 为空。
+  // 以前回退取文件名首字得到「节」,看板上就出现一堆「A节」,必须区分开。
+  const p=(r.proto||'').toUpperCase();
+  return p ? '<span class="proto p-'+p+'">'+esc(r.proto)+'</span>'
+           : '<span class="proto p-x" title="来自整机汇总表,不属于某一台样机">总表</span>';
+}
+function row(r,rowIdx){
+  // 图示列直接摆缩略图,点一下弹大图。
+  // 用 object-fit:contain —— 零件图有宽有窄,不管用 cover 都会被裁掉半张。
+  const img=r.img?'<img class="vp" src="'+esc(r.img)+'" alt="'+esc(r.pn||r.nm)+'"'
+      +' loading="lazy" onclick="zoom(this.dataset.src,\''+esc(r.pn||r.nm)+'\')"'
+      +' data-src="'+esc(r.img)+'" title="'+esc(r.pn||r.nm)+'\n点击看大图">'
+    :'<span class="noph" title="原表图示列为空,无法核对形状">无图</span>';
+  const note=r.link?'<a href="'+esc(r.link)+'" target="_blank" title="'+esc(r.link)+'">采购链接</a>'
+   :(r.note?'<div class="note">'+esc(r.note)+'</div>':'');
+  // 源表手工标注(STEP / 出工程图STEP / 新 / 改 …),排查时非常有用
+  const mks=(r.marks&&r.marks.length)
+    ?'<div class="marks">'+r.marks.map(m=>'<span class="mk">'+esc(m)+'</span>').join('')+'</div>' : '';
+  const srcCell=r.src?'<span class="src" title="'+esc(r.src)+'">'+esc(r.src)+'</span>':'';
+  // P7 可编辑单元格。rowIdx = 这一行在 DATA 里的下标,
+  // 提交时用它找回 cat / xrow / pn,前端不记这些值,免得和 DATA 对不上。
+  const ed=(f,html,cls)=>EDIT_ON
+    ? '<td class="e '+cls+'" data-f="'+f+'" data-i="'+rowIdx+'">'+html+'</td>'
+    : '<td class="'+cls+'">'+html+'</td>';
+  let cells='<td class="c">'+r.no+'</td><td class="c">'+pbadge(r)+'</td>'
+   +'<td class="c">'+img+'</td>'
+   +ed('pn','<b>'+esc(r.pn)+'</b>','')
+   +ed('nm',esc(r.nm),'nm')
+   +ed('mat',esc(r.mat),'')
+   +ed('qty',esc(r.qty),'c')
+   +ed('craft','<span class="craft">'+esc(r.craft)+'</span>','')
+   +'<td>'+mks+'</td><td>'+srcCell+'</td>';
+  DL.forEach(k=>{cells+='<td class="c">'+chk(r,k,rowIdx)+'</td>';});
+  cells+=EDIT_ON?'<td class="e" data-f="note" data-i="'+rowIdx+'">'+note+'</td>'
+                :'<td>'+note+'</td>';
+  cells+=chkCell(r,rowIdx);
+  return '<tr data-miss="'+(isMiss(r)?1:0)+'" data-mk="'+(r.marks&&r.marks.length?1:0)+'">'+cells+'</tr>';
+}
+/* P14 加工后核对 / 新购件核对。
+   状态下拉用**原生 <select>**:自己用 div 拼菜单要多管焦点、
+   滚动时定位、Esc 关闭这些事,原生控件全都自带,而且键盘能用。
+   备注是 contenteditable,和 P7 的备注格一个路子。 */
+function chkCell(r,rowIdx){
+  const k=chkKind(r);
+  if(!k)return '';
+  const c=chkGet(r,k);
+  const m=CHK[k];
+  const opts=m.statuses.map(s=>'<option value="'+s[0]+'"'
+      +(s[0]===c.st?' selected':'')+'>'+esc(s[1])+'</option>').join('');
+  const dis=EDIT_ON?'':' disabled';
+  // 外购件多一行「到货数量」—— 本人原话:采购件的核对是核对数量和型号。
+  // 数量直接和需求量并排显示,少了几个一眼就看出来,不用自己算。
+  const need=needQty(r);
+  const got=c.qty==null?'':String(c.qty);
+  const less=chkShort(r,c.qty);
+  const qtyRow=m.hasQty
+    ? '<div class="cq"><span class="cq-lab">到货</span>'
+      +'<input class="cn-q'+(less?' short':'')+'" type="text" inputmode="decimal"'
+      +' value="'+esc(got)+'" placeholder="—" data-i="'+rowIdx+'"'
+      +' data-k="q'+k+'"'+dis+'>'
+      +'<span class="cq-hint">需 <b>'+esc(need==null?'—':need)+'</b>'
+      +(less?' · 差 <span class="less">'+esc(less)+'</span>':'')+'</span></div>'
+    : '';
+  return '<td class="ck" data-i="'+rowIdx+'" data-k="'+k+'">'
+    +'<select class="cks st-'+c.st+'" data-i="'+rowIdx+'" data-k="k'+k+'"'+dis
+    +'>'+opts+'</select>'
+    +qtyRow
+    +(EDIT_ON
+        ?'<div class="cn'+(c.note?'':' ph')+'" data-i="'+rowIdx+'" data-k="n'+k+'">'
+          +esc(c.note||'点这里写备注')+'</div>'
+        :(c.note?'<div class="cn">'+esc(c.note)+'</div>':''))
+    +'</td>';
+}
+/* 需求量:取不到就 null —— 宁可显示「—」,也不编一个数字出来。
+   量表里常见的「2+2+2=6」这类写法会被求值成 6。 */
+function needQty(r){
+  const v=(r.qty==null?r.need:r.qty);
+  if(v==null||v==='')return null;
+  const s=String(v).trim();
+  const eq=s.lastIndexOf('=');
+  const body=eq>=0?s.slice(eq+1):s;
+  const n=parseFloat(body.replace(/[^+0-9eE.\-]/g,''));
+  return isFinite(n)?n:null;
+}
+function chkShort(r,got){
+  const need=needQty(r);
+  if(need==null||got==null||got==='')return 0;
+  const g=parseFloat(String(got));
+  if(!isFinite(g))return 0;
+  const d=need-g;
+  return d>0?d:0;
+}
+function chkHead(cat){
+  for(const k of CHK_KINDS)
+    if((CHK[k].cats||[]).indexOf(cat)>=0)
+      return '<th style="width:190px">'+esc(CHK[k].label)+'</th>';
+  return '';
+}
+const HEAD_T='<thead><tr><th style="width:44px" class="c">#</th><th style="width:52px" class="c">机</th>'
+  +'<th style="width:92px" class="c">图示</th><th style="width:158px">图号</th><th style="width:214px">名称</th>'
+ +'<th style="width:82px">材料</th><th style="width:88px" class="c">数量</th>'
+  +'<th style="width:86px">工艺</th><th style="width:104px">标注</th>'
+  +'<th style="width:124px">来源表</th>'
+ +DL.map(k=>'<th style="width:150px" class="c">'+esc(DL_LABEL[k]||k)+'</th>').join('')
+ +'<th>备注 / 链接</th>@CKHEAD@</tr></thead>';
+// 表头**按分类**生成:自产件那几张表最后一列叫「加工后核对」,
+// 外购件那张叫「新购件核对」。以前 HEAD 是一个常量,所有分类共用,
+// 想让同一列在不同分类下换个名字就只能加一列 —— 那会让表格宽一倍,
+// 而且大部分格子用不上。
+// 这个占位标记故意用单 @ 包起来而不是双下划线:双下划线那种会被
+// tpl_test 当成「dashboard.py 该替换、却忘了替换的占位符」而误报,
+// 而它其实是在浏览器里替换的,Python 那边根本不碰。
+function headOf(cat){return HEAD_T.replace('@CKHEAD@',chkHead(cat));}
+
+document.getElementById('cats').innerHTML=ORDER.map((c,i)=>{
+  const g=DATA.filter(r=>r.cat===c);
+  if(!g.length)return '';
+  const col=(CATS[c]&&CATS[c].color)||'#cbd5e1';
+  return '<details class="catsec"'+(i<2?' open':'')+'>'
+   +'<summary><span class="tag" style="background:'+col+'22;color:'+col+'">'+esc(c)+'</span>'
+   +'<span class="cnt">'+g.length+' 条</span></summary>'
+   +'<div style="padding:0 8px 8px"><table>'+headOf(c)+'<tbody>'
+   +g.map((r,i)=>row(r,DATA.indexOf(r))).join('')+'</tbody></table></div>'
+   +'<div class="zero">此分类下无匹配项</div></details>';
+}).join('');
+document.getElementById('cTb').textContent=DATA.length+' 条';
+
+/* ---- 缺失清单 ---- */
+// 旧版按交付物类型分组、只给文件名,看不出是哪件零件、缺几个、要往哪放。
+// 这里改成一张表:分类 / 样机 / 图号 / 名称 / 缺什么 / 期望存放路径。
+const MISS=DATA.map(r=>({r,k:DL.filter(k=>r[k]&&r[k+'_want']!==false&&!r[k+'_exists'])}))
+                 .filter(x=>x.k.length);
+const nFile=MISS.reduce((a,x)=>a+x.k.length,0);
+// 相近文件总数。源表图号写成 gl-01、mtb-01，
+// 真实文件却叫 AGL-01_1.STEP、AMTB-01_1.STEP（少了首字母 A）。
+// 这种情况旧看板靠宽松匹配静默算成齐套，
+// 挂错了无人知情，这里只提示不自动挂。
+const NEAR=MISS.reduce((a,x)=>a+x.k.reduce((n,k)=>n+((x.r[k+'_near']||[]).length),0),0);
+document.getElementById('cMiss').textContent=MISS.length?MISS.length+' 项':'0';
+document.getElementById('cMiss').className='cnt'+(MISS.length?' bad':'');
+document.getElementById('missBox').innerHTML=MISS.length
+ ? '<table class="mtab"><thead><tr><th style="width:100px">分类</th>'
+   +'<th style="width:44px" class="c">机</th><th style="width:150px">图号</th>'
+   +'<th style="width:150px">名称</th><th style="width:160px">缺什么</th>'
+   +'<th style="width:186px">期望存放路径</th><th style="width:196px">相近文件</th></tr></thead><tbody>'
+   +MISS.map(x=>'<tr><td>'+esc(x.r.cat)+'</td>'
+     +'<td class="c">'+pbadge(x.r)+'</td>'
+     +'<td><b>'+esc(x.r.pn)+'</b></td><td class="nw">'+esc(x.r.nm)+'</td>'
+     +'<td class="c">'+x.k.map(k=>'<span class="chk no">'+(DL_LABEL[k]||k)
+        +'</span>').join(' ')+'</td>'
+     +'<td><span class="src" title="'+esc(x.k.map(k=>x.r[k+'_rel']).join('\n'))+'">'
+     +esc(x.k.map(k=>x.r[k+'_rel']).join('   |   '))+'</span></td>'
+      +'<td>'+x.k.map(k=>{const n=x.r[k+'_near'];
+         return n&&n.length?'<div class="near">'+n.map(f=>
+           '<span class="nf" title="文件名与图号对不上,确认后改名或改图号">'
+           +esc(f)+'</span>').join('')+'</div>':'';}).join(' ')+'</td></tr>').join('')
+   +'</tbody></table><div class="tip">共 '+MISS.length+' 件待补 · 合计 '
+    +nFile+' 个文件'+(NEAR&&NEAR.length?' · 其中 '+NEAR.length+' 个疑似只是名字对不上,见「相近文件」列':'')+'</div>' :'<div class="box ok-all"><h4>全部交付物齐套,无缺失文件</h4></div>';
+
+/* ---- 数据检查 ---- */
+const LV={err:'err',warn:'warn',info:'info'}, NM={err:'必须修',warn:'待补',info:'可忽略'};
+const real=ISSUES.filter(i=>i.level!=='miss');
+document.getElementById('cIss').textContent=real.length?real.length+' 项':'无问题';
+document.getElementById('cIss').className='cnt'+(real.length?' warn':'');
+document.getElementById('issBox').innerHTML=real.length
+ ? Object.keys(LV).map(l=>{const g=real.filter(i=>i.level===l);if(!g.length)return '';
+   return '<div class="box lv-'+LV[l]+'"><h4>'+NM[l]+' · '+l.toUpperCase()+' ('+g.length+')</h4><div class="chips">'
+    +Array.from(new Set(g.map(i=>i.tag))).map(t=>{
+        const n=g.filter(i=>i.tag===t).length;
+        return '<span class="chip" data-tip="'+esc(t)+'">'+esc(t)+' × '+n+'</span>';}).join('')
+    +'</div><div class="tip">点标签可复制该类问题明细</div></div>';}).join('')
+ :'<div class="box ok-all"><h4>数据检查全部通过</h4></div>';
+window.__iss=tag=>real.filter(i=>i.tag===tag).map(i=>i.who+'  ->  '+i.tip).join('\n');
+
+/* ---- 顶部横幅:手动修改 + 暂停检测(P6) ---- */
+// 两者共用一个 banner,所以要**合并**而不是各自 innerHTML ——
+// 以前这段是无条件覆盖的,再加一条就会把「保留了手动修改」顶掉。
+(function(){
+  const b=document.getElementById('banner'),t=[];
+  if(CONFLICT&&(CONFLICT.kept||CONFLICT.gone)){
+    if(CONFLICT.kept)t.push('保留了 <b>'+CONFLICT.kept+'</b> 处你的手动修改(表格中已标黄)');
+    if(CONFLICT.gone)t.push('移除了 <b>'+CONFLICT.gone+'</b> 行源表已不存在的零件');
+  }
+  if(PAUSED)t.push('<b>自动检测已暂停</b>'+(PAUSED?'('+PAUSED+')':'')
+    +' —— 本页不会自动更新。导出定档期间是正常的,确认交付包后点「开始检测」恢复');
+  if(t.length){
+    b.innerHTML='<span>⚠</span><span>'+t.join(' &nbsp;|&nbsp; ')+'</span>';
+    b.classList.add('show');
+  }
+})();
+
+/* ---- 分类维度概览 ---- */
+// 旧看板只有总数卡片,看不出各分类的完成度。
+document.getElementById('mini').innerHTML=ORDER.map(c=>{
+  const g=DATA.filter(r=>r.cat===c);
+  if(!g.length)return '';
+  const need=g.filter(isMiss).length;
+  const col=(CATS[c]&&CATS[c].color)||'#94a3b8';
+  const pct=Math.round((g.length-need)/g.length*100);
+  return '<div><span class="dotc" style="background:'+col+'"></span>'
+    +esc(c)+' <b>'+g.length+'</b> 件'
+    +'<span style="opacity:.55">缺 '+need+' · 齐套 '+pct+'%</span></div>';
+}).join('');
+
+/* ---- 筛选 ---- */
+let filter='all';
+function apply(){
+  const q=document.getElementById('q').value.trim().toLowerCase();
+  document.querySelectorAll('details.catsec').forEach(sec=>{
+    let n=0,all=0;
+    sec.querySelectorAll('tbody tr').forEach(tr=>{
+      all++;
+      let ok=true;
+      if(filter==='miss'&&tr.dataset.miss!=='1')ok=false;
+      if(filter==='ready'&&tr.dataset.miss==='1')ok=false;
+      if(filter==='mk'&&tr.dataset.mk!=='1')ok=false;
+      if(q&&!tr.innerText.toLowerCase().includes(q))ok=false;
+      tr.style.display=ok?'':'none';
+      if(ok)n++;
+    });
+    sec.style.display=n?'':'none';
+    sec.querySelector('.zero').style.display=n?'none':'block';
+    sec.querySelector('.cnt').textContent=n+' / '+all+' 条';
+  });
+}
+document.getElementById('q').addEventListener('input',apply);
+document.querySelectorAll('.btn[data-f]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.btn[data-f]').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');filter=b.dataset.f;apply();}));
+document.getElementById('exp').addEventListener('click',()=>
+  document.querySelectorAll('details.catsec').forEach(d=>{if(d.style.display!=='none')d.open=true;}));
+document.getElementById('col').addEventListener('click',()=>
+  document.querySelectorAll('details.catsec').forEach(d=>d.open=false));
+
+/* ---- 手动刷新 ----
+   SSE 是自动的那道保险,这颗按钮是手动的那道。
+   - 实时模式(经本地服务打开):先问服务端「文件夹变了什么」,重建后
+     带时间戳重载 —— 不加时间戳浏览器会拿缓存,点了跟没点一样。
+   - 静态快照(双击打开的文件):服务端不存在,只能重新读磁盘上那份
+     文件。file:// 下 fetch 会被 CORS 挡掉,所以退化成整页重载。 */
+document.getElementById('refresh').addEventListener('click',function(){
+  var btn=this;
+  btn.disabled=true;btn.textContent='检测中…';
+  function done(msg,reload){
+    btn.disabled=false;btn.textContent='刷新';
+    if(msg)toast(msg);
+    if(reload)setTimeout(function(){
+      location.replace(location.pathname+'?t='+Date.now());},400);
+  }
+  if(!LIVE){done('静态快照 · 重新打开即读取最新');return;}
+  fetch('api/scan',{method:'POST'})
+    .then(function(r){return r.json().catch(function(){return{};});})
+    .then(function(j){
+      var s=j.summary||(j.any?'有变化':'没有变化');
+      done((j.rebuilt?'已重建':'未重建')+' · '+s,true);
+    })
+    .catch(function(){done('检测失败,直接重载',true);});
+});
+document.getElementById('cpy').addEventListener('click',()=>{
+  const l=DATA.filter(isMiss).flatMap(r=>DL.map(k=>r[k]&&!r[k+'_exists']?r[k+'_rel']:null).filter(Boolean));
+  copy(l.length?l.join('\n'):'全部齐套');});
+document.getElementById('csv').addEventListener('click',()=>{
+  // 加工厂最常用的是拿表格对料——HTML 看不了。
+  // 列可以是字段名(如 'cat')或访问函数,两种形式混用时只能分叉处理
+  const cv=(c,r)=>typeof c[1]==='function'?c[1](r):r[c[1]];
+  const q=s=>{s=''+s;return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+  const cols=[['分类','cat'],['样机','proto'],['图号','pn'],
+              ['名称','nm'],['材料','mat'],['数量','qty'],
+              ['工艺','craft'],['注释',r=>(r.marks||[]).join(' ')],
+              ['来源表','src'],['备注','note']]
+    .concat(DL.map(k=>[(DL_LABEL[k]||k)+'需求',r=>r[k]?'需要':'不需要']))
+    .concat(DL.map(k=>[(DL_LABEL[k]||k)+'状态',r=>{
+        if(!r[k]||r[k+'_want']===false)return '—';
+        return r[k+'_exists']
+          ?('齐套'+(r[k+'_how']&&r[k+'_how']!=='精确'
+                ?'('+r[k+'_how']+')':''))
+          :'缺失';}]));
+  const out=[cols.map(c=>q(c[0])).join(',')];
+  DATA.forEach(r=>out.push(cols.map(c=>q(cv(c,r))).join(',')));
+  const blob=new Blob(['\ufeff'+out.join('\r\n')],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='零件清单_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('已导出 '+DATA.length+' 行 CSV');
+});
+document.getElementById('cpi').addEventListener('click',()=>
+  copy(real.length?real.map(i=>'['+i.tag+'] '+i.who+' -> '+i.tip).join('\n'):'无数据问题'));
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',1400);}
+function copy(t){if(navigator.clipboard)navigator.clipboard.writeText(t);toast('已复制 '+t.length+' 字');}
+function closeLb(){document.getElementById('lb').style.display='none';}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  // 已到位的交付物是真链接,别在这里拦 —— 一 return 掉浏览器的默认行为,
+  // 链接就点不开了。缺件那几行仍是 <span data-p>,点了复制路径方便排查。
+  if(t.tagName!=='A'){
+    if(t.dataset&&t.dataset.p){copy(t.dataset.p);return;}
+    if(t.dataset&&t.dataset.tip){copy(window.__iss(t.dataset.tip));return;}
+  }
+  // 点遮罩、右上角 × 都关。点图本身不关 —— 方便右键另存。
+  if(t.id==='lb'||(t.classList&&t.classList.contains('x')))closeLb();
+});
+// Esc 关灯箱。表格里一屏几十行,不用鼠标也能翻着看。
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLb();});
+function zoom(src,cap){
+  document.getElementById('lbi').src=src;
+  document.getElementById('lbc').textContent=cap||'';
+  document.getElementById('lb').style.display='flex';
+}
+
+/* ---- 实时推送(SSE)----
+   能不能实时,**按访问方式判断,不按构建时写死的标记**。
+   以前 LIVE 是构建时传进来的,于是「先构建、再用本地服务打开」这种
+   最常见的用法反而拿不到实时 —— 构建时并不知道将来会怎么打开。
+   LIVE_BUILD 保留下来仅用于排查(构建时是否声明了实时)。 */
+var LIVE = (location.protocol==='http:'||location.protocol==='https:');
+(function(){
+  var live=document.getElementById('live'),txt=document.getElementById('liveTxt');
+  function set(cls,t){live.className='live '+cls;txt.textContent=t;}
+  if(!LIVE){set('','静态快照 · 重新打开即刷新');return;}
+  if(typeof EventSource==='undefined'){set('','实时不可用 · 可点「刷新」');return;}
+  var es=new EventSource('events');
+  es.onopen=function(){set('on','实时已连接 · 文件变动自动更新');};
+  // EventSource 自带重连,但服务端重启/端口变化时会一直失败。
+  // 这里把「已断开」明确显示出来 —— 连不上和「没变化」长得很像,
+  // 不说清楚会以为看板不动是正常的。
+  es.onerror=function(){
+    set('busy','连接中断 · 重试中(可点「刷新」手动重载)');
+  };
+  es.onmessage=function(ev){
+    var d={};try{d=JSON.parse(ev.data);}catch(e){return;}
+    if(d.type==='build'){set('busy','正在重建…');arm();}
+    else if(d.type==='done'){
+      // ★ 重载的**唯一**正常触发点。`build` 是开工前发的,那时候文件
+      //   还没写完 —— 早先在这里直接 setTimeout(reload,700),89 件的看板
+      //   根本生成不完,页面读到的还是旧文件,于是「保存成功、刷新一下
+      //   又变回原样」。定时器只剩兜底作用。
+      if(d.ok===false)set('busy','重建失败:'+(d.err||'')+' · 请点「刷新」');
+      location.reload();
+    }
+    else if(d.type==='ping'){set('on','实时已连接 · '+d.at);}
+    else if(d.type==='edit'||d.type==='check'){
+      // 写盘成功,但看板还是旧快照 —— 等服务端重建完的 `done` 再重载。
+      set('busy','已保存 '+d.n+' 处 · 等待重新生成…');
+      arm();
+    }
+  };
+  // 兜底:万一 `done` 丢了(服务端重启/网络断),8 秒后自己重载。
+  // 太短会读到半成品,所以给得宽;真正常见路径都是 done 立刻重载。
+  var RELOAD_T=null;
+  function arm(){if(RELOAD_T)clearTimeout(RELOAD_T);
+    RELOAD_T=setTimeout(function(){location.reload();},8000);}
+})();
+
+/* ================================================================
+   P11 —— 总装图
+
+   设计取舍(**这一段是有意的,不是偷工**):
+
+   浏览器**不认 STEP**。真要在浏览器里转 STEP,得引入 OCCT 的 WASM
+   版(occt-import-js 之类),十几 MB,而且通常从 CDN 拉 —— 而这个工具
+   的硬前提是**不联网**。所以这里分两条路:
+
+     · 「用 CAD 打开」= 调起系统关联程序(POST /api/open,白名单限制
+       只能开 5_总装图 里的白名单类型)。这是看 STEP 唯一靠谱的办法。
+     · 「浏览器内 3D 预览」= 只有**同名 STL/OBJ** 时才有。STL/OBJ 是
+       三角网格,WebGL 能直接画,所以这里手写了一个 ~120 行的查看器,
+       **不依赖任何外部库** —— 引 three.js 就得联网,和前提冲突。
+
+   没有 STL 就明说「该装同名 .stl 就能在浏览器里转」,不给假按钮。
+   ================================================================ */
+(function(){
+  const box=document.getElementById('assyBox');
+  /* view3d 是**函数声明**,在 IIFE 顶部就已经存在(声明会提升),
+     所以这里赋值是无条件的。
+     ★ 以前这行挂在 IIFE 末尾,而末尾前面有个
+     `if(!ASSY||!ASSY.length) return;` —— 项目里没有总装图(装配体)
+     时直接 return,`window.view3d` 就从来没被赋过值,
+     零件表的「3D 预览」按钮点了报 `view3d is not defined`,
+     **一点反应都没有**。而有总装图的项目又完全正常,
+     于是「有的项目能预览、有的不能」,极难联想到是这一行。 */
+  window.view3d=view3d;
+  if(!ASSY||!ASSY.length){ if(box)box.innerHTML=''; return; }
+
+  function sz(n){
+    if(n<1024) return n+' B';
+    if(n<1048576) return (n/1024).toFixed(0)+' KB';
+    return (n/1048576).toFixed(1)+' MB';
+  }
+  const cards=ASSY.map(function(a,i){
+    const pic=a.shot
+      ? '<img src="'+esc(__BASE__+a.shot)+'" alt="'+esc(a.name)+' 截图">'
+      : '<div class="nosh">没有同名截图<br>放一个 '+esc(a.name)+'.png 就能在这里看</div>';
+    return '<div class="assyCard">'
+      + '<div class="pic">'+pic+'</div>'
+      + '<div class="nm" title="'+esc(a.name)+'">'+esc(a.name)+'</div>'
+      + '<div class="sz">STEP · '+sz(a.bytes)+'</div>'
+      + '<div class="acts">'
+      +   '<button class="btn" data-open="'+i+'">用 CAD 打开</button>'
+      +   (a.mesh
+            ? '<button class="btn pri" data-v3d="'+i+'">3D 预览</button>'
+            : '<button class="btn" data-v3d="-1" disabled title="同名放一个 .stl 就能在浏览器里转">3D 预览(缺 STL)</button>')
+      + '</div></div>';
+  }).join('');
+
+  box.innerHTML='<details class="fold" open><summary>总装图'
+    +'<span class="cnt">'+ASSY.length+' 个装配体</span></summary>'
+    +'<div class="assyGrid">'+cards+'</div></details>';
+
+  box.onclick=function(e){
+    const b=e.target.closest('button');
+    if(!b)return;
+    if(b.dataset.open!==undefined) return openWith(ASSY[+b.dataset.open]);
+    if(b.dataset.v3d!==undefined){
+      if(b.disabled) return;             // 「缺 STL」那个是 disabled,点了没用
+      return view3d(ASSY[+b.dataset.v3d]);
+    }
+  };
+
+  function openWith(a){
+    fetch(__BASE__+'api/open',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:a.name+'.step'})})
+      .then(function(r){return r.json();})
+      .then(function(j){ if(j.error) alert('打不开:\n\n'+j.error); })
+      .catch(function(err){ alert('打不开:'+err.message); });
+  }
+
+  /* ---- WebGL STL/OBJ 查看器 + 简易测量(无依赖) ---- */
+  function view3d(a){
+    const m=document.createElement('div');
+    m.className='v3d';
+    m.innerHTML='<div class="box">'
+      +'<h3>'+esc(a.name)+' · 3D 预览<span class="dim" id="dim1"></span></h3>'
+      +'<div class="stage"><canvas id="c3d"></canvas>'
+      +'<svg class="ov" id="ov3d"></svg></div>'
+      +'<div class="tbar">'
+      +'<button class="btn on" data-v="rot">↻ 旋转</button>'
+      +'<span class="sep"></span>'
+      +'<button class="btn" data-v="dist">📏 长度</button>'
+      +'<button class="btn" data-v="rad">⭕ 半径</button>'
+      +'<button class="btn" data-v="ang">∠ 角度</button>'
+      +'<button class="btn" data-v="clr">✕ 清除</button>'
+      +'<span class="sep"></span>'
+      +'<button class="btn" data-v="fit">适应窗口</button>'
+      +'<button class="btn" data-v="in">＋ 放大</button>'
+      +'<button class="btn" data-v="out">－ 缩小</button>'
+      +'<button class="btn" data-v="rst">复位</button>'
+      +'<button class="btn" data-v="top">俯视</button>'
+      +'<button class="btn" data-v="front">前视</button>'
+      +'<button class="btn" data-v="side">侧视</button>'
+      +'<span class="sep"></span>'
+      +'<button class="btn on" data-v="wire">网格线</button>'
+      +'</div>'
+      +'<div class="foot"><span class="hint" id="tip3d">'
+      +'左键拖动旋转 · 滚轮缩放 · 右键拖动平移</span>'
+      +'<span class="rd" id="rd3d"></span>'
+      +'<button class="btn pri" id="x3d">关闭</button></div></div>';
+    document.body.appendChild(m);
+    const cv=m.querySelector('#c3d'), ov=m.querySelector('#ov3d');
+    const rd=m.querySelector('#rd3d'), tip=m.querySelector('#tip3d');
+    const dim1=m.querySelector('#dim1');
+    const onkey=function(e){if(e.key==='Escape')close();};
+    const close=function(){document.removeEventListener('keydown',onkey,true);
+                           m.remove();};
+    document.addEventListener('keydown',onkey,true);
+    m.querySelector('#x3d').onclick=close;
+    m.onclick=function(e){if(e.target===m)close();};
+
+    const st={rx:0.52,ry:0.62,d:4,d0:4,tx:0,ty:0,cc:null,lo:null,hi:null};
+    let tris=[], MEAS=[], pend=[], hover=null, mode='rot', raf=0, WIRE=true;
+    const gl=cv.getContext('webgl');
+    if(!gl){cv.replaceWith(Object.assign(document.createElement('div'),
+      {className:'err',textContent:'这个浏览器不支持 WebGL,看不了。'}));return;}
+
+    function sh(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);
+      gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))
+        throw new Error(gl.getShaderInfoLog(s));return s;}
+    const pr=gl.createProgram();
+    /* ★ 立体感全靠**逐面的法线**。
+       以前片元是写死的纯色 `vec4(0.42,0.63,0.86,1.0)` —— 每个面同一个颜色,
+       转起来就是一坨会变形的蓝色剪纸,毫无厚度感;很多人因此觉得
+       「这是 2D 图在转」,转到角度大一点就开始晕。
+       现在:
+         · 片元里用 dFdx/dFdy 现场求**面法线**(STL 没有法线可用,
+           虽然格式里存了,但不保证和顶点顺序一致,自己算更稳);
+         · 两盏灯(主光 + 补光)+ 环境光 + 一点高光,亮面暗面分得开;
+         · 用重心坐标画**网格线**,边缘和折线一眼看得见,形状立刻立起来。
+       OES_standard_derivatives 是 WebGL1 里用 dFdx 的前提,拿不到就退回纯色
+       —— 老设备不至于白屏。 */
+    const DERIV=gl.getExtension('OES_standard_derivatives');
+    const NO_ERR=gl.NO_ERROR;
+    const VS=(DERIV?'#extension GL_OES_standard_derivatives : enable\n':'')
+      +'attribute vec3 p;attribute vec3 b;uniform mat4 u;'
+      +'varying vec3 vP;varying vec3 vB;'
+      // vP 是**相机系**的坐标(矩阵只有旋转+等比缩放,w 恒为 1)。
+      // dFdx/dFdy 对它求叉积 = 逐面法线,再拿固定在相机系里的灯去照,
+      // 于是灯永远从观者这边打过来 —— 转到哪一面都看得清,不会转到
+      // 背光面就整片黑掉。
+      +'void main(){vP=(u*vec4(p,1.0)).xyz;vB=b;gl_Position=vec4(vP,1.0);}';
+    const FS=(DERIV?'#extension GL_OES_standard_derivatives : enable\n':'')
+      +'precision mediump float;varying vec3 vP;varying vec3 vB;'
+      +'uniform float wire;'
+      // 背景色要跟 canvas 的 CSS 背景一致,雾化才接得上
+      +'const vec3 BG=vec3(0.043,0.075,0.125);'
+      +'void main(){'
+      +'  vec3 n=vec3(0.0,0.0,1.0);'
+      +(DERIV?'  n=normalize(cross(dFdx(vP),dFdy(vP)));'
+             +'  if(!gl_FrontFacing) n=-n;':'')
+      +'  vec3 L1=normalize(vec3(-0.42,0.60,0.68));'
+      +'  vec3 L2=normalize(vec3(0.62,-0.22,0.45));'
+      +'  float d1=max(dot(n,L1),0.0), d2=max(dot(n,L2),0.0);'
+      +'  vec3 V=vec3(0.0,0.0,1.0);'
+      +'  float sp=pow(max(dot(reflect(-L1,n),V),0.0),22.0);'
+      // 底色提到浅钢蓝:原来 0.40/0.60/0.85 压上 0.20 的环境项之后
+      // 背光面只剩 8%,深色背景下糊成一团黑,看不清轮廓
+      +'  vec3 base=vec3(0.66,0.80,0.96);'
+      +'  vec3 col=base*(0.30+0.60*d1+0.24*d2)+vec3(0.30)*sp*0.55;'
+      // 深度雾:越远越往背景色靠,前后层次一下就分开了
+      // (同一套投影里 z 越大越远,和 Raster.project 的排序一致)
+      +'  float fog=clamp(vP.z*0.5,0.0,0.38);'
+      +'  col=mix(col,BG,fog);'
+      +(DERIV
+        ?'  vec3 d=fwidth(vB);'
+         +'  vec3 a=smoothstep(vec3(0.0),d*1.4,vB);'
+         +'  float e=1.0-min(min(a.x,a.y),a.z);'
+         // 网格线用**深藏青**压在浅底色上,比纯黑柔和又不糊
+         +'  col=mix(col,vec3(0.07,0.13,0.24),e*wire*0.85);'
+        :'')
+      +'  gl_FragColor=vec4(col,1.0);}';
+    gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));
+    gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));
+    gl.linkProgram(pr);gl.useProgram(pr);
+    const buf=gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+    const loc=gl.getAttribLocation(pr,'p');
+    gl.enableVertexAttribArray(loc);
+    // ★ 顶点是**交错**的:位置 3 个 float + 重心坐标 3 个 float
+    //   = 6 个 float = **24 字节**,所以 stride 是 24、b 的偏移是 12。
+    //   写成 stride 12 / offset 9 的话,GL 会以为每 12 字节一个顶点,
+    //   越读越靠前,而且 offset 9 还没对齐到 4 字节 ->
+    //   drawArrays 直接 INVALID_OPERATION(1282),
+    //   表现是「点了没反应、画面不更新」,控制台只有一条 1282。
+    gl.vertexAttribPointer(loc,3,gl.FLOAT,false,24,0);
+    const locB=gl.getAttribLocation(pr,'b');
+    gl.enableVertexAttribArray(locB);
+    gl.vertexAttribPointer(locB,3,gl.FLOAT,false,24,12);
+    gl.enable(gl.DEPTH_TEST);
+    const u=gl.getUniformLocation(pr,'u');
+    const uWire=gl.getUniformLocation(pr,'wire');
+    if(uWire) gl.uniform1f(uWire, 1);   // 网格线默认开 —— 没有它就只是一坨剪纸
+
+    /* 把 9 float/三角 的位置数组摊成 **位置+重心坐标交错** 的顶点缓冲。
+   位置和数学那边用的 tris 保持一致(tris 里只有位置),
+   不然 pick / snap / 测量的下标全要跟着改 —— 少一处改动少一处出错。 */
+    function buildVBO(t){
+      const nTri=t.length/9, out=new Float32Array(nTri*9*6);
+      for(let i=0;i<nTri;i++){
+        for(let k=0;k<3;k++){
+          const o=(i*3+k)*6, p=i*9+k*3;
+          out[o]=t[p]; out[o+1]=t[p+1]; out[o+2]=t[p+2];
+          out[o+3]=(k===0)?1:0; out[o+4]=(k===1)?1:0; out[o+5]=(k===2)?1:0;
+        }
+      }
+      return out;
+    }
+    /* STL:二进制优先,失败再试 ASCII。
+
+       ★★★ 二进制 STL 的每条记录是 **50 字节**:
+              法线 3 个 float(12) + 顶点 9 个 float(36) + 属性 2 字节
+          50 不是 4 的倍数 —— 一条记录等于 **12.5 个 float**,浮点下标
+          在记录之间**根本对不齐**。
+
+          所以顶点必须按「记录」跳:`84 + i*50 + 12` 是第 i 个三角形的
+          第一个顶点,后面 9 个 float 才是连续的。
+
+          原先写的是 `dv.getFloat32(84 + i*4 + 12)`,即**每 4 字节一个
+          float 顺着往下读** —— 只在第 0 条记录上是对的,从第 1 条起全是
+          错位数据。读出来是 ±1e38 量级的乱数,不是模型坐标。
+
+          表现极其恶劣:**不报错、三角面数量也对**(n*9 个浮点一个不少)、
+          WebGL 也不抱怨,只是画面上是一团翻飞的噪点 ——
+          而 `rad = max|坐标|` 恰好也是 1e38 量级,于是 `s = 1/st.d`
+          又把它缩回 O(1),NDC 包围盒**看起来还落在视口里**。
+          于是自动化探针「包围盒在 [-1,1] 且有面积」也判成通过。
+          一路绿灯,唯独模型根本不是那个模型。 */
+    function parseSTL(txt,ab){
+      try{
+        if(ab&&ab.byteLength>=84){
+          const dv=new DataView(ab), n=dv.getUint32(80,true);
+          if(84+n*50===ab.byteLength&&n>0){
+            const f=new Float32Array(n*9);
+            for(let i=0;i<n;i++){
+              let o=84+i*50+12;            // 跳过法线
+              const b=i*9;
+              f[b]=dv.getFloat32(o,true);
+              f[b+1]=dv.getFloat32(o+4,true);
+              f[b+2]=dv.getFloat32(o+8,true);
+              o+=12;
+              f[b+3]=dv.getFloat32(o,true);
+              f[b+4]=dv.getFloat32(o+4,true);
+              f[b+5]=dv.getFloat32(o+8,true);
+              o+=12;
+              f[b+6]=dv.getFloat32(o,true);
+              f[b+7]=dv.getFloat32(o+4,true);
+              f[b+8]=dv.getFloat32(o+8,true);
+            }
+            return f;
+          }
+        }
+      }catch(e){}
+      const v=[];const re=/vertex\s+(\S+)\s+(\S+)\s+(\S+)/gi;let m;
+      while((m=re.exec(txt))) v.push(+m[1],+m[2],+m[3]);
+      return v.length>=9?new Float32Array(v):null;
+    }
+    function parseOBJ(txt){
+      // 一遍扫完:顶点按出现顺序编号,面用「顶点序号/纹理/法线」里的
+      // 第一段去查。之前写过一版先扫面再回头补顶点,多出来一个空转的
+      // 循环,纯属废码 —— 读的人得花时间确认它到底有没有副作用。
+      const vtx=[], idxOf={}, tri=[];
+      txt.split(/\r?\n/).forEach(function(line){
+        const s=line.trim();
+        if(!s) return;
+        const c=s.charAt(0);
+        if(c==='v'){ const p=s.split(/\s+/);
+          idxOf[vtx.length/3+1]=vtx.length/3;
+          vtx.push(+p[1],+p[2],+p[3]);
+        } else if(c==='f'){
+          const ids=s.split(/\s+/).slice(1).map(function(tok){
+            const head=tok.split('/')[0];
+            return idxOf[head]!=null?idxOf[head]:idxOf[-head];
+          });
+          // 扇形拆成三角形
+          for(let i=1;i+1<ids.length;i++){
+            if(ids[0]!=null&&ids[i]!=null&&ids[i+1]!=null)
+              tri.push(ids[0],ids[i],ids[i+1]);
+          }
+        }
+      });
+      const out=[];
+      for(let i=0;i<tri.length;i++){
+        const b=tri[i]*3;
+        out.push(vtx[b],vtx[b+1],vtx[b+2]);
+      }
+      return out.length>=9?new Float32Array(out):null;
+    }
+
+    /* ★ file:// 下浏览器**禁止**网页读本地文件(fetch/XHR 一律被拦),
+       所以「双击看板 HTML」时这里必然失败。以前就只有一个干巴巴的
+       「读不了这个网格文件:Failed to fetch」—— 本人只会以为是文件坏了。
+       这里先分清是「协议不让读」还是「文件真的有问题」,再给能照做的下一步。 */
+    const LOCAL_FILE=(location.protocol==='file:');
+    if(LOCAL_FILE){
+      cv.replaceWith(Object.assign(document.createElement('div'),
+        {className:'err'},
+        (function(){
+          const d=document.createElement('div');
+          d.textContent='浏览器不让「双击打开的网页」读本地网格文件(安全限制),'
+            +'所以这里转不起来。';
+          const p=document.createElement('div');
+          p.className='tip';
+          p.textContent='在程序里点「开始检测」,它会起本地服务并用浏览器打开看板,'
+            +'那时候 3D 预览就正常了。命令行:sheep watch <项目名> --serve';
+          d.appendChild(p);
+          return d;
+        })()));
+      return;
+    }
+    fetch(__BASE__+a.mesh).then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return a.mesh.toLowerCase().slice(-4)==='.stl'
+        ? r.arrayBuffer().then(function(b){return parseSTL(null,b);})
+        : r.text().then(parseOBJ);
+    }).then(function(t){
+      if(!t||t.length<9) throw new Error('这个文件里没读到三角面');
+      // 尺寸离谱 = 读错了(以前就是二进制 STL 错位,读出来 ±1e38 的乱数)。
+      // 这种错误不会报错、不会崩、三角面数还对,只是画面上一团噪点 ——
+      // 所以必须在这里**大声喊出来**,而不是让用户以为模型就长这样。
+      let mn=Infinity, mx=-Infinity;
+      for(let i=0;i<t.length;i++){ const v=t[i];
+        if(v<mn)mn=v; if(v>mx)mx=v; }
+      if(!isFinite(mn)||!isFinite(mx)||(mx-mn)>1e6)
+        throw new Error('网格坐标读出来是 '+(mx-mn).toExponential(2)
+          +' mm,明显是解析错了(不是这个零件真的有那么大)');
+      tris=t;
+      gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+      gl.bufferData(gl.ARRAY_BUFFER,buildVBO(t),gl.STATIC_DRAW);
+      // 居中 + 视距 + 外形尺寸,全在 fit() 里(以前这段散在加载回调里,
+      // 「适应窗口」按钮没法复用,于是「适应窗口」=「适应窗口,但要自己再复位」)
+      fit();
+    }).catch(function(e){
+      cv.replaceWith(Object.assign(document.createElement('div'),
+        {className:'err',textContent:'读不了这个网格文件:'+e.message}));
+    });
+
+    /* 极简 4x4 矩阵:只有旋转/平移/等比缩放,不需要通用矩阵库 */
+    /* 极简 4x4 矩阵(列主序,WebGL 要的那种)。
+       重点:平移必须放在**第四列**的 M[12]/M[13]/M[14],
+       而不是第一三列的 z 分量(M[2]/M[6]/M[10])。
+       我一开始就当成了 z 分量放进去的 ——
+       结果模型不中心、y 全是 0,而且**没有任何报错**。
+       这里改成**显式列出 9 个元素**与对应关系,不再靠索引位置猜。
+       判据:读回探针会把顶点过一遍同一个矩阵,报出 NDC 包围盒 ——
+       包围盒落在 [-1,1] 且有面积 = 模型确实被摆进了视口。 */
+    /* ★ 这块拆成 basis() 是因为**测量要反投影**:
+       射线-三角形求交需要「屏幕像素 -> 世界坐标」,而 w 恒等于 1
+       (3x4 矩阵最后一行是 0 0 0 1),所以逆变换就是
+       `p = Rᵀ·(v-t)/s`,不用写通用 4x4 求逆。 */
+    function basis(){
+      const cx=Math.cos(st.rx), sx=Math.sin(st.rx);
+      const cy=Math.cos(st.ry), sy=Math.sin(st.ry);
+      // R = Rx * Ry(行主序 3x3)
+      const r=[cy,0,sy,  cx*sy,cx,-sx*cy,  -cx*sy,sx,cx*cy];
+      const s=1/st.d, c=(st.cc||[0,0,0]);
+      const t=[ st.tx*s - s*(r[0]*c[0] + r[1]*c[1] + r[2]*c[2]),
+                st.ty*s - s*(r[3]*c[0] + r[4]*c[1] + r[5]*c[2]),
+                     - s*(r[6]*c[0] + r[7]*c[1] + r[8]*c[2]) ];
+      return {r:r, s:s, t:t};
+    }
+    function mat(){
+      const B=basis(), r=B.r, s=B.s, t=B.t;
+      return [
+        r[0]*s, r[3]*s, r[6]*s, 0,
+        r[1]*s, r[4]*s, r[7]*s, 0,
+        r[2]*s, r[5]*s, r[8]*s, 0,
+        t[0], t[1], t[2], 1];
+    }
+    /* 世界坐标 -> 屏幕(CSS 像素)。在相机后面返回 null。 */
+    function toScreen(p){
+      const B=basis(), r=B.r, s=B.s, t=B.t;
+      const x=s*(r[0]*p[0]+r[1]*p[1]+r[2]*p[2])+t[0];
+      const y=s*(r[3]*p[0]+r[4]*p[1]+r[5]*p[2])+t[1];
+      const z=s*(r[6]*p[0]+r[7]*p[1]+r[8]*p[2])+t[2];
+      const w=cv.clientWidth||1, h=cv.clientHeight||1;
+      return [(x*0.5+0.5)*w, (1-(y*0.5+0.5))*h, z];
+    }
+    /* NDC -> 世界坐标(mat 的逆,利用 w≡1)。 */
+    function unproj(x,y,z){
+      const B=basis(), r=B.r, s=B.s, t=B.t;
+      const q=[(x-t[0])/s, (y-t[1])/s, (z-t[2])/s];
+      return [r[0]*q[0]+r[3]*q[1]+r[6]*q[2],
+              r[1]*q[0]+r[4]*q[1]+r[7]*q[2],
+              r[2]*q[0]+r[5]*q[1]+r[8]*q[2]];
+    }
+    /* 屏幕像素 -> 模型上的点。射线-三角形(Möller-Trumbore)取最近命中。
+       返回 null = 点在模型外面(空白处),这时不该记一个测量点 ——
+       否则量出来的是「点到无穷远的交点」,数字看着有、实际是错的。 */
+    function pick(px,py){
+      if(!tris.length) return null;
+      const w=cv.clientWidth||1, h=cv.clientHeight||1;
+      const nx=(px/w)*2-1, ny=1-(py/h)*2;
+      const P0=unproj(nx,ny,-1), P1=unproj(nx,ny,1);
+      let dx=P1[0]-P0[0], dy=P1[1]-P0[1], dz=P1[2]-P0[2];
+      const L=Math.hypot(dx,dy,dz)||1; dx/=L; dy/=L; dz/=L;
+      let bt=Infinity, best=null;
+      for(let i=0;i<tris.length;i+=9){
+        const ax=tris[i],ay=tris[i+1],az=tris[i+2];
+        const e1x=tris[i+3]-ax, e1y=tris[i+4]-ay, e1z=tris[i+5]-az;
+        const e2x=tris[i+6]-ax, e2y=tris[i+7]-ay, e2z=tris[i+8]-az;
+        const px2=dy*e2z-dz*e2y, py2=dz*e2x-dx*e2z, pz2=dx*e2y-dy*e2x;
+        const det=e1x*px2+e1y*py2+e1z*pz2;
+        if(det>-1e-12&&det<1e-12) continue;
+        const inv=1/det;
+        const tx2=P0[0]-ax, ty2=P0[1]-ay, tz2=P0[2]-az;
+        const u=(tx2*px2+ty2*py2+tz2*pz2)*inv;
+        if(u<0||u>1) continue;
+        const qx=ty2*e1z-tz2*e1y, qy=tz2*e1x-tx2*e1z, qz=tx2*e1y-ty2*e1x;
+        const v=(dx*qx+dy*qy+dz*qz)*inv;
+        if(v<0||u+v>1) continue;
+        const t=(e2x*qx+e2y*qy+e2z*qz)*inv;
+        if(t>1e-6&&t<bt){bt=t;best=[P0[0]+dx*t, P0[1]+dy*t, P0[2]+dz*t];}
+      }
+      return best;
+    }
+    /* 吸到最近的顶点上。点选测量要准,而人手点不准 ——
+       落在 14px 内的顶点直接用它,量孔距/圆角半径这类小尺寸才靠谱。 */
+    function snap(px,py,hit){
+      let best=null, bd=14*14;
+      for(let i=0;i<tris.length;i+=3){
+        const v=[tris[i],tris[i+1],tris[i+2]];
+        const s=toScreen(v);
+        if(!s||s[2]>0) continue;
+        const ddx=s[0]-px, ddy=s[1]-py, d2=ddx*ddx+ddy*ddy;
+        if(d2<bd){bd=d2;best=v;}
+      }
+      return best||hit;
+    }
+    /* ---- 测量计算 ---- */
+    const dist3=function(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);};
+    function mkDist(a,b){
+      const L=dist3(a,b);
+      return {k:'dist', p:[a,b], v:L, txt:L.toFixed(3)+' mm'};
+    }
+    function mkAng(a,b,c){
+      const u=[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+      const v=[c[0]-b[0],c[1]-b[1],c[2]-b[2]];
+      const lu=Math.hypot(u[0],u[1],u[2])||1e-9;
+      const lv=Math.hypot(v[0],v[1],v[2])||1e-9;
+      let d=(u[0]*v[0]+u[1]*v[1]+u[2]*v[2])/(lu*lv);
+      d=Math.max(-1,Math.min(1,d));
+      const ang=Math.acos(d)*180/Math.PI;
+      return {k:'ang', p:[a,b,c], v:ang, txt:ang.toFixed(2)+'°'};
+    }
+    /* 三点定圆:在三角形平面内解,不用通用公式 ——
+       n = u×v 给出平面法向,e1 沿 u、e2 在平面内且垂直于 e1,
+       于是问题退化成 2D 外接圆,共线时直接判失败(不给假数字)。 */
+    function mkRad(a,b,c){
+      const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]];
+      const v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];
+      const n=[u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]];
+      const N=Math.hypot(n[0],n[1],n[2]);
+      if(N<1e-7) return {k:'bad', p:[a,b,c], txt:'三点共线,定不出圆'};
+      const e1=[u[0]/N,u[1]/N,u[2]/N];
+      // e2 = (n × u)/|n|,n ⊥ u 且 |n| = N,所以长度天然是 1
+      const e2=[(n[1]*u[2]-n[2]*u[1])/(N*N),
+                (n[2]*u[0]-n[0]*u[2])/(N*N),
+                (n[0]*u[1]-n[1]*u[0])/(N*N)];
+      const L=Math.hypot(u[0],u[1],u[2]);
+      const px2=v[0]*e1[0]+v[1]*e1[1]+v[2]*e1[2];
+      const py2=v[0]*e2[0]+v[1]*e2[1]+v[2]*e2[2];
+      if(Math.abs(py2)<1e-9) return {k:'bad', p:[a,b,c], txt:'三点共线,定不出圆'};
+      const cx=L/2, cy=(px2*px2+py2*py2-px2*L)/(2*py2);
+      const C=[a[0]+e1[0]*cx+e2[0]*cy, a[1]+e1[1]*cx+e2[1]*cy, a[2]+e1[2]*cx+e2[2]*cy];
+      const R=Math.hypot(cx,cy);
+      return {k:'rad', p:[a,b,c], ctr:C, v:R, txt:'R '+R.toFixed(3)+'  ⌀'+(2*R).toFixed(3)+' mm'};
+    }
+    function addPoint(p){
+      pend.push(p);
+      const n=(mode==='dist')?2:3;
+      if(pend.length>=n){
+        MEAS.push(mode==='dist'?mkDist(pend[0],pend[1])
+                   :mode==='rad'?mkRad(pend[0],pend[1],pend[2])
+                   :mkAng(pend[0],pend[1],pend[2]));
+        pend=[];
+      }
+      paint();
+    }
+    /* ---- 叠加层(SVG):线、点、读数 ---- */
+    const SN='http://www.w3.org/2000/svg';
+    function dot(x,y,r,fill){
+      const c=document.createElementNS(SN,'circle');
+      c.setAttribute('cx',x.toFixed(1)); c.setAttribute('cy',y.toFixed(1));
+      c.setAttribute('r',r||3.5); c.setAttribute('fill',fill||'#ffd24a');
+      c.setAttribute('stroke','#0b1320'); c.setAttribute('stroke-width','1.2');
+      return c;
+    }
+    function line(x1,y1,x2,y2,col,dash){
+      const l=document.createElementNS(SN,'line');
+      l.setAttribute('x1',x1.toFixed(1)); l.setAttribute('y1',y1.toFixed(1));
+      l.setAttribute('x2',x2.toFixed(1)); l.setAttribute('y2',y2.toFixed(1));
+      l.setAttribute('stroke',col||'#ffd24a'); l.setAttribute('stroke-width','2');
+      if(dash) l.setAttribute('stroke-dasharray',dash);
+      return l;
+    }
+    function tag(x,y,txt,col){
+      const t=document.createElementNS(SN,'text');
+      // 字号跟着面板的 --u 走,窗口放大缩小读数跟着变,
+      // 固定 12px 在小屏上盖住半个零件、在大屏上细得看不清
+      const fs=parseFloat(getComputedStyle(ov).fontSize)||13;
+      t.setAttribute('x',x.toFixed(1)); t.setAttribute('y',(y-fs*0.75).toFixed(1));
+      t.setAttribute('fill',col||'#ffd24a'); t.setAttribute('font-size',fs.toFixed(1));
+      t.setAttribute('stroke','#0b1320'); t.setAttribute('stroke-width','3.5');
+      t.setAttribute('paint-order','stroke');
+      t.textContent=txt;
+      return t;
+    }
+    function paint(){
+      // 叠加层出任何异常都不能把**测量状态**一起带下水:
+      // 标点/连线只是画在上面的东西,量出来的数字才是结论。
+      // 所以这里单独兜住,并且把错误**显示在读数栏**里 ——
+      // 不静默吞,也不让一行 SVG 错误把「点两下出长度」变成「点了没反应」。
+      try{ paintOverlay(); }
+      catch(err){
+        rd.textContent='叠加层出错:'+err.message;
+        if(window.console) console.error('[3D 预览] 叠加层出错', err);
+      }
+    }
+    function paintOverlay(){
+      while(ov.firstChild) ov.removeChild(ov.firstChild);
+      const w=cv.clientWidth||1, h=cv.clientHeight||1;
+      ov.setAttribute('viewBox','0 0 '+w+' '+h);
+      MEAS.forEach(function(M,idx){
+        const col=M.k==='rad'?'#8ef0c8':(M.k==='ang'?'#ffc9f2':'#ffd24a');
+        const S=M.p.map(function(p){const s=toScreen(p);return s?{x:s[0],y:s[1],z:s[2],p:p}:null;});
+        if(M.k==='dist'){
+          if(!S[0]||!S[1])return;
+          ov.appendChild(line(S[0].x,S[0].y,S[1].x,S[1].y,col));
+          ov.appendChild(dot(S[0].x,S[0].y,4,col));
+          ov.appendChild(dot(S[1].x,S[1].y,4,col));
+          ov.appendChild(tag((S[0].x+S[1].x)/2,(S[0].y+S[1].y)/2,M.txt+'  #'+(idx+1),col));
+        }else if(M.k==='rad'){
+          // toScreen 返回的是**数组**,不是 {x,y}。
+          // 直接 `toScreen(c).x` 拿到 undefined,后面 line(cs.x,…) 里
+          // `x1.toFixed(1)` 当场抛错 —— 而且抛在 addPoint 里,
+          // 于是「量半径」永远出不来数字,控制台只有一句 toFixed 的事。
+          const _c=M.ctr?toScreen(M.ctr):null;
+          const cs=_c?{x:_c[0],y:_c[1],z:_c[2]}:null;
+          S.forEach(function(q){if(q)ov.appendChild(dot(q.x,q.y,4,col));});
+          if(cs){
+            S.forEach(function(q){if(q)ov.appendChild(line(cs.x,cs.y,q.x,q.y,col,'4 3'));});
+            ov.appendChild(dot(cs.x,cs.y,5,'#ff5d73'));
+            ov.appendChild(tag(cs.x,cs.y,M.txt+'  #'+(idx+1),col));
+          }
+        }else{
+          [0,1].forEach(function(k){
+            if(S[k]&&S[k+1]) ov.appendChild(line(S[k].x,S[k].y,S[k+1].x,S[k+1].y,col));
+          });
+          S.forEach(function(q){if(q)ov.appendChild(dot(q.x,q.y,4,col));});
+          if(S[1]) ov.appendChild(tag(S[1].x,S[1].y,M.txt+'  #'+(idx+1),col));
+        }
+      });
+      // 待选点 + 跟随光标的预览点
+      const chain=pend.concat(hover?[hover]:[]);
+      for(let i=0;i<chain.length;i++){
+        const s=toScreen(chain[i]);
+        if(!s) continue;
+        // 半径参数和颜色参数**别写反** —— 写成
+        // `dot(x,y, 条件 ? 5 : '#ffffff')` 的话,颜色字符串被塞进 r 属性,
+        // SVG 解析直接抛错。而这个异常是从 addPoint() 里冒出来的:
+        // MEAS 已经 push 过了,`pend=[]` 和后面的清空都没执行,
+        // 于是「点了没反应、读数永远是空的」,控制台只有一条
+        // `<circle> attribute r: Expected length` —— 和测量毫无关系。
+        const last=(i===chain.length-1);
+        ov.appendChild(dot(s[0], s[1], (last&&mode!=='rot')?5:3.5, '#ffffff'));
+      }
+      for(let i=0;i+1<chain.length;i++){
+        const a=toScreen(chain[i]), b=toScreen(chain[i+1]);
+        if(a&&b) ov.appendChild(line(a[0],a[1],b[0],b[1],'#ffffff','4 4'));
+      }
+      // 读数汇总
+      if(MEAS.length){
+        rd.textContent=MEAS.map(function(M,i){return '#'+(i+1)+' '+M.txt;}).join('   ');
+      }else rd.textContent=dim1.textContent||'';
+    }
+    function need(){
+      if(raf) return;
+      raf=requestAnimationFrame(function(){raf=0;draw();});
+    }
+    function draw(){
+      // ★ 画布尺寸**只在真的变了的时候**才设。
+      //   原来每帧都 `cv.width = ...`,而给 canvas.width 赋值会**清空画布并
+      //   重置 WebGL 状态** —— 于是每帧都是「先擦掉再画」,任何在帧与帧之间
+      //   读像素的动作(截图、readPixels、录屏)拿到的都是擦完还没画完的空画面。
+      //   看起来就是「模型加载了、顶点也读了,可屏幕上什么都没有」。
+      const w=Math.max(320,cv.clientWidth), h=Math.max(200,cv.clientHeight);
+      if(cv.width!==w||cv.height!==h){ cv.width=w; cv.height=h; }
+      gl.viewport(0,0,w,h);
+      gl.clearColor(0.043,0.075,0.125,1);      // 与 FS 里的 BG 一致
+      gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      if(tris.length){
+        gl.uniformMatrix4fv(u,false,new Float32Array(mat()));
+        gl.drawArrays(gl.TRIANGLES,0,tris.length/3);
+      }
+      paint();
+    }
+    /* 回读探针。不保留缓冲区的 WebGL 在一帧提交后会被**清空**,
+       所以在当下任务里 readPixels 只能拿到空的 ——
+       形态是完好、顶点也读到了,屏幕上却什么都没有。
+       必须在**同一帧里**绘完立即读。这也正是自动化测试能以可靠地验证
+       「真的画出来了」的唯一方式。 */
+    window.__p11readback=function(){
+      if(!gl) return null;
+      // 先把**历史遗留**的错误清干净,再只看这一帧的。
+      // `getError()` 一次只清一个,不排空的话上一帧的错会一直挂在
+      // 返回值里,看着像「现在这帧坏了」。
+      let stale=0; while(gl.getError()!==NO_ERR && stale++<32);
+      draw();
+      // 手工把顶点过一遍同一个矩阵(列主序,和 mat() 输出一致)
+      const M=mat(); let ndc=null;
+      if(tris.length){
+        let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity,any=false;
+        for(let i=0;i<tris.length;i+=3){
+          const vx=tris[i],vy=tris[i+1],vz=tris[i+2];
+          const X=M[0]*vx+M[4]*vy+M[8]*vz+M[12];
+          const Y=M[1]*vx+M[5]*vy+M[9]*vz+M[13];
+          const W=M[3]*vx+M[7]*vy+M[11]*vz+M[15];
+          if(!W) continue;
+          any=true;
+          const nx=X/W, ny=Y/W;
+          if(nx<x0)x0=nx; if(nx>x1)x1=nx;
+          if(ny<y0)y0=ny; if(ny>y1)y1=ny;
+        }
+        ndc=any?{x0:x0,x1:x1,y0:y0,y1:y1,w:x1-x0,h:y1-y0,
+                 onScreen:(x1>-1&&x0<1&&y1>-1&&y0<1
+                           &&(x1-x0)>0.01&&(y1-y0)>0.01)}
+                :null;
+      }
+      const w=cv.width,h=cv.height;
+      // ★ 错误要在 readPixels **之前**取。
+      //   部分环境(无 preserveDrawingBuffer 的 WebGL)里 readPixels
+      //   读的是已经交出去的缓冲,会返回全 0 并顺带置 INVALID_OPERATION(1282) ——
+      //   那是**读像素的锅,不是渲染的锅**。把 getError() 放在它后面,
+      //   每次探针都报 1282,看着像整帧都坏了,其实画面好好的。
+      const errDraw=gl.getError();
+      const b=new Uint8Array(w*h*4);
+      gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,b);
+      let n=0;
+      for(let i=0;i<b.length;i+=4) if(b[i]>60||b[i+1]>60||b[i+2]>80) n++;
+      return {w:w,h:h,drawnPx:n,total:w*h,tris:tris.length/3,
+              ndc:ndc, glError:errDraw, mode:mode, meas:MEAS.length,
+              rx:+st.rx.toFixed(4), ry:+st.ry.toFixed(4), d:st.d};
+    };
+
+    /* ---- 鼠标 / 触摸交互 ----
+       ★ 用 Pointer Events + setPointerCapture,不是 mousedown/mousemove。
+         旧写法把 mousemove 挂在 **window** 上、且 mouseup 处理完就
+         `removeEventListener` 自己 —— 于是:
+           · 指针拖出画布再松手,drag 永远是脏的,下一次点一下就「跳」;
+           · 每开一次预览就多挂一条 mousemove,开几十次后一次拖动
+             要跑几十个回调,拖到后面**越来越卡,像是不动了**;
+           · touch/触控板根本触发不了 mousedown。
+         capture 之后指针事件始终落在 canvas 上,监听器也只挂在 canvas,
+         窗口关闭就跟着销毁 —— 没有残留。 */
+    let drag=null;
+    function cssXY(e){
+      const r=cv.getBoundingClientRect();
+      return [e.clientX-r.left, e.clientY-r.top];
+    }
+    cv.addEventListener('pointerdown',function(e){
+      try{cv.setPointerCapture(e.pointerId);}catch(_){}
+      drag={x:e.clientX, y:e.clientY, b:e.button, moved:false};
+      cv.style.cursor='grabbing';
+      e.preventDefault();
+    });
+    cv.addEventListener('pointermove',function(e){
+      if(!drag){
+        if(mode!=='rot'){
+          const q=cssXY(e), h2=pick(q[0],q[1]);
+          // 悬停**只做射线求交,不吸顶点**。
+          // snap() 要把全部顶点(几万个)投影一遍,鼠标一动就是一次,
+          // 悬停每帧都做会把预览拖卡 —— 吸顶点只在真正落点时做。
+          hover=h2||null;
+          paint();
+          cv.style.cursor=hover?'crosshair':'default';
+        }
+        return;
+      }
+      const dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+      drag.x=e.clientX; drag.y=e.clientY;
+      if(Math.abs(dx)+Math.abs(dy)>1) drag.moved=true;
+      if(drag.b===2||drag.b===1&&e.shiftKey){
+        st.tx+=dx*st.d*0.0015; st.ty+=dy*st.d*0.0015;
+      }else{
+        st.ry+=dx*0.011; st.rx+=dy*0.011;
+      }
+      need();
+    });
+    function endDrag(e){
+      if(drag && !drag.moved && drag.b===0 && mode!=='rot'){
+        const q=cssXY(e), h2=pick(q[0],q[1]);
+        if(h2) addPoint(snap(q[0],q[1],h2));
+        else flash('这里没点到模型 —— 鼠标要指在零件表面上');
+      }
+      drag=null;
+      cv.style.cursor=mode==='rot'?'grab':'crosshair';
+    }
+    /* 提示条。没点到模型时**必须说一声**:
+       默默不响 = 本人会以为功能坏了,而实际只是点在了空处
+       (孔洞里、零件边缘外、当前视角下背面被挡住的地方)。 */
+    let flashT=0;
+    function flash(msg){
+      tip.textContent=msg;
+      tip.style.color='#fbbf24';
+      clearTimeout(flashT);
+      flashT=setTimeout(function(){ tip.style.color=''; tipFor(mode); },1600);
+    }
+    const TIPS={rot:'左键拖动旋转 · 滚轮缩放 · 右键拖动平移',
+                dist:'量长度:在模型上点第 1 个点、再点第 2 个点',
+                rad:'量半径:依次点圆弧上的 3 个点(会吸到最近的顶点)',
+                ang:'量角度:依次点 3 个点,中间那个是角的顶点'};
+    function tipFor(v){ tip.textContent=TIPS[v]||TIPS.rot; }
+    cv.addEventListener('pointerup',endDrag);
+    cv.addEventListener('pointercancel',function(){drag=null;});
+    cv.addEventListener('pointerleave',function(){hover=null;paint();});
+    cv.addEventListener('contextmenu',function(e){e.preventDefault();});
+    cv.addEventListener('wheel',function(e){
+      e.preventDefault();
+      st.d*=(e.deltaY>0?1.12:0.89);
+      st.d=Math.max(0.001,Math.min(1e6,st.d));
+      need();
+    },{passive:false});
+    cv.style.cursor='grab';
+    /* 窗口大小变了要重画。投影是**等比**的(NDC x/y 共用同一个 1/d),
+       所以宽扁变瘦高不会把模型压扁,只是露出更多/更少 ——
+       不需要重新 fit(那会把用户自己调好的缩放冲掉),重画一帧就够。 */
+    if(window.ResizeObserver){
+      try{ new ResizeObserver(function(){need();}).observe(cv); }
+      catch(_){ window.addEventListener('resize',function(){need();}); }
+    }else{
+      window.addEventListener('resize',function(){need();});
+    }
+
+    /* ---- 工具条 ---- */
+    function setMode(v){
+      mode=v; pend=[]; hover=null;
+      m.querySelectorAll('.tbar .btn').forEach(function(b){
+        b.classList.toggle('on', b.dataset.v===v);});
+      cv.style.cursor=(v==='rot')?'grab':'crosshair';
+      tipFor(v);
+      paint();
+    }
+    m.querySelector('.tbar').onclick=function(e){
+      const b=e.target.closest('button[data-v]');
+      if(!b) return;
+      const v=b.dataset.v;
+      if(v==='clr'){ MEAS=[]; pend=[]; hover=null; rd.textContent=dim1.textContent; paint(); return; }
+      if(v==='fit'){ st.tx=st.ty=0; fitNow(true); return; }
+      if(v==='in'||v==='out'){
+        // 按钮放大/缩小 —— 触控板没有滚轮,或者用户就是不用滚轮。
+        // 之前只有 wheel 一条路,没设备滚轮就等于「不能放大」。
+        st.d*= (v==='in')?0.8:1.25;
+        st.d=Math.max(1e-4,Math.min(1e7,st.d));
+        need(); paint(); return;
+      }
+      if(v==='wire'){
+        WIRE=!WIRE;
+        b.classList.toggle('on',WIRE);
+        // uWire 可能是 null:片元着色器里 `wire` 一旦被优化掉
+        // (老设备拿不到 OES_standard_derivatives,那几行就不编译进 FS),
+        // uniform 就查不到地址。`gl.uniform1f(null, x)` 会抛
+        // INVALID_OPERATION(1282),而且**之后所有 GL 调用都带错误** ——
+        // 表现是「点一下网格线,画面整个不动了」。
+        if(uWire) gl.uniform1f(uWire, WIRE?1:0);
+        b.disabled=!uWire;
+        b.title=uWire?'':'这个浏览器/显卡不支持,画不出网格线';
+        need(); return;
+      }
+      if(v==='rst'){ st.rx=0.52; st.ry=0.62; st.tx=st.ty=0; fitNow(true); return; }
+      if(v==='top'){ st.rx=0; st.ry=0; need(); paint(); return; }
+      if(v==='front'){ st.rx=0; st.ry=Math.PI/2; need(); paint(); return; }
+      if(v==='side'){ st.rx=Math.PI/2; st.ry=0; need(); paint(); return; }
+      setMode(v);
+    };
+    function fit(){
+      if(!tris.length) return;
+      st.tx=st.ty=0;
+      const lo=[Infinity,Infinity,Infinity], hi=[-Infinity,-Infinity,-Infinity];
+      for(let i=0;i<tris.length;i+=3)
+        for(let k=0;k<3;k++){
+          const v=tris[i+k];
+          if(v<lo[k])lo[k]=v; if(v>hi[k])hi[k]=v;}
+      st.cc=[(lo[0]+hi[0])/2,(lo[1]+hi[1])/2,(lo[2]+hi[2])/2];
+      st.lo=lo; st.hi=hi;
+      // 初始就摆成**斜 30/35 度**,不是正视图。
+      // 正视图下每个面法线都一样,一块纯色板,立体感为零 ——
+      // 本人说的「像 2D 图、转起来发晕」大半来自默认视角太正。
+      st.rx=0.52; st.ry=0.62;
+      fitNow(true);
+    }
+    /* 「适应窗口」必须按**当前视角 + 当前画布长宽比**算,不能用一个写死的
+       `rad*2.4`:画布是宽扁还是瘦高,写死的系数就会一头留一大片白、
+       另一头把零件切掉 —— 表现就是「适应窗口没反应 / 还是看不全」。
+       正确做法:把包围盒八个角转到相机系,取投影范围的最大分量:
+         NDC = (R·(p-c)) / d        (t 把中心挪到原点)
+         要 |NDC| <= 0.92  ->  d >= max(半宽,半高)/0.92
+       三个轴一起取,宽扁件自动按宽度定、瘦高件按高度定。 */
+    function fitNow(keepAngle){
+      if(!st.cc) return;
+      const r=(keepAngle===false)?[1,0,0,0,1,0,0,0,1]:basis().r;
+      let mx=0,my=0,mz=0;
+      for(let i=0;i<8;i++){
+        const p=[(i&1)?st.hi[0]:st.lo[0], (i&2)?st.hi[1]:st.lo[1], (i&4)?st.hi[2]:st.lo[2]];
+        const d=[p[0]-st.cc[0],p[1]-st.cc[1],p[2]-st.cc[2]];
+        mx=Math.max(mx,Math.abs(r[0]*d[0]+r[1]*d[1]+r[2]*d[2]));
+        my=Math.max(my,Math.abs(r[3]*d[0]+r[4]*d[1]+r[5]*d[2]));
+        mz=Math.max(mz,Math.abs(r[6]*d[0]+r[7]*d[1]+r[8]*d[2]));
+      }
+      // 深度只要留在 [-1,1] 里(不被近平面切掉),不用占满
+      st.d=st.d0=Math.max(mx,my,mz*0.9)*1.12||1;
+      if(st.lo&&st.hi){
+        const size=(st.hi[0]-st.lo[0]).toFixed(1)+' × '
+                  +(st.hi[1]-st.lo[1]).toFixed(1)+' × '
+                  +(st.hi[2]-st.lo[2]).toFixed(1);
+        dim1.textContent='　外形 '+size+' mm';
+      }
+      need(); paint();
+    }
+    need();
+    paint();
+  }
+})();
+
+/* ================================================================
+   P7 —— 在线编辑
+   ----------------------------------------------------------------
+   流程(本人要求「提交前弹窗列清单,确认后才写盘」):
+
+     改单元格 → 「保存修改」→ POST /api/edit(confirm 不带)
+              → 服务端只**预览**,返回清单
+              → 弹窗逐条列出「哪张表 哪一行 哪个字段 旧值→新值」
+              → 本人点「确认写入」→ POST /api/edit(confirm:true) → 才落盘
+
+   几个刻意的选择:
+   * 改动的 key 用 `cat|xrow|field`,而不是数组下标 —— 筛选/搜索会重排
+     表格,按下标存迟早写到别的行去。
+   * 值不变就不提交 —— 省得清单里全是「A → A」。
+   * 数量/图号之类提交前先本地拦一道,免得跑一趟服务端才被拒。
+   ================================================================ */
+(function(){
+  if(!EDIT_ON)return;
+  const DIRTY=new Map();          // key -> {cat,xrow,field,pn,was,now,label}
+
+  const key=(c,r,f)=>c+'|'+r+'|'+f;
+  const bar=document.getElementById('editBar');
+
+  function paint(){
+    document.querySelectorAll('td.e').forEach(td=>{
+      const r=DATA[+td.dataset.i];
+      const k=r?key(r.cat,r.xrow,td.dataset.f):'';
+      td.classList.toggle('dirty',DIRTY.has(k));
+    });
+    const n=DIRTY.size;
+    bar.innerHTML=n?('<span class="n">已改 '+n+' 处</span>'
+      +'<button class="btn pri" id="save">保存修改</button>'
+      +'<button class="btn" id="undo">放弃</button>'):'';
+    const s=document.getElementById('save');
+    if(s)s.onclick=save;
+    const u=document.getElementById('undo');
+    if(u)u.onclick=undo;
+  }
+
+  function undo(){
+    const ds=[...DIRTY.values()];
+    ds.forEach(d=>{
+      const td=document.querySelector('td.e[data-f="'+d.field+'"][data-i="'+DATA.indexOf(
+        DATA.find(r=>r.cat===d.cat&&r.xrow===d.xrow))+'"]');
+      if(td)td.innerHTML=cellHtml(d);
+    });
+    DIRTY.clear();paint();
+  }
+  function cellHtml(d){
+    const t=esc(d.now);
+    return d.field==='pn'?'<b>'+t+'</b>'
+      :d.field==='craft'?'<span class="craft">'+t+'</span>'
+      :d.field==='note'?(d.now?esc(d.now):''):t;
+  }
+
+  /* 点一下开始改;失焦或回车算一次提交。Esc 取消。 */
+  document.addEventListener('click',e=>{
+    const td=e.target.closest('td.e');
+    if(!td||td.isContentEditable)return;
+    if(e.target.closest('a'))return;          // 备注列里的采购链接别被吃掉
+    td.contentEditable='true';
+    td.focus();
+    const r=DATA[+td.dataset.i];if(!r)return;
+    const k=key(r.cat,r.xrow,td.dataset.f);
+    const before=DIRTY.has(k)?DIRTY.get(k).was:(td.dataset.f==='note'?'':td.textContent.trim());
+    td.dataset.was=before;
+    // ★ textContent,不是 innerText:innerText 只在**渲染出来**时才有
+    //   内容,分类折叠着时一律是空串,那一处改动会被静默丢掉。
+    const get=()=>td.textContent.replace(/\s+/g,' ').trim();
+    // finish 可能被调两次(Enter 里直接调一次,blur 又来一次)。
+    // 用 done 挡掉 —— 不挡的话第二次会把同样的值再写一遍 DIRTY,
+    // 看着没坏,但 DIRTY 里会留下重复的 paint 副作用。
+    let done=false;
+    const finish=ok=>{
+      if(done)return;done=true;
+      td.contentEditable='false';td.removeAttribute('style');
+      const v=get();
+      if(!ok||v===before){td.innerHTML=cellHtml({field:td.dataset.f,now:before});return;}
+      if(v.length>500){alert('这一格太长了(最多 500 字)。');td.innerHTML=cellHtml({field:td.dataset.f,now:before});return;}
+      if(td.dataset.f==='qty'&&v&&!/^-?\d+(\.\d+)?$/.test(v)){
+        alert('数量得是数字。');td.innerHTML=cellHtml({field:td.dataset.f,now:before});return;
+      }
+      DIRTY.set(k,{cat:r.cat,xrow:r.xrow,field:td.dataset.f,pn:r.pn,
+                   was:before,now:v,label:td.dataset.f});
+      paint();
+    };
+    td.onblur=()=>finish(true);
+    td.onkeydown=ev=>{
+      // Enter 先 finish 再 blur。**不能只靠 blur 提交** ——
+      // 浏览器窗口没焦点时(后台标签页、程序化交互)blur 事件根本不触发,
+      // 于是按回车没反应、改动静默丢掉。直接调用才可靠。
+      if(ev.key==='Enter'){ev.preventDefault();finish(true);td.blur();}
+      else if(ev.key==='Escape'){ev.preventDefault();finish(false);td.blur();}
+      ev.stopPropagation();
+    };
+  });
+
+  function post(body){
+    // ★ 必须是 `__BASE__+'api/edit'`,不能写 `api/edit` 也不能写 `/api/edit`。
+    //   看板在 `6_看板/` 子目录下,相对路径 `api/edit` 会被解析成
+    //   `/6_%E7%9C%8B%E6%9D%BF/api/edit` -> 404;写 `/api/edit` 在
+    //   看板被复制到别处时同样连不上(P3 的 /events 就踩过这个)。
+    //   __BASE__ 是 dashboard.py 注入的前缀,fixPath 也用它。
+    return fetch(__BASE__+'api/edit',{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(r=>r.json().then(j=>({status:r.status,j:j})))
+      .catch(e=>({status:0,j:{error:'连不上服务('+e.message+')。看板是用本地服务打开的吗?'}}));
+  }
+
+  function save(){
+    if(!DIRTY.size)return;
+    const edits=[...DIRTY.values()].map(d=>({
+      cat:d.cat,row:d.xrow,field:d.field,value:d.now,pn:d.pn,was:d.was}));
+    bar.innerHTML='<span class="n">正在核对…</span>';
+    post({edits:edits}).then(({status,j})=>{
+      if(status!==200||j.error){bar.innerHTML='';paint();alert('没能保存:\n\n'+(j.error||status));return;}
+      if(!j.total){alert('内容其实没变,没有写入。');bar.innerHTML='';paint();return;}
+      showConfirm(j,edits);
+    }).catch(e=>{bar.innerHTML='';paint();alert('请求失败:'+e.message);});
+  }
+
+  /* ---- 确认弹窗:逐条列清单 ---- */
+  function showConfirm(j,edits){
+    const mask=document.createElement('div');
+    mask.className='mask';
+    const rows=j.rows.map(r=>'<tr><td>'+esc(r.cat)+'</td><td>第 '+r.row+' 行</td>'
+      +'<td>'+esc(r.pn||'—')+(r.nm&&r.nm!==r.pn?' <small>'+esc(r.nm)+'</small>':'')+'</td>'
+      +'<td>'+esc(r.label)+'</td>'
+      +'<td class="was">'+esc(r.was||'空')+'</td>'
+      +'<td class="now">'+esc(r.now||'空')+'</td></tr>').join('');
+    const multi=j.cats.length>1;
+    mask.innerHTML='<div class="dlg"><h3>确认这 '+j.total+' 处修改?</h3>'
+      +'<div class="body"><table><thead><tr><th>表</th><th>行</th><th>零件</th>'
+      +'<th>字段</th><th>原值</th><th>改成</th></tr></thead><tbody>'
+      +rows+'</tbody></table></div>'
+      +'<div class="foot"><div class="warn">只写 <b>2_BOM表</b> 里的产出表,<br>'
+      +'不碰源表;写入前会自动备份。</div>'
+      +'<button class="btn" id="no">取消</button>'
+      +'<button class="btn pri" id="yes">确认写入</button></div></div>';
+    document.body.appendChild(mask);
+    const close=()=>mask.remove();
+    mask.querySelector('#no').onclick=close;
+    mask.onclick=e=>{if(e.target===mask)close();};
+    mask.querySelector('#yes').onclick=()=>{
+      close();bar.innerHTML='<span class="n">正在写入…</span>';
+      post({edits:edits,confirm:true}).then(({status,j:j2})=>{
+        if(status!==200||j2.error){paint();alert('没能保存:\n\n'+(j2.error||status));return;}
+        DIRTY.clear();paint();
+        alert('已保存 '+j2.written+' 处'
+          +(j2.skipped?'(跳过 '+j2.skipped+' 处没真变的)':'')
+          +'。看板马上重新生成。');
+        setTimeout(function(){location.reload();},600);
+      }).catch(e=>{paint();alert('请求失败:'+e.message);});
+    };
+  }
+  paint();
+})();
+
+/* ================================================================
+   P14 —— 加工后核对 / 新购件核对(网页端)
+
+   和 P7 分开写、分开存、分开提交,原因:
+   * 落盘目标是**另一个文件**(2_BOM表/核对表.xlsx),列也完全不同。
+     塞进 P7 那份 DIRTY 的话,清单里「表」那一列会骗人 ——
+     它显示的是物料表名,实际写的是核对表。
+   * `bar` 不能共用:P7 的 paint() 是**整体覆盖** #editBar.innerHTML,
+     两个模块抢同一个元素,谁后 paint 谁把对方的按钮抹掉。所以
+     模板里另开了一个 #chkBar。
+   * key 用 `src|行号|kind`:核对表按 **(表名, 行号)** 定位。
+     ★ 不用图号做 key —— 外购件里 22 个「杯头螺钉」(M8*12 / M2*8 …)
+     共用一个图号,按图号做 key 会让改一个标合格、另外 21 个同时变合格。
+     行号和 P7 的 xrow 是同一个字段,但那边还有「图号对不上就拒绝」
+     的第二道校验(服务端 checklist.set_one 里做的),所以行号漂了
+     是**报错**而不是**写错地方**。
+   ================================================================ */
+(function(){
+  if(!EDIT_ON||!CHK_KINDS.length)return;
+  const DIRTY=new Map();              // key -> {cat,src,row,pn,nm,kind,st,note,…}
+  const bar=document.getElementById('chkBar');
+
+  function base(r,k){
+    const d=DIRTY.get(chkKey(r,k));
+    return d?{st:d.st,note:d.note,qty:d.qty}:chkGet(r,k);
+  }
+  function put(r,k,st,note,was,qty){
+    const kk=chkKey(r,k);
+    const cur=DIRTY.get(kk);
+    if(cur){cur.st=st;cur.note=note;if(qty!==undefined)cur.qty=qty;return;}
+    const b=chkGet(r,k);
+    DIRTY.set(kk,{cat:r.cat,src:r.src,row:r.xrow,pn:r.pn,nm:r.nm,kind:k,
+                  st:st,note:note,was:was,qty:(qty===undefined?b.qty:qty)});
+  }
+
+  function paint(){
+    document.querySelectorAll('td.ck').forEach(td=>{
+      const r=DATA[+td.dataset.i];if(!r)return;
+      const k=td.dataset.k;
+      const d=DIRTY.get(chkKey(r,k));
+      const sel=td.querySelector('select.cks');
+      if(sel){
+        // 改完还没保存时把下拉**拨回**盘上的值,否则一放弃就回不去了
+        const want=(d?d.st:chkGet(r,k).st);
+        if(sel.value!==want)sel.value=want;
+        sel.className='cks st-'+want+(d&&d.st!==chkGet(r,k).st?' dirty':'');
+      }
+      const cn=td.querySelector('.cn');
+      if(cn){
+        const on=!!d&&d.note!==chkGet(r,k).note;
+        cn.classList.toggle('dirty',on);
+        const txt=on?d.note:chkGet(r,k).note;
+        if(cn.textContent!==txt)cn.innerHTML=txt?esc(txt):'点这里写备注';
+        cn.classList.toggle('ph',!txt);
+      }
+      // 到货数量框
+      const q=td.querySelector('input.cn-q');
+      if(q){
+        const want=(d&&d.qty!=null)?String(d.qty)
+                    :(chkGet(r,k).qty!=null?String(chkGet(r,k).qty):'');
+        if(q.value!==want)q.value=want;
+        const less=chkShort(r,q.value);
+        q.classList.toggle('short',!!less);
+        const h=td.querySelector('.cq-hint');
+        if(h){
+          const need=needQty(r);
+          h.innerHTML='需 <b>'+esc(need==null?'—':need)+'</b>'
+            +(less?' · 差 <span class="less">'+esc(less)+'</span>':'');
+        }
+      }
+    });
+    const n=DIRTY.size;
+    bar.innerHTML=n?('<span class="n">核对已改 '+n+' 处</span>'
+      +'<button class="btn pri" id="cSave">保存核对</button>'
+      +'<button class="btn" id="cUndo">放弃</button>'):'';
+    const s=document.getElementById('cSave');if(s)s.onclick=save;
+    const u=document.getElementById('cUndo');if(u)u.onclick=undo;
+  }
+
+  function undo(){
+    DIRTY.clear();paint();
+  }
+
+  /* 状态下拉:change 事件(不是 click)。change 只在**真的选了别的**时
+     触发,点开又选回原来那个不会触发 —— 于是不会出现「什么都没改
+     却算一处修改」。 */
+  document.addEventListener('change',e=>{
+    const sel=e.target.closest('select.cks');
+    if(!sel)return;
+    const r=DATA[+sel.dataset.i];if(!r)return;
+    const k=sel.dataset.k.slice(1);
+    const was=base(r,k);
+    if(sel.value===was.st){paint();return;}
+    put(r,k,sel.value,was.note,was.st);
+    paint();
+  });
+
+  /* 到货数量:输入即算一次改动,失焦才算定。
+     只在「和盘上不一样」时进 DIRTY —— 空格子不算改动,
+     否则打开看板随手点一下就变成「已改 1 处」,看着像有东西要存。 */
+  document.addEventListener('input',e=>{
+    const q=e.target.closest('input.cn-q');
+    if(!q)return;
+    const r=DATA[+q.dataset.i];if(!r)return;
+    const k=q.dataset.k.slice(1);
+    const v=q.value.trim();
+    const old0=(DIRTY.get(chkKey(r,k))||chkGet(r,k)).qty;
+    const oldStr=old0==null?'':String(old0);
+    if(v===oldStr){ /* 和盘上一致就不算改动 */ }
+    else put(r,k,chkGet(r,k).st,chkGet(r,k).note,chkGet(r,k).st,v);
+    paint();
+  });
+  document.addEventListener('keydown',e=>{
+    const q=e.target.closest('input.cn-q');
+    if(!q)return;
+    if(e.key==='Enter'){e.preventDefault();q.blur();}
+    else if(e.key==='Escape'){e.preventDefault();
+      const r=DATA[+q.dataset.i];const k=q.dataset.k.slice(1);
+      const c=base(r,k);q.value=c.qty==null?'':String(c.qty);paint();}
+  });
+
+  /* 备注:点一下开始改,失焦 / 回车算提交,Esc 取消。 */
+  document.addEventListener('click',e=>{
+    const cn=e.target.closest('td.ck .cn');
+    if(!cn||cn.isContentEditable)return;
+    const r=DATA[+cn.dataset.i];if(!r)return;
+    const k=cn.dataset.k.slice(1);
+    cn.contentEditable='true';
+    cn.focus();
+    const was0=base(r,k);
+    const was=was0.note;
+    // ★ 必须用 textContent,不能用 innerText。
+    //   innerText 读的是**渲染出来的**文字:这一格所在的分类如果折叠着,
+    //   innerText 一律返回空串。于是「点一下 → 输个字 → 回车」看着
+    //   一切正常,读出来的 `v` 却是空串、和原值一样,这一处改动被
+    //   **静默丢掉** —— 本人看到的是「我明明改了,保存也不报错,
+    //   可它就是不认」。textContent 不管可见不可见,永远拿到真实内容。
+    const get=()=>cn.textContent.replace(/\s+/g,' ').trim();
+    let done=false;
+    const finish=ok=>{
+      if(done)return;done=true;
+      cn.contentEditable='false';cn.removeAttribute('style');
+      const v=get();
+      if(!ok||v===was){cn.innerHTML=was?esc(was):'点这里写备注';return;}
+      if(v.length>500){alert('备注最多 500 字。');
+        cn.innerHTML=was?esc(was):'点这里写备注';return;}
+      // 状态取**盘上的真实值**,不能拿第一项凑数 ——
+      // 否则「只改备注」会凭空多出一处状态修改。
+      put(r,k,was0.st,v,was);
+      paint();
+    };
+    cn.onblur=()=>finish(true);
+    cn.onkeydown=ev=>{
+      if(ev.key==='Enter'){ev.preventDefault();finish(true);cn.blur();}
+      else if(ev.key==='Escape'){ev.preventDefault();finish(false);cn.blur();}
+      ev.stopPropagation();
+    };
+  });
+
+  function post(body){
+    return fetch(__BASE__+'api/check',{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(r=>r.json().then(j=>({status:r.status,j:j})))
+      .catch(e=>({status:0,j:{error:'连不上服务('+e.message+')。看板是用本地服务打开的吗?'}}));
+  }
+
+  function save(){
+    if(!DIRTY.size)return;
+    bar.innerHTML='<span class="n">正在核对…</span>';
+    post({edits:toEdits()}).then(({status,j})=>{
+      if(status!==200||j.error){bar.innerHTML='';paint();alert('没能保存:\n\n'+(j.error||status));return;}
+      if(!j.total){alert('内容其实没变,没有写入。');bar.innerHTML='';paint();return;}
+      showConfirm(j);
+    }).catch(e=>{bar.innerHTML='';paint();alert('请求失败:'+e.message);});
+  }
+  const toEdits=()=>[...DIRTY.values()].map(d=>({
+    cat:d.cat,src:d.src,row:d.row,pn:d.pn,nm:d.nm,
+    kind:d.kind,st:d.st,note:d.note,
+    qty:(d.qty==null?'':String(d.qty))}));
+
+  function showConfirm(j){
+    const mask=document.createElement('div');
+    mask.className='mask';
+    const rows=j.rows.map(r=>'<tr><td>'+esc(r.label)+'</td>'
+      +'<td>'+esc(r.src||'')+' 第 '+esc(r.row||'')+' 行</td>'
+      +'<td>'+esc(r.pn||'—')+(r.nm&&r.nm!==r.pn?' <small>'+esc(r.nm)+'</small>':'')+'</td>'
+      +'<td class="was">'+esc(r.was||'空')+'</td>'
+      +'<td class="now">'+esc(r.now||'空')+'</td></tr>').join('');
+    mask.innerHTML='<div class="dlg"><h3>确认这 '+j.total+' 处核对结果?</h3>'
+      +'<div class="body"><table><thead><tr><th>核对栏</th><th>表 / 行</th><th>零件</th>'
+      +'<th>原值</th><th>改成</th></tr></thead><tbody>'
+      +rows+'</tbody></table></div>'
+      +'<div class="foot"><div class="warn">只写 <b>2_BOM表/核对表.xlsx</b>,<br>'
+      +'不碰物料表;写入前会自动备份。<br>程序里看到的也是这一份数据。</div>'
+      +'<button class="btn" id="no">取消</button>'
+      +'<button class="btn pri" id="yes">确认写入</button></div></div>';
+    document.body.appendChild(mask);
+    const close=()=>mask.remove();
+    mask.querySelector('#no').onclick=close;
+    mask.onclick=e=>{if(e.target===mask)close();};
+    mask.querySelector('#yes').onclick=()=>{
+      close();bar.innerHTML='<span class="n">正在写入…</span>';
+      post({edits:toEdits(),confirm:true}).then(({status,j:j2})=>{
+        if(status!==200||j2.error){paint();alert('没能保存:\n\n'+(j2.error||status));return;}
+        DIRTY.clear();paint();
+        alert('已保存 '+j2.written+' 处核对结果。看板马上重新生成。');
+        setTimeout(function(){location.reload();},600);
+      }).catch(e=>{paint();alert('请求失败:'+e.message);});
+    };
+  }
+  paint();
+})();
+
+/* ================================================================
+   零件表的「3D 预览」按钮
+
+   数据是构建时算好的 `step_mesh`(_网格缓存/ 里的 STL 相对路径)。
+   这里只负责把它交给全局的 view3d()。
+
+   ★ 用**事件委托**挂在 document 上,而不是给每个按钮 onclick:
+     表格是按分类折叠渲染的,重新筛选/排序之后 innerHTML 会被整体换掉,
+     挂在节点上的 onclick 就全丢了 —— 表现是「第一次能点,筛一次就变哑巴」。
+   ================================================================ */
+document.addEventListener('click',function(e){
+  const b=e.target.closest('button[data-v3d-step]');
+  if(!b)return;
+  e.preventDefault();
+  const r=DATA[+b.dataset.v3dStep];
+  if(!r||!r.step_mesh)return;
+  view3d({name:(r.pn||r.nm||''),mesh:r.step_mesh});
+});
+</script>
+</body>
+</html>
