@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🐏的教务</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font:14px sans-serif;background:#f0f2f5;padding-bottom:70px;color:#333}
+.header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px;font-size:18px;font-weight:600;text-align:center;position:sticky;top:0;z-index:50}
+.container{padding:12px}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.tabs{display:flex;background:#fff;position:fixed;bottom:0;left:0;right:0;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,0.1)}
+.tab{flex:1;padding:12px 0;text-align:center;font-size:12px;cursor:pointer;border:none;background:#fff;color:#888}
+.tab.active{color:#667eea;font-weight:600}
+.tab.active::after{content:'';display:block;width:20px;height:3px;background:#667eea;border-radius:2px;margin:4px auto 0}
+.page{display:none;min-height:calc(100vh - 60px)}
+.page.active{display:block}
+.btn{padding:12px;border:none;border-radius:10px;font-size:14px;cursor:pointer;background:#667eea;color:#fff;width:100%;font-weight:500;transition:background 0.2s}
+.btn:hover{background:#5a70d9}
+.btn-sm{padding:8px 14px;font-size:13px;width:auto}
+.btn-success{background:#52c41a}.btn-success:hover{background:#3aad16}
+.btn-warning{background:#faad14}.btn-warning:hover{background:#e09c12}
+.btn-danger{background:#ff4d4f}.btn-danger:hover{background:#e63d3f}
+.btn-outline{background:#fff;color:#667eea;border:1px solid #667eea}
+.btn:active{opacity:0.85}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.grid-item{background:#fff;border-radius:14px;padding:16px;text-align:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08);transition:transform 0.15s}
+.grid-item:active{transform:scale(0.97)}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.stat-card{background:#fff;border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer;transition:transform 0.15s}
+.stat-card:active{transform:scale(0.96)}
+.stat-value{font-size:22px;font-weight:700;color:#667eea}
+.stat-label{font-size:11px;color:#999;margin-top:2px}
+.today-card{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 4px 15px rgba(102,126,234,0.35)}
+.today-num{font-size:42px;font-weight:700;line-height:1}
+.today-date{font-size:12px;opacity:0.8;margin-top:4px}
+.attend-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.1);font-size:13px;cursor:pointer;transition:background 0.15s;border-radius:10px;padding:10px}
+.attend-item:last-child{border-bottom:none}
+.attend-item:active{background:rgba(255,255,255,0.1)}
+.attend-avatar{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0}
+.attend-info{flex:1;min-width:0}
+.attend-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.attend-meta{font-size:11px;opacity:0.8;margin-top:3px}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;color:#fff}
+.tag-blue{background:#667eea}.tag-green{background:#52c41a}.tag-yellow{background:#faad14}
+.tag-red{background:#ff4d4f}.tag-gray{background:#999}.tag-cyan{background:#00cec9}
+.input-search{width:100%;padding:12px 14px;border:none;background:#f0f2f5;border-radius:10px;font-size:14px}
+.info-row{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
+.info-row:last-child{border-bottom:none}
+.info-label{color:#888}.info-value{font-weight:500;text-align:right;max-width:60%}
+.info-value.green{color:#52c41a;font-size:16px;font-weight:700}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.modal-content{background:#fff;border-radius:18px 18px 0 0;padding:20px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #eee}
+.modal-header h3{font-size:17px;font-weight:700;color:#333}
+.modal-close{font-size:24px;color:#ccc;cursor:pointer;padding:4px;line-height:1}
+.modal-close:hover{color:#666}
+.modal-footer{margin-top:16px;padding-top:14px;border-top:1px solid #eee;display:flex;gap:10px}
+.modal-footer .btn{flex:1}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;margin-bottom:6px;font-size:13px;color:#555;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;appearance:none;-webkit-appearance:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.1)}
+.form-hint{font-size:11px;color:#999;margin-top:4px}
+.empty{text-align:center;padding:40px 20px;color:#ccc;font-size:14px}
+.empty-icon{font-size:48px;margin-bottom:10px}
+.section-title{font-size:12px;font-weight:600;color:#999;margin-bottom:10px;padding-left:4px;text-transform:uppercase;letter-spacing:0.5px}
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.quick-action{background:#fff;border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.06);transition:transform 0.15s}
+.quick-action:active{transform:scale(0.95)}
+.quick-action .icon{font-size:24px;margin-bottom:6px}
+.quick-action .label{font-size:11px;color:#666}
+.detail-stat{background:#f8f9ff;border-radius:12px;padding:14px;margin-bottom:10px;text-align:center}
+.detail-stat .val{font-size:28px;font-weight:700;color:#667eea}
+.detail-stat .lbl{font-size:12px;color:#999;margin-top:2px}
+.coach-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;color:#fff}
+.course-option{padding:12px;border:1px solid #e0e0e0;border-radius:10px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;position:relative}
+.course-option:active,.course-option.selected{border-color:#667eea;background:#f0f2ff}
+.course-option.selected{border-width:2px}
+.course-option .course-name{font-weight:600;font-size:14px;color:#333;margin-bottom:4px}
+.course-option .course-desc{font-size:12px;color:#888}
+.course-option .course-price{font-size:13px;color:#52c41a;font-weight:600;margin-top:4px}
+.course-option .check-icon{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:#667eea;color:#fff;display:none;align-items:center;justify-content:center;font-size:12px}
+.course-option.selected .check-icon{display:flex}
+.search-result{padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background 0.15s}
+.search-result:active{background:#f5f5f5}
+.search-result .name{font-weight:600;font-size:15px}
+.search-result .meta{font-size:12px;color:#888;margin-top:2px}
+.progress-bar{height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.5s}
+.list-item{padding:12px 0;border-bottom:1px solid #f0f0f0}
+.list-item:last-child{border-bottom:none}
+.list-item:active{background:#f8f8f8}
+
+/* 统计页面网格表格 */
+.stats-tabs{display:flex;background:#f0f2f5;border-radius:10px;margin-bottom:14px;overflow:hidden}
+.stats-tab{flex:1;padding:10px;text-align:center;font-size:13px;cursor:pointer;border:none;background:transparent;color:#888;font-weight:500;transition:all 0.2s}
+.stats-tab.active{background:#667eea;color:#fff;border-radius:10px}
+
+.grid-table{width:100%;border-collapse:collapse;font-size:12px}
+.grid-table th{padding:10px 6px;background:#f8f9ff;font-weight:700;color:#666;font-size:11px;text-align:center;border-bottom:2px solid #667eea;white-space:nowrap}
+.grid-table td{padding:9px 6px;text-align:center;border-bottom:1px solid #f0f0f0;font-size:12px}
+.grid-table tr:last-child td{border-bottom:none}
+.grid-table tr:hover td{background:#f8f9ff}
+.grid-table .date-col{color:#888;font-size:11px;text-align:left!important;padding-left:8px}
+.grid-table .coach-wang{color:#ff6b35;font-weight:700}
+.grid-table .coach-chen{color:#1e90ff;font-weight:700}
+.grid-table .coach-sun{color:#b8860b;font-weight:700}
+.grid-table .total-col{color:#667eea;font-weight:700;font-size:13px}
+.grid-table .highlight{background:#fff8e6}
+
+/* 月份折叠 */
+.month-group{margin-bottom:12px}
+.month-header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:14px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(102,126,234,0.3)}
+.month-header:active{opacity:0.9}
+.month-title{font-size:16px;font-weight:700}
+.month-summary{display:flex;gap:10px;margin-top:4px;font-size:11px;opacity:0.85}
+.month-arrow{font-size:16px;transition:transform 0.2s}
+.month-arrow.up{transform:rotate(180deg)}
+.month-body{background:#fff;border-radius:0 0 14px 14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.month-body-inner{padding:8px;overflow-x:auto}
+</style>
+</head>
+<body>
+
+<div class="header">🐏的教务</div>
+
+<!-- ========== 首页 ========== -->
+<div class="page active" id="page-home">
+<div class="container">
+  <!-- 今日消课 -->
+  <div class="today-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="opacity:0.8;font-size:12px">今日消课</div>
+        <div class="today-num" id="todayCount">0</div>
+      </div>
+      <div style="text-align:right">
+        <div id="todayDate" style="font-size:12px;opacity:0.8"></div>
+      </div>
+    </div>
+    <div id="todayList"></div>
+  </div>
+
+  <!-- 今日请假/旷课 -->
+  <div class="card" id="todayLeaveCard">
+    <div class="section-title">今日请假 / 旷课</div>
+    <div id="todayLeaveList"></div>
+  </div>
+
+  <!-- 近期请假记录 -->
+  <div class="card" id="recentLeaveCard">
+    <div class="section-title">近期请假记录</div>
+    <div id="recentLeaveList"></div>
+  </div>
+
+  <!-- 近期消课记录 -->
+  <div class="card" id="recentAttendCard">
+    <div class="section-title">近期消课记录</div>
+    <div id="recentAttendList"></div>
+  </div>
+
+  <!-- 快捷功能 -->
+  <div class="quick-actions">
+    <div class="quick-action" onclick="showAddStudent()"><div class="icon">+</div><div class="label">添加学员</div></div>
+    <div class="quick-action" onclick="showTempEnrollment()"><div class="icon">插</div><div class="label">插班生</div></div>
+    <div class="quick-action" onclick="switchTabById('page-schedule')"><div class="icon">📅</div><div class="label">课表</div></div>
+    <div class="quick-action" onclick="switchTabById('page-attendance')"><div class="icon">✅</div><div class="label">消课</div></div>
+  </div>
+
+  <!-- 统计 -->
+  <div class="stat-grid" id="stats"></div>
+</div>
+</div>
+
+<!-- ========== 学员列表 ========== -->
+<div class="page" id="page-students">
+<div class="container">
+  <div class="card"><input type="text" class="input-search" placeholder="搜索姓名或电话..." id="searchInput" oninput="filterStudents()"></div>
+  <div style="font-size:12px;color:#888;padding:4px 8px">共 <span id="studentCount">0</span> 人</div>
+</div>
+<div id="studentsList"></div>
+</div>
+
+<!-- ========== 课表 ========== -->
+<div class="page" id="page-schedule">
+<div class="container">
+  <div class="card">
+    <select id="scheduleDay" onchange="loadSchedule()" style="width:100%;padding:14px;font-size:16px;border:1px solid #e0e0e0;border-radius:10px;background:#fff">
+    <option value="星期一">星期一</option><option value="星期二">星期二</option><option value="星期三">星期三</option><option value="星期四">星期四</option><option value="星期五">星期五</option><option value="星期六">星期六</option><option value="星期日">星期日</option>
+    </select>
+  </div>
+  <div class="card" style="background:#faad14;color:#fff;text-align:center;padding:14px;font-size:16px;font-weight:600;border-radius:14px;cursor:pointer" onclick="showMoveSchedule()">调课</div>
+  <div id="scheduleList"></div>
+</div>
+</div>
+
+<!-- ========== 消课点名 ========== -->
+<div class="page" id="page-attendance">
+<div class="container">
+  <div class="card">
+    <div style="display:flex;gap:10px">
+      <div style="flex:1">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">日期</label>
+        <input type="date" id="attDate" style="width:100%;padding:12px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff">
+      </div>
+      <div style="flex:1">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">星期</label>
+        <select id="attDay" onchange="loadAttSlots()" style="width:100%;padding:12px;font-size:14px;border:1px solid #e0e0e0;border-radius:10px;background:#fff">
+        <option value="星期一">星期一</option><option value="星期二">星期二</option><option value="星期三">星期三</option><option value="星期四">星期四</option><option value="星期五">星期五</option><option value="星期六">星期六</option><option value="星期日">星期日</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">时间段</label>
+      <select id="attSlot" style="width:100%;padding:12px;font-size:14px;border:1px solid #e0e0e0;border-radius:10px;background:#fff"></select>
+    </div>
+  </div>
+  <button class="btn" onclick="loadAttStudents()" style="margin-bottom:12px">加载学员</button>
+  <div id="attList"></div>
+  <div style="display:flex;gap:8px;margin-top:12px;margin-bottom:12px">
+    <button class="btn btn-success btn-sm" onclick="batchAttend()" style="flex:1">批量消课</button>
+    <button class="btn btn-warning btn-sm" onclick="showBatchLeave()" style="flex:1">批量请假</button>
+    <button class="btn btn-danger btn-sm" onclick="showBatchAbsence()" style="flex:1">批量旷课</button>
+  </div>
+</div>
+</div>
+
+<!-- ========== 统计 ========== -->
+<div class="page" id="page-statistics">
+<div class="container">
+  <!-- 汇总卡片 -->
+  <div class="card" id="statsSummaryCard">
+    <div class="section-title">综合数据</div>
+    <div id="statsSummaryContent"></div>
+  </div>
+
+  <!-- 子Tab -->
+  <div class="stats-tabs">
+    <button class="stats-tab active" onclick="switchStatsView('daily')">每日明细</button>
+    <button class="stats-tab" onclick="switchStatsView('monthly')">月度统计</button>
+    <button class="stats-tab" onclick="switchStatsView('consume')">存销比</button>
+  </div>
+
+  <!-- 每日明细网格 -->
+  <div id="statsDailyView"></div>
+
+  <!-- 月度统计视图 -->
+  <div id="statsMonthlyView" style="display:none"></div>
+
+  <!-- 存销比视图 -->
+  <div id="statsConsumeView" style="display:none"></div>
+
+  <!-- 请假记录 -->
+  <div class="card" id="statsLeaveCard">
+    <div class="section-title">请假记录</div>
+    <div id="statsLeaveList"></div>
+  </div>
+
+  <!-- 消课记录 -->
+  <div class="card" id="statsAttendCard">
+    <div class="section-title">消课记录</div>
+    <div id="statsAttendList"></div>
+  </div>
+</div>
+</div>
+
+<!-- 底部导航 -->
+<div class="tabs">
+  <button class="tab active" data-page="page-home" onclick="switchTab(this)">首页</button>
+  <button class="tab" data-page="page-students" onclick="switchTab(this)">学员</button>
+  <button class="tab" data-page="page-schedule" onclick="switchTab(this)">课表</button>
+  <button class="tab" data-page="page-attendance" onclick="switchTab(this)">消课</button>
+  <button class="tab" data-page="page-statistics" onclick="switchTab(this)">📊统计</button>
+</div>
+
+<!-- ========== 弹窗 ========== -->
+
+<!-- 添加学员 -->
+<div class="modal" id="modalAddStudent">
+<div class="modal-content">
+  <div class="modal-header"><h3>添加新学员</h3><span class="modal-close" onclick="closeModal('modalAddStudent')">&times;</span></div>
+  <div class="form-group"><label>姓名 <span style="color:#ff4d4f">*</span></label><input id="newName" placeholder="请输入学员姓名"></div>
+  <div class="form-group"><label>联系电话</label><input id="newPhone" placeholder="请输入手机号码" type="tel"></div>
+  <div class="form-group"><label>授课教练</label><select id="newCoach"></select></div>
+  <div class="form-group"><label>学员等级</label>
+    <select id="newLevel">
+      <option>青羽1级</option><option>青羽2级</option><option>青羽3级</option>
+      <option>青羽4级</option><option>青羽5级</option><option>青羽6级</option>
+      <option>青羽7级</option><option>青羽8级</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>选择课程包</label>
+    <div id="coursePackageOptions">
+      <div class="course-option" onclick="selectPkg(this,'常规50节',50,3999,'pkg_50')"><div class="check-icon">✓</div><div class="course-name">常规课 · 50节</div><div class="course-desc">50节课包</div><div class="course-price">3999元</div></div>
+      <div class="course-option" onclick="selectPkg(this,'常规30节',30,2699,'pkg_30')"><div class="check-icon">✓</div><div class="course-name">常规课 · 30节</div><div class="course-desc">30节课包</div><div class="course-price">2699元</div></div>
+      <div class="course-option" onclick="selectPkg(this,'常规15节',15,1499,'pkg_15')"><div class="check-icon">✓</div><div class="course-name">常规课 · 15节</div><div class="course-desc">15节课包</div><div class="course-price">1499元</div></div>
+      <div class="course-option" onclick="selectPkg(this,'月卡7节',7,569,'monthly')"><div class="check-icon">✓</div><div class="course-name">月卡 · 7节</div><div class="course-desc">月卡7节课</div><div class="course-price">569元</div></div>
+      <div class="course-option" onclick="selectPkgVip(this,'1v1私教')"><div class="check-icon">✓</div><div class="course-name">1V1 私教课</div><div class="course-desc">1对1教学 · 220元/节</div><div class="course-price">下选节数</div></div>
+      <div class="course-option" onclick="selectPkgVip(this,'1v2小班')"><div class="check-icon">✓</div><div class="course-name">1V2 小班课</div><div class="course-desc">1对2教学 · 120元/节</div><div class="course-price">下选节数</div></div>
+    </div>
+    <div id="vipHoursPanel" style="display:none;margin-top:10px">
+      <label style="font-size:13px;color:#555;font-weight:500;display:block;margin-bottom:6px" id="vipHoursLabel">选择节数</label>
+      <input type="number" id="newVipHours" min="5" max="15" value="10" style="text-align:center;font-size:20px;padding:12px">
+      <div class="form-hint">1V1/1V2 可选 5~15 节</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modalAddStudent')" style="flex:1">取消</button>
+    <button class="btn" onclick="saveNewStudent()" style="flex:1">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- 插班生 -->
+<div class="modal" id="modalTemp">
+<div class="modal-content">
+  <div class="modal-header"><h3>插班生</h3><span class="modal-close" onclick="closeModal('modalTemp')">&times;</span></div>
+  <div class="form-group">
+    <label>搜索选择学员</label>
+    <input type="text" class="input-search" placeholder="输入姓名搜索..." id="tempSearchInput" oninput="filterTempStudents()" style="margin-bottom:8px">
+    <select id="tempStudent" size="5" style="width:100%;padding:8px 12px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;appearance:none;-webkit-appearance:none"></select>
+  </div>
+  <div class="form-group"><label>授课教练</label><select id="tempCoach"></select></div>
+  <div class="form-group"><label>上课日期</label>
+    <select id="tempDay" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff">
+    <option value="星期一">星期一</option><option value="星期二">星期二</option><option value="星期三">星期三</option><option value="星期四">星期四</option><option value="星期五">星期五</option><option value="星期六">星期六</option><option value="星期日">星期日</option>
+    </select>
+  </div>
+  <div class="form-group"><label>上课时间段</label><select id="tempSlot" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"></select></div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modalTemp')" style="flex:1">取消</button>
+    <button class="btn btn-success" onclick="doTempEnrollment()" style="flex:1">确认</button>
+  </div>
+</div>
+</div>
+
+<!-- 排课 -->
+<div class="modal" id="modalAddSchedule">
+<div class="modal-content">
+  <div class="modal-header"><h3>添加排课</h3><span class="modal-close" onclick="closeModal('modalAddSchedule')">&times;</span></div>
+  <div class="form-group"><label>星期</label><select id="addDay" onchange="loadAddSlots()" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"><option value="星期一">星期一</option><option value="星期二">星期二</option><option value="星期三">星期三</option><option value="星期四">星期四</option><option value="星期五">星期五</option><option value="星期六">星期六</option><option value="星期日">星期日</option></select></div>
+  <div class="form-group"><label>时间段</label><select id="addSlot" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"></select></div>
+  <div class="form-group"><label>教练</label><select id="addCoach" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"></select></div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modalAddSchedule')" style="flex:1">取消</button>
+    <button class="btn" onclick="saveSchedule()" style="flex:1">确认</button>
+  </div>
+</div>
+</div>
+
+<!-- 调课 -->
+<div class="modal" id="modalMoveSchedule">
+<div class="modal-content">
+  <div class="modal-header"><h3>调整排课</h3><span class="modal-close" onclick="closeModal('modalMoveSchedule')">&times;</span></div>
+  <div class="form-group"><label>选择现有排课</label><select id="moveFromSchedule" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"></select></div>
+  <div class="form-group"><label>新课程日期</label><select id="moveNewDay" onchange="loadMoveNewSlots()" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"><option value="星期一">星期一</option><option value="星期二">星期二</option><option value="星期三">星期三</option><option value="星期四">星期四</option><option value="星期五">星期五</option><option value="星期六">星期六</option><option value="星期日">星期日</option></select></div>
+  <div class="form-group"><label>新课程时间</label><select id="moveNewSlot" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"></select></div>
+  <div class="form-group"><label>新教练</label><select id="moveNewCoach" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff"><option>王教练</option><option>陈教练</option><option>孙教练</option></select></div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modalMoveSchedule')" style="flex:1">取消</button>
+    <button class="btn" onclick="confirmMoveSchedule()" style="flex:1">确认调整</button>
+  </div>
+</div>
+</div>
+
+<!-- 时段详情弹窗 -->
+<div class="modal" id="modalSlotDetail">
+<div class="modal-content">
+  <div class="modal-header"><h3 id="modalSlotTitle">时段详情</h3><span class="modal-close" onclick="closeModal('modalSlotDetail')">&times;</span></div>
+  <div id="modalSlotContent"></div>
+</div>
+</div>
+
+<!-- 消课详情 -->
+<div class="modal" id="modalTodayDetail">
+<div class="modal-content">
+  <div class="modal-header"><h3>消课详情</h3><span class="modal-close" onclick="closeModal('modalTodayDetail')">&times;</span></div>
+  <div id="modalTodayContent"></div>
+</div>
+</div>
+
+<!-- 请假原因 -->
+<div class="modal" id="modalLeaveReason">
+<div class="modal-content">
+  <div class="modal-header"><h3>请假原因</h3><span class="modal-close" onclick="closeModal('modalLeaveReason')">&times;</span></div>
+  <div id="modalLeaveContent" style="font-size:15px;line-height:1.8;color:#555;padding:8px 0"></div>
+</div>
+</div>
+
+<!-- 确认消课 -->
+<div class="modal" id="modalConfirmAttend">
+<div class="modal-content">
+  <div class="modal-header"><h3>确认消课</h3><span class="modal-close" onclick="closeModal('modalConfirmAttend')">&times;</span></div>
+  <div id="modalConfirmContent" style="font-size:15px;color:#555;line-height:1.8;text-align:center;padding:20px 0">
+    <div style="font-size:48px;margin-bottom:12px">✅</div>
+    <div id="confirmMsg"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modalConfirmAttend')" style="flex:1">暂不消课</button>
+    <button class="btn btn-success" onclick="doConfirmAttend()" style="flex:1">确认消课</button>
+  </div>
+</div>
+</div>
+
+<!-- 学员详情 -->
+<div class="modal" id="modalStudentDetail">
+<div class="modal-content">
+  <div class="modal-header"><h3 id="modalStudentName">学员详情</h3><span class="modal-close" onclick="closeModal('modalStudentDetail')">&times;</span></div>
+  <div id="modalStudentContent"></div>
+</div>
+</div>
+
+<script>
+var allStudents=[];
+var selectedStudents=new Set();
+var selectedCoursePkg=null,selectedCourseHours=0,selectedPkgId='';
+var tempStudentList=[];
+var pendingTempEnrollment=null;
+var currentStatsView='daily';
+var allAttCache=[];
+
+var coachColors={'王教练':'#ff6b35','陈教练':'#1e90ff','孙教练':'#f1c40f','其他':'#9b59b6'};
+function getCoachColor(c){return coachColors[c]||coachColors['其他'];}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+function switchTab(el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  el.classList.add('active');
+  document.getElementById(el.dataset.page).classList.add('active');
+  loadPage(el.dataset.page);
+}
+
+function switchTabById(pageId){
+  document.querySelectorAll('.tabs .tab').forEach(function(t){t.classList.remove('active')});
+  var t=document.querySelector('[data-page="'+pageId+'"]');
+  if(t)t.classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.getElementById(pageId).classList.add('active');
+  loadPage(pageId);
+}
+
+function loadPage(page){
+  if(page==='page-home') loadStats();
+  else if(page==='page-students') loadStudents();
+  else if(page==='page-schedule') loadSchedule();
+  else if(page==='page-attendance'){loadAttSlots();selectedStudents.clear();}
+  else if(page==='page-statistics') loadStatistics();
+}
+
+function showModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+
+// ==================== 首页 ====================
+async function loadStats(){
+  var stats=await fetch('/api/stats').then(function(r){return r.json()});
+  var todayAll=await fetch('/api/attendance_today_all').then(function(r){return r.json()}).catch(function(){return{records:[]}});
+  allAttCache=await fetch('/api/all_attendance_records').then(function(r){return r.json()}).catch(function(){return[]});
+  var todayDate=new Date().toISOString().slice(0,10);
+  var presents=todayAll.records.filter(function(a){return a.status==='present'});
+  var leaves=todayAll.records.filter(function(a){return a.status==='leave'||a.status==='absence'});
+
+  document.getElementById('todayCount').textContent=presents.length;
+  document.getElementById('todayDate').textContent=todayDate;
+
+  var html='';
+  var sorted=presents.slice().reverse();
+  for(var i=0;i<sorted.length;i++){
+    var a=sorted[i];
+    html+='<div class="attend-item" onclick="showTodayDetail(\''+esc(a.student_id)+'\',\''+esc(a.name)+'\',\''+esc(a.time_slot)+'\',\''+esc(a.coach)+'\')">';
+    html+='<div class="attend-avatar">'+esc(a.name.charAt(0))+'</div>';
+    html+='<div class="attend-info"><div class="attend-name">'+esc(a.name)+'</div><div class="attend-meta"><span class="coach-chip" style="background:'+getCoachColor(a.coach)+';font-size:10px;padding:2px 8px">'+esc(a.coach)+'</span> '+esc(a.time_slot)+'</div></div>';
+    html+='<div style="color:rgba(255,255,255,0.5);font-size:20px">›</div></div>';
+  }
+  document.getElementById('todayList').innerHTML=html||'<div style="opacity:0.6;text-align:center;padding:20px 0;font-size:13px">暂无消课记录</div>';
+
+  // 今日请假/旷课
+  if(leaves.length>0){
+    document.getElementById('todayLeaveCard').style.display='block';
+    var lhtml='';
+    for(var i=0;i<leaves.length;i++){
+      var a=leaves[i];
+      var color=a.status==='leave'?'#faad14':'#ff4d4f';
+      var label=a.status==='leave'?'请假':'旷课';
+      lhtml+='<div class="list-item" onclick="showLeaveReason(\''+esc(a.name)+'\',\''+esc(a.reason||'无')+'\')">';
+      lhtml+='<div style="display:flex;align-items:center;gap:10px">';
+      lhtml+='<div style="width:36px;height:36px;border-radius:50%;background:'+color+';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0">'+esc(a.name.charAt(0))+'</div>';
+      lhtml+='<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">'+esc(a.name)+'</div><div style="font-size:12px;color:#888;margin-top:2px"><span class="tag" style="background:'+color+'">'+label+'</span> '+esc(a.time_slot)+'</div></div>';
+      lhtml+='<div style="color:#ccc;font-size:20px">›</div></div></div>';
+    }
+    document.getElementById('todayLeaveList').innerHTML=lhtml;
+  } else {
+    document.getElementById('todayLeaveCard').style.display='none';
+  }
+
+  // 近期请假记录（最近30条）
+  var allLeaves=allAttCache.filter(function(a){return a.status==='leave'}).slice(0,10);
+  if(allLeaves.length>0){
+    document.getElementById('recentLeaveCard').style.display='block';
+    var rlhtml='';
+    for(var i=0;i<allLeaves.length;i++){
+      var a=allLeaves[i];
+      rlhtml+='<div class="list-item" onclick="showLeaveReason(\''+esc(a.student_name)+'\',\''+esc(a.reason||'无')+'\')">';
+      rlhtml+='<div style="display:flex;align-items:center;gap:10px">';
+      rlhtml+='<div style="width:32px;height:32px;border-radius:50%;background:#faad14;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">'+esc(a.student_name.charAt(0))+'</div>';
+      rlhtml+='<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">'+esc(a.student_name)+'</div><div style="font-size:11px;color:#888;margin-top:2px">'+esc(a.date)+' '+esc(a.time_slot)+'</div></div>';
+      rlhtml+='<div style="color:#ccc;font-size:16px">›</div></div></div>';
+    }
+    document.getElementById('recentLeaveList').innerHTML=rlhtml;
+  } else {
+    document.getElementById('recentLeaveCard').style.display='none';
+  }
+
+  // 近期消课记录（最近30条）
+  var recentAtt=allAttCache.filter(function(a){return a.status==='present'}).slice(0,10);
+  if(recentAtt.length>0){
+    document.getElementById('recentAttendCard').style.display='block';
+    var rahtml='';
+    for(var i=0;i<recentAtt.length;i++){
+      var a=recentAtt[i];
+      rahtml+='<div class="list-item">';
+      rahtml+='<div style="display:flex;align-items:center;gap:10px">';
+      rahtml+='<div style="width:32px;height:32px;border-radius:50%;background:#667eea;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">'+esc(a.student_name.charAt(0))+'</div>';
+      rahtml+='<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">'+esc(a.student_name)+'</div><div style="font-size:11px;color:#888;margin-top:2px"><span class="coach-chip" style="background:'+getCoachColor(a.coach)+';font-size:10px;padding:2px 6px">'+esc(a.coach)+'</span> '+esc(a.date)+'</div></div>';
+      rahtml+='<div style="color:#52c41a;font-weight:700;font-size:13px">消课</div></div></div>';
+    }
+    document.getElementById('recentAttendList').innerHTML=rahtml;
+  } else {
+    document.getElementById('recentAttendCard').style.display='none';
+  }
+
+  var totalHours=stats.total_hours||0,remaining=stats.remaining_hours||0;
+  var rate=totalHours>0?Math.round((totalHours-remaining)/totalHours*100):0;
+  document.getElementById('stats').innerHTML=
+    '<div class="stat-card"><div class="stat-value">'+stats.total_students+'</div><div class="stat-label">总学员</div></div>'+
+    '<div class="stat-card"><div class="stat-value" style="color:#52c41a">'+stats.active_students+'</div><div class="stat-label">在读</div></div>'+
+    '<div class="stat-card" onclick="switchTabById(\'page-statistics\');switchStatsView(\'consume\')"><div class="stat-value">'+rate+'%</div><div class="stat-label">存销比 ↘</div></div>';
+}
+
+async function showTodayDetail(studentId,studentName,timeSlot,coach){
+  var stu=null;
+  if(allStudents.length===0) allStudents=await fetch('/api/students').then(function(r){return r.json()}).catch(function(){return[]});
+  stu=allStudents.find(function(s){return s.id===studentId});
+  var enrollments=await fetch('/api/enrollments').then(function(r){return r.json()}).catch(function(){return[]});
+  var latest=enrollments.filter(function(e){return e.student_id===studentId}).sort(function(a,b){return b.date.localeCompare(a.date)})[0];
+  var html='<div style="text-align:center;margin-bottom:16px"><div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin:0 auto">'+esc(studentName.charAt(0))+'</div><div style="font-size:18px;font-weight:700;margin-top:10px">'+esc(studentName)+'</div></div>';
+  html+='<div class="info-row"><span class="info-label">授课教练</span><span><span class="coach-chip" style="background:'+getCoachColor(coach)+'">'+esc(coach)+'</span></span></div>';
+  html+='<div class="info-row"><span class="info-label">上课时段</span><span class="info-value">'+esc(timeSlot)+'</span></div>';
+  html+='<div class="info-row"><span class="info-label">课程名称</span><span class="info-value">'+(latest?esc(latest.package_name):'常规课')+'</span></div>';
+  html+='<div class="info-row"><span class="info-label">剩余课时</span><span class="info-value green">'+(stu?stu.remaining_hours:'--')+' 节</span></div>';
+  document.getElementById('modalTodayContent').innerHTML=html;
+  showModal('modalTodayDetail');
+}
+
+function showLeaveReason(name,reason){
+  document.getElementById('modalLeaveContent').innerHTML='<div style="text-align:center;margin-bottom:16px"><div style="width:48px;height:48px;border-radius:50%;background:#faad14;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;margin:0 auto">'+esc(name.charAt(0))+'</div><div style="font-size:16px;font-weight:600;margin-top:8px">'+esc(name)+'</div></div><div style="background:#fff8e6;border-radius:12px;padding:16px;font-size:15px;color:#555;line-height:1.8;border-left:4px solid #faad14">'+esc(reason)+'</div>';
+  showModal('modalLeaveReason');
+}
+
+// ==================== 统计页面 ====================
+async function loadStatistics(){
+  var [stats,dailyDetail,allAtt]=await Promise.all([
+    fetch('/api/stats').then(function(r){return r.json()}),
+    fetch('/api/daily_detail_stats').then(function(r){return r.json()}).catch(function(){return[]}),
+    fetch('/api/all_attendance_records').then(function(r){return r.json()})
+  ]);
+  allAttCache=allAtt;
+  var totalHours=stats.total_hours||0,remaining=stats.remaining_hours||0;
+  var rate=totalHours>0?Math.round((totalHours-remaining)/totalHours*100):0;
+  var summaryHtml='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">';
+  summaryHtml+='<div class="detail-stat"><div class="val" style="font-size:20px">'+stats.total_students+'</div><div class="lbl">总学员</div></div>';
+  summaryHtml+='<div class="detail-stat"><div class="val" style="color:#52c41a;font-size:20px">'+stats.active_students+'</div><div class="lbl">在读</div></div>';
+  summaryHtml+='<div class="detail-stat"><div class="val" style="font-size:20px">'+totalHours+'</div><div class="lbl">总课时</div></div>';
+  summaryHtml+='<div class="detail-stat"><div class="val" style="color:#52c41a;font-size:20px">'+(totalHours-remaining)+'</div><div class="lbl">已消耗</div></div>';
+  summaryHtml+='<div class="detail-stat"><div class="val" style="color:#faad14;font-size:20px">'+remaining+'</div><div class="lbl">剩余</div></div>';
+  summaryHtml+='<div class="detail-stat"><div class="val" style="font-size:20px">'+rate+'%</div><div class="lbl">消耗率</div></div>';
+  summaryHtml+='</div>';
+  document.getElementById('statsSummaryContent').innerHTML=summaryHtml;
+
+  renderDailyGrid(dailyDetail);
+  renderLeaveRecords(allAtt);
+  renderAttendRecords(allAtt);
+}
+
+function renderDailyGrid(dailyDetail){
+  var coaches=['王教练','陈教练','孙教练'];
+  var html='<div class="card">';
+  html+='<div class="section-title">每日上课明细（节数 / 人头）</div>';
+  html+='<div style="overflow-x:auto">';
+  html+='<table class="grid-table">';
+  html+='<thead><tr>';
+  html+='<th style="text-align:left;padding-left:8px">日期</th>';
+  html+='<th style="color:#ff6b35">王教练<br><span style="font-size:10px;font-weight:400">节数/人头</span></th>';
+  html+='<th style="color:#1e90ff">陈教练<br><span style="font-size:10px;font-weight:400">节数/人头</span></th>';
+  html+='<th style="color:#b8860b">孙教练<br><span style="font-size:10px;font-weight:400">节数/人头</span></th>';
+  html+='<th>合计</th>';
+  html+='</tr></thead><tbody>';
+
+  for(var i=0;i<dailyDetail.length;i++){
+    var d=dailyDetail[i];
+    var w=d.coaches['王教练']||{count:0,headcount:0};
+    var c=d.coaches['陈教练']||{count:0,headcount:0};
+    var s=d.coaches['孙教练']||{count:0,headcount:0};
+    var total=w.count+c.count+s.count;
+    var isToday=d.date===new Date().toISOString().slice(0,10);
+    html+='<tr'+(isToday?' style="background:#f0f2ff"':'')+'>';
+    html+='<td class="date-col'+(isToday?' total-col':'')+'">'+(isToday?'📌 ':'')+esc(d.date)+'</td>';
+    html+='<td class="coach-wang">'+(w.count>0?w.count+'<br><span style="font-size:10px;font-weight:400">'+w.headcount+'人</span>':'<span style="color:#ddd">0</span>')+'</td>';
+    html+='<td class="coach-chen">'+(c.count>0?c.count+'<br><span style="font-size:10px;font-weight:400">'+c.headcount+'人</span>':'<span style="color:#ddd">0</span>')+'</td>';
+    html+='<td class="coach-sun">'+(s.count>0?s.count+'<br><span style="font-size:10px;font-weight:400">'+s.headcount+'人</span>':'<span style="color:#ddd">0</span>')+'</td>';
+    html+='<td class="total-col">'+(total>0?total:'<span style="color:#ddd">0</span>')+'</td>';
+    html+='</tr>';
+  }
+  html+='</tbody></table></div></div>';
+  document.getElementById('statsDailyView').innerHTML=html;
+}
+
+function renderLeaveRecords(allAtt){
+  var leaves=allAtt.filter(function(a){return a.status==='leave'}).slice(0,20);
+  if(leaves.length>0){
+    var html='';
+    for(var i=0;i<leaves.length;i++){
+      var a=leaves[i];
+      html+='<div class="list-item">';
+      html+='<div style="display:flex;align-items:center;gap:10px">';
+      html+='<div style="width:32px;height:32px;border-radius:50%;background:#faad14;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">'+esc(a.student_name.charAt(0))+'</div>';
+      html+='<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">'+esc(a.student_name)+'</div><div style="font-size:11px;color:#888;margin-top:2px"><span class="tag tag-yellow">请假</span> '+esc(a.date)+' '+esc(a.time_slot)+'</div>';
+      if(a.reason) html+='<div style="font-size:11px;color:#999;margin-top:2px">原因: '+esc(a.reason)+'</div>';
+      html+='</div></div></div>';
+    }
+    document.getElementById('statsLeaveList').innerHTML=html;
+  } else {
+    document.getElementById('statsLeaveList').innerHTML='<div class="empty"><div class="empty-icon">📋</div>暂无请假记录</div>';
+  }
+}
+
+function renderAttendRecords(allAtt){
+  var atts=allAtt.filter(function(a){return a.status==='present'}).slice(0,20);
+  if(atts.length>0){
+    var html='';
+    for(var i=0;i<atts.length;i++){
+      var a=atts[i];
+      html+='<div class="list-item">';
+      html+='<div style="display:flex;align-items:center;gap:10px">';
+      html+='<div style="width:32px;height:32px;border-radius:50%;background:#667eea;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">'+esc(a.student_name.charAt(0))+'</div>';
+      html+='<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">'+esc(a.student_name)+'</div><div style="font-size:11px;color:#888;margin-top:2px"><span class="tag tag-green">消课</span> '+esc(a.date)+' <span class="coach-chip" style="background:'+getCoachColor(a.coach)+';font-size:10px;padding:2px 6px">'+esc(a.coach)+'</span> '+esc(a.time_slot)+'</div></div></div></div>';
+    }
+    document.getElementById('statsAttendList').innerHTML=html;
+  } else {
+    document.getElementById('statsAttendList').innerHTML='<div class="empty"><div class="empty-icon">✅</div>暂无消课记录</div>';
+  }
+}
+
+function switchStatsView(view){
+  currentStatsView=view;
+  document.querySelectorAll('.stats-tab').forEach(function(t){t.classList.remove('active');});
+  event.target.classList.add('active');
+  document.getElementById('statsDailyView').style.display=view==='daily'?'block':'none';
+  document.getElementById('statsMonthlyView').style.display=view==='monthly'?'block':'none';
+  document.getElementById('statsConsumeView').style.display=view==='consume'?'block':'none';
+  if(view==='monthly') loadMonthlyView();
+  else if(view==='consume') loadConsumeView();
+}
+
+async function loadMonthlyView(){
+  var mData=await fetch('/api/monthly_coach_stats').then(function(r){return r.json()}).catch(function(){return[]});
+  var coaches=['王教练','陈教练','孙教练'];
+  var colors={'王教练':'#ff6b35','陈教练':'#1e90ff','孙教练':'#f1c40f'};
+  var now=new Date();
+  var currentMonth=String(now.getMonth()+1).padStart(2,'0');
+  var html='';
+  var months=mData.slice().reverse();
+  for(var mi=0;mi<months.length;mi++){
+    var m=months[mi],month=m[0],days=m[1];
+    var tw=0,tc=0,ts=0;
+    for(var d in days){tw+=days[d]['王教练']||0;tc+=days[d]['陈教练']||0;ts+=days[d]['孙教练']||0;}
+    var total=tw+tc+ts;
+    var isCurrent=month===currentMonth;
+    var dayKeys=Object.keys(days).sort();
+    html+='<div class="month-group">';
+    html+='<div class="month-header" onclick="this.classList.toggle(\'expanded\');var b=this.nextElementSibling;b.style.display=b.style.display==\'none\'?\'block\':\'none\';this.querySelector(\'.month-arrow\').classList.toggle(\'up\')">';
+    html+='<div><div class="month-title">'+esc(month)+' '+(isCurrent?'（本月）':'')+'</div>';
+    html+='<div class="month-summary"><span>王 <strong style="color:#ff6b35">'+tw+'</strong></span><span>陈 <strong style="color:#1e90ff">'+tc+'</strong></span><span>孙 <strong style="color:#b8860b">'+ts+'</strong></span><span>合计 <strong>'+total+'</strong></span></div></div>';
+    html+='<div class="month-arrow'+(isCurrent?' up':'')+'">▼</div></div>';
+    html+='<div class="month-body" style="display:'+(isCurrent?'block':'none')+'">';
+    html+='<div class="month-body-inner">';
+    html+='<table class="grid-table"><thead><tr>';
+    html+='<th style="text-align:left;padding-left:8px">日期</th>';
+    html+='<th style="color:#ff6b35">王教练</th><th style="color:#1e90ff">陈教练</th><th style="color:#b8860b">孙教练</th><th>合计</th>';
+    html+='</tr></thead><tbody>';
+    for(var di=0;di<dayKeys.length;di++){
+      var day=dayKeys[di];
+      var w=days[day]['王教练']||0,c=days[day]['陈教练']||0,s=days[day]['孙教练']||0;
+      var sum=w+c+s;
+      html+='<tr><td class="date-col">'+esc(day)+'</td>';
+      html+='<td class="coach-wang">'+(w>0?w:'<span style="color:#ddd">0</span>')+'</td>';
+      html+='<td class="coach-chen">'+(c>0?c:'<span style="color:#ddd">0</span>')+'</td>';
+      html+='<td class="coach-sun">'+(s>0?s:'<span style="color:#ddd">0</span>')+'</td>';
+      html+='<td class="total-col">'+(sum>0?sum:'<span style="color:#ddd">0</span>')+'</td></tr>';
+    }
+    html+='</tbody></table></div></div></div>';
+  }
+  if(months.length===0) html='<div class="empty"><div class="empty-icon">📊</div>暂无数据</div>';
+  document.getElementById('statsMonthlyView').innerHTML=html;
+}
+
+async function loadConsumeView(){
+  var stats=await fetch('/api/stats').then(function(r){return r.json()});
+  var totalHours=stats.total_hours||0,remaining=stats.remaining_hours||0,consumed=totalHours-remaining;
+  var rate=stats.consumption_rate||0;
+  var color=rate>=50?'#52c41a':rate>=25?'#faad14':'#ff4d4f';
+  var html='<div class="card">';
+  html+='<div class="section-title">存销比分析</div>';
+  html+='<div style="text-align:center;margin-bottom:16px">';
+  html+='<div style="position:relative;width:100px;height:100px;margin:0 auto">';
+  html+='<svg width="100" height="100" style="transform:rotate(-90deg)">';
+  html+='<circle cx="50" cy="50" r="42" fill="none" stroke="#f0f0f0" stroke-width="8"/>';
+  html+='<circle cx="50" cy="50" r="42" fill="none" stroke="'+color+'" stroke-width="8" stroke-dasharray="'+(rate*2.64)+',264" stroke-linecap="round"/>';
+  html+='</svg>';
+  html+='<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">';
+  html+='<div style="font-size:24px;font-weight:700;color:'+color+'">'+rate+'%</div><div style="font-size:10px;color:#999">消耗率</div></div></div></div>';
+  html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">';
+  html+='<div class="detail-stat"><div class="val">'+totalHours+'</div><div class="lbl">总课时</div></div>';
+  html+='<div class="detail-stat"><div class="val" style="color:#52c41a">'+consumed+'</div><div class="lbl">已消耗</div></div>';
+  html+='<div class="detail-stat"><div class="val" style="color:#faad14">'+remaining+'</div><div class="lbl">剩余</div></div></div>';
+  html+='<div class="section-title">按教练消耗统计</div>';
+  for(var coach in stats.coach_stats){
+    var c=stats.coach_stats[coach];
+    var cr=c.rate||0;
+    var cc=cr>=80?'#52c41a':cr>=50?'#faad14':'#ff4d4f';
+    html+='<div class="info-row"><span class="info-label"><span class="coach-chip" style="background:'+getCoachColor(coach)+'">'+coach+'</span></span>';
+    html+='<span class="info-value"><span style="font-weight:700;color:'+cc+'">'+cr+'%</span>';
+    html+='<div class="progress-bar"><div class="progress-fill" style="width:'+cr+'%;background:'+cc+'"></div></div></span></div>';
+  }
+  html+='</div>';
+  document.getElementById('statsConsumeView').innerHTML=html;
+}
+
+// ==================== 学员列表 ====================
+async function loadStudents(){
+  allStudents=await fetch('/api/students').then(function(r){return r.json()});
+  tempStudentList=allStudents.filter(function(s){return s.status==='active'});
+  renderStudents(allStudents);
+}
+
+function renderStudents(list){
+  document.getElementById('studentCount').textContent=list.length;
+  var html='';
+  for(var i=0;i<list.length;i++){
+    var s=list[i];
+    html+='<div class="card" style="margin:0 12px 10px;border-radius:14px"><div style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="showStudentDetail(\''+esc(s.id)+'\')">';
+    html+='<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0">'+esc(s.name.charAt(0))+'</div>';
+    html+='<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(s.name)+'</div>';
+    html+='<div style="font-size:12px;color:#888;margin-top:2px">'+(s.phone||'')+' · <span class="coach-chip" style="background:'+getCoachColor(s.coach)+';font-size:11px;padding:2px 8px">'+esc(s.coach)+'</span> · <span style="color:'+(parseFloat(s.remaining_hours)>0?'#52c41a':'#ff4d4f')+'">'+s.remaining_hours+'课</span></div></div>';
+    html+='<div style="color:#ccc;font-size:18px">›</div></div></div>';
+  }
+  document.getElementById('studentsList').innerHTML=html||'<div class="empty"><div class="empty-icon">📭</div>暂无学员</div>';
+}
+
+function filterStudents(){
+  var kw=document.getElementById('searchInput').value.toLowerCase();
+  var filtered=allStudents.filter(function(s){return s.name.toLowerCase().includes(kw)||(s.phone||'').includes(kw);});
+  renderStudents(filtered);
+}
+
+async function showStudentDetail(id){
+  var s=allStudents.find(function(x){return x.id===id});
+  if(!s)return;
+  var enrollments=await fetch('/api/enrollments').then(function(r){return r.json()}).catch(function(){return[]});
+  var latest=enrollments.filter(function(e){return e.student_id===id}).sort(function(a,b){return b.date.localeCompare(a.date)})[0];
+  document.getElementById('modalStudentName').textContent=esc(s.name);
+  var html='<div style="text-align:center;margin-bottom:16px"><div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin:0 auto">'+esc(s.name.charAt(0))+'</div></div>';
+  html+='<div class="info-row"><span class="info-label">联系电话</span><span class="info-value">'+(s.phone?'<a href="tel:'+esc(s.phone)+'" style="color:#667eea;text-decoration:none">'+esc(s.phone)+'</a>':'-')+'</span></div>';
+  html+='<div class="info-row"><span class="info-label">授课教练</span><span class="info-value"><span class="coach-chip" style="background:'+getCoachColor(s.coach)+'">'+esc(s.coach)+'</span></span></div>';
+  html+='<div class="info-row"><span class="info-label">学员等级</span><span class="info-value">'+(s.level||'-')+'</span></div>';
+  html+='<div class="info-row"><span class="info-label">课程名称</span><span class="info-value">'+(latest?esc(latest.package_name):'--')+'</span></div>';
+  html+='<div class="info-row"><span class="info-label">剩余课时</span><span class="info-value green">'+s.remaining_hours+' 节</span></div>';
+  html+='<div class="info-row"><span class="info-label">已购课时</span><span class="info-value">'+(s.purchased_hours||0)+' 节</span></div>';
+  html+='<div class="info-row"><span class="info-label">状态</span><span class="info-value"><span class="tag tag-'+(s.status==='active'?'green':'gray')+'">'+(s.status==='active'?'在读':'已结')+'</span></span></div>';
+  html+='<div class="info-row"><span class="info-label">注册日期</span><span class="info-value">'+(s.register_date||'-')+'</span></div>';
+  html+='<div style="margin-top:16px"><button class="btn btn-danger" onclick="deleteStudent(\''+esc(s.id)+'\')" style="width:100%">删除学员</button></div>';
+  document.getElementById('modalStudentContent').innerHTML=html;
+  showModal('modalStudentDetail');
+}
+
+// ==================== 课表 ====================
+async function loadSchedule(){
+  var day=document.getElementById('scheduleDay').value;
+  var settings=await fetch('/api/settings').then(function(r){return r.json()});
+  var schedules=await fetch('/api/schedules?day='+day).then(function(r){return r.json()});
+  var students=await fetch('/api/students').then(function(r){return r.json()});
+  var slots=settings.time_slots[day]||[];
+  var maxPer=settings.max_students_per_coach||6;
+  var studentMap={};for(var i=0;i<students.length;i++)studentMap[students[i].id]=students[i];
+  var coaches=settings.coaches||['王教练','陈教练','孙教练'];
+  var html='';
+  for(var i=0;i<slots.length;i++){
+    var slot=slots[i];
+    var ss=schedules.filter(function(s){return s.time_slot===slot});
+    var count=ss.length;
+    var color=count>=maxPer*2?'#ff4d4f':count>=maxPer?'#faad14':'#52c41a';
+    html+='<div class="card" style="cursor:pointer;margin-bottom:10px" onclick="showSlotDetail(\''+esc(day)+'\',\''+esc(slot)+'\')">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+    html+='<div style="font-weight:600;font-size:16px">'+esc(slot)+'</div>';
+    html+='<div style="background:'+color+';color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700">'+count+'/'+(maxPer*2)+'人</div>';
+    html+='</div>';
+    // 按教练分组显示学员
+    var coachGroups={};
+    for(var j=0;j<coaches.length;j++){
+      coachGroups[coaches[j]]=ss.filter(function(s){return s.coach===coaches[j]});
+    }
+    for(var j=0;j<coaches.length;j++){
+      var coach=coaches[j];
+      var list=coachGroups[coach];
+      if(list.length>0){
+        var c=coachColors[coach]||'#9b59b6';
+        html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">';
+        html+='<span class="coach-chip" style="background:'+c+';font-size:11px;padding:2px 8px">'+esc(coach)+'</span>';
+        html+='<div style="flex:1;display:flex;flex-wrap:wrap;gap:4px">';
+        for(var k=0;k<list.length;k++){
+          var sc=list[k];
+          var sname=studentMap[sc.student_id]?studentMap[sc.student_id].name:'未知';
+          html+='<span style="background:#f0f0f5;padding:2px 8px;border-radius:10px;font-size:11px;color:#555">'+esc(sname)+'</span>';
+        }
+        html+='</div></div>';
+      }
+    }
+    html+='</div>';
+  }
+  document.getElementById('scheduleList').innerHTML=html||'<div class="empty"><div class="empty-icon">📅</div>暂无排课</div>';
+}
+
+async function showSlotDetail(day,slot){
+  var schedules=await fetch('/api/schedules?day='+day).then(function(r){return r.json()});
+  var students=await fetch('/api/students').then(function(r){return r.json()});
+  var studentMap={};for(var i=0;i<students.length;i++)studentMap[students[i].id]=students[i];
+  var slotSchedules=schedules.filter(function(s){return s.time_slot===slot});
+  var coaches=['王教练','陈教练','孙教练'];
+  var html='<div style="text-align:center;margin-bottom:16px">';
+  html+='<div style="font-size:18px;font-weight:700">'+esc(day)+' '+esc(slot)+'</div>';
+  html+='<div style="font-size:13px;color:#888;margin-top:4px">共 '+slotSchedules.length+' 位学员</div></div>';
+  if(slotSchedules.length>0){
+    for(var j=0;j<coaches.length;j++){
+      var coach=coaches[j];
+      var list=slotSchedules.filter(function(s){return s.coach===coach});
+      if(list.length>0){
+        var c=coachColors[coach]||'#9b59b6';
+        html+='<div class="section-title" style="margin-top:10px">'+esc(coach)+'</div>';
+        for(var k=0;k<list.length;k++){
+          var sc=list[k];
+          var sname=studentMap[sc.student_id]?studentMap[sc.student_id].name:'未知';
+          var srem=studentMap[sc.student_id]?studentMap[sc.student_id].remaining_hours:0;
+          html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0">';
+          html+='<div style="width:36px;height:36px;border-radius:50%;background:'+c+';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0">'+esc(sname.charAt(0))+'</div>';
+          html+='<div style="flex:1;min-width:0">';
+          html+='<div style="font-weight:600;font-size:14px">'+esc(sname)+'</div>';
+          html+='<div style="font-size:12px;color:#888;margin-top:2px">剩余 '+srem+' 课</div>';
+          html+='</div>';
+          html+='<button class="btn btn-danger btn-sm" onclick="deleteSchedule(\''+esc(sc.id)+'\',\''+esc(day)+'\',\''+esc(slot)+'\')" style="flex-shrink:0;width:auto;padding:6px 12px">删除</button>';
+          html+='</div>';
+        }
+      }
+    }
+  } else {
+    html+='<div class="empty"><div class="empty-icon">📭</div>该时段暂无排课学员</div>';
+  }
+  html+='<div style="margin-top:14px"><button class="btn" onclick="showAddStudentToSlot(\''+esc(day)+'\',\''+esc(slot)+'\')" style="width:100%">+ 添加学员到此时段</button></div>';
+  document.getElementById('modalSlotContent').innerHTML=html;
+  document.getElementById('modalSlotTitle').textContent='时段详情';
+  showModal('modalSlotDetail');
+}
+
+async function deleteSchedule(scheduleId,day,slot){
+  if(!confirm('确定删除该排课记录？'))return;
+  await fetch('/api/schedules/'+scheduleId,{method:'DELETE'}).catch(function(){});
+  showSlotDetail(day,slot);
+  loadSchedule();
+}
+
+async function showAddStudentToSlot(day,slot){
+  if(allStudents.length===0) allStudents=await fetch('/api/students').then(function(r){return r.json()}).catch(function(){return[]});
+  var schedules=await fetch('/api/schedules?day='+day).then(function(r){return r.json()});
+  var slotSchedules=schedules.filter(function(s){return s.time_slot===slot});
+  var existingIds={};for(var i=0;i<slotSchedules.length;i++) existingIds[slotSchedules[i].student_id]=true;
+  var settings=await fetch('/api/settings').then(function(r){return r.json()});
+  var coaches=settings.coaches||['王教练','陈教练','孙教练'];
+  var active=allStudents.filter(function(s){return s.status==='active'});
+  var html='<div style="text-align:center;margin-bottom:14px">';
+  html+='<div style="font-size:15px;font-weight:700">'+esc(day)+' '+esc(slot)+'</div>';
+  html+='<div style="font-size:12px;color:#888;margin-top:4px">选择学员添加到此时段</div></div>';
+  html+='<div class="form-group"><label>选择教练</label>';
+  html+='<select id="slotAddCoach" style="width:100%;padding:11px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff">';
+  for(var i=0;i<coaches.length;i++) html+='<option>'+coaches[i]+'</option>';
+  html+='</select></div>';
+  html+='<div class="section-title">可选学员</div>';
+  var available=active.filter(function(s){return !existingIds[s.id]});
+  if(available.length===0){
+    html+='<div class="empty"><div class="empty-icon">✅</div>所有在读学员已在此时段</div>';
+  }
+  for(var i=0;i<available.length;i++){
+    var s=available[i];
+    var c=coachColors[s.coach]||'#9b59b6';
+    html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0;cursor:pointer" onclick="addStudentToSlot(\''+esc(s.id)+'\',\''+esc(day)+'\',\''+esc(slot)+'\')">';
+    html+='<div style="width:36px;height:36px;border-radius:50%;background:'+c+';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0">'+esc(s.name.charAt(0))+'</div>';
+    html+='<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">'+esc(s.name)+'</div><div style="font-size:12px;color:#888;margin-top:2px">'+esc(s.coach)+' · 剩余'+s.remaining_hours+'课</div></div>';
+    html+='<div style="color:#52c41a;font-size:20px">+</div></div>';
+  }
+  document.getElementById('modalSlotContent').innerHTML=html;
+  document.getElementById('modalSlotTitle').textContent='添加学员';
+  showModal('modalSlotDetail');
+}
+
+async function addStudentToSlot(studentId,day,slot){
+  var coach=document.getElementById('slotAddCoach')?document.getElementById('slotAddCoach').value:'王教练';
+  await fetch('/api/schedules',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_id:studentId,week_day:day,time_slot:slot,coach:coach})});
+  showSlotDetail(day,slot);
+  loadSchedule();
+}
+
+async function showMoveSchedule(){
+  var schedules=await fetch('/api/schedules').then(function(r){return r.json()});
+  var students=await fetch('/api/students').then(function(r){return r.json()});
+  var studentMap={};for(var i=0;i<students.length;i++)studentMap[students[i].id]=students[i];
+  var html='';
+  for(var i=0;i<schedules.length;i++){
+    var sc=schedules[i];
+    var name=studentMap[sc.student_id]?studentMap[sc.student_id].name:'未知';
+    html+='<option value="'+sc.id+'">'+esc(name)+' '+esc(sc.week_day)+' '+esc(sc.time_slot)+'</option>';
+  }
+  document.getElementById('moveFromSchedule').innerHTML=html;
+  showModal('modalMoveSchedule');
+}
+
+async function loadMoveNewSlots(){
+  var day=document.getElementById('moveNewDay').value;
+  var settings=await fetch('/api/settings').then(function(r){return r.json()});
+  var slots=settings.time_slots[day]||[];
+  var html='';for(var i=0;i<slots.length;i++)html+='<option>'+slots[i]+'</option>';
+  document.getElementById('moveNewSlot').innerHTML=html;
+}
+
+async function confirmMoveSchedule(){
+  var sid=document.getElementById('moveFromSchedule').value;
+  var day=document.getElementById('moveNewDay').value;
+  var slot=document.getElementById('moveNewSlot').value;
+  var coach=document.getElementById('moveNewCoach').value;
+  await fetch('/api/schedules/'+sid,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({week_day:day,time_slot:slot,coach:coach})});
+  closeModal('modalMoveSchedule');
+  loadSchedule();
+  alert('调课成功');
+}
+
+async function showMoveSchedule(){
+  var schedules=await fetch('/api/schedules').then(function(r){return r.json()});
+  var students=await fetch('/api/students').then(function(r){return r.json()});
+  var studentMap={};for(var i=0;i<students.length;i++)studentMap[students[i].id]=students[i];
+  var html='';
+  for(var i=0;i<schedules.length;i++){
+    var sc=schedules[i];
+    var name=studentMap[sc.student_id]?studentMap[sc.student_id].name:'未知';
+    html+='<option value="'+sc.id+'">'+esc(name)+' '+esc(sc.week_day)+' '+esc(sc.time_slot)+'</option>';
+  }
+  document.getElementById('moveFromSchedule').innerHTML=html;
+  showModal('modalMoveSchedule');
+}
+
+async function loadMoveNewSlots(){
+  var day=document.getElementById('moveNewDay').value;
+  var settings=await fetch('/api/settings').then(function(r){return r.json()});
+  var slots=settings.time_slots[day]||[];
+  var html='';for(var i=0;i<slots.length;i++)html+='<option>'+slots[i]+'</option>';
+  document.getElementById('moveNewSlot').innerHTML=html;
+}
+
+async function confirmMoveSchedule(){
+  var sid=document.getElementById('moveFromSchedule').value;
+  var day=document.getElementById('moveNewDay').value;
+  var slot=document.getElementById('moveNewSlot').value;
+  var coach=document.getElementById('moveNewCoach').value;
+  await fetch('/api/schedules/'+sid,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({week_day:day,time_slot:slot,coach:coach})});
+  closeModal('modalMoveSchedule');
+  loadSchedule();
+  alert('调课成功');
+}
+
+// ==================== 消课点名 ====================
+async function loadAttSlots(){
+  var day=document.getElementById('attDay').value;
+  var settings=await fetch('/api/settings').then(function(r){return r.json()});
+  var slots=settings.time_slots[day]||[];
+  var html='';for(var i=0;i<slots.length;i++)html+='<option>'+slots[i]+'</option>';
+  document.getElementById('attSlot').innerHTML=html;
+  document.getElementById('attDate').value=new Date().toISOString().slice(0,10);
+}
+
+async function loadAttStudents(){
+  var day=document.getElementById('attDay').value;
+  var slot=document.getElementById('attSlot').value;
+  var schedules=await fetch('/api/schedules?day='+day).then(function(r){return r.json()});
+  var students=await fetch('/api/students').then(function(r){return r.json()});
+  var list=schedules.filter(function(s){return s.time_slot===slot});
+  if(list.length===0){document.getElementById('attList').innerHTML='<div class="empty"><div class="empty-icon">📭</div>该时段暂无排课</div>';return;}
+  var studentMap={};for(var i=0;i<students.length;i++)studentMap[students[i].id]=students[i];
+  var html='';
+  for(var i=0;i<list.length;i++){
+    var s=list[i];var stu=studentMap[s.student_id];
+    html+='<div class="card" style="margin-bottom:8px;padding:12px"><div style="display:flex;align-items:center;gap:12px">';
+    html+='<input type="checkbox" onclick="toggleStudent(\''+esc(s.student_id)+'\')" id="chk_'+esc(s.student_id)+'" style="width:22px;height:22px;accent-color:#667eea;flex-shrink:0">';
+    html+='<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(stu?esc(stu.name):'未知')+'</div>';
+    html+='<div style="font-size:12px;color:#888;margin-top:2px"><span class="coach-chip" style="background:'+getCoachColor(s.coach)+';font-size:11px;padding:2px 8px">'+esc(s.coach)+'</span> · 剩余 '+(stu?stu.remaining_hours:0)+' 课</div></div></div></div>';
+  }
+  document.getElementById('attList').innerHTML=html;
+}
+
+function toggleStudent(id){
+  var chk=document.getElementById('chk_'+id);
+  if(selectedStudents.has(id)){selectedStudents.delete(id);chk.checked=false;}
+  else{selectedStudents.add(id);chk.checked=true;}
+}
+
+function batchAttend(){if(selectedStudents.size===0)return alert('请先选择学员');if(!confirm('确认消课 '+selectedStudents.size+' 人?'))return;doAttendBatch('present');}
+function showBatchLeave(){if(selectedStudents.size===0)return alert('请先选择学员');var reason=prompt('请输入请假原因');if(!reason)return;doAttendBatch('leave',reason);}
+function showBatchAbsence(){if(selectedStudents.size===0)return alert('请先选择学员');if(!confirm('确认旷课 '+selectedStudents.size+' 人?'))return;doAttendBatch('absence');}
+
+async function doAttendBatch(status,reason){
+  var date=document.getElementById('attDate').value;
+  var day=document.getElementById('attDay').value;
+  var slot=document.getElementById('attSlot').value;
+  var schedules=await fetch('/api/schedules').then(function(r){return r.json()});
+  var arr=Array.from(selectedStudents);
+  for(var i=0;i<arr.length;i++){
+    var id=arr[i];
+    var stu=allStudents.find(function(x){return x.id===id});
+    var sched=schedules.find(function(sc){return sc.student_id===id&&sc.week_day===day&&sc.time_slot===slot});
+    var coach=stu?stu.coach:(sched?sched.coach:'');
+    await fetch('/api/attendance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_id:id,student_name:stu?stu.name:'',date:date,week_day:day,time_slot:slot,coach:coach,status:status,reason:reason,hours_used:status==='present'?1:0})});
+  }
+  selectedStudents.clear();
+  loadAttStudents();
+  loadStats();
+  alert('操作完成');
+}
+
+// ==================== 添加学员 ====================
+function selectPkg(el,name,hours,price,pkgId){
+  document.querySelectorAll('#coursePackageOptions .course-option').forEach(function(o){o.classList.remove('selected');});
+  el.classList.add('selected');
+  selectedCoursePkg=name;selectedCourseHours=hours;selectedPkgId=pkgId;
+  document.getElementById('vipHoursPanel').style.display='none';
+}
+
+function selectPkgVip(el,name){
+  document.querySelectorAll('#coursePackageOptions .course-option').forEach(function(o){o.classList.remove('selected');});
+  el.classList.add('selected');
+  selectedCoursePkg=name;selectedCourseHours=10;selectedPkgId=name==='1v1私教'?'1v1':'1v2';
+  document.getElementById('vipHoursPanel').style.display='block';
+  document.getElementById('vipHoursLabel').textContent=name==='1v1私教'?'1V1 私教节数':'1V2 小班节数';
+  document.getElementById('newVipHours').value='10';
+}
+
+async function showAddStudent(){
+  var settings=await fetch('/api/settings').then(function(r){return r.json()});
+  var coaches=settings.coaches||[];
+  if(coaches.indexOf('孙教练')===-1)coaches.push('孙教练');
+  var coachHtml='';for(var i=0;i<coaches.length;i++)coachHtml+='<option>'+coaches[i]+'</option>';
+  document.getElementById('newCoach').innerHTML=coachHtml;
+  selectedCoursePkg=null;selectedCourseHours=0;selectedPkgId='';
+  document.querySelectorAll('#coursePackageOptions .course-option').forEach(function(o){o.classList.remove('selected');});
+  document.getElementById('vipHoursPanel').style.display='none';
+  showModal('modalAddStudent');
+}
+
+async function saveNewStudent(){
+  var name=document.getElementById('newName').value.trim();
+  if(!name)return alert('请输入姓名');
+  var hours=selectedCourseHours||parseInt(document.getElementById('newVipHours').value)||0;
+  var data={name:name,phone:document.getElementById('newPhone').value.trim(),coach:document.getElementById('newCoach').value,level:document.getElementById('newLevel').value,remaining_hours:hours,purchased_hours:hours};
+  var res=await fetch('/api/students',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  var stu=await res.json();
+  if(selectedPkgId&&selectedCourseHours>0){
+    await fetch('/api/enroll',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_id:stu.id,package_id:selectedPkgId,hours:selectedCourseHours})});
+  }
+  closeModal('modalAddStudent');
+  alert('添加成功!');
+  loadStudents();
+  loadStats();
+}
+
+// ==================== 插班生 ====================
+async function showTempEnrollment(){
+  tempStudentList=allStudents.filter(function(s){return s.status==='active'});
+  renderTempStudents(tempStudentList);
+  var settings=await fetch('/api/settings').then(function(r){return r.json()});
+  var coachHtml='';for(var i=0;i<(settings.coaches||[]).length;i++)coachHtml+='<option>'+settings.coaches[i]+'</option>';
+  document.getElementById('tempCoach').innerHTML=coachHtml;
+  var day='星期一';
+  document.getElementById('tempDay').value=day;
+  var slots=settings.time_slots[day]||[];
+  var slotHtml='';for(var i=0;i<slots.length;i++)slotHtml+='<option>'+slots[i]+'</option>';
+  document.getElementById('tempSlot').innerHTML=slotHtml;
+  showModal('modalTemp');
+}
+
+document.getElementById('tempDay').addEventListener('change',async function(){
+  var day=this.value;
+  var settings=await fetch('/api/settings').then(function(r){return r.json()});
+  var slots=settings.time_slots[day]||[];
+  var html='';for(var i=0;i<slots.length;i++)html+='<option>'+slots[i]+'</option>';
+  document.getElementById('tempSlot').innerHTML=html;
+});
+
+function renderTempStudents(list){
+  var html='';
+  for(var i=0;i<list.length;i++){
+    var s=list[i];
+    html+='<option value="'+esc(s.id)+'">'+esc(s.name)+' · '+esc(s.coach)+' · 剩'+s.remaining_hours+'课</option>';
+  }
+  document.getElementById('tempStudent').innerHTML=html;
+}
+
+function filterTempStudents(){
+  var kw=document.getElementById('tempSearchInput').value.toLowerCase();
+  var filtered=tempStudentList.filter(function(s){return s.name.toLowerCase().includes(kw);});
+  renderTempStudents(filtered);
+}
+
+async function doTempEnrollment(){
+  var studentId=document.getElementById('tempStudent').value;
+  if(!studentId)return alert('请选择学员');
+  var day=document.getElementById('tempDay').value;
+  var slot=document.getElementById('tempSlot').value;
+  var coach=document.getElementById('tempCoach').value;
+  var s=allStudents.find(function(x){return x.id===studentId});
+  await fetch('/api/schedules',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_id:studentId,week_day:day,time_slot:slot,coach:coach})});
+  closeModal('modalTemp');
+  pendingTempEnrollment={studentId:studentId,studentName:s?s.name:'',day:day,slot:slot,coach:coach,date:new Date().toISOString().slice(0,10)};
+  document.getElementById('confirmMsg').innerHTML='<div style="font-size:14px">是否为 <strong>'+esc(s.name)+'</strong><br>在 '+esc(day)+' '+esc(slot)+' 立即消课1节？</div>';
+  showModal('modalConfirmAttend');
+}
+
+async function doConfirmAttend(){
+  if(!pendingTempEnrollment)return;
+  var p=pendingTempEnrollment;
+  await fetch('/api/attendance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_id:p.studentId,student_name:p.studentName,date:p.date,week_day:p.day,time_slot:p.slot,coach:p.coach,status:'present',hours_used:1})});
+  pendingTempEnrollment=null;
+  closeModal('modalConfirmAttend');
+  loadStats();
+  alert('消课完成!');
+}
+
+async function deleteStudent(id){
+  if(!confirm('确定删除该学员？'))return;
+  await fetch('/api/students/'+id,{method:'DELETE'});
+  closeModal('modalStudentDetail');
+  loadStudents();
+  alert('已删除');
+}
+
+document.getElementById('attDate').value=new Date().toISOString().slice(0,10);
+loadStats();
+</script>
+</body>
+</html>

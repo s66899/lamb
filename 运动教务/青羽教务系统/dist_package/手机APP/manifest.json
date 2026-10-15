@@ -1,0 +1,24 @@
+{
+  "name": "青羽教务系统",
+  "short_name": "青羽教务",
+  "description": "青羽体育培训机构教务管理系统",
+  "start_url": "/m",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4facfe",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["education", "business"],
+  "lang": "zh-CN"
+}

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>羽毛球AI教评库</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+    header {
+      background: linear-gradient(135deg, #1a5f2a 0%, #2e8b57 50%, #3cb371 100%);
+      color: white;
+      padding: 35px 30px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(26,95,42,0.3);
+    }
+    header h1 { font-size: 30px; font-weight: 700; margin-bottom: 6px; }
+    header .subtitle { opacity: 0.9; font-size: 15px; }
+
+    .level-tabs {
+      display: flex;
+      gap: 4px;
+      background: #e8e8e8;
+      padding: 5px;
+      border-radius: 12px;
+      margin-bottom: 28px;
+    }
+    .level-tab {
+      flex: 1;
+      padding: 14px 20px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-align: center;
+    }
+    .level-tab.active {
+      background: white;
+      color: #1a5f2a;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .level-tab .tag {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: #999;
+      margin-top: 2px;
+    }
+    .level-tab.active .tag { color: #3cb371; }
+
+    .level-content { display: none; }
+    .level-content.active { display: block; }
+
+    .section {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid;
+    }
+    .section-mastered .section-title { color: #1a5f2a; border-color: #1a5f2a; }
+    .section-improve .section-title { color: #d35400; border-color: #f0ad4e; }
+    .section-weak .section-title { color: #c0392b; border-color: #dc3545; }
+
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .item-card {
+      padding: 16px;
+      border-radius: 12px;
+      border-left: 4px solid;
+      background: #f8f9fa;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .item-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .section-mastered .item-card { border-left-color: #1a5f2a; background: #f0f9f4; }
+    .section-improve .item-card { border-left-color: #f0ad4e; background: #fffbeb; }
+    .section-weak .item-card { border-left-color: #dc3545; background: #fdf2f2; }
+
+    .item-card .item-name {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .item-card .item-desc {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .item-card .item-standard {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(0,0,0,0.1);
+      font-size: 12px;
+      color: #888;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-mastered { background: #1a5f2a; color: white; }
+    .badge-improve { background: #f0ad4e; color: white; }
+    .badge-weak { background: #dc3545; color: white; }
+
+    .timeline {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .timeline-step {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0.5;
+      transition: all 0.3s;
+    }
+    .timeline-step.active {
+      opacity: 1;
+      background: linear-gradient(135deg, #1a5f2a, #3cb371);
+      color: white;
+      box-shadow: 0 4px 12px rgba(26,95,42,0.3);
+    }
+    .timeline-step .step-label { font-size: 11px; font-weight: 400; margin-top: 2px; opacity: 0.8; }
+    .timeline-arrow { color: #ccc; font-size: 20px; }
+
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .summary-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .summary-card .num { font-size: 32px; font-weight: 700; }
+    .summary-card .label { font-size: 13px; color: #888; margin-top: 4px; }
+    .summary-card.mastered .num { color: #1a5f2a; }
+    .summary-card.improve .num { color: #f0ad4e; }
+    .summary-card.weak .num { color: #dc3545; }
+
+    .drill-section {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .drill-section h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: #1a5f2a;
+    }
+    .drill-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .drill-item {
+      padding: 12px 16px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .drill-item .drill-num {
+      width: 28px; height: 28px;
+      background: #1a5f2a;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .drill-item .drill-content { flex: 1; }
+    .drill-item .drill-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+    .drill-item .drill-desc { font-size: 12px; color: #888; }
+
+    @media (max-width: 768px) {
+      .item-grid { grid-template-columns: 1fr; }
+      .summary-bar { grid-template-columns: 1fr; }
+      .timeline { flex-direction: column; gap: 8px; }
+      .timeline-arrow { transform: rotate(90deg); }
+      .level-tab { font-size: 13px; padding: 10px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🏸 羽毛球 AI 教评库</h1>
+      <p class="subtitle">标准化教学评估体系 · 基础 / 进阶 / 提高 三阶全覆盖</p>
+    </header>
+
+    <div class="level-tabs">
+      <button class="level-tab active" onclick="switchLevel('basic')">
+        🌱 基础版
+        <span class="tag">0-6个月 · 入门阶段</span>
+      </button>
+      <button class="level-tab" onclick="switchLevel('intermediate')">
+        🌿 进阶版
+        <span class="tag">6个月-2年 · 提升阶段</span>
+      </button>
+      <button class="level-tab" onclick="switchLevel('advanced')">
+        🌳 提高版
+        <span class="tag">2年以上 · 精进阶段</span>
+      </button>
+    </div>
+
+    <!-- ==================== 基础版 ==================== -->
+    <div class="level-content active" id="level-basic">
+      <div class="timeline">
+        <div class="timeline-step active">
+          <div>基础版</div>
+          <div class="step-label">当前阶段</div>
+        </div>
+        <div class="timeline-arrow">→</div>
+        <div class="timeline-step">
+          <div>进阶版</div>
+          <div class="step-label">下一阶段</div>
+        </div>
+        <div class="timeline-arrow">→</div>
+        <div class="timeline-step">
+          <div>提高版</div>
+          <div class="step-label">目标阶段</div>
+        </div>
+      </div>
+
+      <div class="summary-bar">
+        <div class="summary-card mastered">
+          <div class="num">6</div>
+          <div class="label">应掌握项</div>
+        </div>
+        <div class="summary-card improve">
+          <div class="num">5</div>
+          <div class="label">待改进项</div>
+        </div>
+        <div class="summary-card weak">
+          <div class="num">3</div>
+          <div class="label">薄弱项</div>
+        </div>
+      </div>
+
+      <div class="section section-mastered">
+        <div class="section-title">✅ 已掌握（达标标准）</div>
+        <div class="item-grid">
+          <div class="item-card">
+            <div class="item-name">正手握拍 <span class="badge badge-mastered">核心</span></div>
+            <div class="item-desc">虎口对准拍柄窄面，食指与中指分开，握拍放松灵活</div>
+            <div class="item-standard">📋 标准：能随时在正手握拍与反手握拍间切换，发力时握紧、准备时放松</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">反手握拍 <span class="badge badge-mastered">核心</span></div>
+            <div class="item-desc">拇指顶在拍柄宽面，形成杠杆支撑，便于反手发力</div>
+            <div class="item-standard">📋 标准：无需看球拍即可完成正反手握拍转换，转换时间&lt;1秒</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">准备姿势</div>
+            <div class="item-desc">双脚开立略宽于肩，膝盖微屈，重心在前脚掌，拍举在身前</div>
+            <div class="item-standard">📋 标准：任何时候准备姿势标准，从准备到启动反应时间&lt;0.5秒</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">正手发高远球</div>
+            <div class="item-desc">击球点在身体右前方，利用转体和手臂挥动将球发至对方底线</div>
+            <div class="item-standard">📋 标准：10个发球中至少7个落到底线附近，高度足够，动作规范</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">正手击高远球</div>
+            <div class="item-desc">侧身对网，转体挥拍，击球点在右肩前上方，将球打向对方后场</div>
+            <div class="item-standard">📋 标准：能将球稳定打到对方底线，10个球中成功率≥60%，动作基本规范</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">前场基础步伐</div>
+            <div class="item-desc">并步、交叉步上网，一步或两步到达网前，保持低重心</div>
+            <div class="item-standard">📋 标准：并步和交叉步动作正确，从中心到网前时间≤2秒，回位有意识</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section section-improve">
+        <div class="section-title">⚠️ 待改进（重点训练）</div>
+        <div class="item-grid">
+          <div class="item-card">
+            <div class="item-name">击球点控制</div>
+            <div class="item-desc">击球点忽高忽低、忽前忽后，导致球的质量不稳定</div>
+            <div class="item-standard">💡 改进：多球定点练习，练习者在固定位置反复击球，强化肌肉记忆</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">发力方式</div>
+            <div class="item-desc">过度依赖手臂力量，不会利用转腰、转体的整体协调发力</div>
+            <div class="item-standard">💡 改进：徒手挥拍练习体会转体发力；用轻球拍加强手腕爆发力训练</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">回位意识</div>
+            <div class="item-desc">击球后停留在原地，没有回到场地中心位置的习惯</div>
+            <div class="item-standard">💡 改进：每次击球后强制要求回中，教练可吹哨提示回位时机</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">反手技术</div>
+            <div class="item-desc">反手高远球、反手过渡球技术薄弱，被动时只能挑高球</div>
+            <div class="item-standard">💡 改进：反手定点多球练习→移动中反手练习；重点练习反手挑球和反手高远球</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">网前技术</div>
+            <div class="item-desc">网前搓球、放网质量低，球过高容易被扑，或下网</div>
+            <div class="item-standard">💡 改进：网前多球练习，强调拍面控制和细腻手感；从近网逐步拉远练习</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section section-weak">
+        <div class="section-title">🔴 薄弱项（暂不强求）</div>
+        <div class="item-grid">
+          <div class="item-card">
+            <div class="item-name">吊球与杀球</div>
+            <div class="item-desc">切球动作不熟练，吊球落点控制差，杀球下网或出界多</div>
+            <div class="item-standard">⏳ 建议：先巩固高远球动作基础，6个月后再逐步加入吊球和杀球训练</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">战术意识</div>
+            <div class="item-desc">打球没有目的性，不会观察对手站位，只会把球打过去</div>
+            <div class="item-standard">⏳ 建议：多进行半场对抗游戏，培养"打空档"的基本意识</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">比赛心理素质</div>
+            <div class="item-desc">对抗时紧张、动作变形，容易放弃或情绪失控</div>
+            <div class="item-standard">⏳ 建议：以趣味比赛为主，淡化输赢，重点培养对羽毛球的热爱和兴趣</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drill-section">
+        <h3>🎯 基础版推荐训练组合（每次90分钟）</h3>
+        <div class="drill-list">
+          <div class="drill-item">
+            <div class="drill-num">1</div>
+            <div class="drill-content">
+              <div class="drill-title">热身与握拍（15分钟）</div>
+              <div class="drill-desc">绕场慢跑2圈 + 动态拉伸 + 正反手切换握拍50次</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">2</div>
+            <div class="drill-content">
+              <div class="drill-title">步伐练习（20分钟）</div>
+              <div class="drill-desc">并步上网×20次 + 交叉步上网×20次 + 后场后退步伐×20次，强调回中</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">3</div>
+            <div class="drill-content">
+              <div class="drill-title">正手高远球多球（25分钟）</div>
+              <div class="drill-desc">教练喂球，学员连续击打高远球，每组15个×4组，成功率目标70%</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">4</div>
+            <div class="drill-content">
+              <div class="drill-title">发球练习（15分钟）</div>
+              <div class="drill-desc">正手发高远球×30个，要求落点靠近底线，高度足够</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">5</div>
+            <div class="drill-content">
+              <div class="drill-title">趣味对抗（15分钟）</div>
+              <div class="drill-desc">半场对打或定点接发球游戏，以巩固动作为主，不计比分</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 进阶版 ==================== -->
+    <div class="level-content" id="level-intermediate">
+      <div class="timeline">
+        <div class="timeline-step">
+          <div>基础版</div>
+          <div class="step-label">已完成</div>
+        </div>
+        <div class="timeline-arrow">→</div>
+        <div class="timeline-step active">
+          <div>进阶版</div>
+          <div class="step-label">当前阶段</div>
+        </div>
+        <div class="timeline-arrow">→</div>
+        <div class="timeline-step">
+          <div>提高版</div>
+          <div class="step-label">目标阶段</div>
+        </div>
+      </div>
+
+      <div class="summary-bar">
+        <div class="summary-card mastered">
+          <div class="num">7</div>
+          <div class="label">应掌握项</div>
+        </div>
+        <div class="summary-card improve">
+          <div class="num">5</div>
+          <div class="label">待改进项</div>
+        </div>
+        <div class="summary-card weak">
+          <div class="num">4</div>
+          <div class="label">薄弱项</div>
+        </div>
+      </div>
+
+      <div class="section section-mastered">
+        <div class="section-title">✅ 已掌握（达标标准）</div>
+        <div class="item-grid">
+          <div class="item-card">
+            <div class="item-name">正反手高远球 <span class="badge badge-mastered">核心</span></div>
+            <div class="item-desc">正反手均能稳定将球打至对方底线，动作连贯流畅</div>
+            <div class="item-standard">📋 标准：全场任意位置正反手高远球成功率≥80%，落点准确到底线附近</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">吊球技术 <span class="badge badge-mastered">核心</span></div>
+            <div class="item-desc">正手吊球动作隐蔽，落点在前场发球线内，球贴网而过</div>
+            <div class="item-standard">📋 标准：10个吊球中7个以上落点在前场，高度贴网，不易被对方扑杀</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">杀球基础</div>
+            <div class="item-desc">能完成原地杀球和起跳杀球，击球点高，有一定球速</div>
+            <div class="item-standard">📋 标准：杀球动作规范，10个中6个以上落在对方场内，球速有明显提升</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">网前搓球与推球</div>
+            <div class="item-desc">网前能根据来球选择搓球（旋转过网）或推球（快速平击）</div>
+            <div class="item-standard">📋 标准：网前处理成功率≥70%，搓球旋转充分，推球速度快、落点深</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">全场步伐</div>
+            <div class="item-desc">前场、后场、两侧的移动步伐熟练，移动中保持平衡和回位</div>
+            <div class="item-standard">📋 标准：全场四点跑步伐测试≤18秒（业余标准），移动中重心稳定</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">反手过渡球</div>
+            <div class="item-desc">被动反手位能稳定过渡回对方中场，避免直接失分</div>
+            <div class="item-standard">📋 标准：反手过渡10个中7个以上回到对方中场，不被对方直接扑杀</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">基本单打战术意识</div>
+            <div class="item-desc">懂得通过拉吊调动对手，寻找进攻机会，有基本的球路意识</div>
+            <div class="item-standard">📋 标准：对抗中能主动运用拉吊结合，不再盲目打球，有2-3套基本球路</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section section-improve">
+        <div class="section-title">⚠️ 待改进（重点训练）</div>
+        <div class="item-grid">
+          <div class="item-card">
+            <div class="item-name">杀球连贯性</div>
+            <div class="item-desc">杀球后下一拍衔接慢，容易被对手挡网或反抽得分</div>
+            <div class="item-standard">💡 改进：杀球后强制要求上网跟进攻网，练习"杀-上网-扑/放"连贯组合</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">假动作与动作一致性</div>
+            <div class="item-desc">击球前动作意图明显，缺乏一致性，容易被对手预判</div>
+            <div class="item-standard">💡 改进：练习吊球/杀球准备动作的一致性，做到动作定型后再出球</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">防守反击能力</div>
+            <div class="item-desc">接杀球时只能挑高球，无法组织有效的挡网或抽球反击</div>
+            <div class="item-standard">💡 改进：多球接杀练习，从挡网到抽对角逐步提升，强调防守后的反击意识</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">双打轮转与配合</div>
+            <div class="item-desc">双打时站位混乱，轮转时机把握不准，容易出现空档</div>
+            <div class="item-standard">💡 改进：固定搭档进行轮转专项训练，练习"前后轮转"和"左右补位"</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">体能储备</div>
+            <div class="item-desc">比赛后半段移动变慢，技术动作变形，耐力明显不足</div>
+            <div class="item-standard">💡 改进：加入专项体能训练（跳绳、折返跑、多球耐力训练），每周至少2次</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section section-weak">
+        <div class="section-title">🔴 薄弱项（进阶突破）</div>
+        <div class="item-grid">
+          <div class="item-card">
+            <div class="item-name">点杀与滑板吊球</div>
+            <div class="item-desc">精细化的进攻技术掌握不足，进攻手段单一</div>
+            <div class="item-standard">⏳ 建议：先保证杀球稳定性，再逐步加入点杀（不跳杀）和滑板吊球训练</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">平抽挡技术</div>
+            <div class="item-desc">中前半场平抽挡反应慢，动作僵硬，容易被压制</div>
+            <div class="item-standard">⏳ 建议：进行平抽挡多球专项训练，强调前臂和手腕的快速发力</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">比赛阅读与调整</div>
+            <div class="item-desc">比赛中不能根据对手变化及时调整战术，应变能力差</div>
+            <div class="item-standard">⏳ 建议：多参加正式比赛，赛后进行录像分析，培养观察对手的习惯</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">比赛心理素质</div>
+            <div class="item-desc">关键分紧张，领先时保守落后时急躁，心态波动大</div>
+            <div class="item-standard">⏳ 建议：模拟关键分训练（如10:10、19:19），培养大心脏；学习呼吸调节法</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drill-section">
+        <h3>🎯 进阶版推荐训练组合（每次120分钟）</h3>
+        <div class="drill-list">
+          <div class="drill-item">
+            <div class="drill-num">1</div>
+            <div class="drill-content">
+              <div class="drill-title">热身与专项体能（20分钟）</div>
+              <div class="drill-desc">慢跑+动态拉伸 + 跳绳3组×1分钟 + 米字步伐3组</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">2</div>
+            <div class="drill-content">
+              <div class="drill-title">多球技术训练（40分钟）</div>
+              <div class="drill-desc">高远球10分钟 + 吊球10分钟 + 杀球10分钟 + 网前10分钟，每组成功率目标80%</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">3</div>
+            <div class="drill-content">
+              <div class="drill-title">攻防对抗练习（30分钟）</div>
+              <div class="drill-desc">一人进攻（吊/杀）、一人防守，轮换进行；强调进攻连贯和防守反击</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">4</div>
+            <div class="drill-content">
+              <div class="drill-title">双打配合训练（20分钟）</div>
+              <div class="drill-desc">固定搭档进行轮转练习 + 半场对抗，重点练习前后站位轮转</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">5</div>
+            <div class="drill-content">
+              <div class="drill-title">实战比赛（10分钟）</div>
+              <div class="drill-desc">11分制单打或双打比赛，赛后简单复盘技战术运用情况</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 提高版 ==================== -->
+    <div class="level-content" id="level-advanced">
+      <div class="timeline">
+        <div class="timeline-step">
+          <div>基础版</div>
+          <div class="step-label">已完成</div>
+        </div>
+        <div class="timeline-arrow">→</div>
+        <div class="timeline-step">
+          <div>进阶版</div>
+          <div class="step-label">已完成</div>
+        </div>
+        <div class="timeline-arrow">→</div>
+        <div class="timeline-step active">
+          <div>提高版</div>
+          <div class="step-label">当前阶段</div>
+        </div>
+      </div>
+
+      <div class="summary-bar">
+        <div class="summary-card mastered">
+          <div class="num">8</div>
+          <div class="label">应掌握项</div>
+        </div>
+        <div class="summary-card improve">
+          <div class="num">5</div>
+          <div class="label">待改进项</div>
+        </div>
+        <div class="summary-card weak">
+          <div class="num">3</div>
+          <div class="label">薄弱项</div>
+        </div>
+      </div>
+
+      <div class="section section-mastered">
+        <div class="section-title">✅ 已掌握（达标标准）</div>
+        <div class="item-grid">
+          <div class="item-card">
+            <div class="item-name">全面技术体系 <span class="badge badge-mastered">核心</span></div>
+            <div class="item-desc">高远球、吊球、杀球、网前、平抽挡、防守各项技术无明显短板</div>
+            <div class="item-standard">📋 标准：任何技术动作成功率≥85%，能根据场上情况自如选择技术手段</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">精细化进攻 <span class="badge badge-mastered">核心</span></div>
+            <div class="item-desc">点杀、滑板吊球、劈吊等精细化进攻手段运用自如</div>
+            <div class="item-standard">📋 标准：点杀动作小、速度快；滑板吊球落点刁钻，成功率≥75%</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">全场控制与变速</div>
+            <div class="item-desc">能根据对手情况主动控制比赛节奏，快慢结合，调动对手</div>
+            <div class="item-standard">📋 标准：对抗中能打出3种以上节奏变化，主动得分率≥60%</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">防守反击体系</div>
+            <div class="item-desc">接杀挡网、抽对角、挑后场等防守手段熟练，能快速转守为攻</div>
+            <div class="item-standard">📋 标准：被动状态下失分率≤30%，防守后3拍内能组织有效反击</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">双打战术体系</div>
+            <div class="item-desc">发球抢攻、轮转补位、前后压制、左右调动等双打战术运用成熟</div>
+            <div class="item-standard">📋 标准：与固定搭档配合默契，战术执行率≥80%，轮转无空档</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">平抽挡对抗</div>
+            <div class="item-desc">中前半场平抽挡速度快、角度刁，能在对抗中占据主动</div>
+            <div class="item-standard">📋 标准：平抽挡多球连续20拍不失误，抽球落点能有效压制对手</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">战术执行与变化</div>
+            <div class="item-desc">赛前有明确战术计划，赛中能根据对手变化灵活调整</div>
+            <div class="item-standard">📋 标准：对同一对手能准备2套以上战术，落后时能及时调整策略</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">专项体能达标</div>
+            <div class="item-desc">速度、耐力、爆发力、协调性均达到较高水平</div>
+            <div class="item-standard">📋 标准：全场四点跑≤14秒，30秒双摇跳绳≥40个，能完成高强度多球训练</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section section-improve">
+        <div class="section-title">⚠️ 待改进（重点突破）</div>
+        <div class="item-grid">
+          <div class="item-card">
+            <div class="item-name">困难球处理</div>
+            <div class="item-desc">身后球、追身球、贴网球等非常规来球处理质量不高</div>
+            <div class="item-standard">💡 改进：专项困难球多球训练，重点练习"回头望月"、追身球侧身、贴网挑球</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">逆境比赛能力</div>
+            <div class="item-desc">大比分落后或关键分时容易崩盘，缺少逆风翻盘的能力</div>
+            <div class="item-standard">💡 改进：设置"逆境训练"（如让3分开局），培养不放弃的韧性和耐心多拍的意识</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">对手分析与针对性</div>
+            <div class="item-desc">赛前对对手的研究不足，比赛中发现弱点后调整不够及时</div>
+            <div class="item-standard">💡 改进：建立对手档案，记录对手技术特点；赛前观看对手录像做针对性部署</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">多拍相持能力</div>
+            <div class="item-desc">超过10拍的相持中失误增多，耐心不足，急于一拍得分</div>
+            <div class="item-standard">💡 改进：进行"不限拍数"对抗训练，规定必须超过15拍才能进攻，培养耐心</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">心理素质稳定性</div>
+            <div class="item-desc">大赛或重要比赛中发挥不如平时，紧张导致技术变形</div>
+            <div class="item-standard">💡 改进：模拟比赛环境训练（观众、裁判、正式场地）；心理暗示和呼吸训练</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section section-weak">
+        <div class="section-title">🔴 薄弱项（精英突破）</div>
+        <div class="item-grid">
+          <div class="item-card">
+            <div class="item-name">超一流技术细节</div>
+            <div class="item-desc">如陶菲克的反手、林丹的霸王杀、李宗伟的头顶区突击等顶尖技术细节差距</div>
+            <div class="item-standard">⏳ 建议：观摩顶尖选手录像，寻找1-2项作为个人招牌技术进行精细化打磨</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">大赛经验与气质</div>
+            <div class="item-desc">缺乏高水平比赛经验，在关键场次的气场和掌控力不足</div>
+            <div class="item-standard">⏳ 建议：尽可能多参加高规格比赛，积累大赛经验；向优秀选手学习比赛气质</div>
+          </div>
+          <div class="item-card">
+            <div class="item-name">伤病预防与恢复</div>
+            <div class="item-desc">高强度训练下身体疲劳积累，容易出现劳损性伤病</div>
+            <div class="item-standard">⏳ 建议：建立科学的训练-恢复体系，重视拉伸、放松、营养和睡眠</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drill-section">
+        <h3>🎯 提高版推荐训练组合（每次150分钟）</h3>
+        <div class="drill-list">
+          <div class="drill-item">
+            <div class="drill-num">1</div>
+            <div class="drill-content">
+              <div class="drill-title">激活与专项体能（25分钟）</div>
+              <div class="drill-desc">动态激活 + 爆发力训练（跳箱、侧向移动）+ 专项步伐（米字、四方球）</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">2</div>
+            <div class="drill-content">
+              <div class="drill-title">高强度多球训练（40分钟）</div>
+              <div class="drill-desc">全场多球，教练随机喂球（高/吊/杀/网前），学员自由回球，强调质量</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">3</div>
+            <div class="drill-content">
+              <div class="drill-title">专项技术打磨（30分钟）</div>
+              <div class="drill-desc">针对个人薄弱技术进行专项强化（如点杀、滑板吊、反手突击等）</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">4</div>
+            <div class="drill-content">
+              <div class="drill-title">战术对抗训练（30分钟）</div>
+              <div class="drill-desc">设定战术目标进行对抗（如：今天只打拉吊，不许杀球），培养战术执行力</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">5</div>
+            <div class="drill-content">
+              <div class="drill-title">实战比赛与复盘（25分钟）</div>
+              <div class="drill-desc">21分制正式比赛，赛后立即复盘，分析技战术得失并记录</div>
+            </div>
+          </div>
+          <div class="drill-item">
+            <div class="drill-num">6</div>
+            <div class="drill-content">
+              <div class="drill-title">放松与恢复（15分钟）</div>
+              <div class="drill-desc">静态拉伸 + 泡沫轴放松 + 冰敷/热敷，重视恢复环节</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchLevel(level) {
+      document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.level-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`.level-tab[onclick="switchLevel('${level}')"]`).classList.add('active');
+      document.getElementById('level-' + level).classList.add('active');
+    }
+  </script>
+</body>
+</html>
