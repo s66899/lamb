@@ -1,0 +1,291 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" style="background:#0a0d14">
+  <defs>
+    <style>
+      text { font-family: 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { font-size:24px; font-weight:bold; fill:#ffd700; }
+      .sub { font-size:13px; fill:#8892a8; }
+      .zone-label { font-size:10px; font-weight:bold; fill:#e2e8f0; text-anchor:middle; }
+      .zone-sub { font-size:8px; fill:#8892a8; text-anchor:middle; }
+      .line { stroke:#2a3347; stroke-width:1.5; fill:none; }
+      .dim { fill:#556074; }
+    </style>
+    <!-- Glow filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="soft-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background decorative grid -->
+  <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+    <path d="M30,0 L0,0 L0,30" fill="none" stroke="#11141e" stroke-width="0.5"/>
+  </pattern>
+  <rect width="600" height="800" fill="url(#grid)"/>
+
+  <!-- Title section -->
+  <text x="300" y="35" text-anchor="middle" class="title" filter="url(#glow)">面相十二宫分布图</text>
+  <text x="300" y="55" text-anchor="middle" class="sub">Face Reading — Twelve Palaces System</text>
+  <line x1="80" y1="68" x2="520" y2="68" stroke="#2a3347" stroke-width="1"/>
+
+  <!-- ==================== FACE OUTLINE ==================== -->
+  <g transform="translate(300,400)">
+    <!-- Hair -->
+    <path d="M-130,-180 Q-120,-230 -60,-260 Q0,-275 60,-260 Q120,-230 130,-180" 
+          fill="#0d1117" stroke="#1a1d28" stroke-width="2"/>
+    
+    <!-- Face shape -->
+    <path d="M-130,-180 
+             Q-155,-120 -155,-60 
+             Q-155,20 -130,80 
+             Q-110,130 -80,170 
+             Q-50,210 0,230 
+             Q50,210 80,170 
+             Q110,130 130,80 
+             Q155,20 155,-60 
+             Q155,-120 130,-180" 
+          fill="#11141e" stroke="#2a3347" stroke-width="2"/>
+
+    <!-- Hairline detail -->
+    <path d="M-130,-180 Q-100,-200 -40,-210 Q0,-215 40,-210 Q100,-200 130,-180" 
+          fill="none" stroke="#1d2333" stroke-width="1.5"/>
+    <path d="M-110,-185 Q-80,-210 -30,-220 Q0,-225 30,-220 Q80,-210 110,-185" 
+          fill="none" stroke="#1a1d28" stroke-width="1"/>
+
+    <!-- Ears -->
+    <ellipse cx="-155" cy="0" rx="20" ry="48" fill="#11141e" stroke="#2a3347" stroke-width="1.5"/>
+    <ellipse cx="-155" cy="0" rx="12" ry="38" fill="none" stroke="#1d2333" stroke-width="0.8"/>
+    <ellipse cx="155" cy="0" rx="20" ry="48" fill="#11141e" stroke="#2a3347" stroke-width="1.5"/>
+    <ellipse cx="155" cy="0" rx="12" ry="38" fill="none" stroke="#1d2333" stroke-width="0.8"/>
+
+    <!-- Sideburns hair -->
+    <path d="M-155,-100 Q-160,-80 -158,-40" fill="none" stroke="#1a1d28" stroke-width="3"/>
+    <path d="M155,-100 Q160,-80 158,-40" fill="none" stroke="#1a1d28" stroke-width="3"/>
+
+    <!-- Neck -->
+    <path d="M-40,230 Q-30,270 -25,310 L25,310 Q30,270 40,230" 
+          fill="#0d1117" stroke="#1d2333" stroke-width="1.5"/>
+
+    <!-- Shoulders hint -->
+    <path d="M-140,280 Q-160,300 -180,340" fill="none" stroke="#1d2333" stroke-width="1.5"/>
+    <path d="M140,280 Q160,300 180,340" fill="none" stroke="#1d2333" stroke-width="1.5"/>
+
+    <!-- ==================== 12 PALACE ZONES ==================== -->
+
+    <!-- 10. 官禄宫 (Career Palace) - forehead top center -->
+    <path d="M-50,-195 Q0,-210 50,-195 L65,-160 L-65,-160 Z" 
+          fill="rgba(74,158,255,0.13)" stroke="#4a9eff" stroke-width="1" filter="url(#soft-glow)"/>
+    <text x="0" y="-178" class="zone-label" fill="#4a9eff">官禄宫</text>
+    <text x="0" y="-167" class="zone-sub" fill="#4a9eff">事业·贵气</text>
+
+    <!-- 11. 福德宫 (Fortune Palace) - forehead sides -->
+    <path d="M-65,-160 L-125,-145 Q-135,-120 -130,-95 L-100,-110 Q-80,-120 -65,-130 Z" 
+          fill="rgba(255,215,0,0.10)" stroke="#ffd700" stroke-width="1"/>
+    <text x="-98" y="-123" class="zone-label" fill="#ffd700" font-size="9px">福德宫</text>
+    <text x="-98" y="-112" class="zone-sub" fill="#ffd700" font-size="7px">福运·享乐</text>
+    <path d="M65,-160 L125,-145 Q135,-120 130,-95 L100,-110 Q80,-120 65,-130 Z" 
+          fill="rgba(255,215,0,0.10)" stroke="#ffd700" stroke-width="1"/>
+    <text x="98" y="-123" class="zone-label" fill="#ffd700" font-size="9px">福德宫</text>
+    <text x="98" y="-112" class="zone-sub" fill="#ffd700" font-size="7px">福运·享乐</text>
+
+    <!-- 9. 迁移宫 (Travel Palace) - cheek hairline area -->
+    <path d="M-135,-90 Q-145,-70 -142,-40 L-120,-50 Q-110,-65 -110,-85 Z" 
+          fill="rgba(240,192,80,0.12)" stroke="#f0c050" stroke-width="1"/>
+    <text x="-128" y="-65" class="zone-label" fill="#f0c050" font-size="9px">迁移宫</text>
+    <text x="-128" y="-54" class="zone-sub" fill="#f0c050" font-size="7px">远行·变运</text>
+    <path d="M135,-90 Q145,-70 142,-40 L120,-50 Q110,-65 110,-85 Z" 
+          fill="rgba(240,192,80,0.12)" stroke="#f0c050" stroke-width="1"/>
+    <text x="128" y="-65" class="zone-label" fill="#f0c050" font-size="9px">迁移宫</text>
+    <text x="128" y="-54" class="zone-sub" fill="#f0c050" font-size="7px">远行·变运</text>
+
+    <!-- 1. 命宫 (Life Palace) - between eyebrows / yintang -->
+    <ellipse cx="0" cy="-35" rx="38" ry="20" fill="rgba(255,215,0,0.18)" stroke="#ffd700" stroke-width="1.5" filter="url(#soft-glow)"/>
+    <text x="0" y="-38" class="zone-label" fill="#ffd700">命宫</text>
+    <text x="0" y="-27" class="zone-sub" fill="#ffd700">运寿·精气神</text>
+
+    <!-- 2. 兄弟宫 (Sibling Palace) - eyebrows -->
+    <!-- Left brow zone -->
+    <path d="M-115,-65 Q-80,-80 -45,-70 L-35,-55 Q-70,-55 -105,-45 Z" 
+          fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="1"/>
+    <text x="-75" y="-58" class="zone-label" fill="#f59e0b" font-size="8px">兄弟</text>
+    <!-- Right brow zone -->
+    <path d="M115,-65 Q80,-80 45,-70 L35,-55 Q70,-55 105,-45 Z" 
+          fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="1"/>
+    <text x="75" y="-58" class="zone-label" fill="#f59e0b" font-size="8px">兄弟</text>
+
+    <!-- Eyebrows themselves -->
+    <path d="M-115,-62 Q-90,-72 -45,-62" fill="none" stroke="#1d2333" stroke-width="3" stroke-linecap="round"/>
+    <path d="M115,-62 Q90,-72 45,-62" fill="none" stroke="#1d2333" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- 4. 田宅宫 (Property Palace) - eyes -->
+    <!-- Left eye area -->
+    <ellipse cx="-55" cy="-15" rx="42" ry="22" fill="rgba(240,96,96,0.12)" stroke="#f06060" stroke-width="1"/>
+    <text x="-55" y="-18" class="zone-label" fill="#f06060">田宅宫</text>
+    <text x="-55" y="-7" class="zone-sub" fill="#f06060">家业·祖荫</text>
+    <!-- Right eye area -->
+    <ellipse cx="55" cy="-15" rx="42" ry="22" fill="rgba(240,96,96,0.12)" stroke="#f06060" stroke-width="1"/>
+    <text x="55" y="-18" class="zone-label" fill="#f06060">田宅宫</text>
+    <text x="55" y="-7" class="zone-sub" fill="#f06060">家业·祖荫</text>
+
+    <!-- Eyes -->
+    <!-- Left eye -->
+    <ellipse cx="-55" cy="-15" rx="28" ry="8" fill="#0d1117" stroke="#1d2333" stroke-width="1.5"/>
+    <ellipse cx="-55" cy="-15" rx="12" ry="6" fill="#11141e" stroke="#1d2333" stroke-width="1"/>
+    <circle cx="-55" cy="-15" r="4" fill="#4a9eff" opacity="0.5"/>
+    <!-- Right eye -->
+    <ellipse cx="55" cy="-15" rx="28" ry="8" fill="#0d1117" stroke="#1d2333" stroke-width="1.5"/>
+    <ellipse cx="55" cy="-15" rx="12" ry="6" fill="#11141e" stroke="#1d2333" stroke-width="1"/>
+    <circle cx="55" cy="-15" r="4" fill="#4a9eff" opacity="0.5"/>
+
+    <!-- 7. 妻妾宫 (Spouse Palace) - eye corners / cheekbones -->
+    <!-- Left -->
+    <path d="M-100,-25 Q-125,-15 -130,5 Q-125,15 -110,20 Q-95,15 -90,0 Q-88,-15 -100,-25 Z" 
+          fill="rgba(168,85,247,0.12)" stroke="#a855f7" stroke-width="1"/>
+    <text x="-112" y="0" class="zone-label" fill="#a855f7" font-size="9px">妻妾宫</text>
+    <text x="-112" y="12" class="zone-sub" fill="#a855f7" font-size="7px">配偶·感情</text>
+    <!-- Right -->
+    <path d="M100,-25 Q125,-15 130,5 Q125,15 110,20 Q95,15 90,0 Q88,-15 100,-25 Z" 
+          fill="rgba(168,85,247,0.12)" stroke="#a855f7" stroke-width="1"/>
+    <text x="112" y="0" class="zone-label" fill="#a855f7" font-size="9px">妻妾宫</text>
+    <text x="112" y="12" class="zone-sub" fill="#a855f7" font-size="7px">配偶·感情</text>
+
+    <!-- 5. 男女宫 (Children Palace) - under eyes (卧蚕) -->
+    <ellipse cx="-55" cy="10" rx="32" ry="12" fill="rgba(240,192,80,0.12)" stroke="#f0c050" stroke-width="1"/>
+    <text x="-55" y="8" class="zone-label" fill="#f0c050" font-size="9px">男女宫</text>
+    <text x="-55" y="19" class="zone-sub" fill="#f0c050" font-size="7px">子女·后代</text>
+    <ellipse cx="55" cy="10" rx="32" ry="12" fill="rgba(240,192,80,0.12)" stroke="#f0c050" stroke-width="1"/>
+    <text x="55" y="8" class="zone-label" fill="#f0c050" font-size="9px">男女宫</text>
+    <text x="55" y="19" class="zone-sub" fill="#f0c050" font-size="7px">子女·后代</text>
+
+    <!-- 8. 疾厄宫 (Health Palace) - nose bridge (山根) -->
+    <rect x="-18" y="-5" width="36" height="50" rx="6" fill="rgba(245,158,11,0.13)" stroke="#f59e0b" stroke-width="1" filter="url(#soft-glow)"/>
+    <text x="0" y="15" class="zone-label" fill="#f59e0b">疾厄宫</text>
+    <text x="0" y="28" class="zone-sub" fill="#f59e0b">健康·灾厄</text>
+
+    <!-- 3. 财帛宫 (Wealth Palace) - nose -->
+    <!-- Nose bridge -->
+    <path d="M-18,50 L-25,95 Q-30,115 -28,125 L0,135 L28,125 Q30,115 25,95 L18,50 Z" 
+          fill="rgba(61,214,140,0.13)" stroke="#3dd68c" stroke-width="1.5" filter="url(#soft-glow)"/>
+    <!-- Nostrils -->
+    <ellipse cx="-15" cy="130" rx="12" ry="6" fill="#0d1117" stroke="#1d2333" stroke-width="1.2"/>
+    <ellipse cx="15" cy="130" rx="12" ry="6" fill="#0d1117" stroke="#1d2333" stroke-width="1.2"/>
+    <text x="0" y="95" class="zone-label" fill="#3dd68c">财帛宫</text>
+    <text x="0" y="108" class="zone-sub" fill="#3dd68c">财运·积蓄</text>
+
+    <!-- Nose bridge line -->
+    <path d="M0,-5 L0,50" fill="none" stroke="#1d2333" stroke-width="1.2"/>
+
+    <!-- Nasolabial folds -->
+    <path d="M-25,95 Q-40,110 -45,145" fill="none" stroke="#1d2333" stroke-width="0.8"/>
+    <path d="M25,95 Q40,110 45,145" fill="none" stroke="#1d2333" stroke-width="0.8"/>
+
+    <!-- Philtrum -->
+    <path d="M0,135 L0,165" fill="none" stroke="#1d2333" stroke-width="1"/>
+
+    <!-- Mouth -->
+    <!-- Upper lip -->
+    <path d="M-35,170 Q-15,160 0,165 Q15,160 35,170" fill="#0d1117" stroke="#1d2333" stroke-width="1.5"/>
+    <!-- Lower lip -->
+    <path d="M-35,170 Q-15,190 0,193 Q15,190 35,170" fill="#0d1117" stroke="#1d2333" stroke-width="1.5"/>
+    <!-- Lip line -->
+    <path d="M-35,170 Q0,178 35,170" fill="none" stroke="#1d2333" stroke-width="0.8"/>
+
+    <!-- 6. 奴仆宫 (Servant Palace) - chin -->
+    <path d="M-30,210 Q-40,230 -20,260 L0,275 L20,260 Q40,230 30,210 Z" 
+          fill="rgba(168,85,247,0.12)" stroke="#a855f7" stroke-width="1"/>
+    <text x="0" y="240" class="zone-label" fill="#a855f7">奴仆宫</text>
+    <text x="0" y="253" class="zone-sub" fill="#a855f7">下属·晚年</text>
+
+    <!-- Chin cleft hint -->
+    <path d="M0,255 Q-3,265 0,275" fill="none" stroke="#1d2333" stroke-width="0.8"/>
+
+    <!-- Jaw line -->
+    <path d="M-130,80 Q-100,140 -70,180 Q-40,210 0,230" fill="none" stroke="#1d2333" stroke-width="0.8"/>
+    <path d="M130,80 Q100,140 70,180 Q40,210 0,230" fill="none" stroke="#1d2333" stroke-width="0.8"/>
+
+    <!-- 12. 相貌宫 (Appearance Palace) - whole face outline ring -->
+    <!-- Outer decorative ring around the face -->
+    <path d="M-160,-185 
+             Q-190,-120 -190,-50 
+             Q-190,30 -160,95 
+             Q-135,150 -100,195 
+             Q-60,240 0,260 
+             Q60,240 100,195 
+             Q135,150 160,95 
+             Q190,30 190,-50 
+             Q190,-120 160,-185" 
+          fill="none" stroke="#ffd700" stroke-width="0.8" stroke-dasharray="6,4" opacity="0.4"/>
+    <text x="0" y="-255" class="zone-label" fill="#ffd700" opacity="0.6" font-size="11px">相貌宫（全脸总论）</text>
+    <text x="0" y="-242" class="zone-sub" fill="#ffd700" opacity="0.5" font-size="9px">整体格局·人生总览</text>
+  </g>
+
+  <!-- ==================== DECORATIVE DIVIDER ==================== -->
+  <line x1="40" y1="695" x2="560" y2="695" stroke="#2a3347" stroke-width="1"/>
+
+  <!-- ==================== LEGEND ==================== -->
+  <g transform="translate(0, 705)">
+    <text x="300" y="12" text-anchor="middle" class="sub" style="font-size:12px;font-weight:bold;fill:#e2e8f0">十二宫方位与对应</text>
+
+    <!-- Row 1 -->
+    <text x="40" y="32" class="zone-label" fill="#ffd700" font-size="9px">命宫</text>
+    <text x="68" y="32" class="zone-sub" fill="#556074" font-size="8px">印堂·两眉间</text>
+
+    <text x="155" y="32" class="zone-label" fill="#f59e0b" font-size="9px">兄弟</text>
+    <text x="183" y="32" class="zone-sub" fill="#556074" font-size="8px">眉毛</text>
+
+    <text x="255" y="32" class="zone-label" fill="#3dd68c" font-size="9px">财帛</text>
+    <text x="283" y="32" class="zone-sub" fill="#556074" font-size="8px">鼻头·鼻翼</text>
+
+    <text x="355" y="32" class="zone-label" fill="#f06060" font-size="9px">田宅</text>
+    <text x="383" y="32" class="zone-sub" fill="#556074" font-size="8px">眼睛</text>
+
+    <text x="455" y="32" class="zone-label" fill="#f0c050" font-size="9px">男女</text>
+    <text x="483" y="32" class="zone-sub" fill="#556074" font-size="8px">卧蚕·眼下</text>
+
+    <!-- Row 2 -->
+    <text x="40" y="50" class="zone-label" fill="#a855f7" font-size="9px">奴仆</text>
+    <text x="68" y="50" class="zone-sub" fill="#556074" font-size="8px">下巴·两腮</text>
+
+    <text x="155" y="50" class="zone-label" fill="#a855f7" font-size="9px">妻妾</text>
+    <text x="183" y="50" class="zone-sub" fill="#556074" font-size="8px">鱼尾·颧骨</text>
+
+    <text x="255" y="50" class="zone-label" fill="#f59e0b" font-size="9px">疾厄</text>
+    <text x="283" y="50" class="zone-sub" fill="#556074" font-size="8px">山根·鼻梁</text>
+
+    <text x="355" y="50" class="zone-label" fill="#f0c050" font-size="9px">迁移</text>
+    <text x="383" y="50" class="zone-sub" fill="#556074" font-size="8px">额角·鬓边</text>
+
+    <text x="455" y="50" class="zone-label" fill="#4a9eff" font-size="9px">官禄</text>
+    <text x="483" y="50" class="zone-sub" fill="#556074" font-size="8px">额头正中</text>
+
+    <!-- Row 3 -->
+    <text x="40" y="68" class="zone-label" fill="#ffd700" font-size="9px">福德</text>
+    <text x="68" y="68" class="zone-sub" fill="#556074" font-size="8px">额角两侧</text>
+
+    <text x="155" y="68" class="zone-label" fill="#ffd700" font-size="9px">相貌</text>
+    <text x="183" y="68" class="zone-sub" fill="#556074" font-size="8px">全脸综合</text>
+
+    <!-- Mini color swatches -->
+    <rect x="35" y="78" width="8" height="8" rx="2" fill="#ffd700" opacity="0.5"/>
+    <rect x="150" y="78" width="8" height="8" rx="2" fill="#f59e0b" opacity="0.5"/>
+    <rect x="250" y="78" width="8" height="8" rx="2" fill="#3dd68c" opacity="0.5"/>
+    <rect x="350" y="78" width="8" height="8" rx="2" fill="#f06060" opacity="0.5"/>
+    <rect x="450" y="78" width="8" height="8" rx="2" fill="#f0c050" opacity="0.5"/>
+    <rect x="35" y="90" width="8" height="8" rx="2" fill="#a855f7" opacity="0.5"/>
+    <rect x="150" y="90" width="8" height="8" rx="2" fill="#a855f7" opacity="0.5"/>
+    <rect x="250" y="90" width="8" height="8" rx="2" fill="#f59e0b" opacity="0.5"/>
+    <rect x="350" y="90" width="8" height="8" rx="2" fill="#f0c050" opacity="0.5"/>
+    <rect x="450" y="90" width="8" height="8" rx="2" fill="#4a9eff" opacity="0.5"/>
+
+    <text x="300" y="95" text-anchor="middle" class="zone-sub" fill="#3a425a" font-size="7px">十二宫论面 · 形神气色皆为吉凶之兆</text>
+  </g>
+</svg>

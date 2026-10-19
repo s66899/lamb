@@ -1,0 +1,454 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 800" font-family="'Noto Sans SC','PingFang SC','SimHei',sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#16213e"/>
+    </linearGradient>
+    <!-- 天干颜色 -->
+    <linearGradient id="woodGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2d8a4e"/><stop offset="100%" stop-color="#1a5c32"/>
+    </linearGradient>
+    <linearGradient id="fireGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e63946"/><stop offset="100%" stop-color="#a62633"/>
+    </linearGradient>
+    <linearGradient id="earthGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d4a373"/><stop offset="100%" stop-color="#b5834e"/>
+    </linearGradient>
+    <linearGradient id="metalGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a8c8e8"/><stop offset="100%" stop-color="#7a9ab8"/>
+    </linearGradient>
+    <linearGradient id="waterGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#457b9d"/><stop offset="100%" stop-color="#1d3557"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="900" height="800" fill="url(#bgGrad)" rx="16"/>
+
+  <!-- 标题 -->
+  <text x="450" y="46" text-anchor="middle" fill="#ffd700" font-size="22" font-weight="bold" filter="url(#glow)">☯ 天干地支六十甲子循环图</text>
+  <text x="450" y="68" text-anchor="middle" fill="#8899bb" font-size="12">十天干 · 十二地支 · 六十甲子</text>
+
+  <!-- ======== 天干区域 ======== -->
+  <text x="60" y="110" fill="#ffd700" font-size="16" font-weight="bold">十天干</text>
+  <line x1="60" y1="118" x2="230" y2="118" stroke="#ffd700" stroke-width="1" opacity="0.5"/>
+
+  <!-- 天干表格 -->
+  <g transform="translate(40,132)">
+    <!-- 表头 -->
+    <rect x="0" y="0" width="60" height="26" rx="4" fill="#2a2a4e" stroke="#ffd700" stroke-width="1"/>
+    <text x="30" y="18" text-anchor="middle" fill="#ffd700" font-size="11" font-weight="bold">天干</text>
+    <rect x="62" y="0" width="40" height="26" rx="4" fill="#2a2a4e" stroke="#ffd700" stroke-width="1"/>
+    <text x="82" y="18" text-anchor="middle" fill="#ffd700" font-size="11" font-weight="bold">五行</text>
+    <rect x="104" y="0" width="40" height="26" rx="4" fill="#2a2a4e" stroke="#ffd700" stroke-width="1"/>
+    <text x="124" y="18" text-anchor="middle" fill="#ffd700" font-size="11" font-weight="bold">阴阳</text>
+
+    <!-- 行1: 甲木阳 -->
+    <rect x="0" y="28" width="60" height="24" rx="3" fill="url(#woodGrad)" opacity="0.7"/>
+    <text x="30" y="45" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">甲</text>
+    <rect x="62" y="28" width="40" height="24" rx="3" fill="url(#woodGrad)" opacity="0.4"/>
+    <text x="82" y="45" text-anchor="middle" fill="#aaffaa" font-size="11">木</text>
+    <rect x="104" y="28" width="40" height="24" rx="3" fill="#2a2a4e" opacity="0.6"/>
+    <text x="124" y="45" text-anchor="middle" fill="#ff8888" font-size="12">阳 ☀</text>
+
+    <!-- 行2: 乙木阴 -->
+    <rect x="0" y="54" width="60" height="24" rx="3" fill="url(#woodGrad)" opacity="0.6"/>
+    <text x="30" y="71" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">乙</text>
+    <rect x="62" y="54" width="40" height="24" rx="3" fill="url(#woodGrad)" opacity="0.4"/>
+    <text x="82" y="71" text-anchor="middle" fill="#aaffaa" font-size="11">木</text>
+    <rect x="104" y="54" width="40" height="24" rx="3" fill="#2a2a4e" opacity="0.6"/>
+    <text x="124" y="71" text-anchor="middle" fill="#8888ff" font-size="12">阴 ☽</text>
+
+    <!-- 行3: 丙火阳 -->
+    <rect x="0" y="80" width="60" height="24" rx="3" fill="url(#fireGrad)" opacity="0.7"/>
+    <text x="30" y="97" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">丙</text>
+    <rect x="62" y="80" width="40" height="24" rx="3" fill="url(#fireGrad)" opacity="0.4"/>
+    <text x="82" y="97" text-anchor="middle" fill="#ffaaaa" font-size="11">火</text>
+    <rect x="104" y="80" width="40" height="24" rx="3" fill="#2a2a4e" opacity="0.6"/>
+    <text x="124" y="97" text-anchor="middle" fill="#ff8888" font-size="12">阳 ☀</text>
+
+    <!-- 行4: 丁火阴 -->
+    <rect x="0" y="106" width="60" height="24" rx="3" fill="url(#fireGrad)" opacity="0.6"/>
+    <text x="30" y="123" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">丁</text>
+    <rect x="62" y="106" width="40" height="24" rx="3" fill="url(#fireGrad)" opacity="0.4"/>
+    <text x="82" y="123" text-anchor="middle" fill="#ffaaaa" font-size="11">火</text>
+    <rect x="104" y="106" width="40" height="24" rx="3" fill="#2a2a4e" opacity="0.6"/>
+    <text x="124" y="123" text-anchor="middle" fill="#8888ff" font-size="12">阴 ☽</text>
+
+    <!-- 行5: 戊土阳 -->
+    <rect x="0" y="132" width="60" height="24" rx="3" fill="url(#earthGrad)" opacity="0.7"/>
+    <text x="30" y="149" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">戊</text>
+    <rect x="62" y="132" width="40" height="24" rx="3" fill="url(#earthGrad)" opacity="0.4"/>
+    <text x="82" y="149" text-anchor="middle" fill="#ffddaa" font-size="11">土</text>
+    <rect x="104" y="132" width="40" height="24" rx="3" fill="#2a2a4e" opacity="0.6"/>
+    <text x="124" y="149" text-anchor="middle" fill="#ff8888" font-size="12">阳 ☀</text>
+
+    <!-- 行6: 己土阴 -->
+    <rect x="0" y="158" width="60" height="24" rx="3" fill="url(#earthGrad)" opacity="0.6"/>
+    <text x="30" y="175" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">己</text>
+    <rect x="62" y="158" width="40" height="24" rx="3" fill="url(#earthGrad)" opacity="0.4"/>
+    <text x="82" y="175" text-anchor="middle" fill="#ffddaa" font-size="11">土</text>
+    <rect x="104" y="158" width="40" height="24" rx="3" fill="#2a2a4e" opacity="0.6"/>
+    <text x="124" y="175" text-anchor="middle" fill="#8888ff" font-size="12">阴 ☽</text>
+
+    <!-- 行7: 庚金阳 -->
+    <rect x="0" y="184" width="60" height="24" rx="3" fill="url(#metalGrad)" opacity="0.7"/>
+    <text x="30" y="201" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">庚</text>
+    <rect x="62" y="184" width="40" height="24" rx="3" fill="url(#metalGrad)" opacity="0.4"/>
+    <text x="82" y="201" text-anchor="middle" fill="#ccddff" font-size="11">金</text>
+    <rect x="104" y="184" width="40" height="24" rx="3" fill="#2a2a4e" opacity="0.6"/>
+    <text x="124" y="201" text-anchor="middle" fill="#ff8888" font-size="12">阳 ☀</text>
+
+    <!-- 行8: 辛金阴 -->
+    <rect x="0" y="210" width="60" height="24" rx="3" fill="url(#metalGrad)" opacity="0.6"/>
+    <text x="30" y="227" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">辛</text>
+    <rect x="62" y="210" width="40" height="24" rx="3" fill="url(#metalGrad)" opacity="0.4"/>
+    <text x="82" y="227" text-anchor="middle" fill="#ccddff" font-size="11">金</text>
+    <rect x="104" y="210" width="40" height="24" rx="3" fill="#2a2a4e" opacity="0.6"/>
+    <text x="124" y="227" text-anchor="middle" fill="#8888ff" font-size="12">阴 ☽</text>
+
+    <!-- 行9: 壬水阳 -->
+    <rect x="0" y="236" width="60" height="24" rx="3" fill="url(#waterGrad)" opacity="0.7"/>
+    <text x="30" y="253" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">壬</text>
+    <rect x="62" y="236" width="40" height="24" rx="3" fill="url(#waterGrad)" opacity="0.4"/>
+    <text x="82" y="253" text-anchor="middle" fill="#99ccff" font-size="11">水</text>
+    <rect x="104" y="236" width="40" height="24" rx="3" fill="#2a2a4e" opacity="0.6"/>
+    <text x="124" y="253" text-anchor="middle" fill="#ff8888" font-size="12">阳 ☀</text>
+
+    <!-- 行10: 癸水阴 -->
+    <rect x="0" y="262" width="60" height="24" rx="3" fill="url(#waterGrad)" opacity="0.6"/>
+    <text x="30" y="279" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">癸</text>
+    <rect x="62" y="262" width="40" height="24" rx="3" fill="url(#waterGrad)" opacity="0.4"/>
+    <text x="82" y="279" text-anchor="middle" fill="#99ccff" font-size="11">水</text>
+    <rect x="104" y="262" width="40" height="24" rx="3" fill="#2a2a4e" opacity="0.6"/>
+    <text x="124" y="279" text-anchor="middle" fill="#8888ff" font-size="12">阴 ☽</text>
+  </g>
+
+  <!-- 五行图例 -->
+  <g transform="translate(40,440)">
+    <text x="0" y="0" fill="#ffd700" font-size="13" font-weight="bold">五行图例</text>
+    <rect x="0" y="10" width="16" height="12" rx="2" fill="url(#woodGrad)"/>
+    <text x="22" y="22" fill="#aaffaa" font-size="11">木 (甲·乙)</text>
+    <rect x="110" y="10" width="16" height="12" rx="2" fill="url(#fireGrad)"/>
+    <text x="132" y="22" fill="#ffaaaa" font-size="11">火 (丙·丁)</text>
+    <rect x="220" y="10" width="16" height="12" rx="2" fill="url(#earthGrad)"/>
+    <text x="242" y="22" fill="#ffddaa" font-size="11">土 (戊·己)</text>
+    <rect x="0" y="30" width="16" height="12" rx="2" fill="url(#metalGrad)"/>
+    <text x="22" y="42" fill="#ccddff" font-size="11">金 (庚·辛)</text>
+    <rect x="110" y="30" width="16" height="12" rx="2" fill="url(#waterGrad)"/>
+    <text x="132" y="42" fill="#99ccff" font-size="11">水 (壬·癸)</text>
+  </g>
+
+  <!-- ======== 十二地支区域 ======== -->
+  <text x="480" y="110" fill="#ffd700" font-size="16" font-weight="bold">十二地支（生肖·时辰）</text>
+  <line x1="480" y1="118" x2="840" y2="118" stroke="#ffd700" stroke-width="1" opacity="0.5"/>
+
+  <g transform="translate(470,132)">
+    <!-- 地支网格：4列x3行 -->
+    <!-- 表头 -->
+    <rect x="0" y="0" width="44" height="22" rx="3" fill="#2a2a4e" stroke="#ffd700" stroke-width="0.5"/>
+    <text x="22" y="15" text-anchor="middle" fill="#ffd700" font-size="11">地支</text>
+    <rect x="46" y="0" width="44" height="22" rx="3" fill="#2a2a4e" stroke="#ffd700" stroke-width="0.5"/>
+    <text x="68" y="15" text-anchor="middle" fill="#ffd700" font-size="11">生肖</text>
+    <rect x="92" y="0" width="44" height="22" rx="3" fill="#2a2a4e" stroke="#ffd700" stroke-width="0.5"/>
+    <text x="114" y="15" text-anchor="middle" fill="#ffd700" font-size="11">五行</text>
+    <rect x="138" y="0" width="44" height="22" rx="3" fill="#2a2a4e" stroke="#ffd700" stroke-width="0.5"/>
+    <text x="160" y="15" text-anchor="middle" fill="#ffd700" font-size="11">时辰</text>
+    <rect x="184" y="0" width="44" height="22" rx="3" fill="#2a2a4e" stroke="#ffd700" stroke-width="0.5"/>
+    <text x="206" y="15" text-anchor="middle" fill="#ffd700" font-size="11">地支</text>
+    <rect x="230" y="0" width="44" height="22" rx="3" fill="#2a2a4e" stroke="#ffd700" stroke-width="0.5"/>
+    <text x="252" y="15" text-anchor="middle" fill="#ffd700" font-size="11">生肖</text>
+    <rect x="276" y="0" width="44" height="22" rx="3" fill="#2a2a4e" stroke="#ffd700" stroke-width="0.5"/>
+    <text x="298" y="15" text-anchor="middle" fill="#ffd700" font-size="11">五行</text>
+    <rect x="322" y="0" width="44" height="22" rx="3" fill="#2a2a4e" stroke="#ffd700" stroke-width="0.5"/>
+    <text x="344" y="15" text-anchor="middle" fill="#ffd700" font-size="11">时辰</text>
+
+    <!-- 用JS来自动填充这12行 手动写12行很麻烦，但SVG没有循环... -->
+
+    <!-- 第1行: 子鼠水阳 23-1 -->
+    <rect x="0" y="24" width="44" height="22" rx="2" fill="url(#waterGrad)" opacity="0.5"/>
+    <text x="22" y="40" text-anchor="middle" fill="#99ccff" font-size="14" font-weight="bold">子</text>
+    <rect x="46" y="24" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="68" y="40" text-anchor="middle" fill="#ddd" font-size="12">🐭鼠</text>
+    <rect x="92" y="24" width="44" height="22" rx="2" fill="url(#waterGrad)" opacity="0.3"/>
+    <text x="114" y="40" text-anchor="middle" fill="#99ccff" font-size="11">水</text>
+    <rect x="138" y="24" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="160" y="40" text-anchor="middle" fill="#ddd" font-size="10">23-1</text>
+
+    <!-- 第2行: 丑牛土阴 -->
+    <rect x="184" y="24" width="44" height="22" rx="2" fill="url(#earthGrad)" opacity="0.55"/>
+    <text x="206" y="40" text-anchor="middle" fill="#ffddaa" font-size="14" font-weight="bold">丑</text>
+    <rect x="230" y="24" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="252" y="40" text-anchor="middle" fill="#ddd" font-size="12">🐮牛</text>
+    <rect x="276" y="24" width="44" height="22" rx="2" fill="url(#earthGrad)" opacity="0.3"/>
+    <text x="298" y="40" text-anchor="middle" fill="#ffddaa" font-size="11">土</text>
+    <rect x="322" y="24" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="344" y="40" text-anchor="middle" fill="#ddd" font-size="10">1-3</text>
+
+    <!-- 第3行: 寅虎木阳 -->
+    <rect x="0" y="48" width="44" height="22" rx="2" fill="url(#woodGrad)" opacity="0.5"/>
+    <text x="22" y="64" text-anchor="middle" fill="#aaffaa" font-size="14" font-weight="bold">寅</text>
+    <rect x="46" y="48" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="68" y="64" text-anchor="middle" fill="#ddd" font-size="12">🐯虎</text>
+    <rect x="92" y="48" width="44" height="22" rx="2" fill="url(#woodGrad)" opacity="0.3"/>
+    <text x="114" y="64" text-anchor="middle" fill="#aaffaa" font-size="11">木</text>
+    <rect x="138" y="48" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="160" y="64" text-anchor="middle" fill="#ddd" font-size="10">3-5</text>
+
+    <!-- 第4行: 卯兔木阴 -->
+    <rect x="184" y="48" width="44" height="22" rx="2" fill="url(#woodGrad)" opacity="0.55"/>
+    <text x="206" y="64" text-anchor="middle" fill="#aaffaa" font-size="14" font-weight="bold">卯</text>
+    <rect x="230" y="48" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="252" y="64" text-anchor="middle" fill="#ddd" font-size="12">🐰兔</text>
+    <rect x="276" y="48" width="44" height="22" rx="2" fill="url(#woodGrad)" opacity="0.3"/>
+    <text x="298" y="64" text-anchor="middle" fill="#aaffaa" font-size="11">木</text>
+    <rect x="322" y="48" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="344" y="64" text-anchor="middle" fill="#ddd" font-size="10">5-7</text>
+
+    <!-- 第5行: 辰龙土阳 -->
+    <rect x="0" y="72" width="44" height="22" rx="2" fill="url(#earthGrad)" opacity="0.5"/>
+    <text x="22" y="88" text-anchor="middle" fill="#ffddaa" font-size="14" font-weight="bold">辰</text>
+    <rect x="46" y="72" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="68" y="88" text-anchor="middle" fill="#ddd" font-size="12">🐲龙</text>
+    <rect x="92" y="72" width="44" height="22" rx="2" fill="url(#earthGrad)" opacity="0.3"/>
+    <text x="114" y="88" text-anchor="middle" fill="#ffddaa" font-size="11">土</text>
+    <rect x="138" y="72" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="160" y="88" text-anchor="middle" fill="#ddd" font-size="10">7-9</text>
+
+    <!-- 第6行: 巳蛇火阴 -->
+    <rect x="184" y="72" width="44" height="22" rx="2" fill="url(#fireGrad)" opacity="0.55"/>
+    <text x="206" y="88" text-anchor="middle" fill="#ffaaaa" font-size="14" font-weight="bold">巳</text>
+    <rect x="230" y="72" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="252" y="88" text-anchor="middle" fill="#ddd" font-size="12">🐍蛇</text>
+    <rect x="276" y="72" width="44" height="22" rx="2" fill="url(#fireGrad)" opacity="0.3"/>
+    <text x="298" y="88" text-anchor="middle" fill="#ffaaaa" font-size="11">火</text>
+    <rect x="322" y="72" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="344" y="88" text-anchor="middle" fill="#ddd" font-size="10">9-11</text>
+
+    <!-- 第7行: 午马火阳 -->
+    <rect x="0" y="96" width="44" height="22" rx="2" fill="url(#fireGrad)" opacity="0.5"/>
+    <text x="22" y="112" text-anchor="middle" fill="#ffaaaa" font-size="14" font-weight="bold">午</text>
+    <rect x="46" y="96" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="68" y="112" text-anchor="middle" fill="#ddd" font-size="12">🐴马</text>
+    <rect x="92" y="96" width="44" height="22" rx="2" fill="url(#fireGrad)" opacity="0.3"/>
+    <text x="114" y="112" text-anchor="middle" fill="#ffaaaa" font-size="11">火</text>
+    <rect x="138" y="96" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="160" y="112" text-anchor="middle" fill="#ddd" font-size="10">11-13</text>
+
+    <!-- 第8行: 未羊土阴 -->
+    <rect x="184" y="96" width="44" height="22" rx="2" fill="url(#earthGrad)" opacity="0.55"/>
+    <text x="206" y="112" text-anchor="middle" fill="#ffddaa" font-size="14" font-weight="bold">未</text>
+    <rect x="230" y="96" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="252" y="112" text-anchor="middle" fill="#ddd" font-size="12">🐑羊</text>
+    <rect x="276" y="96" width="44" height="22" rx="2" fill="url(#earthGrad)" opacity="0.3"/>
+    <text x="298" y="112" text-anchor="middle" fill="#ffddaa" font-size="11">土</text>
+    <rect x="322" y="96" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="344" y="112" text-anchor="middle" fill="#ddd" font-size="10">13-15</text>
+
+    <!-- 第9行: 申猴金阳 -->
+    <rect x="0" y="120" width="44" height="22" rx="2" fill="url(#metalGrad)" opacity="0.5"/>
+    <text x="22" y="136" text-anchor="middle" fill="#ccddff" font-size="14" font-weight="bold">申</text>
+    <rect x="46" y="120" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="68" y="136" text-anchor="middle" fill="#ddd" font-size="12">🐵猴</text>
+    <rect x="92" y="120" width="44" height="22" rx="2" fill="url(#metalGrad)" opacity="0.3"/>
+    <text x="114" y="136" text-anchor="middle" fill="#ccddff" font-size="11">金</text>
+    <rect x="138" y="120" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="160" y="136" text-anchor="middle" fill="#ddd" font-size="10">15-17</text>
+
+    <!-- 第10行: 酉鸡金阴 -->
+    <rect x="184" y="120" width="44" height="22" rx="2" fill="url(#metalGrad)" opacity="0.55"/>
+    <text x="206" y="136" text-anchor="middle" fill="#ccddff" font-size="14" font-weight="bold">酉</text>
+    <rect x="230" y="120" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="252" y="136" text-anchor="middle" fill="#ddd" font-size="12">🐔鸡</text>
+    <rect x="276" y="120" width="44" height="22" rx="2" fill="url(#metalGrad)" opacity="0.3"/>
+    <text x="298" y="136" text-anchor="middle" fill="#ccddff" font-size="11">金</text>
+    <rect x="322" y="120" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="344" y="136" text-anchor="middle" fill="#ddd" font-size="10">17-19</text>
+
+    <!-- 第11行: 戌狗土阳 -->
+    <rect x="0" y="144" width="44" height="22" rx="2" fill="url(#earthGrad)" opacity="0.5"/>
+    <text x="22" y="160" text-anchor="middle" fill="#ffddaa" font-size="14" font-weight="bold">戌</text>
+    <rect x="46" y="144" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="68" y="160" text-anchor="middle" fill="#ddd" font-size="12">🐶狗</text>
+    <rect x="92" y="144" width="44" height="22" rx="2" fill="url(#earthGrad)" opacity="0.3"/>
+    <text x="114" y="160" text-anchor="middle" fill="#ffddaa" font-size="11">土</text>
+    <rect x="138" y="144" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="160" y="160" text-anchor="middle" fill="#ddd" font-size="10">19-21</text>
+
+    <!-- 第12行: 亥猪水阴 -->
+    <rect x="184" y="144" width="44" height="22" rx="2" fill="url(#waterGrad)" opacity="0.55"/>
+    <text x="206" y="160" text-anchor="middle" fill="#99ccff" font-size="14" font-weight="bold">亥</text>
+    <rect x="230" y="144" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="252" y="160" text-anchor="middle" fill="#ddd" font-size="12">🐷猪</text>
+    <rect x="276" y="144" width="44" height="22" rx="2" fill="url(#waterGrad)" opacity="0.3"/>
+    <text x="298" y="160" text-anchor="middle" fill="#99ccff" font-size="11">水</text>
+    <rect x="322" y="144" width="44" height="22" rx="2" fill="#2a2a4e" opacity="0.5"/>
+    <text x="344" y="160" text-anchor="middle" fill="#ddd" font-size="10">21-23</text>
+  </g>
+
+  <!-- ======== 中央：六十甲子循环 ======== -->
+  <text x="450" y="510" text-anchor="middle" fill="#ffd700" font-size="16" font-weight="bold">六十甲子循环表（60年/日/时辰一循环）</text>
+  <line x1="250" y1="518" x2="650" y2="518" stroke="#ffd700" stroke-width="1" opacity="0.5"/>
+
+  <!-- 六十甲子：按6行x10列排列 -->
+  <g transform="translate(40,530)">
+    <!-- 第1行：甲子-甲戌 -->
+    <rect x="0" y="0" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.3"/>
+    <text x="36" y="15" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">甲子</text>
+    <rect x="74" y="0" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.25"/>
+    <text x="110" y="15" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">乙丑</text>
+    <rect x="148" y="0" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.3"/>
+    <text x="184" y="15" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丙寅</text>
+    <rect x="222" y="0" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.25"/>
+    <text x="258" y="15" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丁卯</text>
+    <rect x="296" y="0" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.3"/>
+    <text x="332" y="15" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">戊辰</text>
+    <rect x="370" y="0" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.25"/>
+    <text x="406" y="15" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">己巳</text>
+    <rect x="444" y="0" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.3"/>
+    <text x="480" y="15" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">庚午</text>
+    <rect x="518" y="0" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.25"/>
+    <text x="554" y="15" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">辛未</text>
+    <rect x="592" y="0" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.3"/>
+    <text x="628" y="15" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">壬申</text>
+    <rect x="666" y="0" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.25"/>
+    <text x="702" y="15" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">癸酉</text>
+
+    <!-- 第2行：甲戌-癸未 -->
+    <rect x="0" y="22" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.3"/>
+    <text x="36" y="37" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">甲戌</text>
+    <rect x="74" y="22" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.25"/>
+    <text x="110" y="37" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">乙亥</text>
+    <rect x="148" y="22" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.3"/>
+    <text x="184" y="37" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丙子</text>
+    <rect x="222" y="22" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.25"/>
+    <text x="258" y="37" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丁丑</text>
+    <rect x="296" y="22" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.3"/>
+    <text x="332" y="37" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">戊寅</text>
+    <rect x="370" y="22" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.25"/>
+    <text x="406" y="37" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">己卯</text>
+    <rect x="444" y="22" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.3"/>
+    <text x="480" y="37" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">庚辰</text>
+    <rect x="518" y="22" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.25"/>
+    <text x="554" y="37" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">辛巳</text>
+    <rect x="592" y="22" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.3"/>
+    <text x="628" y="37" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">壬午</text>
+    <rect x="666" y="22" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.25"/>
+    <text x="702" y="37" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">癸未</text>
+
+    <!-- 第3行：甲申-癸巳 -->
+    <rect x="0" y="44" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.3"/>
+    <text x="36" y="59" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">甲申</text>
+    <rect x="74" y="44" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.25"/>
+    <text x="110" y="59" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">乙酉</text>
+    <rect x="148" y="44" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.3"/>
+    <text x="184" y="59" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丙戌</text>
+    <rect x="222" y="44" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.25"/>
+    <text x="258" y="59" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丁亥</text>
+    <rect x="296" y="44" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.3"/>
+    <text x="332" y="59" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">戊子</text>
+    <rect x="370" y="44" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.25"/>
+    <text x="406" y="59" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">己丑</text>
+    <rect x="444" y="44" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.3"/>
+    <text x="480" y="59" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">庚寅</text>
+    <rect x="518" y="44" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.25"/>
+    <text x="554" y="59" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">辛卯</text>
+    <rect x="592" y="44" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.3"/>
+    <text x="628" y="59" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">壬辰</text>
+    <rect x="666" y="44" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.25"/>
+    <text x="702" y="59" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">癸巳</text>
+
+    <!-- 第4行：甲午-癸卯 -->
+    <rect x="0" y="66" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.3"/>
+    <text x="36" y="81" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">甲午</text>
+    <rect x="74" y="66" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.25"/>
+    <text x="110" y="81" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">乙未</text>
+    <rect x="148" y="66" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.3"/>
+    <text x="184" y="81" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丙申</text>
+    <rect x="222" y="66" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.25"/>
+    <text x="258" y="81" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丁酉</text>
+    <rect x="296" y="66" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.3"/>
+    <text x="332" y="81" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">戊戌</text>
+    <rect x="370" y="66" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.25"/>
+    <text x="406" y="81" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">己亥</text>
+    <rect x="444" y="66" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.3"/>
+    <text x="480" y="81" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">庚子</text>
+    <rect x="518" y="66" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.25"/>
+    <text x="554" y="81" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">辛丑</text>
+    <rect x="592" y="66" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.3"/>
+    <text x="628" y="81" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">壬寅</text>
+    <rect x="666" y="66" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.25"/>
+    <text x="702" y="81" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">癸卯</text>
+
+    <!-- 第5行：甲辰-癸丑 -->
+    <rect x="0" y="88" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.3"/>
+    <text x="36" y="103" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">甲辰</text>
+    <rect x="74" y="88" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.25"/>
+    <text x="110" y="103" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">乙巳</text>
+    <rect x="148" y="88" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.3"/>
+    <text x="184" y="103" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丙午</text>
+    <rect x="222" y="88" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.25"/>
+    <text x="258" y="103" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丁未</text>
+    <rect x="296" y="88" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.3"/>
+    <text x="332" y="103" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">戊申</text>
+    <rect x="370" y="88" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.25"/>
+    <text x="406" y="103" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">己酉</text>
+    <rect x="444" y="88" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.3"/>
+    <text x="480" y="103" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">庚戌</text>
+    <rect x="518" y="88" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.25"/>
+    <text x="554" y="103" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">辛亥</text>
+    <rect x="592" y="88" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.3"/>
+    <text x="628" y="103" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">壬子</text>
+    <rect x="666" y="88" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.25"/>
+    <text x="702" y="103" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">癸丑</text>
+
+    <!-- 第6行：甲寅-癸亥 -->
+    <rect x="0" y="110" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.3"/>
+    <text x="36" y="125" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">甲寅</text>
+    <rect x="74" y="110" width="72" height="20" rx="2" fill="url(#woodGrad)" opacity="0.25"/>
+    <text x="110" y="125" text-anchor="middle" fill="#ccffcc" font-size="12" font-weight="bold">乙卯</text>
+    <rect x="148" y="110" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.3"/>
+    <text x="184" y="125" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丙辰</text>
+    <rect x="222" y="110" width="72" height="20" rx="2" fill="url(#fireGrad)" opacity="0.25"/>
+    <text x="258" y="125" text-anchor="middle" fill="#ffcccc" font-size="12" font-weight="bold">丁巳</text>
+    <rect x="296" y="110" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.3"/>
+    <text x="332" y="125" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">戊午</text>
+    <rect x="370" y="110" width="72" height="20" rx="2" fill="url(#earthGrad)" opacity="0.25"/>
+    <text x="406" y="125" text-anchor="middle" fill="#ffddbb" font-size="12" font-weight="bold">己未</text>
+    <rect x="444" y="110" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.3"/>
+    <text x="480" y="125" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">庚申</text>
+    <rect x="518" y="110" width="72" height="20" rx="2" fill="url(#metalGrad)" opacity="0.25"/>
+    <text x="554" y="125" text-anchor="middle" fill="#ccddff" font-size="12" font-weight="bold">辛酉</text>
+    <rect x="592" y="110" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.3"/>
+    <text x="628" y="125" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">壬戌</text>
+    <rect x="666" y="110" width="72" height="20" rx="2" fill="url(#waterGrad)" opacity="0.25"/>
+    <text x="702" y="125" text-anchor="middle" fill="#99ccff" font-size="12" font-weight="bold">癸亥</text>
+  </g>
+
+  <!-- 循环图示 -->
+  <text x="450" y="690" text-anchor="middle" fill="#8899bb" font-size="11">天干10 × 地支12 = 60甲子 · 天干循环6次 · 地支循环5次 · 最小公倍数60</text>
+
+  <!-- 纳音五行说明 -->
+  <g transform="translate(40,710)">
+    <text x="0" y="0" fill="#ffd700" font-size="13" font-weight="bold">纳音五行速查</text>
+    <text x="0" y="18" fill="#8899bb" font-size="11">甲子·乙丑 → 海中金 | 丙寅·丁卯 → 炉中火 | 戊辰·己巳 → 大林木</text>
+    <text x="0" y="34" fill="#8899bb" font-size="11">庚午·辛未 → 路旁土 | 壬申·癸酉 → 剑锋金 | 甲戌·乙亥 → 山头火</text>
+  </g>
+
+  <!-- 三合六合说明 -->
+  <g transform="translate(470,710)">
+    <text x="0" y="0" fill="#ffd700" font-size="13" font-weight="bold">三合·六合</text>
+    <text x="0" y="18" fill="#8899bb" font-size="11">三合：申子辰(水) · 亥卯未(木) · 寅午戌(火) · 巳酉丑(金)</text>
+    <text x="0" y="34" fill="#8899bb" font-size="11">六合：子丑·寅亥·卯戌·辰酉·巳申·午未</text>
+  </g>
+
+  <!-- 页脚 -->
+  <text x="450" y="785" text-anchor="middle" fill="#556" font-size="10">知识书塔 · 阴阳卷 · 天干地支图解</text>
+</svg>

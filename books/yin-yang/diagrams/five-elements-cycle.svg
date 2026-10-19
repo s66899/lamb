@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 720" width="100%" height="100%">
+  <defs>
+    <!-- Glow filter for generating (green) arrows -->
+    <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Glow filter for controlling (red) arrows -->
+    <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Glow filter for node borders -->
+    <filter id="glow-node" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Glow filter for text glow -->
+    <filter id="glow-text" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Arrowhead marker: generating cycle (green) -->
+    <marker id="arrow-green" viewBox="0 0 12 10" refX="12" refY="5" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#3dd68c" opacity="0.9"/>
+    </marker>
+
+    <!-- Arrowhead marker: controlling cycle (red) -->
+    <marker id="arrow-red" viewBox="0 0 12 10" refX="12" refY="5" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#f06060" opacity="0.85"/>
+    </marker>
+
+    <!-- Radial gradients for node backgrounds -->
+    <radialGradient id="grad-fire" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(240,96,96,0.18)"/>
+      <stop offset="60%" stop-color="rgba(240,96,96,0.06)"/>
+      <stop offset="100%" stop-color="rgba(240,96,96,0)"/>
+    </radialGradient>
+    <radialGradient id="grad-earth" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(245,158,11,0.18)"/>
+      <stop offset="60%" stop-color="rgba(245,158,11,0.06)"/>
+      <stop offset="100%" stop-color="rgba(245,158,11,0)"/>
+    </radialGradient>
+    <radialGradient id="grad-metal" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(255,215,0,0.18)"/>
+      <stop offset="60%" stop-color="rgba(255,215,0,0.06)"/>
+      <stop offset="100%" stop-color="rgba(255,215,0,0)"/>
+    </radialGradient>
+    <radialGradient id="grad-water" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(74,158,255,0.18)"/>
+      <stop offset="60%" stop-color="rgba(74,158,255,0.06)"/>
+      <stop offset="100%" stop-color="rgba(74,158,255,0)"/>
+    </radialGradient>
+    <radialGradient id="grad-wood" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(61,214,140,0.18)"/>
+      <stop offset="60%" stop-color="rgba(61,214,140,0.06)"/>
+      <stop offset="100%" stop-color="rgba(61,214,140,0)"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="700" height="720" fill="#0a0d14"/>
+
+  <!-- Subtle decorative concentric circles (center at pentagram midpoint 350,350) -->
+  <circle cx="350" cy="350" r="245" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+  <circle cx="350" cy="350" r="230" fill="none" stroke="rgba(255,255,255,0.025)" stroke-width="0.5" stroke-dasharray="4 6"/>
+  <circle cx="350" cy="350" r="270" fill="none" stroke="rgba(255,255,255,0.015)" stroke-width="0.5" stroke-dasharray="2 8"/>
+  <circle cx="350" cy="350" r="1.5" fill="rgba(255,255,255,0.12)"/>
+
+  <!-- ==================== TITLE ==================== -->
+  <text x="350" y="38" text-anchor="middle" font-family="'Noto Serif SC', 'SimSun', 'KaiTi', STSong, serif" font-size="26" fill="#ffd700" font-weight="bold" letter-spacing="5" filter="url(#glow-text)">五行生克制化图</text>
+  <text x="350" y="60" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="rgba(255,215,0,0.4)" letter-spacing="3">WU XING · FIVE ELEMENTS CYCLE</text>
+
+  <!-- ==================== CYCLE LABELS ==================== -->
+  <g font-family="'Noto Serif SC', 'SimSun', serif" font-size="13">
+    <text x="590" y="108" text-anchor="end" fill="#3dd68c" opacity="0.75">相生</text>
+    <text x="78" y="115" text-anchor="start" fill="#f06060" opacity="0.75">相克</text>
+  </g>
+
+  <!-- ==================== GENERATING CYCLE (相生) ==================== -->
+  <!-- Green curved arrows, clockwise: 木→火→土→金→水→木 -->
+  <g filter="url(#glow-green)">
+    <!-- 木 → 火 -->
+    <path d="M 605 267 A 268 268 0 0 1 350 82" fill="none" stroke="#3dd68c" stroke-width="2.5" stroke-linecap="round" marker-end="url(#arrow-green)"/>
+    <!-- 火 → 土 -->
+    <path d="M 350 82 A 268 268 0 0 1 95 267" fill="none" stroke="#3dd68c" stroke-width="2.5" stroke-linecap="round" marker-end="url(#arrow-green)"/>
+    <!-- 土 → 金 -->
+    <path d="M 95 267 A 268 268 0 0 1 192 567" fill="none" stroke="#3dd68c" stroke-width="2.5" stroke-linecap="round" marker-end="url(#arrow-green)"/>
+    <!-- 金 → 水 -->
+    <path d="M 192 567 A 268 268 0 0 1 508 567" fill="none" stroke="#3dd68c" stroke-width="2.5" stroke-linecap="round" marker-end="url(#arrow-green)"/>
+    <!-- 水 → 木 -->
+    <path d="M 508 567 A 268 268 0 0 1 605 267" fill="none" stroke="#3dd68c" stroke-width="2.5" stroke-linecap="round" marker-end="url(#arrow-green)"/>
+  </g>
+
+  <!-- ==================== CONTROLLING CYCLE (相克) ==================== -->
+  <!-- Red dashed pentagram, green direction: 木→土→水→火→金→木 -->
+  <g filter="url(#glow-red)">
+    <!-- 木 → 土 -->
+    <path d="M 531 280 L 169 280" fill="none" stroke="#f06060" stroke-width="2" stroke-dasharray="7 5" stroke-linecap="round" marker-end="url(#arrow-red)"/>
+    <!-- 土 → 水 -->
+    <path d="M 162 302 L 454 514" fill="none" stroke="#f06060" stroke-width="2" stroke-dasharray="7 5" stroke-linecap="round" marker-end="url(#arrow-red)"/>
+    <!-- 水 → 火 -->
+    <path d="M 473 500 L 362 156" fill="none" stroke="#f06060" stroke-width="2" stroke-dasharray="7 5" stroke-linecap="round" marker-end="url(#arrow-red)"/>
+    <!-- 火 → 金 -->
+    <path d="M 338 156 L 227 500" fill="none" stroke="#f06060" stroke-width="2" stroke-dasharray="7 5" stroke-linecap="round" marker-end="url(#arrow-red)"/>
+    <!-- 金 → 木 -->
+    <path d="M 246 514 L 538 302" fill="none" stroke="#f06060" stroke-width="2" stroke-dasharray="7 5" stroke-linecap="round" marker-end="url(#arrow-red)"/>
+  </g>
+
+  <!-- ==================== NODE: 火 (Fire) ==================== -->
+  <g transform="translate(350, 120)">
+    <circle r="56" fill="url(#grad-fire)"/>
+    <circle r="38" fill="#0f1219" stroke="#f06060" stroke-width="2.5" filter="url(#glow-node)"/>
+    <circle r="30" fill="rgba(240,96,96,0.06)"/>
+    <text x="0" y="-5" text-anchor="middle" font-size="22" fill="#f06060">🔥</text>
+    <text x="0" y="17" text-anchor="middle" font-family="'Noto Serif SC', 'SimSun', serif" font-size="18" fill="#f06060" font-weight="bold">火</text>
+  </g>
+
+  <!-- ==================== NODE: 土 (Earth) ==================== -->
+  <g transform="translate(131, 280)">
+    <circle r="56" fill="url(#grad-earth)"/>
+    <circle r="38" fill="#0f1219" stroke="#f59e0b" stroke-width="2.5" filter="url(#glow-node)"/>
+    <circle r="30" fill="rgba(245,158,11,0.06)"/>
+    <text x="0" y="-5" text-anchor="middle" font-size="22" fill="#f59e0b">🪨</text>
+    <text x="0" y="17" text-anchor="middle" font-family="'Noto Serif SC', 'SimSun', serif" font-size="18" fill="#f59e0b" font-weight="bold">土</text>
+  </g>
+
+  <!-- ==================== NODE: 金 (Metal) ==================== -->
+  <g transform="translate(215, 536)">
+    <circle r="56" fill="url(#grad-metal)"/>
+    <circle r="38" fill="#0f1219" stroke="#ffd700" stroke-width="2.5" filter="url(#glow-node)"/>
+    <circle r="30" fill="rgba(255,215,0,0.06)"/>
+    <text x="0" y="-5" text-anchor="middle" font-size="22" fill="#ffd700">💎</text>
+    <text x="0" y="17" text-anchor="middle" font-family="'Noto Serif SC', 'SimSun', serif" font-size="18" fill="#ffd700" font-weight="bold">金</text>
+  </g>
+
+  <!-- ==================== NODE: 水 (Water) ==================== -->
+  <g transform="translate(485, 536)">
+    <circle r="56" fill="url(#grad-water)"/>
+    <circle r="38" fill="#0f1219" stroke="#4a9eff" stroke-width="2.5" filter="url(#glow-node)"/>
+    <circle r="30" fill="rgba(74,158,255,0.06)"/>
+    <text x="0" y="-5" text-anchor="middle" font-size="22" fill="#4a9eff">💧</text>
+    <text x="0" y="17" text-anchor="middle" font-family="'Noto Serif SC', 'SimSun', serif" font-size="18" fill="#4a9eff" font-weight="bold">水</text>
+  </g>
+
+  <!-- ==================== NODE: 木 (Wood) ==================== -->
+  <g transform="translate(569, 280)">
+    <circle r="56" fill="url(#grad-wood)"/>
+    <circle r="38" fill="#0f1219" stroke="#3dd68c" stroke-width="2.5" filter="url(#glow-node)"/>
+    <circle r="30" fill="rgba(61,214,140,0.06)"/>
+    <text x="0" y="-5" text-anchor="middle" font-size="22" fill="#3dd68c">🌳</text>
+    <text x="0" y="17" text-anchor="middle" font-family="'Noto Serif SC', 'SimSun', serif" font-size="18" fill="#3dd68c" font-weight="bold">木</text>
+  </g>
+
+  <!-- ==================== LEGEND ==================== -->
+  <g transform="translate(350, 665)">
+    <!-- Background panel -->
+    <rect x="-220" y="-22" width="440" height="44" rx="5" fill="rgba(255,255,255,0.025)" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+
+    <g font-family="'Segoe UI', Arial, sans-serif" font-size="11">
+      <!-- Generating cycle -->
+      <line x1="-190" y1="0" x2="-140" y2="0" stroke="#3dd68c" stroke-width="2.5" stroke-linecap="round" marker-end="url(#arrow-green)"/>
+      <text x="-130" y="4" text-anchor="start" fill="rgba(255,255,255,0.55)">相生 · Generating</text>
+
+      <!-- Divider -->
+      <line x1="-30" y1="-12" x2="-30" y2="12" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+      <!-- Controlling cycle -->
+      <line x1="-10" y1="0" x2="40" y2="0" stroke="#f06060" stroke-width="2" stroke-dasharray="7 5" stroke-linecap="round" marker-end="url(#arrow-red)"/>
+      <text x="50" y="4" text-anchor="start" fill="rgba(255,255,255,0.55)">相克 · Controlling</text>
+    </g>
+  </g>
+</svg>
