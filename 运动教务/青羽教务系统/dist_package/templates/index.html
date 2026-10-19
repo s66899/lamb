@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青羽教务系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>🏸 青羽教务</h1>
+            </div>
+            <nav class="nav">
+                <a href="#" class="nav-item active" data-tab="students">
+                    <span class="icon">👥</span> 学员管理
+                </a>
+                <a href="#" class="nav-item" data-tab="enroll">
+                    <span class="icon">📋</span> 报课管理
+                </a>
+                <a href="#" class="nav-item" data-tab="schedule">
+                    <span class="icon">📅</span> 排课管理
+                </a>
+                <a href="#" class="nav-item" data-tab="attendance">
+                    <span class="icon">✅</span> 消课点名
+                </a>
+                <a href="#" class="nav-item" data-tab="records">
+                    <span class="icon">📜</span> 记录管理
+                </a>
+                <a href="#" class="nav-item" data-tab="stats">
+                    <span class="icon">📊</span> 统计中心
+                </a>
+                <a href="#" class="nav-item" data-tab="temp">
+                    <span class="icon">🏃</span> 临时插班生
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main">
+            <!-- 顶部栏 -->
+            <header class="topbar">
+                <div class="search-box">
+                    <input type="text" id="globalSearch" placeholder="搜索学员姓名、电话、备注..." class="search-input">
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-primary" id="btnAddStudent" onclick="showModal('studentModal')">+ 添加学员</button>
+                </div>
+            </header>
+
+            <!-- 学员管理 -->
+            <section id="tab-students" class="tab-content active">
+                <div class="toolbar">
+                    <button class="btn btn-sm" onclick="showModal('importModal')">📥 导入CSV</button>
+                    <button class="btn btn-sm" onclick="exportStudents()">📤 导出CSV</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteSelected()">🗑️ 批量删除</button>
+                    <select id="statusFilter" class="select" onchange="loadStudents()">
+                        <option value="">全部状态</option>
+                        <option value="active">在读</option>
+                        <option value="inactive">已结</option>
+                        <option value="potential">潜在</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                                <th>姓名</th>
+                                <th>电话</th>
+                                <th>等级</th>
+                                <th>教练</th>
+                                <th>购买课时</th>
+                                <th>赠送课时</th>
+                                <th>剩余课时</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 报课管理 -->
+            <section id="tab-enroll" class="tab-content">
+                <div class="enroll-layout">
+                    <div class="packages-grid" id="packagesGrid"></div>
+                    <div class="enroll-form">
+                        <h3>学员报课</h3>
+                        <div class="form-group">
+                            <label>选择学员</label>
+                            <select id="enrollStudent" class="select full"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>选择课程包</label>
+                            <select id="enrollPackage" class="select full" onchange="onPackageChange()"></select>
+                        </div>
+                        <div class="form-group" id="hoursGroup" style="display:none">
+                            <label>购买节数</label>
+                            <input type="number" id="enrollHours" class="input" value="10" min="1" onchange="calcPrice()">
+                        </div>
+                        <div class="price-display" id="priceDisplay">请选择课程包</div>
+                        <button class="btn btn-primary full" onclick="doEnroll()">确认报课</button>
+                    </div>
+                </div>
+                <div class="enrollments-section">
+                    <h3>报课记录</h3>
+                    <table class="table">
+                        <thead>
+                            <tr><th>学员</th><th>课程包</th><th>课时</th><th>总价</th><th>日期</th></tr>
+                        </thead>
+                        <tbody id="enrollmentsTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 排课管理 -->
+            <section id="tab-schedule" class="tab-content">
+                <div class="toolbar">
+                    <button class="btn btn-primary" onclick="showModal('addScheduleModal')">+ 添加排课</button>
+                    <button class="btn btn-sm" onclick="showModal('importScheduleModal')">📥 导入课表</button>
+                    <button class="btn btn-sm btn-danger" onclick="clearSchedules()">🗑️ 清空课表</button>
+                </div>
+                <div class="week-tabs" id="weekTabs"></div>
+                <div class="schedule-grid" id="scheduleGrid"></div>
+            </section>
+
+            <!-- 消课点名 -->
+            <section id="tab-attendance" class="tab-content">
+                <div class="attendance-controls">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>日期</label>
+                            <input type="date" id="attendanceDate" class="input full">
+                        </div>
+                        <div class="form-group">
+                            <label>星期</label>
+                            <select id="attendanceDay" class="select full" onchange="loadAttendanceSlots()">
+                                <option>星期一</option><option>星期二</option><option>星期三</option>
+                                <option>星期四</option><option>星期五</option><option>星期六</option><option>星期日</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>时间段</label>
+                            <select id="attendanceSlot" class="select full"></select>
+                        </div>
+                        <div class="form-group" style="display:flex;align-items:flex-end">
+                            <button class="btn btn-primary full" onclick="loadAttendanceStudents()">加载学员</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="attendance-layout">
+                    <div class="attendance-list">
+                        <div class="toolbar" style="padding:0">
+                            <button class="btn btn-sm btn-primary" onclick="takeAttendance()">✅ 批量消课</button>
+                            <button class="btn btn-sm" style="background:#ff4d4f;color:#fff" onclick="batchAbsence()">❌ 批量旷课</button>
+                            <span id="attendanceCount" style="font-size:13px;color:#666"></span>
+                        </div>
+                        <div class="table-container" style="padding:12px 0">
+                            <table class="table">
+                                <thead>
+                                    <tr><th><input type="checkbox" id="attSelectAll" onchange="toggleAttSelectAll()"></th><th>学员</th><th>教练</th><th>剩余课时</th><th>状态</th></tr>
+                                </thead>
+                                <tbody id="attendanceStudentsTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 统计中心 -->
+            <section id="tab-stats" class="tab-content">
+                <div class="stats-grid" id="statsGrid"></div>
+            </section>
+
+            <!-- 临时插班生 -->
+            <section id="tab-temp" class="tab-content">
+                <div class="toolbar">
+                    <button class="btn btn-primary" onclick="showModal('tempModal')">+ 添加插班生</button>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr><th>姓名</th><th>电话</th><th>等级</th><th>教练</th><th>上课日期</th><th>时间段</th><th>剩余课时</th><th>状态</th><th>操作</th></tr>
+                        </thead>
+                        <tbody id="tempStudentsTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 记录管理 -->
+            <section id="tab-records" class="tab-content">
+                <div class="week-tabs" id="recordTabs">
+                    <div class="week-tab active" onclick="switchRecordTab('attendances')">消课记录</div>
+                    <div class="week-tab" onclick="switchRecordTab('leaves')">请假记录</div>
+                    <div class="week-tab" onclick="switchRecordTab('absences')">旷课记录</div>
+                </div>
+                <div id="recordAttendances" class="record-section">
+                    <div class="toolbar">
+                        <select id="recordsMonth" class="select" onchange="loadRecords()">
+                            <option value="">全部</option>
+                        </select>
+                        <button class="btn btn-sm" onclick="exportRecords()">导出CSV</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr><th>日期</th><th>学员</th><th>教练</th><th>消耗课时</th><th>时间段</th></tr>
+                            </thead>
+                            <tbody id="recordsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="recordLeaves" class="record-section" style="display:none">
+                    <div class="toolbar">
+                        <button class="btn btn-primary" onclick="showModal('leaveModal')">+ 添加请假</button>
+                        <select id="leavesMonth" class="select" onchange="loadLeaves()">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr><th>学员</th><th>请假日期</th><th>星期</th><th>时间段</th><th>原因</th><th>操作</th></tr>
+                            </thead>
+                            <tbody id="leavesTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="recordAbsences" class="record-section" style="display:none">
+                    <div class="toolbar">
+                        <button class="btn btn-primary" onclick="showModal('absenceModal')">+ 添加旷课</button>
+                        <select id="absencesMonth" class="select" onchange="loadAbsences()">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr><th>学员</th><th>旷课日期</th><th>星期</th><th>时间段</th><th>教练</th><th>旷课原因</th><th>操作</th></tr>
+                            </thead>
+                            <tbody id="absencesTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 添加/编辑学员弹窗 -->
+    <div class="modal" id="studentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="studentModalTitle">添加学员</h3>
+                <button class="close" onclick="hideModal('studentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editStudentId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>姓名 *</label>
+                        <input type="text" id="sName" class="input full" required>
+                    </div>
+                    <div class="form-group">
+                        <label>电话</label>
+                        <input type="text" id="sPhone" class="input full">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>等级</label>
+                        <select id="sLevel" class="select full">
+                            <option>初级</option><option>中级</option><option>高级</option><option>竞赛级</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>教练</label>
+                        <select id="sCoach" class="select full"></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>购买课时</label>
+                        <input type="number" id="sPurchased" class="input full" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>赠送课时</label>
+                        <input type="number" id="sBonus" class="input full" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="sNote" class="textarea full" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="hideModal('studentModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveStudent()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 学员详情弹窗 -->
+    <div class="modal" id="studentDetailModal">
+        <div class="modal-content" style="max-width:500px">
+            <div class="modal-header">
+                <h3 id="detailStudentName">学员详情</h3>
+                <button class="close" onclick="hideModal('studentDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="detailStudentId">
+                <div class="student-detail-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                    <div style="background:#f5f8ff;padding:12px;border-radius:8px">
+                        <div style="font-size:12px;color:#666">剩余课时</div>
+                        <div style="font-size:24px;font-weight:700;color:var(--primary)" id="detailStudentHours">-</div>
+                    </div>
+                    <div style="background:#f5f8ff;padding:12px;border-radius:8px">
+                        <div style="font-size:12px;color:#666">状态</div>
+                        <div style="font-size:16px;font-weight:600" id="detailStudentStatus">-</div>
+                    </div>
+                    <div style="background:#f5f8ff;padding:12px;border-radius:8px">
+                        <div style="font-size:12px;color:#666">教练</div>
+                        <div style="font-size:14px;font-weight:500" id="detailStudentCoach">-</div>
+                    </div>
+                    <div style="background:#f5f8ff;padding:12px;border-radius:8px">
+                        <div style="font-size:12px;color:#666">等级</div>
+                        <div style="font-size:14px;font-weight:500" id="detailStudentLevel">-</div>
+                    </div>
+                </div>
+                <div style="background:#f5f8ff;padding:12px;border-radius:8px;margin-bottom:16px">
+                    <div style="font-size:12px;color:#666">电话</div>
+                    <div style="font-size:14px" id="detailStudentPhone">-</div>
+                </div>
+                <div style="margin-bottom:16px">
+                    <div style="font-weight:600;margin-bottom:8px;display:flex;justify-content:space-between">
+                        <span>排课信息</span>
+                        <button class="btn btn-sm" onclick="switchToSchedule()">+ 添加排课</button>
+                    </div>
+                    <div style="background:#f5f8ff;padding:12px;border-radius:8px;max-height:150px;overflow-y:auto" id="detailScheduleList">
+                        <div style="color:#999;text-align:center;padding:16px">暂无排课</div>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-weight:600;margin-bottom:8px">请假记录</div>
+                    <div style="background:#fffbe6;padding:12px;border-radius:8px;max-height:120px;overflow-y:auto" id="detailLeaveList">
+                        <div style="color:#999;text-align:center;padding:16px">暂无请假记录</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="hideModal('studentDetailModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入CSV弹窗 -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>导入学员CSV</h3>
+                <button class="close" onclick="hideModal('importModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="file" id="csvFile" accept=".csv" class="file-input">
+                <p class="hint">支持UTF-8/GBK编码的CSV文件，按姓名自动合并重复学员</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="hideModal('importModal')">取消</button>
+                <button class="btn btn-primary" onclick="importCSV()">导入</button>
+            </div>
+        </div>
+    </div>
+
+            <!-- 添加排课弹窗 -->
+            <div class="modal" id="addScheduleModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>添加排课</h3>
+                        <button class="close" onclick="hideModal('addScheduleModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>选择学员</label>
+                            <select id="scheduleStudent" class="select full"></select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>星期</label>
+                                <select id="scheduleDay" class="select full" onchange="loadScheduleSlots()">
+                                    <option>星期一</option><option>星期二</option><option>星期三</option>
+                                    <option>星期四</option><option>星期五</option><option>星期六</option><option>星期日</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>时间段</label>
+                                <select id="scheduleSlot" class="select full"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>教练</label>
+                            <select id="scheduleCoach" class="select full"></select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="hideModal('addScheduleModal')">取消</button>
+                        <button class="btn btn-primary" onclick="addSchedule()">添加</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 导入课表弹窗 -->
+            <div class="modal" id="importScheduleModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>导入课表CSV</h3>
+                        <button class="close" onclick="hideModal('importScheduleModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="file" id="scheduleFile" accept=".csv" class="file-input">
+                        <p class="hint">CSV需包含列：姓名、星期、时间段、教练</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="hideModal('importScheduleModal')">取消</button>
+                        <button class="btn btn-primary" onclick="importSchedule()">导入</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 旷课记录弹窗 -->
+            <div class="modal" id="absenceModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>添加旷课记录</h3>
+                        <button class="close" onclick="hideModal('absenceModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>选择学员</label>
+                            <select id="absenceStudent" class="select full"></select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>旷课日期</label>
+                                <input type="date" id="absenceDate" class="input full">
+                            </div>
+                            <div class="form-group">
+                                <label>时间段</label>
+                                <select id="absenceSlot" class="select full"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>旷课原因（必填）</label>
+                            <textarea id="absenceReason" class="textarea full" rows="2" placeholder="请输入旷课原因..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="hideModal('absenceModal')">取消</button>
+                        <button class="btn btn-primary" onclick="saveAbsence()">保存</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 请假弹窗 -->
+            <div class="modal" id="leaveModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="leaveModalTitle">添加请假</h3>
+                        <button class="close" onclick="hideModal('leaveModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editLeaveId">
+                        <div class="form-group">
+                            <label>选择学员</label>
+                            <select id="leaveStudent" class="select full"></select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>请假日期</label>
+                                <input type="date" id="leaveDate" class="input full">
+                            </div>
+                            <div class="form-group">
+                                <label>时间段</label>
+                                <select id="leaveSlot" class="select full"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>请假原因</label>
+                            <textarea id="leaveReason" class="textarea full" rows="2" placeholder="如：生病、外出等"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="hideModal('leaveModal')">取消</button>
+                        <button class="btn btn-primary" onclick="saveLeave()">保存</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 临时插班生弹窗 -->
+            <div class="modal" id="tempModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="tempModalTitle">临时插班生（快速排课消课）</h3>
+                        <button class="close" onclick="hideModal('tempModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editTempId">
+                        <div class="form-group">
+                            <label>选择学员</label>
+                            <select id="tempSelectStudent" class="select full" onchange="onTempStudentChange()">
+                                <option value="">-- 新学员 --</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>姓名 *</label>
+                                <input type="text" id="tempName" class="input full" required>
+                            </div>
+                            <div class="form-group">
+                                <label>电话</label>
+                                <input type="text" id="tempPhone" class="input full">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>等级</label>
+                                <select id="tempLevel" class="select full">
+                                    <option>初级</option><option>中级</option><option>高级</option><option>竞赛级</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>教练</label>
+                                <select id="tempCoach" class="select full"></select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>上课日期</label>
+                                <input type="date" id="tempDate" class="input full">
+                            </div>
+                            <div class="form-group">
+                                <label>时间段</label>
+                                <select id="tempSlot" class="select full"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="tempAttendNow" checked> 同时完成排课和消课
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="hideModal('tempModal')">取消</button>
+                        <button class="btn btn-primary" onclick="saveTempStudent()">保存</button>
+                    </div>
+                </div>
+            </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

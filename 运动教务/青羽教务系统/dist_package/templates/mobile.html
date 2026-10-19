@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>青羽教务 - 手机版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #4facfe;
+            --primary-dark: #00f2fe;
+            --success: #52c41a;
+            --warning: #faad14;
+            --danger: #ff4d4f;
+            --bg: #f5f5f5;
+            --card: #fff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e8e8e8;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+        
+        .header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; padding: 16px; text-align: center; position: sticky; top: 0; z-index: 100; }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        
+        .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { flex-shrink: 0; padding: 12px 16px; font-size: 13px; color: var(--text-light); border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
+        .tab.active { color: var(--primary); border-color: var(--primary); }
+        
+        .content { padding: 16px; }
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+        .stat-card { background: var(--card); border-radius: 12px; padding: 16px; text-align: center; }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: var(--primary); }
+        .stat-card .label { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+        
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .list-item:last-child { border-bottom: none; }
+        .list-item .info { flex: 1; }
+        .list-item .name { font-size: 15px; font-weight: 600; }
+        .list-item .detail { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+        .list-item .hours { font-size: 18px; font-weight: 700; color: var(--primary); text-align: right; }
+        .list-item .hours.low { color: var(--danger); }
+        
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+        .badge-active { background: #f6ffed; color: var(--success); }
+        .badge-inactive { background: #fff1f0; color: var(--danger); }
+        .badge-pending { background: #fffbe6; color: var(--warning); }
+        
+        .btn { display: inline-block; padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; text-align: center; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; }
+        .btn-block { display: block; width: 100%; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; color: var(--text-light); margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+        .form-row { display: flex; gap: 12px; }
+        .form-row .form-group { flex: 1; }
+        
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 16px; }
+        .modal.show { display: flex; }
+        .modal-content { background: var(--card); border-radius: 16px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); }
+        .modal-header h3 { font-size: 16px; }
+        .modal-body { padding: 16px; }
+        .modal-footer { display: flex; gap: 8px; padding: 16px; border-top: 1px solid var(--border); }
+        .modal-footer .btn { flex: 1; }
+        
+        .search-box { padding: 12px 16px; background: var(--card); }
+        .search-box input { width: 100%; padding: 10px 16px; border: 1px solid var(--border); border-radius: 20px; font-size: 14px; background: #f5f5f5; }
+        
+        .empty { text-align: center; padding: 40px; color: var(--text-light); }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; }
+        
+        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; border-top: 1px solid var(--border); padding: 8px 0; padding-bottom: env(safe-area-inset-bottom, 8px); }
+        .tab-bar .tab { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 6px; border: none; font-size: 10px; color: var(--text-light); }
+        .tab-bar .tab .icon { font-size: 20px; margin-bottom: 2px; }
+        .tab-bar .tab.active { color: var(--primary); }
+        
+        .container { padding-bottom: 70px; }
+        
+        .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px; }
+        .quick-action { background: var(--card); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
+        .quick-action .icon { font-size: 28px; margin-bottom: 8px; }
+        .quick-action .label { font-size: 13px; color: var(--text); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>青羽教务系统</h1>
+    </div>
+    
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索学员姓名、电话..." oninput="searchStudents(this.value)">
+    </div>
+    
+    <div class="tabs">
+        <div class="tab active" data-tab="home">首页</div>
+        <div class="tab" data-tab="students">学员</div>
+        <div class="tab" data-tab="schedule">课表</div>
+        <div class="tab" data-tab="leaves">请假</div>
+        <div class="tab" data-tab="temp">插班</div>
+    </div>
+    
+    <div class="container">
+        <!-- 首页 -->
+        <div class="section active" id="sec-home">
+            <div class="stat-grid" id="statsGrid"></div>
+            <div class="card">
+                <h3 style="font-size: 14px; margin-bottom: 12px;">快捷操作</h3>
+                <div class="quick-actions">
+                    <div class="quick-action" onclick="switchTab('students'); showModal('studentModal')">
+                        <div class="icon">👤</div>
+                        <div class="label">添加学员</div>
+                    </div>
+                    <div class="quick-action" onclick="switchTab('leaves'); showModal('leaveModal')">
+                        <div class="icon">📝</div>
+                        <div class="label">请假登记</div>
+                    </div>
+                    <div class="quick-action" onclick="switchTab('temp'); showModal('tempModal')">
+                        <div class="icon">🏃</div>
+                        <div class="label">插班登记</div>
+                    </div>
+                    <div class="quick-action" onclick="switchTab('attendance')">
+                        <div class="icon">✅</div>
+                        <div class="label">消课点名</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3 style="font-size: 14px; margin-bottom: 12px;">近期请假</h3>
+                <div id="recentLeaves"></div>
+            </div>
+        </div>
+        
+        <!-- 学员列表 -->
+        <div class="section" id="sec-students">
+            <div id="studentsList"></div>
+        </div>
+        
+        <!-- 课表 -->
+        <div class="section" id="sec-schedule">
+            <div class="card" style="margin-bottom: 12px;">
+                <select id="scheduleDay" onchange="loadMobileSchedule()" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
+                    <option>星期一</option><option>星期二</option><option>星期三</option>
+                    <option>星期四</option><option>星期五</option><option>星期六</option><option>星期日</option>
+                </select>
+            </div>
+            <div id="scheduleList"></div>
+        </div>
+        
+        <!-- 消课点名 -->
+        <div class="section" id="sec-attendance">
+            <div class="card" style="margin-bottom: 12px;">
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <div class="form-group" style="flex:1;margin-bottom:0">
+                        <label>日期</label>
+                        <input type="date" id="attDate" style="padding:10px;border:1px solid var(--border);border-radius:8px;width:100%">
+                    </div>
+                    <div class="form-group" style="flex:1;margin-bottom:0">
+                        <label>星期</label>
+                        <select id="attDay" onchange="loadAttSlots()" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px">
+                            <option>星期一</option><option>星期二</option><option>星期三</option>
+                            <option>星期四</option><option>星期五</option><option>星期六</option><option>星期日</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:12px">
+                    <label>时间段</label>
+                    <select id="attSlot" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></select>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="loadAttStudents()">加载学员</button>
+            </div>
+            <div id="attList"></div>
+            <div id="batchAbsenceSection" style="display:none;margin-top:16px">
+                <div class="card">
+                    <h4 style="margin-bottom:12px">批量旷课</h4>
+                    <p style="font-size:12px;color:#666;margin-bottom:12px">已选择 <span id="selectedCount">0</span> 名学员</p>
+                    <div class="form-group">
+                        <label>旷课原因（必填）</label>
+                        <textarea id="batchAbsenceReason" rows="2" placeholder="请输入旷课原因..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></textarea>
+                    </div>
+                    <div style="display:flex;gap:8px">
+                        <button class="btn btn-block" onclick="cancelBatchAbsence()" style="flex:1">取消</button>
+                        <button class="btn btn-block" style="flex:1;background:#ff4d4f;color:#fff" onclick="confirmBatchAbsence()">确认旷课</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 旷课弹窗 -->
+        <div class="modal" id="absenceModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>旷课登记</h3>
+                    <span style="font-size:24px;cursor:pointer" onclick="hideModal('absenceModal')">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="absenceStudentId">
+                    <input type="hidden" id="absenceStudentName">
+                    <input type="hidden" id="absenceSlot">
+                    <input type="hidden" id="absenceCoach">
+                    <div class="form-group">
+                        <label>学员</label>
+                        <div id="absenceStudentNameDisplay" style="padding:10px;background:#f5f5f5;border-radius:8px;font-weight:600"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>旷课原因（必填）</label>
+                        <textarea id="absenceReason" rows="3" placeholder="请输入旷课原因..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" onclick="hideModal('absenceModal')">取消</button>
+                    <button class="btn btn-primary" style="background:#ff4d4f" onclick="confirmAbsence()">确认旷课</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 请假与记录 -->
+        <div class="section" id="sec-leaves">
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+                <button class="btn btn-primary" style="flex:1" onclick="switchRecordTab('leaves')">请假记录</button>
+                <button class="btn" style="flex:1;background:#f5f5f5" onclick="switchRecordTab('records')">消课记录</button>
+                <button class="btn" style="flex:1;background:#f5f5f5" onclick="switchRecordTab('absences')">旷课记录</button>
+            </div>
+            <div id="leavesSection">
+                <button class="btn btn-primary btn-block" onclick="showModal('leaveModal')" style="margin-bottom: 12px;">+ 添加请假</button>
+                <div id="leavesList"></div>
+            </div>
+            <div id="recordsSection" style="display:none">
+                <div id="recordsList"></div>
+            </div>
+            <div id="absencesSection" style="display:none">
+                <button class="btn btn-primary btn-block" onclick="showModal('absenceModal')" style="margin-bottom: 12px;">+ 添加旷课</button>
+                <div id="absencesList"></div>
+            </div>
+        </div>
+        
+        <!-- 插班生 -->
+        <div class="section" id="sec-temp">
+            <button class="btn btn-primary btn-block" onclick="showModal('tempModal')" style="margin-bottom: 16px;">+ 添加插班生</button>
+            <div id="tempList"></div>
+        </div>
+    </div>
+    
+    <!-- 底部导航 -->
+    <div class="tab-bar">
+        <div class="tab active" data-tab="home"><span class="icon">🏠</span>首页</div>
+        <div class="tab" data-tab="students"><span class="icon">👥</span>学员</div>
+        <div class="tab" data-tab="schedule"><span class="icon">📅</span>课表</div>
+        <div class="tab" data-tab="attendance"><span class="icon">✅</span>消课</div>
+        <div class="tab" data-tab="leaves"><span class="icon">📝</span>请假</div>
+        <div class="tab" data-tab="temp"><span class="icon">🏃</span>插班</div>
+    </div>
+    
+    <!-- 添加学员弹窗 -->
+    <div class="modal" id="studentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加学员</h3>
+                <span style="font-size:24px;cursor:pointer" onclick="hideModal('studentModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>姓名 *</label>
+                    <input type="text" id="sName" placeholder="请输入姓名">
+                </div>
+                <div class="form-group">
+                    <label>电话</label>
+                    <input type="text" id="sPhone" placeholder="请输入电话">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>等级</label>
+                        <select id="sLevel">
+                            <option>初级</option><option>中级</option><option>高级</option><option>竞赛级</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>教练</label>
+                        <select id="sCoach"><option value="">-- 选择 --</option></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>购买课时</label>
+                        <input type="number" id="sPurchased" value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>赠送课时</label>
+                        <input type="number" id="sBonus" value="0" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="sNote" rows="2" placeholder="备注信息"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="hideModal('studentModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveStudent()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 插班生弹窗 -->
+    <div class="modal" id="tempModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>临时插班生登记</h3>
+                <span style="font-size:24px;cursor:pointer" onclick="hideModal('tempModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>姓名 *</label>
+                    <input type="text" id="tempName" placeholder="请输入姓名">
+                </div>
+                <div class="form-group">
+                    <label>电话</label>
+                    <input type="text" id="tempPhone" placeholder="请输入电话">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>等级</label>
+                        <select id="tempLevel">
+                            <option>初级</option><option>中级</option><option>高级</option><option>竞赛级</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>教练</label>
+                        <select id="tempCoach"><option value="">-- 选择 --</option></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>上课日期</label>
+                        <input type="date" id="tempDate">
+                    </div>
+                    <div class="form-group">
+                        <label>时间段</label>
+                        <select id="tempSlot"><option value="">-- 选择 --</option></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>购买课时</label>
+                    <input type="number" id="tempHours" value="1" min="1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="hideModal('tempModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveTemp()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑学员弹窗 -->
+    <div class="modal" id="editStudentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑学员</h3>
+                <span style="font-size:24px;cursor:pointer" onclick="hideModal('editStudentModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editStudentId">
+                <div class="form-group">
+                    <label>姓名 *</label>
+                    <input type="text" id="editStudentName">
+                </div>
+                <div class="form-group">
+                    <label>电话</label>
+                    <input type="text" id="editStudentPhone">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>等级</label>
+                        <select id="editStudentLevel">
+                            <option>初级</option><option>中级</option><option>高级</option><option>竞赛级</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>教练</label>
+                        <select id="editStudentCoach"><option value="">-- 选择 --</option></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>状态</label>
+                    <select id="editStudentStatus">
+                        <option value="active">在读</option>
+                        <option value="inactive">已结</option>
+                        <option value="potential">潜在</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>购买课时</label>
+                        <input type="number" id="editStudentPurchased" value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>赠送课时</label>
+                        <input type="number" id="editStudentBonus" value="0" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>剩余课时</label>
+                    <input type="number" id="editStudentRemaining" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="editStudentNote" rows="2" placeholder="备注信息"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="hideModal('editStudentModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveMobileStudent()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 请假弹窗 -->
+    <div class="modal" id="leaveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>请假登记</h3>
+                <span style="font-size:24px;cursor:pointer" onclick="hideModal('leaveModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>选择学员</label>
+                    <select id="leaveStudent" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>请假日期</label>
+                        <input type="date" id="leaveDate">
+                    </div>
+                    <div class="form-group">
+                        <label>时间段</label>
+                        <select id="leaveSlot"><option value="">-- 选择 --</option></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>请假原因</label>
+                    <textarea id="leaveReason" rows="2" placeholder="如：生病、外出等" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="hideModal('leaveModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveLeave()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 手机端旷课弹窗 -->
+    <div class="modal" id="mobileAbsenceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>旷课登记</h3>
+                <span style="font-size:24px;cursor:pointer" onclick="hideModal('mobileAbsenceModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="mobileAbsenceStudentId">
+                <input type="hidden" id="mobileAbsenceStudentName">
+                <input type="hidden" id="mobileAbsenceSlot">
+                <input type="hidden" id="mobileAbsenceCoach">
+                <input type="hidden" id="mobileAbsenceDate">
+                <div class="form-group">
+                    <label>学员</label>
+                    <div id="mobileAbsenceStudentDisplay" style="padding:10px;background:#f5f5f5;border-radius:8px;font-weight:600"></div>
+                </div>
+                <div class="form-group">
+                    <label>旷课原因（必填）</label>
+                    <textarea id="mobileAbsenceReason" rows="3" placeholder="请输入旷课原因..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="hideModal('mobileAbsenceModal')">取消</button>
+                <button class="btn btn-primary" style="background:#ff4d4f" onclick="confirmMobileAbsence()">确认旷课</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 手机端学员详情弹窗 -->
+    <div class="modal" id="mobileStudentDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="mobileDetailName">学员详情</h3>
+                <span style="font-size:24px;cursor:pointer" onclick="hideModal('mobileStudentDetailModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="mobileDetailId">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                    <div style="background:#f5f8ff;padding:12px;border-radius:8px;text-align:center">
+                        <div style="font-size:11px;color:#666">剩余课时</div>
+                        <div style="font-size:22px;font-weight:700;color:var(--primary)" id="mobileDetailHours">-</div>
+                    </div>
+                    <div style="background:#f5f8ff;padding:12px;border-radius:8px">
+                        <div style="font-size:11px;color:#666">教练</div>
+                        <div style="font-size:14px;font-weight:500" id="mobileDetailCoach">-</div>
+                    </div>
+                    <div style="background:#f5f8ff;padding:12px;border-radius:8px">
+                        <div style="font-size:11px;color:#666">等级</div>
+                        <div style="font-size:14px" id="mobileDetailLevel">-</div>
+                    </div>
+                    <div style="background:#f5f8ff;padding:12px;border-radius:8px">
+                        <div style="font-size:11px;color:#666">电话</div>
+                        <div style="font-size:14px" id="mobileDetailPhone">-</div>
+                    </div>
+                </div>
+                <div style="margin-bottom:12px">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:8px">排课信息</div>
+                    <div style="background:#f5f8ff;padding:12px;border-radius:8px;max-height:150px;overflow-y:auto" id="mobileDetailScheduleList">
+                        <div style="color:#999;text-align:center;padding:12px">暂无排课</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="hideModal('mobileStudentDetailModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let students = [];
+        let settings = {};
+        let attStudents = [];
+        let selectedAttStudents = new Set();
+        let batchMode = false;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initTabs();
+            loadStats();
+            loadStudents();
+            loadLeaves();
+            loadTempStudents();
+            loadSettings();
+            const today = new Date().getDay();
+            const dayNames = ['','星期一','星期二','星期三','星期四','星期五','星期六','星期日'];
+            document.getElementById('scheduleDay').value = dayNames[today] || '星期一';
+            loadMobileSchedule();
+        });
+        
+        function initTabs() {
+            document.querySelectorAll('.tabs .tab, .tab-bar .tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchTab(tab.dataset.tab);
+                });
+            });
+        }
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll(`.tab[data-tab="${tab}"]`).forEach(t => t.classList.add('active'));
+            document.getElementById('sec-' + tab).classList.add('active');
+        }
+        
+        async function loadStats() {
+            const res = await fetch('/api/stats');
+            const stats = await res.json();
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card"><div class="value">${stats.active_students}</div><div class="label">在读学员</div></div>
+                <div class="stat-card"><div class="value">${stats.remaining_hours}</div><div class="label">剩余课时</div></div>
+            `;
+        }
+        
+        async function loadSettings() {
+            const res = await fetch('/api/settings');
+            settings = await res.json();
+            const coaches = settings.coaches || [];
+            document.getElementById('sCoach').innerHTML = '<option value="">-- 选择 --</option>' + coaches.map(c => `<option>${c}</option>`).join('');
+            document.getElementById('tempCoach').innerHTML = '<option value="">-- 选择 --</option>' + coaches.map(c => `<option>${c}</option>`).join('');
+        }
+        
+        async function loadStudents() {
+            const res = await fetch('/api/students');
+            students = await res.json();
+            renderStudents();
+            document.getElementById('leaveStudent').innerHTML = '<option value="">-- 选择学员 --</option>' + students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        }
+        
+        function renderStudents(list = students) {
+            if (list.length === 0) {
+                document.getElementById('studentsList').innerHTML = '<div class="empty"><div class="empty-icon">👥</div>暂无学员</div>';
+                return;
+            }
+            document.getElementById('studentsList').innerHTML = list.map(s => `
+                <div class="card">
+                    <div class="list-item">
+                        <div class="info">
+                            <div class="name">${s.name}</div>
+                            <div class="detail">${s.phone || '-'} | ${s.coach || '-'}</div>
+                        </div>
+                        <div style="text-align:right">
+                            <div class="hours ${(s.remaining_hours || 0) < 5 ? 'low' : ''}">${s.remaining_hours || 0}</div>
+                            <div style="font-size:11px;color:#999">剩余课时</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:12px">
+                        <button class="btn" style="flex:1;font-size:12px" onclick="showMobileStudentDetail('${s.id}')">详情</button>
+                        <button class="btn btn-primary" style="flex:1;font-size:12px" onclick="editMobileStudent('${s.id}')">编辑</button>
+                        <button class="btn btn-danger" style="flex:1;font-size:12px" onclick="deleteMobileStudent('${s.id}')">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function editMobileStudent(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+            
+            document.getElementById('editStudentId').value = studentId;
+            document.getElementById('editStudentName').value = student.name || '';
+            document.getElementById('editStudentPhone').value = student.phone || '';
+            document.getElementById('editStudentLevel').value = student.level || '初级';
+            document.getElementById('editStudentCoach').value = student.coach || '';
+            document.getElementById('editStudentStatus').value = student.status || 'active';
+            document.getElementById('editStudentPurchased').value = student.purchased_hours || 0;
+            document.getElementById('editStudentBonus').value = student.bonus_hours || 0;
+            document.getElementById('editStudentRemaining').value = student.remaining_hours || 0;
+            document.getElementById('editStudentNote').value = student.note || '';
+            
+            showModal('editStudentModal');
+        }
+        
+        async function saveMobileStudent() {
+            const studentId = document.getElementById('editStudentId').value;
+            const name = document.getElementById('editStudentName').value.trim();
+            if (!name) return alert('请输入姓名');
+            
+            const body = {
+                name: name,
+                phone: document.getElementById('editStudentPhone').value.trim(),
+                level: document.getElementById('editStudentLevel').value,
+                coach: document.getElementById('editStudentCoach').value,
+                status: document.getElementById('editStudentStatus').value,
+                note: document.getElementById('editStudentNote').value.trim(),
+                purchased_hours: parseFloat(document.getElementById('editStudentPurchased').value) || 0,
+                bonus_hours: parseFloat(document.getElementById('editStudentBonus').value) || 0,
+                remaining_hours: parseFloat(document.getElementById('editStudentRemaining').value) || 0
+            };
+            
+            await fetch(API_BASE + '/api/students/' + studentId, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            
+            hideModal('editStudentModal');
+            alert('修改成功！');
+            loadStudents();
+        }
+        
+        async function deleteMobileStudent(studentId) {
+            if (!confirm('确定删除该学员？')) return;
+            await fetch(API_BASE + '/api/students/batch', {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ids: [studentId]})
+            });
+            alert('已删除');
+            loadStudents();
+            loadStats();
+        }
+        
+        async function showMobileStudentDetail(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+            
+            const schedulesRes = await fetch('/api/schedules');
+            const schedules = await schedulesRes.json();
+            const studentSchedules = schedules.filter(sc => sc.student_id === studentId);
+            
+            const scheduleText = studentSchedules.length > 0 
+                ? studentSchedules.map(sc => `${sc.week_day} ${sc.time_slot}`).join(', ')
+                : '暂无排课';
+            
+            document.getElementById('mobileDetailId').value = studentId;
+            document.getElementById('mobileDetailName').textContent = student.name;
+            document.getElementById('mobileDetailPhone').textContent = student.phone || '-';
+            document.getElementById('mobileDetailCoach').textContent = student.coach || '-';
+            document.getElementById('mobileDetailLevel').textContent = student.level || '-';
+            document.getElementById('mobileDetailHours').textContent = `${student.remaining_hours || 0} 节`;
+            document.getElementById('mobileDetailSchedule').textContent = scheduleText;
+            
+            const scheduleList = document.getElementById('mobileDetailScheduleList');
+            if (studentSchedules.length > 0) {
+                scheduleList.innerHTML = studentSchedules.map(sc => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0">
+                        <span>${sc.week_day} ${sc.time_slot}</span>
+                        <button class="btn btn-sm btn-danger" onclick="deleteScheduleMobile('${sc.id}'); event.stopPropagation();" style="padding:4px 8px">删除</button>
+                    </div>
+                `).join('');
+            } else {
+                scheduleList.innerHTML = '<div style="color:#999;font-size:13px;text-align:center;padding:12px">暂无排课</div>';
+            }
+            
+            showModal('mobileStudentDetailModal');
+        }
+        
+        async function deleteScheduleMobile(scheduleId) {
+            if (!confirm('确定删除该排课？')) return;
+            await fetch('/api/schedules/' + scheduleId, { method: 'DELETE' });
+            loadMobileSchedule();
+            const studentId = document.getElementById('mobileDetailId').value;
+            if (studentId) showMobileStudentDetail(studentId);
+        }
+        
+        function searchStudents(keyword) {
+            keyword = keyword.toLowerCase();
+            const filtered = students.filter(s => 
+                (s.name || '').toLowerCase().includes(keyword) || 
+                (s.phone || '').toLowerCase().includes(keyword)
+            );
+            renderStudents(filtered);
+        }
+        
+        async function saveStudent() {
+            const name = document.getElementById('sName').value.trim();
+            if (!name) return alert('请输入姓名');
+            const body = {
+                name,
+                phone: document.getElementById('sPhone').value.trim(),
+                level: document.getElementById('sLevel').value,
+                coach: document.getElementById('sCoach').value,
+                purchased_hours: parseFloat(document.getElementById('sPurchased').value) || 0,
+                bonus_hours: parseFloat(document.getElementById('sBonus').value) || 0,
+                note: document.getElementById('sNote').value.trim(),
+                status: 'active'
+            };
+            body.remaining_hours = body.purchased_hours + body.bonus_hours;
+            await fetch('/api/students', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            hideModal('studentModal');
+            loadStudents();
+            loadStats();
+        }
+        
+        async function loadMobileSchedule() {
+            const day = document.getElementById('scheduleDay').value;
+            const res = await fetch('/api/settings');
+            const settings = await res.json();
+            const slots = settings.time_slots[day] || [];
+            const schedulesRes = await fetch('/api/schedules?day=' + day);
+            const schedules = await schedulesRes.json();
+            const studentsRes = await fetch('/api/students');
+            const allStudents = await studentsRes.json();
+            const studentMap = {};
+            allStudents.forEach(s => studentMap[s.id] = s);
+            
+            let html = '';
+            slots.forEach(slot => {
+                const slotStudents = schedules.filter(s => s.time_slot === slot);
+                html += `<div class="card" style="margin-bottom: 12px;">
+                    <div style="font-weight:600;margin-bottom:8px">${slot}</div>`;
+                if (slotStudents.length === 0) {
+                    html += '<div style="color:#999;font-size:12px">(暂无学员)</div>';
+                } else {
+                    slotStudents.forEach(sc => {
+                        const student = studentMap[sc.student_id] || {};
+                        const coach = sc.coach || student.coach || '';
+                        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0">
+                            <div>
+                                ${student.name || '未知'} ${coach ? '| ' + coach : ''}
+                            </div>
+                            <button class="btn btn-sm btn-danger" onclick="deleteScheduleMobile('${sc.id}')" style="padding:4px 8px;font-size:11px">删除</button>
+                        </div>`;
+                    });
+                }
+                html += '</div>';
+            });
+            document.getElementById('scheduleList').innerHTML = html || '<div class="empty"><div class="empty-icon">📅</div>暂无课表</div>';
+        }
+        
+        async function loadLeaves() {
+            const res = await fetch('/api/leaves');
+            const leaves = await res.json();
+            document.getElementById('leavesList').innerHTML = leaves.length === 0 ? '<div class="empty"><div class="empty-icon">📝</div>暂无请假记录</div>' : leaves.map(l => `
+                <div class="card">
+                    <div class="list-item">
+                        <div class="info">
+                            <div class="name">${l.student_name || '-'}</div>
+                            <div class="detail">${l.leave_date} ${l.week_day || ''} ${l.time_slot || ''}</div>
+                            <div style="font-size:12px;color:#666;margin-top:4px">${l.reason || '-'}</div>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="deleteLeave('${l.id}')">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function loadRecords() {
+            const res = await fetch('/api/attendance');
+            const records = await res.json();
+            document.getElementById('recordsList').innerHTML = records.length === 0 ? '<div class="empty"><div class="empty-icon">✅</div>暂无消课记录</div>' : records.reverse().map(r => `
+                <div class="card">
+                    <div class="list-item">
+                        <div class="info">
+                            <div class="name">${r.student_name || '-'}</div>
+                            <div class="detail">${r.date || '-'} ${r.time_slot || ''}</div>
+                            <div style="font-size:12px;color:#666;margin-top:4px">教练: ${r.coach || '-'}</div>
+                        </div>
+                        <span class="badge badge-active">消课</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function switchRecordTab(tab) {
+            document.querySelectorAll('#sec-leaves .btn').forEach(b => {
+                b.style.background = '#f5f5f5';
+                b.classList.remove('btn-primary');
+            });
+            document.getElementById('leavesSection').style.display = 'none';
+            document.getElementById('recordsSection').style.display = 'none';
+            document.getElementById('absencesSection').style.display = 'none';
+            
+            if (tab === 'leaves') {
+                document.getElementById('leavesSection').style.display = 'block';
+                event.target.style.background = 'linear-gradient(135deg, var(--primary), var(--primary-dark))';
+                event.target.classList.add('btn-primary');
+            } else if (tab === 'records') {
+                document.getElementById('recordsSection').style.display = 'block';
+                loadRecords();
+                event.target.style.background = 'linear-gradient(135deg, var(--primary), var(--primary-dark))';
+                event.target.classList.add('btn-primary');
+            } else if (tab === 'absences') {
+                document.getElementById('absencesSection').style.display = 'block';
+                loadAbsencesMobile();
+                event.target.style.background = 'linear-gradient(135deg, var(--primary), var(--primary-dark))';
+                event.target.classList.add('btn-primary');
+            }
+        }
+        
+        function showModal(id) {
+            document.getElementById(id).classList.add('show');
+            if (id === 'studentModal') {
+                ['sName','sPhone','sNote'].forEach(f => document.getElementById(f).value = '');
+                document.getElementById('sPurchased').value = '0';
+                document.getElementById('sBonus').value = '0';
+            }
+            if (id === 'leaveModal') {
+                document.getElementById('leaveStudent').innerHTML = '<option value="">-- 选择学员 --</option>' + students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                document.getElementById('leaveDate').value = '';
+                document.getElementById('leaveSlot').innerHTML = '<option value="">-- 选择 --</option>';
+                document.getElementById('leaveReason').value = '';
+            }
+            if (id === 'tempModal') {
+                ['tempName','tempPhone'].forEach(f => document.getElementById(f).value = '');
+                document.getElementById('tempDate').value = '';
+                document.getElementById('tempSlot').innerHTML = '<option value="">-- 选择 --</option>';
+                document.getElementById('tempHours').value = '1';
+            }
+            if (id === 'mobileAbsenceModal') {
+                document.getElementById('mobileAbsenceStudent').innerHTML = '<option value="">-- 选择学员 --</option>' + students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                document.getElementById('mobileAbsenceDate').value = '';
+                document.getElementById('mobileAbsenceSlot').innerHTML = '<option value="">-- 选择 --</option>';
+                document.getElementById('mobileAbsenceReason').value = '';
+            }
+            if (id === 'editStudentModal') {
+                const coaches = settings.coaches || [];
+                document.getElementById('editStudentCoach').innerHTML = '<option value="">-- 选择 --</option>' + coaches.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
+            if (id === 'mobileStudentDetailModal') {
+                loadSettings();
+            }
+        }
+            if (id === 'leaveModal') {
+                document.getElementById('leaveStudent').innerHTML = '<option value="">-- 选择学员 --</option>' + students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                document.getElementById('leaveDate').value = '';
+                document.getElementById('leaveSlot').innerHTML = '<option value="">-- 选择 --</option>';
+                document.getElementById('leaveReason').value = '';
+            }
+            if (id === 'tempModal') {
+                ['tempName','tempPhone'].forEach(f => document.getElementById(f).value = '');
+                document.getElementById('tempDate').value = '';
+                document.getElementById('tempSlot').innerHTML = '<option value="">-- 选择 --</option>';
+                document.getElementById('tempHours').value = '1';
+            }
+        }
+        
+        function hideModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+        
+        document.getElementById('leaveDate').addEventListener('change', async function() {
+            const date = this.value;
+            if (!date) return;
+            const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const d = new Date(date);
+            const weekDay = weekDays[d.getDay()];
+            const slots = settings.time_slots[weekDay] || [];
+            document.getElementById('leaveSlot').innerHTML = '<option value="">-- 选择 --</option>' + slots.map(s => `<option>${s}</option>`).join('');
+        });
+        
+        document.getElementById('tempDate').addEventListener('change', async function() {
+            const date = this.value;
+            if (!date) return;
+            const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const d = new Date(date);
+            const weekDay = weekDays[d.getDay()];
+            const slots = settings.time_slots[weekDay] || [];
+            document.getElementById('tempSlot').innerHTML = '<option value="">-- 选择 --</option>' + slots.map(s => `<option>${s}</option>`).join('');
+        });
+        
+        async function deleteLeave(id) {
+            if (!confirm('确定删除？')) return;
+            await fetch('/api/leaves/' + id, { method: 'DELETE' });
+            loadLeaves();
+        }
+        
+        async function loadTempStudents() {
+            const res = await fetch('/api/temp-students');
+            const temp = await res.json();
+            document.getElementById('tempList').innerHTML = temp.length === 0 ? '<div class="empty"><div class="empty-icon">🏃</div>暂无插班生</div>' : temp.map(t => `
+                <div class="card">
+                    <div class="list-item">
+                        <div class="info">
+                            <div class="name">${t.name}</div>
+                            <div class="detail">${t.phone || '-'} | ${t.level || '-'} | ${t.coach || '-'}</div>
+                            <div class="detail">${t.course_date} ${t.time_slot || ''}</div>
+                        </div>
+                        <div style="text-align:right">
+                            <div class="hours">${t.hours_remaining || 0}</div>
+                            <button class="btn btn-sm btn-danger" onclick="deleteTemp('${t.id}')" style="margin-top:8px">删除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function saveTemp() {
+            const name = document.getElementById('tempName').value.trim();
+            if (!name) return alert('请输入姓名');
+            
+            const date = document.getElementById('tempDate').value;
+            const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            let weekDay = '';
+            if (date) {
+                const d = new Date(date);
+                weekDay = weekDays[d.getDay()];
+            }
+            
+            await fetch('/api/temp-students', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    name,
+                    phone: document.getElementById('tempPhone').value.trim(),
+                    level: document.getElementById('tempLevel').value,
+                    coach: document.getElementById('tempCoach').value,
+                    course_date: date,
+                    week_day: weekDay,
+                    time_slot: document.getElementById('tempSlot').value,
+                    hours_remaining: parseFloat(document.getElementById('tempHours').value) || 1
+                })
+            });
+            hideModal('tempModal');
+            loadTempStudents();
+        }
+        
+        async function deleteTemp(id) {
+            if (!confirm('确定删除？')) return;
+            await fetch('/api/temp-students/' + id, { method: 'DELETE' });
+            loadTempStudents();
+        }
+        
+        // 消课点名
+        async function loadAttSlots() {
+            const day = document.getElementById('attDay').value;
+            const res = await fetch('/api/settings');
+            const settings = await res.json();
+            const slots = settings.time_slots[day] || [];
+            document.getElementById('attSlot').innerHTML = slots.map(s => `<option value="${s}">${s}</option>`).join('');
+        }
+        
+        async function loadAttStudents() {
+            const day = document.getElementById('attDay').value;
+            const slot = document.getElementById('attSlot').value;
+            const date = document.getElementById('attDate').value;
+            
+            const res = await fetch('/api/schedules?day=' + day);
+            const schedules = await res.json();
+            const matched = schedules.filter(s => s.time_slot === slot);
+            
+            const studentsRes = await fetch('/api/students');
+            const allStudents = await studentsRes.json();
+            const studentMap = {};
+            allStudents.forEach(s => studentMap[s.id] = s);
+            
+            attStudents = [];
+            selectedAttStudents.clear();
+            batchMode = false;
+            
+            matched.forEach(sc => {
+                const student = studentMap[sc.student_id] || {};
+                const coach = sc.coach || student.coach || '';
+                attStudents.push({
+                    student_id: sc.student_id,
+                    student_name: student.name || '未知',
+                    coach: coach,
+                    remaining_hours: student.remaining_hours || 0
+                });
+            });
+            
+            renderAttStudents(date, slot);
+        }
+        
+        function renderAttStudents(date, slot) {
+            let html = '<div class="card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center">';
+            html += '<span style="font-size:12px;color:#666">选择:</span>';
+            html += '<div style="display:flex;gap:8px"><button class="btn btn-sm btn-primary" onclick="enterBatchMode()">批量旷课</button>';
+            html += '<button class="btn btn-sm" onclick="selectAllAtt()">全选</button></div></div></div>';
+            
+            html += '<div style="margin-top:8px">';
+            attStudents.forEach((s, i) => {
+                const checked = selectedAttStudents.has(i);
+                html += `<div class="card" style="margin-bottom:8px">
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleAttSelect(${i})" style="width:20px;height:20px">
+                        <div style="flex:1">
+                            <div style="font-weight:600;font-size:15px">${s.student_name}</div>
+                            <div style="font-size:12px;color:#666">${s.coach} | 剩余 ${s.remaining_hours} 课时</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:8px">
+                        <button class="btn btn-primary" style="flex:1" onclick="doAttend('${s.student_id}', '${date}', '${slot}', '${s.coach}')">消课</button>
+                        <button class="btn" style="flex:1;background:#fff1f0;color:#ff4d4f;border:1px solid #ff4d4f" onclick="openMobileAbsenceModal('${s.student_id}', '${s.student_name}', '${slot}', '${s.coach}', '${date}')">旷课</button>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            
+            if (attStudents.length === 0) html = '<div class="empty"><div class="empty-icon">📋</div>该时段暂无学员</div>';
+            document.getElementById('attList').innerHTML = html;
+        }
+        
+        function toggleAttSelect(i) {
+            if (selectedAttStudents.has(i)) selectedAttStudents.delete(i);
+            else selectedAttStudents.add(i);
+        }
+        
+        function selectAllAtt() {
+            if (selectedAttStudents.size === attStudents.length) {
+                selectedAttStudents.clear();
+            } else {
+                attStudents.forEach((_, i) => selectedAttStudents.add(i));
+            }
+            const date = document.getElementById('attDate').value;
+            const slot = document.getElementById('attSlot').value;
+            renderAttStudents(date, slot);
+        }
+        
+        function enterBatchMode() {
+            if (selectedAttStudents.size === 0) return alert('请先选择要旷课的学员');
+            batchMode = true;
+            document.getElementById('batchAbsenceSection').style.display = 'block';
+            document.getElementById('selectedCount').textContent = selectedAttStudents.size;
+        }
+        
+        function cancelBatchAbsence() {
+            batchMode = false;
+            document.getElementById('batchAbsenceSection').style.display = 'none';
+            selectedAttStudents.clear();
+        }
+        
+        async function confirmBatchAbsence() {
+            const reason = document.getElementById('batchAbsenceReason').value.trim();
+            if (!reason) return alert('请输入旷课原因');
+            
+            const date = document.getElementById('attDate').value;
+            const slot = document.getElementById('attSlot').value;
+            
+            const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const d = new Date(date);
+            const weekDay = weekDays[d.getDay()];
+            
+            for (const i of selectedAttStudents) {
+                const s = attStudents[i];
+                await fetch('/api/absences', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        student_id: s.student_id,
+                        student_name: s.student_name,
+                        absence_date: date,
+                        week_day: weekDay,
+                        time_slot: slot,
+                        coach: s.coach,
+                        reason: reason
+                    })
+                });
+            }
+            
+            alert(`已批量旷课 ${selectedAttStudents.size} 名学员`);
+            batchMode = false;
+            selectedAttStudents.clear();
+            document.getElementById('batchAbsenceSection').style.display = 'none';
+            document.getElementById('batchAbsenceReason').value = '';
+            loadAttStudents();
+        }
+        
+
+        
+        async function doAttend(studentId, date, slot, coach) {
+            if (!confirm('确认消课？')) return;
+            await fetch('/api/attendance', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ student_id: studentId, hours_used: 1, date: date || new Date().toISOString().split('T')[0], time_slot: slot, coach: coach })
+            });
+            alert('消课成功！');
+            loadAttStudents();
+        }
+        
+        async function saveLeave() {
+            const studentId = document.getElementById('leaveStudent').value;
+            const leaveDate = document.getElementById('leaveDate').value;
+            const timeSlot = document.getElementById('leaveSlot').value;
+            const reason = document.getElementById('leaveReason').value.trim();
+            
+            if (!studentId) return alert('请选择学员');
+            if (!leaveDate) return alert('请选择请假日期');
+            
+            const studentsRes = await fetch('/api/students');
+            const students = await studentsRes.json();
+            const student = students.find(s => s.id === studentId);
+            const studentName = student ? student.name : '';
+            
+            const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const d = new Date(leaveDate);
+            const weekDay = weekDays[d.getDay()];
+            
+            await fetch('/api/leaves', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    student_id: studentId,
+                    student_name: studentName,
+                    leave_date: leaveDate,
+                    week_day: weekDay,
+                    time_slot: timeSlot,
+                    reason: reason,
+                    status: 'pending'
+                })
+            });
+            
+            hideModal('leaveModal');
+            alert('请假已提交！');
+            loadLeaves();
+        }
+        
+        async function loadAbsencesMobile() {
+            const res = await fetch('/api/absences');
+            const absences = await res.json();
+            document.getElementById('absencesList').innerHTML = absences.length === 0 ? '<div class="empty"><div class="empty-icon">❌</div>暂无旷课记录</div>' : absences.reverse().map(a => `
+                <div class="card">
+                    <div class="list-item">
+                        <div class="info">
+                            <div class="name">${a.student_name || '-'}</div>
+                            <div class="detail">${a.absence_date || '-'} ${a.week_day || ''} ${a.time_slot || ''}</div>
+                            <div style="font-size:12px;color:#666;margin-top:4px">原因: ${a.reason || '-'}</div>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="deleteAbsenceMobile('${a.id}')">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function deleteAbsenceMobile(id) {
+            if (!confirm('确定删除？')) return;
+            await fetch('/api/absences/' + id, { method: 'DELETE' });
+            loadAbsencesMobile();
+        }
+        
+        function openMobileAbsenceModal(studentId, studentName, slot, coach, date) {
+            document.getElementById('mobileAbsenceStudentId').value = studentId;
+            document.getElementById('mobileAbsenceStudentName').value = studentName;
+            document.getElementById('mobileAbsenceStudentDisplay').textContent = studentName;
+            document.getElementById('mobileAbsenceReason').value = '';
+            document.getElementById('mobileAbsenceSlot').value = slot;
+            document.getElementById('mobileAbsenceCoach').value = coach;
+            document.getElementById('mobileAbsenceDate').value = date;
+            showModal('mobileAbsenceModal');
+        }
+        
+        async function confirmMobileAbsence() {
+            const studentId = document.getElementById('mobileAbsenceStudentId').value;
+            const studentName = document.getElementById('mobileAbsenceStudentName').value;
+            const reason = document.getElementById('mobileAbsenceReason').value.trim();
+            const date = document.getElementById('mobileAbsenceDate').value;
+            const slot = document.getElementById('mobileAbsenceSlot').value;
+            const coach = document.getElementById('mobileAbsenceCoach').value;
+            
+            if (!reason) {
+                alert('请输入旷课原因');
+                return;
+            }
+            
+            const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const d = new Date(date);
+            const weekDay = weekDays[d.getDay()];
+            
+            await fetch('/api/absences', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    student_id: studentId,
+                    student_name: studentName,
+                    absence_date: date,
+                    week_day: weekDay,
+                    time_slot: slot,
+                    coach: coach,
+                    reason: reason
+                })
+            });
+            
+            hideModal('mobileAbsenceModal');
+            alert('旷课已记录！');
+            loadAttStudents();
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            document.getElementById('attDate').value = today.toISOString().split('T')[0];
+            const dayNames = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            document.getElementById('attDay').value = dayNames[today.getDay()];
+            loadAttSlots();
+        });
+    </script>
+</body>
+</html>

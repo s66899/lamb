@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学员成长档案 - 家长端</title>
+  <style>
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2c5282;
+      --primary-lighter: #3182ce;
+      --accent: #0ea5e9;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --radius: 12px;
+      --radius-lg: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 50%, #3182ce 100%);
+      color: white;
+      padding: 32px 30px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 28px;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    header h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; position: relative; }
+    header .subtitle { opacity: 0.85; font-size: 13px; position: relative; }
+    header .notice {
+      margin-top: 14px;
+      background: rgba(255,255,255,0.12);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      backdrop-filter: blur(4px);
+      position: relative;
+    }
+
+    .header-search {
+      max-width: 360px;
+      margin: 16px auto 0;
+      position: relative;
+      z-index: 1;
+    }
+    .header-search input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 14px;
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+    }
+    .header-search input::placeholder { color: rgba(255,255,255,0.6); }
+    .header-search input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.4);
+    }
+    .header-search .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .header-search .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-size: 12px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .header-search .search-clear.show { display: flex; }
+
+    .student-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .student-card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--primary-lighter);
+    }
+    .student-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+      border-color: #bfdbfe;
+    }
+    .student-card.hidden { display: none; }
+    .student-card.animate-in {
+      animation: cardIn 0.4s ease forwards;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    @keyframes cardIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .student-header { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+
+    .avatar {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-lighter) 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 22px; font-weight: 600; flex-shrink: 0;
+      overflow: hidden; border: 3px solid #e2e8f0;
+      box-shadow: var(--shadow-sm);
+    }
+    .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+    .student-info h3 { font-size: 17px; margin-bottom: 3px; color: var(--primary); }
+    .student-info .meta { font-size: 12px; color: var(--text-secondary); }
+    .student-info .bmi-tag {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 20px; margin-top: 5px; font-weight: 500;
+    }
+    .bmi-normal { background: #dcfce7; color: #166534; }
+    .bmi-under { background: #fef9c3; color: #854d0e; }
+    .bmi-over { background: #fee2e2; color: #991b1b; }
+
+    .student-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+      margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+    }
+    .stat-item { text-align: center; padding: 10px 4px; background: #f8fafc; border-radius: 10px; transition: background 0.2s; }
+    .stat-item:hover { background: #f1f5f9; }
+    .stat-item .label { font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; }
+    .stat-item .value { font-size: 15px; font-weight: 700; color: var(--primary); }
+
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15,23,42,0.55); z-index: 1000;
+      overflow-y: auto; padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active { display: flex; justify-content: center; align-items: flex-start; }
+
+    .modal {
+      background: var(--card); border-radius: 20px;
+      width: 100%; max-width: 940px;
+      margin: 30px 0; overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      animation: modalIn 0.3s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.97) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 50%, #3182ce 100%);
+      color: white; padding: 28px; position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 18px; right: 18px;
+      background: rgba(255,255,255,0.15); border: none; color: white;
+      width: 36px; height: 36px; border-radius: 50%;
+      cursor: pointer; font-size: 20px; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.3); }
+
+    .modal-profile { display: flex; align-items: center; gap: 18px; }
+    .modal-avatar {
+      width: 76px; height: 76px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; font-weight: 600;
+      border: 3px solid rgba(255,255,255,0.25); overflow: hidden;
+    }
+    .modal-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .modal-profile-info h2 { font-size: 22px; margin-bottom: 6px; }
+    .modal-profile-info .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 12px; backdrop-filter: blur(4px); }
+
+    .modal-body { padding: 24px; }
+
+    .info-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+      margin-bottom: 20px;
+    }
+    .info-card {
+      background: #f8fafc; padding: 14px 8px;
+      border-radius: var(--radius); text-align: center;
+      border: 1px solid transparent; transition: all 0.2s;
+    }
+    .info-card:hover { background: #eff6ff; border-color: #bfdbfe; }
+    .info-card .label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .info-card .value { font-size: 16px; font-weight: 700; color: var(--text); }
+
+    .stats-summary {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+      margin-bottom: 20px;
+    }
+    .summary-card {
+      background: var(--card); border-radius: var(--radius); padding: 16px;
+      box-shadow: var(--shadow-sm); text-align: center;
+      border: 1px solid var(--border); transition: all 0.2s;
+      border-top: 3px solid var(--primary-lighter);
+    }
+    .summary-card:hover { box-shadow: var(--shadow); }
+    .summary-card .num { font-size: 26px; font-weight: 800; color: var(--primary); }
+    .summary-card .label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; font-weight: 500; }
+
+    .tab-nav {
+      display: flex; gap: 3px; background: #f1f5f9;
+      padding: 4px; border-radius: 10px; margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      flex: 1; min-width: 80px; padding: 9px 10px; border: none;
+      background: transparent; border-radius: 8px;
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .tab-btn.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .section { margin-bottom: 22px; }
+    .section-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary);
+    }
+    .section-title {
+      font-size: 15px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title .icon { font-size: 18px; }
+
+    .progress-bar {
+      background: #e2e8f0; border-radius: 8px; height: 10px;
+      overflow: hidden; margin-bottom: 6px;
+    }
+    .progress-fill {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-lighter) 100%);
+      height: 100%; border-radius: 8px; transition: width 0.5s ease;
+    }
+    .progress-item { margin-bottom: 16px; padding: 14px; background: #f8fafc; border-radius: var(--radius); border: 1px solid var(--border); transition: all 0.2s; }
+    .progress-item:hover { border-color: #bfdbfe; background: #eff6ff; }
+    .progress-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
+    .progress-label { color: var(--text); font-weight: 600; }
+    .progress-value { font-weight: 700; color: var(--primary); }
+    .progress-standard { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
+
+    .level-badge {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 20px; margin-left: 6px; font-weight: 600;
+    }
+    .level-beginner { background: #dbeafe; color: #1d4ed8; }
+    .level-elementary { background: #dcfce7; color: #15803d; }
+    .level-intermediate { background: #fef3c7; color: #b45309; }
+    .level-advanced { background: #fce7f3; color: #be185d; }
+    .level-expert { background: #f3e8ff; color: #7c3aed; }
+    .level-master { background: linear-gradient(90deg, #fbbf24, #f59e0b); color: #451a03; }
+
+    .record-list { display: flex; flex-direction: column; gap: 10px; }
+    .record-item {
+      background: #f8fafc; padding: 14px 16px;
+      border-radius: var(--radius); border-left: 4px solid var(--primary-lighter);
+      border: 1px solid var(--border); border-left-width: 4px;
+      transition: all 0.2s;
+    }
+    .record-item:hover { background: #eff6ff; border-color: #bfdbfe; border-left-color: var(--primary-lighter); }
+    .record-item.warning { border-left-color: var(--warning); background: #fffbeb; }
+    .record-item.warning:hover { background: #fef3c7; }
+    .record-item.success { border-left-color: var(--success); background: #f0fdf4; }
+    .record-item.success:hover { background: #dcfce7; }
+    .record-item.danger { border-left-color: var(--danger); background: #fef2f2; }
+    .record-item.danger:hover { background: #fee2e2; }
+    .record-item.info { border-left-color: var(--accent); background: #f0f9ff; }
+    .record-item.info:hover { background: #e0f2fe; }
+    .record-date { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
+    .record-content { font-size: 14px; color: var(--text); }
+    .record-meta { font-size: 12px; color: #475569; margin-top: 6px; }
+    .record-meta span { margin-right: 12px; }
+
+    .stars { color: #fbbf24; font-size: 14px; letter-spacing: 1px; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th, .data-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    .data-table th { background: #f8fafc; font-weight: 600; color: #475569; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .data-table tr:hover { background: #f8fafc; }
+
+    .status-badge {
+      display: inline-block; font-size: 11px; padding: 3px 10px;
+      border-radius: 20px; font-weight: 600;
+    }
+    .status-present { background: #dcfce7; color: #166534; }
+    .status-absent { background: #fee2e2; color: #991b1b; }
+    .status-late { background: #fef9c3; color: #854d0e; }
+    .status-leave { background: #dbeafe; color: #1d4ed8; }
+    .status-recovered { background: #dcfce7; color: #166534; }
+    .status-ongoing { background: #fef9c3; color: #854d0e; }
+
+    .assessment-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .assessment-card {
+      background: #f8fafc; border-radius: var(--radius); padding: 16px;
+      border-left: 4px solid var(--primary); border: 1px solid var(--border); border-left-width: 4px;
+      transition: all 0.2s;
+    }
+    .assessment-card:hover { box-shadow: var(--shadow); border-color: #bfdbfe; border-left-color: var(--primary); }
+    .assessment-card .assess-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .assessment-card .assess-title { font-weight: 700; font-size: 15px; color: var(--primary); }
+    .assessment-card .assess-date { font-size: 12px; color: var(--text-secondary); }
+    .assessment-card .assess-score { font-size: 28px; font-weight: 800; color: var(--primary); }
+    .assessment-card .assess-rank { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .assessment-card .assess-items { margin-top: 10px; }
+    .assessment-card .assess-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; border-top: 1px solid var(--border); font-size: 13px;
+    }
+
+    .plan-list { display: flex; flex-direction: column; gap: 10px; }
+    .plan-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: #f8fafc; padding: 14px 16px;
+      border-radius: var(--radius); border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .plan-item:hover { background: #eff6ff; border-color: #bfdbfe; }
+    .plan-checkbox {
+      width: 22px; height: 22px; border: 2px solid var(--primary-lighter);
+      border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: white;
+    }
+    .plan-checkbox.checked { background: var(--primary-lighter); }
+    .plan-checkbox.checked::after { content: '✓'; font-size: 14px; font-weight: 700; }
+    .plan-content { flex: 1; }
+    .plan-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; color: var(--text); }
+    .plan-desc { font-size: 12px; color: var(--text-secondary); }
+    .plan-status {
+      font-size: 11px; padding: 3px 10px; border-radius: 20px;
+      background: #e2e8f0; color: #475569; font-weight: 500;
+    }
+    .plan-status.active { background: #dcfce7; color: #166534; }
+
+    .media-tabs {
+      display: flex; gap: 4px; background: #f1f5f9;
+      padding: 4px; border-radius: 10px; margin-bottom: 14px;
+    }
+    .media-tab {
+      flex: 1; padding: 10px 16px; border: none; background: transparent;
+      border-radius: 8px; font-size: 13px; font-weight: 600;
+      color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+    }
+    .media-tab.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    .media-item { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; background: #e2e8f0; cursor: pointer; transition: all 0.2s; }
+    .media-item:hover { transform: scale(1.02); box-shadow: var(--shadow); }
+    .media-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+    .media-item:hover img { transform: scale(1.08); }
+    .media-item video { width: 100%; height: 100%; object-fit: cover; }
+    .media-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .media-item:hover .media-overlay { opacity: 1; }
+    .media-overlay span { color: white; font-size: 28px; }
+    .media-date {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 6px 8px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.65));
+      color: white; font-size: 11px;
+    }
+
+    .lightbox {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(2,6,23,0.95); z-index: 2000;
+      align-items: center; justify-content: center;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img, .lightbox video { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 8px; }
+    .lightbox-close {
+      position: absolute; top: 20px; right: 20px;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); border: none;
+      color: white; font-size: 24px; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.25); }
+    .lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 50px; height: 50px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); border: none;
+      color: white; font-size: 24px; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-nav:hover { background: rgba(255,255,255,0.25); }
+    .lightbox-prev { left: 20px; }
+    .lightbox-next { right: 20px; }
+
+    .empty-media { text-align: center; padding: 40px; color: var(--text-secondary); }
+    .empty-media .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+    .empty-state .icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state p { font-size: 15px; margin-bottom: 12px; font-weight: 500; }
+    .empty-state .hint { font-size: 13px; color: #94a3b8; }
+
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--card);
+      color: var(--text);
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      pointer-events: auto;
+      border: 1px solid var(--border);
+      min-width: 220px;
+    }
+    .toast.hide { animation: toastOut 0.25s ease forwards; }
+    .toast-success { border-left: 4px solid var(--success); }
+    .toast-error { border-left: 4px solid var(--danger); }
+    .toast-warning { border-left: 4px solid var(--warning); }
+    .toast-info { border-left: 4px solid var(--accent); }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(30px); } }
+
+    .offline-banner {
+      display: none;
+      background: #fef3c7;
+      color: #92400e;
+      padding: 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      border-bottom: 1px solid #fde68a;
+    }
+    .offline-banner.show { display: block; }
+
+    .refresh-hint {
+      text-align: center;
+      padding: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .info-grid { grid-template-columns: repeat(3, 1fr); }
+      .student-grid { grid-template-columns: 1fr; }
+      .stats-summary { grid-template-columns: repeat(2, 1fr); }
+      .tab-btn { min-width: 70px; font-size: 11px; padding: 8px 6px; }
+      .media-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-banner" id="offlineBanner">⚠️ 网络连接已断开，数据可能不是最新的</div>
+  <div class="container">
+    <header>
+      <h1>👨‍👩‍👧‍👦 学员成长档案</h1>
+      <p class="subtitle">家长查看端 · 实时了解孩子的训练与成长情况</p>
+      <div class="notice">📌 本页面仅展示，数据由教练端同步更新</div>
+      <div class="header-search">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="搜索学员姓名..." oninput="handleSearch(this.value)">
+        <button class="search-clear" id="searchClear" onclick="clearSearch()">×</button>
+      </div>
+    </header>
+
+    <div class="refresh-hint" id="refreshHint"></div>
+    <div class="student-grid" id="studentGrid"></div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal">
+      <div class="modal-header">
+        <button class="modal-close" onclick="closeDetailModal()">×</button>
+        <div class="modal-profile">
+          <div class="modal-avatar" id="detailAvatar"></div>
+          <div class="modal-profile-info">
+            <h2 id="detailName"></h2>
+            <div class="tags" id="detailTags"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="info-grid">
+          <div class="info-card"><div class="label">年龄</div><div class="value" id="detailAge"></div></div>
+          <div class="info-card"><div class="label">身高</div><div class="value" id="detailHeight"></div></div>
+          <div class="info-card"><div class="label">体重</div><div class="value" id="detailWeight"></div></div>
+          <div class="info-card"><div class="label">BMI</div><div class="value" id="detailBmi"></div></div>
+          <div class="info-card"><div class="label">入学天数</div><div class="value" id="detailDays"></div></div>
+        </div>
+
+        <div class="stats-summary" id="statsSummary"></div>
+
+        <div class="tab-nav">
+          <button class="tab-btn active" onclick="switchTab('progress')">📊 技能掌握</button>
+          <button class="tab-btn" onclick="switchTab('attendance')">📅 上课记录</button>
+          <button class="tab-btn" onclick="switchTab('training')">🏋️ 训练记录</button>
+          <button class="tab-btn" onclick="switchTab('records')">📝 成长记录</button>
+          <button class="tab-btn" onclick="switchTab('corrections')">⚠️ 待改进</button>
+          <button class="tab-btn" onclick="switchTab('assessment')">📋 考核成绩</button>
+          <button class="tab-btn" onclick="switchTab('injury')">🩹 伤病记录</button>
+          <button class="tab-btn" onclick="switchTab('media')">🖼️ 影像资料</button>
+          <button class="tab-btn" onclick="switchTab('plan')">🎯 成长计划</button>
+        </div>
+
+        <div class="tab-content active" id="tab-progress">
+          <div class="section-header"><div class="section-title"><span class="icon">📊</span> 技能掌握度</div></div>
+          <div id="progressList"></div>
+        </div>
+        <div class="tab-content" id="tab-attendance">
+          <div class="section-header"><div class="section-title"><span class="icon">📅</span> 上课记录</div></div>
+          <div id="attendanceList"></div>
+        </div>
+        <div class="tab-content" id="tab-training">
+          <div class="section-header"><div class="section-title"><span class="icon">🏋️</span> 训练记录</div></div>
+          <div id="trainingList"></div>
+        </div>
+        <div class="tab-content" id="tab-records">
+          <div class="section-header"><div class="section-title"><span class="icon">📝</span> 成长记录</div></div>
+          <div class="record-list" id="recordsList"></div>
+        </div>
+        <div class="tab-content" id="tab-corrections">
+          <div class="section-header"><div class="section-title"><span class="icon">⚠️</span> 待改进问题</div></div>
+          <div class="record-list" id="correctionsList"></div>
+        </div>
+        <div class="tab-content" id="tab-assessment">
+          <div class="section-header"><div class="section-title"><span class="icon">📋</span> 考核成绩</div></div>
+          <div id="assessmentList"></div>
+        </div>
+        <div class="tab-content" id="tab-injury">
+          <div class="section-header"><div class="section-title"><span class="icon">🩹</span> 伤病记录</div></div>
+          <div id="injuryList"></div>
+        </div>
+        <div class="tab-content" id="tab-media">
+          <div class="media-tabs">
+            <button class="media-tab active" onclick="switchMediaTab('photos')">📷 照片 (<span id="photosCount">0</span>)</button>
+            <button class="media-tab" onclick="switchMediaTab('videos')">🎬 视频 (<span id="videosCount">0</span>)</button>
+          </div>
+          <div id="mediaContent"></div>
+        </div>
+        <div class="tab-content" id="tab-plan">
+          <div class="section-header"><div class="section-title"><span class="icon">🎯</span> 成长计划</div></div>
+          <div class="plan-list" id="planList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+    <button class="lightbox-nav lightbox-prev" onclick="lightboxPrev()">‹</button>
+    <button class="lightbox-nav lightbox-next" onclick="lightboxNext()">›</button>
+    <img id="lightboxImg" style="display:none">
+    <video id="lightboxVideo" controls style="display:none"></video>
+  </div>
+
+  <script>
+    const API_URL = '/api/students';
+    let students = [];
+    let currentStudent = null;
+    let currentMediaTab = 'photos';
+    let lightboxItems = [];
+    let lightboxIndex = 0;
+    let lastRefresh = null;
+
+    async function loadFromServer() {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(API_URL, { cache: 'no-cache', signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          const banner = document.getElementById('offlineBanner');
+          if (banner) banner.classList.remove('show');
+          return data;
+        }
+      } catch(e) {
+        const banner = document.getElementById('offlineBanner');
+        if (banner) banner.classList.add('show');
+      }
+      return null;
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast toast-' + type;
+      const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+      toast.innerHTML = `<span>${icons[type] || ''}</span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    function getDefaultData() {
+      return [
+        {
+          id: 1, name: '张小明', age: 8, height: 135, weight: 30, avatar: '',
+          joinDate: '2026-01-15', sport: '羽毛球',
+          progress: [
+            { subject: '握拍与准备姿势', percent: 95, standard: '握拍放松，拍面垂直，准备姿势重心在前脚掌' },
+            { subject: '正手高远球', percent: 72, standard: '击球点在右肩前上方，发力流畅，落点到底线附近' },
+            { subject: '反手过渡球', percent: 45, standard: '转体充分，肘部上抬，能稳定回到中场' },
+            { subject: '步伐移动', percent: 60, standard: '并步、交叉步熟练，回中速度快' },
+            { subject: '网前搓球', percent: 30, standard: '拍面控制精准，球贴网而过，旋转充分' }
+          ],
+          attendance: [
+            { date: '2026-04-24', course: '基础技术课', status: 'present', performance: 5, note: '步法进步明显' },
+            { date: '2026-04-22', course: '多球训练课', status: 'present', performance: 4, note: '正手高远球稳定性提升' },
+            { date: '2026-04-20', course: '体能训练课', status: 'present', performance: 3, note: '体能后半段有所下降' },
+            { date: '2026-04-17', course: '基础技术课', status: 'late', performance: 4, note: '迟到10分钟，但课堂状态不错' }
+          ],
+          training: [
+            { date: '2026-04-24', items: ['热身跑','握拍练习','多球高远球','步伐训练','拉伸'], duration: 90, intensity: '中等', performance: '良好', note: '高远球成功率约70%' },
+            { date: '2026-04-22', items: ['跳绳','网前搓球练习','对抗练习','耐力跑'], duration: 120, intensity: '高', performance: '优秀', note: '对抗中敢打敢拼' }
+          ],
+          records: [
+            { date: '2026-04-22', type: 'success', content: '第一次完整完成全场步伐训练，速度明显提升' },
+            { date: '2026-04-15', type: 'normal', content: '本周重点练习了反手过渡，整体表现良好' },
+            { date: '2026-04-08', type: 'warning', content: '体能训练后半段注意力不集中，需要加强耐力' }
+          ],
+          corrections: [
+            { date: '2026-04-20', severity: 'moderate', content: '击球时手臂发力过多，腰部转体不够', suggestion: '加强核心力量训练，练习转体挥拍' },
+            { date: '2026-04-14', severity: 'minor', content: '反手拍面角度控制不稳定', suggestion: '增加反手挑球专项练习' }
+          ],
+          assessments: [
+            { date: '2026-04-15', name: '月度技术考核', score: 78, rank: '3/12', items: [{name:'正手高远球',score:82},{name:'反手过渡',score:65},{name:'步伐',score:78},{name:'网前',score:55}], summary: '正手技术较扎实，反手和网前需要加强' }
+          ],
+          injuries: [],
+          photos: [
+            { url: 'https://picsum.photos/400/300?random=1', date: '2026-04-20', desc: '课堂练习' },
+            { url: 'https://picsum.photos/400/300?random=2', date: '2026-04-15', desc: '训练留念' }
+          ],
+          videos: [{ url: '', date: '2026-04-18', desc: '正手高远球练习' }],
+          plan: [
+            { title: '反手过渡球专项', desc: '每天20分钟反手多球练习', status: 'active', done: false },
+            { title: '核心力量提升', desc: '平板支撑30秒×3组，仰卧起坐20个', status: 'active', done: true },
+            { title: '网前搓球训练', desc: '争取两周内网前技术达到50%', status: 'pending', done: false }
+          ]
+        },
+        {
+          id: 2, name: '李婷婷', age: 10, height: 142, weight: 35, avatar: '',
+          joinDate: '2025-11-20', sport: '羽毛球',
+          progress: [
+            { subject: '正手吊球', percent: 88, standard: '击球动作隐蔽，落点在前场发球线内' },
+            { subject: '杀球技术', percent: 70, standard: '起跳充分，击球点高，球速快角度刁' },
+            { subject: '双打轮转', percent: 55, standard: '与搭档配合默契，轮转时机准确' },
+            { subject: '防守反击', percent: 65, standard: '接杀球稳定，能组织有效反击' }
+          ],
+          attendance: [
+            { date: '2026-04-25', course: '技术提升课', status: 'present', performance: 5, note: '全场表现最佳' },
+            { date: '2026-04-23', course: '对抗训练课', status: 'present', performance: 4, note: '双打配合有进步' }
+          ],
+          training: [
+            { date: '2026-04-25', items: ['热身','杀球练习','防守练习','双打配合'], duration: 120, intensity: '高', performance: '优秀', note: '杀球速度有明显提升' }
+          ],
+          records: [
+            { date: '2026-04-23', type: 'success', content: '队内对抗赛中获得第二名，杀球得分率最高' },
+            { date: '2026-04-16', type: 'warning', content: '双打轮转时与搭档沟通不足，出现抢球现象' }
+          ],
+          corrections: [
+            { date: '2026-04-20', severity: 'moderate', content: '杀球时身体后仰过多，影响下一拍连贯', suggestion: '练习杀球后快速回中，加强连贯意识' }
+          ],
+          assessments: [
+            { date: '2026-04-10', name: '季度综合考核', score: 82, rank: '2/15', items: [{name:'进攻技术',score:88},{name:'防守技术',score:78},{name:'战术意识',score:72},{name:'体能',score:85}], summary: '进攻能力突出，战术意识有待提高' }
+          ],
+          injuries: [
+            { date: '2026-03-15', type: '肌肉拉伤', part: '右肩', status: 'recovered', note: '训练过度导致，休息两周后恢复，已降低训练强度' }
+          ],
+          photos: [{ url: 'https://picsum.photos/400/300?random=3', date: '2026-04-22', desc: '对抗赛' }],
+          videos: [],
+          plan: [
+            { title: '双打战术配合', desc: '每周至少一次双打专项训练', status: 'active', done: false },
+            { title: '防守反击训练', desc: '加强接杀挡网练习，提升反击质量', status: 'active', done: true },
+            { title: '参加市级比赛', desc: '备战6月市青少年羽毛球赛', status: 'pending', done: false }
+          ]
+        }
+      ];
+    }
+
+    async function init() {
+      // 先立即渲染默认数据，避免页面卡住
+      students = getDefaultData();
+      renderStudents();
+      setInterval(autoRefresh, 30000);
+      // 后台加载服务器数据
+      const serverData = await loadFromServer();
+      if (serverData && Array.isArray(serverData) && serverData.length > 0) {
+        students = serverData;
+        lastRefresh = new Date();
+        updateRefreshHint();
+        renderStudents();
+      }
+    }
+
+    async function autoRefresh() {
+      const data = await loadFromServer();
+      if (data && Array.isArray(data)) {
+        const oldIds = students.map(s => s.id).join(',');
+        const newIds = data.map(s => s.id).join(',');
+        const oldHash = JSON.stringify(students).length;
+        const newHash = JSON.stringify(data).length;
+        if (oldIds !== newIds || oldHash !== newHash) {
+          students = data;
+          lastRefresh = new Date();
+          updateRefreshHint();
+          renderStudents();
+          if (currentStudent) {
+            const updated = students.find(s => s.id === currentStudent.id);
+            if (updated) {
+              currentStudent = updated;
+              openDetail(updated.id);
+            }
+          }
+          showToast('数据已自动更新', 'success');
+        }
+      }
+    }
+
+    function updateRefreshHint() {
+      const el = document.getElementById('refreshHint');
+      if (lastRefresh) {
+        const t = lastRefresh.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        el.textContent = `⏱️ 数据更新时间：${t} · 每30秒自动刷新`;
+      }
+    }
+
+    function handleSearch(query) {
+      const val = query.trim().toLowerCase();
+      document.getElementById('searchClear').classList.toggle('show', val.length > 0);
+      const cards = document.querySelectorAll('.student-card');
+      let visible = 0;
+      cards.forEach((card, i) => {
+        const s = students[i];
+        if (!s) return;
+        const match = s.name.toLowerCase().includes(val) || (s.sport && s.sport.toLowerCase().includes(val));
+        card.classList.toggle('hidden', !match);
+        if (match) visible++;
+      });
+      const grid = document.getElementById('studentGrid');
+      let emptyMsg = grid.querySelector('.search-empty');
+      if (visible === 0 && val.length > 0) {
+        if (!emptyMsg) {
+          emptyMsg = document.createElement('div');
+          emptyMsg.className = 'empty-state search-empty';
+          emptyMsg.innerHTML = '<div class="icon">🔍</div><p>未找到匹配的学员</p>';
+          grid.appendChild(emptyMsg);
+        }
+        emptyMsg.style.display = 'block';
+      } else if (emptyMsg) {
+        emptyMsg.style.display = 'none';
+      }
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('searchInput');
+      input.value = '';
+      handleSearch('');
+    }
+
+    function calcBMI(h, w) {
+      const bmi = (w / ((h/100) ** 2)).toFixed(1);
+      let status = 'normal';
+      if (bmi < 18.5) status = 'under';
+      else if (bmi >= 24) status = 'over';
+      return { value: bmi, status };
+    }
+    function getDays(dateStr) {
+      if (!dateStr) return 0;
+      const join = new Date(dateStr);
+      const now = new Date();
+      return Math.max(0, Math.floor((now - join) / (1000 * 60 * 60 * 24)));
+    }
+    function getLevelBadge(pct) {
+      if (pct <= 20) return '<span class="level-badge level-beginner">初学</span>';
+      if (pct <= 40) return '<span class="level-badge level-elementary">入门</span>';
+      if (pct <= 60) return '<span class="level-badge level-intermediate">进阶</span>';
+      if (pct <= 80) return '<span class="level-badge level-advanced">熟练</span>';
+      if (pct <= 95) return '<span class="level-badge level-expert">精通</span>';
+      return '<span class="level-badge level-master">大师</span>';
+    }
+    function getLevelText(pct) {
+      if (pct <= 20) return '初学';
+      if (pct <= 40) return '入门';
+      if (pct <= 60) return '进阶';
+      if (pct <= 80) return '熟练';
+      if (pct <= 95) return '精通';
+      return '大师';
+    }
+    function getStarHTML(n) {
+      return '⭐'.repeat(parseInt(n)) + '☆'.repeat(5 - parseInt(n));
+    }
+    function getStatusBadge(status) {
+      const map = {
+        present: '<span class="status-badge status-present">正常出勤</span>',
+        late: '<span class="status-badge status-late">迟到</span>',
+        leave: '<span class="status-badge status-leave">请假</span>',
+        absent: '<span class="status-badge status-absent">缺勤</span>',
+        ongoing: '<span class="status-badge status-ongoing">恢复中</span>',
+        recovered: '<span class="status-badge status-recovered">已恢复</span>',
+        chronic: '<span class="status-badge status-absent">慢性</span>'
+      };
+      return map[status] || status;
+    }
+
+    function renderStudents() {
+      const grid = document.getElementById('studentGrid');
+      const emptyMsg = grid.querySelector('.search-empty');
+      if (emptyMsg) emptyMsg.remove();
+
+      if (students.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📂</div>
+            <p>暂无学员信息</p>
+            <div class="hint">请先在教练端录入学员数据，本页面将自动同步显示</div>
+          </div>`;
+        return;
+      }
+      grid.innerHTML = students.map((s, i) => {
+        const bmi = calcBMI(s.height, s.weight);
+        const bmiClass = bmi.status === 'normal' ? 'bmi-normal' : bmi.status === 'under' ? 'bmi-under' : 'bmi-over';
+        const bmiText = bmi.status === 'normal' ? 'BMI正常' : bmi.status === 'under' ? 'BMI偏低' : 'BMI偏高';
+        return `
+        <div class="student-card animate-in" style="animation-delay:${i * 0.05}s" onclick="openDetail(${s.id})">
+          <div class="student-header">
+            <div class="avatar">
+              ${s.avatar ? `<img src="${s.avatar}" alt="${s.name}">` : s.name.charAt(0)}
+            </div>
+            <div class="student-info">
+              <h3>${s.name}</h3>
+              <div class="meta">${s.sport || '综合训练'} · 入学 ${getDays(s.joinDate)} 天</div>
+              <div class="bmi-tag ${bmiClass}">${bmiText} ${bmi.value}</div>
+            </div>
+          </div>
+          <div class="student-stats">
+            <div class="stat-item"><div class="label">身高</div><div class="value">${s.height} cm</div></div>
+            <div class="stat-item"><div class="label">体重</div><div class="value">${s.weight} kg</div></div>
+            <div class="stat-item"><div class="label">技能</div><div class="value">${s.progress.length}项</div></div>
+          </div>
+        </div>`;
+      }).join('');
+
+      const searchVal = document.getElementById('searchInput').value.trim();
+      if (searchVal) handleSearch(searchVal);
+    }
+
+    function openDetail(id) {
+      currentStudent = students.find(s => s.id === id);
+      if (!currentStudent) return;
+      const s = currentStudent;
+
+      document.getElementById('detailAvatar').innerHTML = s.avatar
+        ? `<img src="${s.avatar}" alt="${s.name}">`
+        : s.name.charAt(0);
+      document.getElementById('detailName').textContent = s.name;
+      document.getElementById('detailTags').innerHTML = `
+        <span class="tag">${s.sport || '综合训练'}</span>
+        <span class="tag">入学 ${getDays(s.joinDate)} 天</span>`;
+
+      const bmi = calcBMI(s.height, s.weight);
+      document.getElementById('detailAge').textContent = s.age + ' 岁';
+      document.getElementById('detailHeight').textContent = s.height + ' cm';
+      document.getElementById('detailWeight').textContent = s.weight + ' kg';
+      document.getElementById('detailBmi').textContent = bmi.value;
+      document.getElementById('detailDays').textContent = getDays(s.joinDate) + ' 天';
+
+      const attendanceCount = s.attendance.filter(a => a.status === 'present').length;
+      const trainingCount = s.training.length;
+      const assessmentCount = s.assessments.length;
+      const planDone = s.plan.filter(p => p.done).length;
+      const planTotal = s.plan.length;
+      document.getElementById('statsSummary').innerHTML = `
+        <div class="summary-card"><div class="num">${attendanceCount}</div><div class="label">上课次数</div></div>
+        <div class="summary-card"><div class="num">${trainingCount}</div><div class="label">训练记录</div></div>
+        <div class="summary-card"><div class="num">${assessmentCount}</div><div class="label">考核次数</div></div>
+        <div class="summary-card"><div class="num">${planTotal > 0 ? Math.round(planDone/planTotal*100) : 0}%</div><div class="label">计划完成率</div></div>
+      `;
+
+      document.getElementById('progressList').innerHTML = s.progress.length > 0 ? s.progress.map(p => `
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">${p.subject} ${getLevelBadge(p.percent)}</span>
+            <span class="progress-value">${p.percent}% · ${getLevelText(p.percent)}</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: ${p.percent}%"></div></div>
+          ${p.standard ? `<div class="progress-standard">📋 标准：${p.standard}</div>` : ''}
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">📊</div><p>暂无技能掌握度数据</p></div>';
+
+      document.getElementById('attendanceList').innerHTML = s.attendance.length > 0 ? `
+        <table class="data-table">
+          <thead><tr><th>日期</th><th>课程</th><th>状态</th><th>表现</th><th>备注</th></tr></thead>
+          <tbody>${s.attendance.map(a => `
+            <tr>
+              <td>${a.date}</td>
+              <td>${a.course}</td>
+              <td>${getStatusBadge(a.status)}</td>
+              <td><span class="stars">${getStarHTML(a.performance)}</span></td>
+              <td style="color:#64748b;font-size:12px;">${a.note || '-'}</td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      ` : '<div class="empty-media"><div class="icon">📅</div><p>暂无上课记录</p></div>';
+
+      document.getElementById('trainingList').innerHTML = s.training.length > 0 ? s.training.map(t => `
+        <div class="record-item info">
+          <div class="record-date">${t.date} · ${t.duration}分钟 · 强度：${t.intensity}</div>
+          <div class="record-content"><strong>训练项目：</strong>${Array.isArray(t.items) ? t.items.join('、') : t.items}</div>
+          <div class="record-meta">
+            <span>表现：<strong>${t.performance}</strong></span>
+            ${t.note ? `<span>备注：${t.note}</span>` : ''}
+          </div>
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">🏋️</div><p>暂无训练记录</p></div>';
+
+      document.getElementById('recordsList').innerHTML = s.records.length > 0 ? s.records.map(r => `
+        <div class="record-item ${r.type}">
+          <div class="record-date">${r.date}</div>
+          <div class="record-content">${r.content}</div>
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">📝</div><p>暂无成长记录</p></div>';
+
+      document.getElementById('correctionsList').innerHTML = s.corrections.length > 0 ? s.corrections.map(c => `
+        <div class="record-item warning">
+          <div class="record-date">${c.date} · ${c.severity === 'minor' ? '轻微' : c.severity === 'moderate' ? '中等' : '严重'}</div>
+          <div class="record-content"><strong>问题：</strong>${c.content}</div>
+          ${c.suggestion ? `<div class="record-meta" style="color:var(--primary);">💡 建议：${c.suggestion}</div>` : ''}
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">✅</div><p>暂无待改进问题</p></div>';
+
+      document.getElementById('assessmentList').innerHTML = s.assessments.length > 0 ? `
+        <div class="assessment-grid">${s.assessments.map(a => `
+          <div class="assessment-card">
+            <div class="assess-header">
+              <div>
+                <div class="assess-title">${a.name}</div>
+                <div class="assess-date">${a.date}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+              <span class="assess-score">${a.score}</span>
+              ${a.rank ? `<span style="font-size:13px;color:#64748b;">排名 ${a.rank}</span>` : ''}
+            </div>
+            ${a.summary ? `<div style="font-size:12px;color:#475569;margin-bottom:8px;">${a.summary}</div>` : ''}
+            <div class="assess-items">
+              ${a.items.map(item => `
+                <div class="assess-item">
+                  <span>${item.name}</span>
+                  <span style="font-weight:700;color:${item.score >= 80 ? 'var(--primary)' : item.score >= 60 ? 'var(--warning)' : 'var(--danger)'}">${item.score}分</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}</div>
+      ` : '<div class="empty-media"><div class="icon">📋</div><p>暂无考核成绩</p></div>';
+
+      document.getElementById('injuryList').innerHTML = s.injuries.length > 0 ? s.injuries.map(inj => `
+        <div class="record-item ${inj.status === 'recovered' ? 'success' : inj.status === 'ongoing' ? 'warning' : 'danger'}">
+          <div class="record-date">${inj.date} · ${inj.type}</div>
+          <div class="record-content"><strong>部位：</strong>${inj.part} · ${getStatusBadge(inj.status)}</div>
+          ${inj.note ? `<div class="record-meta">${inj.note}</div>` : ''}
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">🩹</div><p>暂无伤病记录，保持健康！</p></div>';
+
+      document.getElementById('photosCount').textContent = s.photos.length;
+      document.getElementById('videosCount').textContent = s.videos.length;
+      renderMedia();
+
+      document.getElementById('planList').innerHTML = s.plan.length > 0 ? s.plan.map(p => `
+        <div class="plan-item">
+          <div class="plan-checkbox ${p.done ? 'checked' : ''}"></div>
+          <div class="plan-content">
+            <div class="plan-title">${p.title}</div>
+            <div class="plan-desc">${p.desc}</div>
+          </div>
+          <span class="plan-status ${p.status}">${p.status === 'active' ? '进行中' : '待开始'}</span>
+        </div>
+      `).join('') : '<div class="empty-media"><div class="icon">🎯</div><p>暂无成长计划</p></div>';
+
+      switchTab('progress');
+      document.getElementById('detailModal').classList.add('active');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.remove('active');
+      currentStudent = null;
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      const btn = document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`);
+      if (btn) btn.classList.add('active');
+      document.getElementById(`tab-${tab}`).classList.add('active');
+    }
+
+    function switchMediaTab(tab) {
+      currentMediaTab = tab;
+      document.querySelectorAll('.media-tab').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.media-tab[onclick="switchMediaTab('${tab}')"]`).classList.add('active');
+      renderMedia();
+    }
+
+    function renderMedia() {
+      if (!currentStudent) return;
+      const s = currentStudent;
+      if (currentMediaTab === 'photos') {
+        document.getElementById('mediaContent').innerHTML = `
+          <div class="media-grid">
+            ${s.photos.length > 0 ? s.photos.map((p, i) => `
+              <div class="media-item" onclick="openLightbox(${i}, 'photo')">
+                <img src="${p.url}" alt="${p.desc || ''}">
+                <div class="media-overlay"><span>🔍</span></div>
+                <div class="media-date">${p.date} ${p.desc ? '· ' + p.desc : ''}</div>
+              </div>
+            `).join('') : ''}
+          </div>
+          ${s.photos.length === 0 ? '<div class="empty-media"><div class="icon">📷</div><p>暂无照片</p></div>' : ''}
+        `;
+      } else {
+        document.getElementById('mediaContent').innerHTML = `
+          <div class="media-grid">
+            ${s.videos.length > 0 ? s.videos.map((v, i) => `
+              <div class="media-item" onclick="openLightbox(${i}, 'video')">
+                <div style="width:100%;height:100%;background:#1e293b;display:flex;align-items:center;justify-content:center;color:white;font-size:36px;">▶</div>
+                <div class="media-overlay"><span>🔍</span></div>
+                <div class="media-date">${v.date} ${v.desc ? '· ' + v.desc : ''}</div>
+              </div>
+            `).join('') : ''}
+          </div>
+          ${s.videos.length === 0 ? '<div class="empty-media"><div class="icon">🎬</div><p>暂无视频</p></div>' : ''}
+        `;
+      }
+    }
+
+    function openLightbox(index, type) {
+      lightboxIndex = index;
+      lightboxItems = type === 'photo' ? currentStudent.photos : currentStudent.videos;
+      const item = lightboxItems[index];
+      const lightbox = document.getElementById('lightbox');
+      const img = document.getElementById('lightboxImg');
+      const video = document.getElementById('lightboxVideo');
+      if (type === 'photo') { img.src = item.url; img.style.display = 'block'; video.style.display = 'none'; }
+      else { video.src = item.url; video.style.display = 'block'; img.style.display = 'none'; }
+      lightbox.classList.add('active');
+    }
+    function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); document.getElementById('lightboxVideo').pause(); }
+    function lightboxPrev() { if (lightboxIndex > 0) { lightboxIndex--; openLightbox(lightboxIndex, currentMediaTab === 'photos' ? 'photo' : 'video'); } }
+    function lightboxNext() { if (lightboxIndex < lightboxItems.length - 1) { lightboxIndex++; openLightbox(lightboxIndex, currentMediaTab === 'photos' ? 'photo' : 'video'); } }
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+        closeLightbox();
+      }
+    });
+
+    window.addEventListener('online', () => {
+      document.getElementById('offlineBanner').classList.remove('show');
+      showToast('网络已恢复', 'success');
+      autoRefresh();
+    });
+    window.addEventListener('offline', () => {
+      document.getElementById('offlineBanner').classList.add('show');
+      showToast('网络已断开', 'warning');
+    });
+
+    init();
+  </script>
+</body>
+</html>
